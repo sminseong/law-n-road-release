@@ -1,0 +1,12 @@
+# Frontend 전용 무시 대상
+node_modules/
+dist/
+dist-ssr/
+coverage/
+.env
+*.local
+*.tsbuildinfo
+
+# Cypress
+/cypress/videos/
+/cypress/screenshots/

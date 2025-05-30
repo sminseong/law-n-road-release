@@ -1,0 +1,68 @@
+# Java 컴파일 산출물
+*.class
+
+# 패키징 파일
+*.jar
+*.war
+*.ear
+
+# Gradle 빌드 관련
+/build/
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IntelliJ IDEA 전용 설정 파일
+.idea/
+/*.iml
+*.iws
+out/
+*.ipr
+
+# VSCode 설정 (사용자에 따라 다를 수 있음)
+.vscode/
+
+# 운영체제(OS) 별 불필요한 파일
+.DS_Store
+Thumbs.db
+
+# 로그파일
+*.log
+
+# 임시/백업/잠금 파일
+*.tmp
+*.swp
+*.sw
+*.bak
+*.orig
+
+# Spring Boot Devtools 관련
+.spring-boot-devtools.properties
+.spring-boot-devtools.restart
+
+# 환경 변수 파일
+.env
+*.env
+
+# 데이터베이스 파일
+*.db
+*.sqlite
+*.mv.db
+*.h2.db
+
+# 테스트 관련 산출물
+/test-output/
+/reports/
+/target/
+
+# Node.js 환경이 포함된 경우 (프론트엔드)
+node_modules/
+
+# 기타 실행 시 생기는 파일
+*.pid
+*.lock
+/*.log.*
+nohup.out
+
+# Spring Boot 설정 파일 무시
+application.properties
+application.yml
