@@ -1,114 +1,119 @@
+<!-- src/views/account/LoginView.vue -->
 <script setup>
-import { ref } from 'vue'
-import UserFrame from '@/components/layout/User/UserFrame.vue' // ✅ 추가
+import { ref, watchEffect } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import axios from 'axios'
+import AccountFrame from '@/components/layout/account/AccountFrame.vue'
+
+const router = useRouter()
+const route = useRoute()
+
+const tab = ref('user') // 기본값: 의뢰인
+
+watchEffect(() => {
+  const queryType = route.query.type
+  if (queryType === 'lawyer' || queryType === 'user') {
+    tab.value = queryType
+  }
+})
 
 const email = ref('')
 const password = ref('')
-const accountType = ref('user') // 기본은 '의뢰인'
+const remember = ref(false)
 
-const submitLogin = () => {
-  console.log({
-    email: email.value,
-    password: password.value,
-    type: accountType.value
-  })
-  // TODO: API 호출 및 라우팅 처리
+const submitLogin = async () => {
+  try {
+    const res = await axios.post('/api/auth/login', {
+      email: email.value,
+      password: password.value,
+      type: tab.value
+    })
+
+    const { token } = res.data
+    localStorage.setItem('token', token)
+    localStorage.setItem('accountType', tab.value)
+
+    router.push(tab.value === 'lawyer' ? '/lawyer' : '/user')
+  } catch (err) {
+    alert('로그인 실패: 이메일 또는 비밀번호가 잘못되었습니다.')
+  }
 }
 </script>
 
 <template>
-  <UserFrame>
-    <section class="my-lg-14 my-8">
-      <div class="container">
-        <div class="row justify-content-center align-items-center">
-          <div class="col-12 col-md-6 col-lg-4 order-lg-1 order-2">
-            <img
-                src="/img/account/signin-g.png"
-                alt="Login Illustration"
-                class="img-fluid"
-            />
-          </div>
+  <AccountFrame>
+    <section class="w-100" style="max-width: 420px;">
+      <!-- 탭 전환 버튼 -->
+      <div class="btn-group w-100 mb-4">
+        <button
+            class="btn"
+            :class="tab === 'user' ? 'btn-primary' : 'btn-outline-secondary'"
+            @click="tab = 'user'"
+        >
+          의뢰인 로그인
+        </button>
+        <button
+            class="btn"
+            :class="tab === 'lawyer' ? 'btn-primary' : 'btn-outline-secondary'"
+            @click="tab = 'lawyer'"
+        >
+          변호사 로그인
+        </button>
+      </div>
 
-          <div class="col-12 col-md-6 offset-lg-1 col-lg-4 order-lg-2 order-1">
-            <div class="mb-lg-9 mb-5">
-              <h1 class="mb-1 h2 fw-bold">로그인</h1>
-              <p>이메일과 비밀번호를 입력하고 계정 유형을 선택하세요.</p>
-            </div>
-
-            <form @submit.prevent="submitLogin">
-              <div class="row g-3">
-                <div class="col-12">
-                  <input
-                      v-model="email"
-                      type="email"
-                      class="form-control"
-                      placeholder="이메일"
-                      required
-                  />
-                </div>
-
-                <div class="col-12">
-                  <input
-                      v-model="password"
-                      type="password"
-                      class="form-control"
-                      placeholder="비밀번호"
-                      required
-                  />
-                </div>
-
-                <!-- 계정 유형 선택 -->
-                <div class="col-12">
-                  <label class="form-label">계정 유형</label>
-                  <div class="d-flex gap-3">
-                    <div class="form-check">
-                      <input
-                          class="form-check-input"
-                          type="radio"
-                          id="userType"
-                          value="user"
-                          v-model="accountType"
-                      />
-                      <label class="form-check-label" for="userType">의뢰인</label>
-                    </div>
-                    <div class="form-check">
-                      <input
-                          class="form-check-input"
-                          type="radio"
-                          id="lawyerType"
-                          value="lawyer"
-                          v-model="accountType"
-                      />
-                      <label class="form-check-label" for="lawyerType">변호사</label>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="d-flex justify-content-between">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="rememberMe" />
-                    <label class="form-check-label" for="rememberMe">자동 로그인</label>
-                  </div>
-                  <div>
-                    <a href="/forgot-password">비밀번호 찾기</a>
-                  </div>
-                </div>
-
-                <div class="col-12 d-grid">
-                  <button type="submit" class="btn btn-primary">로그인</button>
-                </div>
-
-                <div>
-                  아직 계정이 없으신가요? <a href="/signup">회원가입</a>
-                </div>
-              </div>
-            </form>
-          </div>
+      <!-- 로그인 폼 -->
+      <form @submit.prevent="submitLogin">
+        <div class="mb-3">
+          <input
+              v-model="email"
+              type="email"
+              class="form-control"
+              placeholder="이메일"
+              required
+          />
         </div>
+        <div class="mb-3">
+          <input
+              v-model="password"
+              type="password"
+              class="form-control"
+              placeholder="비밀번호"
+              required
+          />
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="form-check">
+            <input
+                v-model="remember"
+                type="checkbox"
+                class="form-check-input"
+                id="rememberMe"
+            />
+            <label class="form-check-label" for="rememberMe">자동 로그인</label>
+          </div>
+          <router-link to="/forgot-password" class="small">아이디/비밀번호 찾기</router-link>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">로그인</button>
+      </form>
+
+      <div class="text-center mt-3">
+        <span class="small text-muted">
+          {{ tab === 'user' ? '아직 계정이 없으신가요?' : '변호사 계정이 없으신가요?' }}
+        </span>
+        <!-- 탭에 따라 서로 다른 라우트로 이동 -->
+        <router-link
+            :to="tab === 'user' ? '/user/signup' : '/lawyer/signup'"
+            class="ms-1 small"
+        >
+          {{ tab === 'user' ? '회원가입' : '변호사 회원가입' }}
+        </router-link>
       </div>
     </section>
-  </UserFrame>
+  </AccountFrame>
 </template>
 
 <style scoped>
+.btn-group .btn {
+  flex: 1 1 0;
+}
 </style>

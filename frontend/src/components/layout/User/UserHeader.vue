@@ -12,13 +12,13 @@
 
                 <div class="col-xxl-2 col-lg-3">
                 <!-- 데스크탑 전용 로고 -->
-                <a class="navbar-brand d-none d-lg-block" href="./index.html">
+                <a class="navbar-brand d-none d-lg-block" href="/">
                     <img src="@/assets/images/logo/logo.png" />
                 </a>
 
                 <!-- 모바일 전용 로고 -->
                 <div class="d-flex justify-content-between w-100 d-lg-none">
-                    <a class="navbar-brand" href="./index.html">
+                    <a class="navbar-brand" href="/">
                     <img src="@/assets/images/logo/logo.png" />
                     </a>
 
@@ -27,7 +27,7 @@
                     <div class="list-inline me-4">
                         <div class="list-inline-item">
                         <a
-                            href="./mypage.html"
+                            href="/user/mypage"
                             class="text-muted"
                         >
                             <svg
@@ -158,7 +158,7 @@
                 <div class="list-inline">
                     <div class="list-inline-item">
                     <a
-                        href="./mypage.html"
+                        href="user/mypage"
                         class="text-muted"
                     >
                         <svg
@@ -183,7 +183,7 @@
                     <div class="list-inline-item">
                     <a
                         class="text-muted position-relative"
-                        href="./cart.html"
+                        href="/user/cart"
                         role="button"
                         aria-controls="offcanvasRight"
                     >
@@ -226,7 +226,7 @@
                 <div
                 class="d-flex justify-content-between align-items-center mb-2 d-block d-lg-none"
                 >
-                <a href="./index.html"
+                <a href="/"
                     ><img
                     src="@/assets/images/logo/logo.png"
                     alt="eCommerce HTML Template"
@@ -324,34 +324,40 @@
                 <ul class="navbar-nav">
                     
                     <li class="nav-item">
-                    <a class="nav-link" href="./index.html">
+                    <a class="nav-link" href="/">
                         홈
                     </a>
                     </li>
 
                     <li class="nav-item">
-                    <a class="nav-link" href="./live.html">
+                    <a class="nav-link" href="/broadcasts">
                         라이브 방송
                     </a>
                     </li>
                     
                     <li class="nav-item">
-                    <a class="nav-link" href="./replay.html">
+                    <a class="nav-link" href="/replay">
                         방송 다시보기
                     </a>
                     </li>
                     
                     <li class="nav-item">
-                    <a class="nav-link" href="./templates.html">
+                    <a class="nav-link" href="/templates">
                         법률서류 템플릿
                     </a>
                     </li>
 
-                    <li class="nav-item">
-                    <a class="nav-link" href="./qna.html">
-                        법률Q&A
+                  <li class="nav-item">
+                    <a class="nav-link" href="/qna">
+                      법률Q&A
                     </a>
-                    </li>
+                  </li>
+
+                  <li class="nav-item">
+                    <a class="nav-link" href="/ci">
+                      브랜드 가치
+                    </a>
+                  </li>
 
                 </ul>
                 </div>
