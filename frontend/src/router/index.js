@@ -64,6 +64,11 @@ const router = createRouter({
       name: 'UserMypage',
       component: () => import('@/views/user/MypageView.vue')
     },
+    {
+      path: '/user/templates',
+      name: 'UserTemplates',
+      component: () => import('@/views/user/TemplateView.vue')
+    },
   ]
 })
 
