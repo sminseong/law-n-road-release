@@ -207,7 +207,7 @@ const loadFn = async ({ page, size }) => {
       <a href="/lawyer">변호사 대시보드 이동하기</a>
     </p>
     <p>
-      <a href="/user">의뢰인 대시보드 이동하기</a>
+      <a href="/user/mypage">의뢰인 대시보드 이동하기</a>
     </p>
 
     <!-- 메인 베너 -->

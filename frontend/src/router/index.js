@@ -1,3 +1,4 @@
+// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -57,6 +58,11 @@ const router = createRouter({
       path: '/lawyer/signup',
       name: 'LawyerSignup',
       component: () => import('@/views/common/LawyerSignupView.vue')
+    },
+    {
+      path: '/user/mypage',
+      name: 'UserMypage',
+      component: () => import('@/views/user/MypageView.vue')
     },
   ]
 })

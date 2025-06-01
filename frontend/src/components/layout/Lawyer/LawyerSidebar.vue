@@ -21,25 +21,19 @@ const menuItems = [
   { label: '계정 설정', icon: 'bi-person-gear', path: '/lawyer/profile' },
 ]
 
-function go(path, label) {
-  emit('update:title', label)
-  router.push(path)
-}
-
 function logout() {
   // 여기에 실제 로그아웃 처리 로직 넣기
-  // 예: 토큰 삭제, 상태 초기화, 로그인 페이지로 이동
   console.log('로그아웃')
   router.push('/login')
 }
 
 watch(
-  () => route.path,
-  () => {
-    const current = menuItems.find(item => item.path === route.path)
-    if (current) emit('update:title', current.label)
-  },
-  { immediate: true }
+    () => route.path,
+    () => {
+      const current = menuItems.find(item => item.path === route.path)
+      if (current) emit('update:title', current.label)
+    },
+    { immediate: true }
 )
 </script>
 
@@ -55,18 +49,30 @@ watch(
       <div class="profile-box text-center mb-5 mt-3">
         <img :src="lawyer.profileImage" alt="프로필" class="profile-img" />
         <div class="profile-name mt-2 fw-semibold">{{ lawyer.name }} 변호사</div>
-        <button class="btn btn-sm btn-outline-light mt-2"
-                @click="go('/lawyer/profile', '계정 설정')">
+        <router-link
+            to="/lawyer/profile"
+            class="btn btn-sm btn-outline-light mt-2"
+            @click.native="emit('update:title', '계정 설정')"
+        >
           내 홈페이지 보기
-        </button>
+        </router-link>
       </div>
 
       <!-- 메뉴 -->
       <ul class="nav-list w-100 px-3">
-        <li v-for="item in menuItems" :key="item.path"
+        <li
+            v-for="item in menuItems"
+            :key="item.path"
             :class="{ active: route.path === item.path }"
-            @click="go(item.path, item.label)">
-          <i :class="`bi ${item.icon} me-2`"></i> {{ item.label }}
+        >
+          <router-link
+              :to="item.path"
+              class="d-flex align-items-center w-100 text-white text-decoration-none px-2 py-2"
+              @click.native="emit('update:title', item.label)"
+          >
+            <i :class="`bi ${item.icon} me-2`"></i>
+            <span>{{ item.label }}</span>
+          </router-link>
         </li>
       </ul>
     </div>
@@ -102,10 +108,8 @@ watch(
   margin: 0;
 }
 .nav-list li {
-  padding: 10px;
+  margin-bottom: 0.5rem;
   border-radius: 6px;
-  font-size: 0.95rem;
-  cursor: pointer;
   transition: background-color 0.2s;
 }
 .nav-list li:hover {
