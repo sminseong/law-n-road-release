@@ -1,8 +1,20 @@
 <!-- src/components/layout/User/UserHeader.vue -->
 <script setup>
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
+const router = useRouter()
 const route = useRoute()
+
+// “마이페이지로 이동” 버튼(아이콘) 클릭 핸들러
+function goToMyPage() {
+  const target = '/user/mypage'
+  if (route.path === target) {
+    // 이미 마이페이지에 있는 경우, 새로고침
+    window.location.reload()
+    return
+  }
+  router.push(target)
+}
 </script>
 
 <template>
@@ -15,22 +27,26 @@ const route = useRoute()
 
             <div class="col-xxl-2 col-lg-3">
               <!-- 데스크탑 전용 로고 -->
-              <router-link class="navbar-brand d-none d-lg-block" to="/">
+              <a class="navbar-brand d-none d-lg-block" href="/">
                 <img src="@/assets/images/logo/logo.png" />
-              </router-link>
+              </a>
 
               <!-- 모바일 전용 로고 -->
               <div class="d-flex justify-content-between w-100 d-lg-none">
-                <router-link class="navbar-brand" to="/">
+                <a class="navbar-brand" href="/">
                   <img src="@/assets/images/logo/logo.png" />
-                </router-link>
+                </a>
 
                 <!-- 모바일 아이콘 + 햄버거 아이콘 -->
                 <div class="d-flex align-items-center lh-1">
                   <div class="list-inline me-4">
                     <div class="list-inline-item">
-                      <!-- 사용자 아이콘: router-link 사용 -->
-                      <router-link class="text-muted" to="/user/mypage">
+                      <!-- 사용자 아이콘: goToMyPage 호출 -->
+                      <a
+                          href="#"
+                          class="text-muted"
+                          @click.prevent="goToMyPage"
+                      >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="20"
@@ -46,39 +62,6 @@ const route = useRoute()
                           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                           <circle cx="12" cy="7" r="4"></circle>
                         </svg>
-                      </router-link>
-                    </div>
-                    <div class="list-inline-item">
-                      <a
-                          class="text-muted position-relative"
-                          data-bs-toggle="offcanvas"
-                          data-bs-target="#offcanvasRight"
-                          href="#offcanvasExample"
-                          role="button"
-                          aria-controls="offcanvasRight"
-                      >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="feather feather-shopping-bag"
-                        >
-                          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                          <line x1="3" y1="6" x2="21" y2="6"></line>
-                          <path d="M16 10a4 4 0 0 1-8 0"></path>
-                        </svg>
-                        <span
-                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success"
-                        >
-                          1
-                          <span class="visually-hidden">unread messages</span>
-                        </span>
                       </a>
                     </div>
                   </div>
@@ -152,8 +135,12 @@ const route = useRoute()
             <div class="col-md-2 col-xxl-1 text-end d-none d-lg-block">
               <div class="list-inline">
                 <div class="list-inline-item">
-                  <!-- 사용자 아이콘: router-link 사용 -->
-                  <router-link class="text-muted" to="/user/mypage">
+                  <!-- 사용자 아이콘: goToMyPage 호출 -->
+                  <a
+                      href="#"
+                      class="text-muted"
+                      @click.prevent="goToMyPage"
+                  >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
@@ -169,10 +156,15 @@ const route = useRoute()
                       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                       <circle cx="12" cy="7" r="4"></circle>
                     </svg>
-                  </router-link>
+                  </a>
                 </div>
                 <div class="list-inline-item">
-                  <router-link class="text-muted position-relative" to="/user/cart">
+                  <a
+                      class="text-muted position-relative"
+                      href="/user/cart"
+                      role="button"
+                      aria-controls="offcanvasRight"
+                  >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
@@ -189,7 +181,7 @@ const route = useRoute()
                       <line x1="3" y1="6" x2="21" y2="6"></line>
                       <path d="M16 10a4 4 0 0 1-8 0"></path>
                     </svg>
-                  </router-link>
+                  </a>
                 </div>
               </div>
             </div>
@@ -206,9 +198,8 @@ const route = useRoute()
           <div class="offcanvas offcanvas-start p-4 p-lg-0" id="navbar-default">
             <!-- 햄버거창 로고 -->
             <div class="d-flex justify-content-between align-items-center mb-2 d-block d-lg-none">
-              <router-link to="/">
-                <img src="@/assets/images/logo/logo.png" alt="eCommerce HTML Template" />
-              </router-link>
+              <a href="/"><img src="@/assets/images/logo/logo.png" alt="eCommerce HTML Template" /></a>
+              <!-- 햄버거창 닫기 버튼 -->
               <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
 
@@ -252,22 +243,22 @@ const route = useRoute()
             <div class="d-none d-lg-block">
               <ul class="navbar-nav align-items-center">
                 <li class="nav-item">
-                  <router-link class="nav-link" to="/">홈</router-link>
+                  <a class="nav-link" href="/">홈</a>
                 </li>
                 <li class="nav-item">
-                  <router-link class="nav-link" to="/broadcasts">라이브 방송</router-link>
+                  <a class="nav-link" href="/broadcasts">라이브 방송</a>
                 </li>
                 <li class="nav-item">
-                  <router-link class="nav-link" to="/replay">방송 다시보기</router-link>
+                  <a class="nav-link" href="/replay">방송 다시보기</a>
                 </li>
                 <li class="nav-item">
-                  <router-link class="nav-link" to="/templates">법률서류 템플릿</router-link>
+                  <a class="nav-link" href="/templates">법률서류 템플릿</a>
                 </li>
                 <li class="nav-item">
-                  <router-link class="nav-link" to="/qna">법률Q&A</router-link>
+                  <a class="nav-link" href="/qna">법률Q&A</a>
                 </li>
                 <li class="nav-item">
-                  <router-link class="nav-link" to="/ci">브랜드 가치</router-link>
+                  <a class="nav-link" href="/ci">브랜드 가치</a>
                 </li>
               </ul>
             </div>
@@ -276,22 +267,22 @@ const route = useRoute()
             <div class="d-block d-lg-none h-100" data-simplebar="">
               <ul class="navbar-nav">
                 <li class="nav-item">
-                  <router-link class="nav-link" to="/">홈</router-link>
+                  <a class="nav-link" href="/">홈</a>
                 </li>
                 <li class="nav-item">
-                  <router-link class="nav-link" to="/broadcasts">라이브 방송</router-link>
+                  <a class="nav-link" href="/broadcasts">라이브 방송</a>
                 </li>
                 <li class="nav-item">
-                  <router-link class="nav-link" to="/replay">방송 다시보기</router-link>
+                  <a class="nav-link" href="/replay">방송 다시보기</a>
                 </li>
                 <li class="nav-item">
-                  <router-link class="nav-link" to="/templates">법률서류 템플릿</router-link>
+                  <a class="nav-link" href="/templates">법률서류 템플릿</a>
                 </li>
                 <li class="nav-item">
-                  <router-link class="nav-link" to="/qna">법률Q&A</router-link>
+                  <a class="nav-link" href="/qna">법률Q&A</a>
                 </li>
                 <li class="nav-item">
-                  <router-link class="nav-link" to="/ci">브랜드 가치</router-link>
+                  <a class="nav-link" href="/ci">브랜드 가치</a>
                 </li>
               </ul>
             </div>
@@ -305,5 +296,5 @@ const route = useRoute()
 </template>
 
 <style scoped>
-/* 필요시 여기에 추가 스타일을 작성하세요 */
+/* 추가 커스텀 스타일이 필요한 경우 이곳에 작성합니다 */
 </style>

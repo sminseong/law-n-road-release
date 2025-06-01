@@ -15,55 +15,17 @@
       <!-- 고객센터 / 링크 모음 -->
       <div class="d-flex flex-column flex-md-row justify-content-between align-items-start">
         <div>
-          © 2025 Law &amp; Road. All rights reserved.
+          © 2025 Law & Road. All rights reserved.
         </div>
         <ul class="list-inline mb-0">
-          <!-- 외부 링크는 그대로 <a> 유지 -->
-          <li class="list-inline-item">
-            <a
-                href="https://github.com/lawroad-project"
-                target="_blank"
-                class="link-secondary text-decoration-none"
-            >
-              GitHub
-            </a>
-          </li>
-          <li class="list-inline-item">
-            <a
-                href="https://www.notion.so/lawroad-docs"
-                target="_blank"
-                class="link-secondary text-decoration-none"
-            >
-              문서
-            </a>
-          </li>
+          <li class="list-inline-item"><a href="https://github.com/lawroad-project" target="_blank" class="link-secondary text-decoration-none">GitHub</a></li>
+          <li class="list-inline-item"><a href="https://www.notion.so/lawroad-docs" target="_blank" class="link-secondary text-decoration-none">문서</a></li>
+          <li class="list-inline-item"><a href="/ci" class="link-secondary text-decoration-none">브랜드 소개</a></li>
+          <li class="list-inline-item"><a href="/terms" class="link-secondary text-decoration-none">이용약관</a></li>
+          <li class="list-inline-item"><a href="/privacy" class="link-secondary text-decoration-none">개인정보처리방침</a></li>
+          <li class="list-inline-item"><a href="/ci" class="link-secondary text-decoration-none">과실비율</a></li>
+          <li class="list-inline-item"><a href="/ci" class="link-secondary text-decoration-none">고객센터</a></li>
 
-          <!-- 내부 링크들은 <router-link>로 변환 -->
-          <li class="list-inline-item">
-            <router-link to="/ci" class="link-secondary text-decoration-none">
-              브랜드 소개
-            </router-link>
-          </li>
-          <li class="list-inline-item">
-            <router-link to="/terms" class="link-secondary text-decoration-none">
-              이용약관
-            </router-link>
-          </li>
-          <li class="list-inline-item">
-            <router-link to="/privacy" class="link-secondary text-decoration-none">
-              개인정보처리방침
-            </router-link>
-          </li>
-          <li class="list-inline-item">
-            <router-link to="/ci" class="link-secondary text-decoration-none">
-              과실비율
-            </router-link>
-          </li>
-          <li class="list-inline-item">
-            <router-link to="/ci" class="link-secondary text-decoration-none">
-              고객센터
-            </router-link>
-          </li>
         </ul>
       </div>
 
@@ -79,13 +41,11 @@
   background-color: #ffffff;
   color: #6c757d;
 }
-a.link-secondary,
-.router-link-active.link-secondary {
+a.link-secondary {
   color: #6c757d;
   text-decoration: none;
 }
-a.link-secondary:hover,
-.router-link-active.link-secondary:hover {
+a.link-secondary:hover {
   text-decoration: underline;
 }
 </style>

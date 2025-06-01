@@ -54,7 +54,7 @@ function toggleConsultation() {
         </div>
         <div class="card-body">
           <p class="mb-2 text-muted small">최근 구매한 템플릿이 없습니다.</p>
-          <a href="/user/template-purchases" class="btn small">구매 내역 보기</a>
+          <a href="/user/templates" class="btn small">구매 내역 보기</a>
         </div>
       </div>
 
@@ -65,7 +65,7 @@ function toggleConsultation() {
         </div>
         <div class="card-body">
           <p class="mb-2 text-muted small">작성하신 글이 없습니다.</p>
-          <a href="/user/posts" class="btn small">글 보러가기</a>
+          <a href="/user/qna" class="btn small">글 보러가기</a>
         </div>
       </div>
 
@@ -76,7 +76,7 @@ function toggleConsultation() {
         </div>
         <div class="card-body">
           <p class="mb-2 text-muted small">관심 키워드를 설정하여 관련 알림을 받아보세요.</p>
-          <a href="/user/keyword-settings" class="btn small">설정 페이지로 이동</a>
+          <a href="/user/profile" class="btn small">설정 페이지로 이동</a>
         </div>
       </div>
 
