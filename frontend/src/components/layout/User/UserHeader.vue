@@ -13,13 +13,13 @@
                 <div class="col-xxl-2 col-lg-3">
                 <!-- 데스크탑 전용 로고 -->
                 <a class="navbar-brand d-none d-lg-block" href="./index.html">
-                    <img src="@/assets/images/logo/lawroad-logo-1.png" />
+                    <img src="@/assets/images/logo/logo.png" />
                 </a>
 
                 <!-- 모바일 전용 로고 -->
                 <div class="d-flex justify-content-between w-100 d-lg-none">
                     <a class="navbar-brand" href="./index.html">
-                    <img src="@/assets/images/logo/lawroad-logo-1.png" />
+                    <img src="@/assets/images/logo/logo.png" />
                     </a>
 
                     <!-- 모바일 아이콘 + 햄버거 아이콘 -->
@@ -228,7 +228,7 @@
                 >
                 <a href="./index.html"
                     ><img
-                    src="@/assets/images/logo/lawroad-logo-1.png"
+                    src="@/assets/images/logo/logo.png"
                     alt="eCommerce HTML Template"
                 /></a>
                 <!-- 햄버거창 닫기 버튼 -->
@@ -281,32 +281,38 @@
                 <ul class="navbar-nav align-items-center">
                     
                     <li class="nav-item">
-                    <a class="nav-link" href="./index.html">
+                    <a class="nav-link" href="/">
                         홈
                     </a>
                     </li>
 
                     <li class="nav-item">
-                    <a class="nav-link" href="./live.html">
+                    <a class="nav-link" href="/broadcasts">
                         라이브 방송
                     </a>
                     </li>
                     
                     <li class="nav-item">
-                    <a class="nav-link" href="./replay.html">
+                    <a class="nav-link" href="/replay">
                         방송 다시보기
                     </a>
                     </li>
                     
                     <li class="nav-item">
-                    <a class="nav-link" href="./templates.html">
+                    <a class="nav-link" href="/templates">
                         법률서류 템플릿
                     </a>
                     </li>
 
                     <li class="nav-item">
-                    <a class="nav-link" href="./qna.html">
+                    <a class="nav-link" href="/qna">
                         법률Q&A
+                    </a>
+                    </li>
+
+                    <li class="nav-item">
+                    <a class="nav-link" href="/ci">
+                        브랜드 가치
                     </a>
                     </li>
 
