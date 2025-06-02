@@ -1,5 +1,5 @@
 <script setup>
-  import UserFrame from '@/components/layout/UserFrame.vue'
+  import UserFrame from '@/components/layout/User/UserFrame.vue'
   import MainBannerSlider from '@/components/common/MainBannerSlider.vue'
   import RoundCategory from '@/components/common/RoundCategory.vue'
   import LiveBroadcastCard from '@/components/common/LiveBroadcastCard.vue'
@@ -202,6 +202,13 @@ const loadFn = async ({ page, size }) => {
 <template>
   <!-- 의뢰인 타입 본문 콘텐츠 -->
   <UserFrame>
+
+    <p>
+      <a href="/lawyer">변호사 대시보드 이동하기</a>
+    </p>
+    <p>
+      <a href="/user/mypage">의뢰인 대시보드 이동하기</a>
+    </p>
 
     <!-- 메인 베너 -->
     <MainBannerSlider :banners="mainBanners" defaultBadgeText="로앤로드 대표 서비스" />
