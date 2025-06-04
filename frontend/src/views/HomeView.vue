@@ -6,6 +6,7 @@
   import CardSlider from '@/components/common/CardSlider.vue'
   import CardTable from '@/components/table/CardTable.vue'
   import ProductCard from '@/components/common/ProductCard.vue'
+  import AdBannerPair from '@/components/common/SlotCard.vue'
 
   // 메인 베너
   const mainBanners = [
@@ -280,7 +281,22 @@ const loadFn = async ({ page, size }) => {
     },
   ]
 
-
+  const banners = [
+    {
+      title: '형사 전문 변호사 이민수',
+      description: '상담시 최대 ',
+      highlight: '30% 할인',
+      image: '/img/ads/slider-image-1.jpg',
+      lawyerId: 101,
+    },
+    {
+      title: '교통사고 합의 전문가 김하늘',
+      description: '첫 의뢰 시 ',
+      highlight: '무료 전화상담 제공',
+      image: '/img/ads/slider-image-3.jpg',
+      lawyerId: 205,
+    },
+  ]
 </script>
 
 <template>
@@ -328,6 +344,9 @@ const loadFn = async ({ page, size }) => {
     <CardTable :List="qnaSampleList" :maxLines="4" />
 
     <!-- 서브 베너 -->
+    <AdBannerPair :banners="banners" />
+
+    <!-- 템플릿 상품 판매 -->
     <div class="row">
       <div class="col-12 mb-6">
         <h3 class="mb-0">많이 찾는 법률문서 베스트 10</h3>
