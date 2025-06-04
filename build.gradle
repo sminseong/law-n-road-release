@@ -32,10 +32,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     // kakao api
-    implementation 'com.konghq:unirest-java:3.13.6'
     implementation 'net.nurigo:sdk:4.2.7'
-    // json object
-    implementation 'org.json:json:20231013'
 }
 
 tasks.named('test') {
