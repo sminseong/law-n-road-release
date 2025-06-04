@@ -1,4 +1,4 @@
 package com.lawnroad.cart.controller;
 
-public class Controller {
+public class test {
 }

@@ -1,4 +1,4 @@
 package com.lawnroad.payment.controller;
 
-public class Controller {
+public class test {
 }

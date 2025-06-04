@@ -1,4 +1,4 @@
 package com.lawnroad.template.controller;
 
-public class Controller {
+public class test {
 }

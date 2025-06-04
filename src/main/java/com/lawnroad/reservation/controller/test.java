@@ -1,4 +1,4 @@
 package com.lawnroad.reservation.controller;
 
-public class Controller {
+public class test {
 }
