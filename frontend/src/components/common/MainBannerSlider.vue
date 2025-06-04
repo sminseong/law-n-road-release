@@ -43,7 +43,7 @@ onMounted(() => {
             </span>
             <h2 class="text-white display-5 fw-bold mt-4" v-html="banner.title"></h2>
             <p class="lead text-white" v-html="banner.desc"></p>
-            <a :href="banner.link" class="btn btn-light mt-3">
+            <a :href="`/lawyer/${banner.lawyerId}`" class="btn btn-light mt-3">
               상담 신청 <i class="feather-icon icon-arrow-right ms-1"></i>
             </a>
           </div>
