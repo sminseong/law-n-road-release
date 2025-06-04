@@ -14,6 +14,7 @@
       desc: '전문가와 함께라면 사고 처리도, 합의도<br />더 이상 어렵지 않습니다.',
       image: '/img/ads/slider-1-1.png',
       link: '/lawyer.html',
+      lawyerNo:'1'
       // badge 생략 → 본문에서 전달한 defaultBadgeText 사용됨
     },
     {

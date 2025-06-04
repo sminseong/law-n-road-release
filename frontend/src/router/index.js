@@ -69,6 +69,11 @@ const router = createRouter({
       name: 'UserTemplates',
       component: () => import('@/views/user/TemplateView.vue')
     },
+    {
+      path: '/user/reservations/:lawyerNo',
+      name: 'UserReservations',
+      component: () => import('@/views/user/UserReservationsView.vue')
+    },
   ]
 })
 

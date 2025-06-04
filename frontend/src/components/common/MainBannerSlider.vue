@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue'
+import {onMounted} from 'vue'
 
 const props = defineProps({
   banners: {
@@ -20,6 +20,17 @@ onMounted(() => {
     autoplaySpeed: 3000
   })
 })
+
+function getReservationLink(banner) {
+  // banner.lawyerNo가 있다면, 네임드 라우트 + params 방식으로 이동
+  if (banner.lawyerNo) {
+    return {
+      name: 'UserReservations',
+      params: {lawyerNo: banner.lawyerNo}
+    }
+  }
+  return '/'
+}
 </script>
 
 <template>
@@ -27,10 +38,10 @@ onMounted(() => {
     <div class="container">
       <div class="hero-slider">
         <div
-          v-for="(banner, i) in props.banners"
-          :key="i"
-          class="hero-banner"
-          :style="`
+            v-for="(banner, i) in props.banners"
+            :key="i"
+            class="hero-banner"
+            :style="`
             background: url(${banner.image}) no-repeat 80% center / cover;
             border-radius: 0.5rem;
             position: relative;
@@ -43,9 +54,11 @@ onMounted(() => {
             </span>
             <h2 class="text-white display-5 fw-bold mt-4" v-html="banner.title"></h2>
             <p class="lead text-white" v-html="banner.desc"></p>
-            <a :href="banner.link" class="btn btn-light mt-3">
+            <router-link
+                :to="getReservationLink(banner)"
+                class="btn btn-light mt-3">
               상담 신청 <i class="feather-icon icon-arrow-right ms-1"></i>
-            </a>
+            </router-link>
           </div>
         </div>
       </div>
