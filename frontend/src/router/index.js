@@ -70,9 +70,9 @@ const router = createRouter({
       component: () => import('@/views/user/TemplateView.vue')
     },
     {
-      path: '/user/reservations/:lawyerNo',
-      name: 'UserReservations',
-      component: () => import('@/views/user/UserReservationsView.vue')
+      path: '/client/reservations/:lawyerNo',
+      name: 'ClientReservations',
+      component: () => import('@/views/user/ClientReservationsView.vue')
     },
   ]
 })
