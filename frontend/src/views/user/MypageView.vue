@@ -2,15 +2,34 @@
 <script setup>
 import { ref } from 'vue'
 import UserFrame from '@/components/layout/User/UserFrame.vue'
+import { sendBroadcastStartAlimtalk } from "@/service/notification.js";
 
 const notifyKeywordEnabled = ref(true)
-const notifyConsultEnabled = ref(false)
+const notifyConsultEnabled = ref(true)
 
 function toggleKeyword() {
   console.log('방송 키워드 알림 수신 여부:', notifyKeywordEnabled.value ? '수신함' : '수신 안 함')
 }
 function toggleConsultation() {
   console.log('상담 관련 알림 수신 여부:', notifyConsultEnabled.value ? '수신함' : '수신 안 함')
+}
+
+// ✅ 알림톡 발송 테스트 함수
+async function sendAlimtalkTest() {
+  try {
+    const response = await sendBroadcastStartAlimtalk({
+      to: "01081272572",         // 수신자 번호 (테스트 등록 필요)
+      name: "박건희",             // #{name}
+      title: "음주운전 뺑소니 사고", // #{title}
+      start: "22:00"              // #{start}
+    });
+
+    console.log("✅ 알림톡 발송 성공:", response.data);
+    alert("알림톡이 성공적으로 발송되었습니다.");
+  } catch (error) {
+    console.error("❌ 알림톡 발송 실패:", error.response?.data || error.message);
+    alert("알림톡 발송 중 오류가 발생했습니다.");
+  }
 }
 </script>
 
@@ -110,6 +129,10 @@ function toggleConsultation() {
               />
             </div>
           </div>
+          <br>
+          <p>
+            <a href="#" @click.prevent="sendAlimtalkTest">알림톡 발송 테스트하기 1</a>
+          </p>
         </div>
       </div>
     </div>
