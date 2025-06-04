@@ -1,7 +1,7 @@
 package com.lawnroad.notification.service;
 
 import com.lawnroad.common.config.SolapiConfig;
-import com.lawnroad.notification.dto.BroadcastStartedDto;
+import com.lawnroad.notification.dto.ClientReservationCreatedDto;
 import lombok.RequiredArgsConstructor;
 import net.nurigo.sdk.NurigoApp;
 import net.nurigo.sdk.message.exception.NurigoMessageNotReceivedException;
@@ -15,12 +15,12 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class BroadcastStartedService {
+public class ClientReservationCreatedService {
   
   private final SolapiConfig solapiConfig;
   
-  public void send(BroadcastStartedDto dto) {
-    // SDK 초기화
+  public void send(ClientReservationCreatedDto dto) {
+    // Solapi SDK 초기화
     DefaultMessageService messageService = NurigoApp.INSTANCE.initialize(
         solapiConfig.getApiKey(),
         solapiConfig.getApiSecret(),
@@ -30,21 +30,22 @@ public class BroadcastStartedService {
     // 알림톡 옵션 구성
     KakaoOption kakaoOption = new KakaoOption();
     kakaoOption.setPfId(solapiConfig.getPfId());
-    kakaoOption.setTemplateId("KA01TP250604081040134aHQgx8X77lf");  // 템플릿 ID 직접 지정
+    kakaoOption.setTemplateId("KA01TP250604090415128SfyPVa2SRMa");
     
     Map<String, String> variables = new HashMap<>();
-    variables.put("#{name}", dto.getName());
-    variables.put("#{title}", dto.getTitle());
-    variables.put("#{start}", dto.getStart());
+    variables.put("#{client}", dto.getClient());
+    variables.put("#{lawyer}", dto.getLawyer());
+    variables.put("#{datetime}", dto.getDatetime());
+    variables.put("#{summary}", dto.getSummary());
     kakaoOption.setVariables(variables);
     
-    // 메시지 구성
+    // 메시지 생성
     Message message = new Message();
     message.setFrom(solapiConfig.getFrom());
     message.setTo(dto.getTo());
     message.setKakaoOptions(kakaoOption);
     
-    // 발송 시도
+    // 메시지 전송
     try {
       messageService.send(message);
     } catch (NurigoMessageNotReceivedException e) {

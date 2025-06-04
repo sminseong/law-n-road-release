@@ -2,7 +2,15 @@
 <script setup>
 import { ref } from 'vue'
 import UserFrame from '@/components/layout/User/UserFrame.vue'
-import { sendBroadcastStartAlimtalk } from "@/service/notification.js";
+import {
+  sendBroadcastStartAlimtalk,
+  sendVerificationCodeAlimtalk,
+  sendClientReservationStartedAlimtalk,
+  sendLawyerReservationStartedAlimtalk,
+  sendClientReservationCreatedAlimtalk,
+  sendLawyerReservationCreatedAlimtalk,
+  sendLawyerReservationCanceledAlimtalk
+} from "@/service/notification.js";
 
 const notifyKeywordEnabled = ref(true)
 const notifyConsultEnabled = ref(true)
@@ -14,21 +22,103 @@ function toggleConsultation() {
   console.log('상담 관련 알림 수신 여부:', notifyConsultEnabled.value ? '수신함' : '수신 안 함')
 }
 
-// ✅ 알림톡 발송 테스트 함수
-async function sendAlimtalkTest() {
+// 각 알림톡 테스트 함수
+async function testBroadcastStart() {
   try {
-    const response = await sendBroadcastStartAlimtalk({
-      to: "01081272572",         // 수신자 번호 (테스트 등록 필요)
-      name: "박건희",             // #{name}
-      title: "음주운전 뺑소니 사고", // #{title}
-      start: "22:00"              // #{start}
+    await sendBroadcastStartAlimtalk({
+      to: "01081272572",
+      name: "박건희",
+      title: "음주운전 뺑소니 사고",
+      start: "22:00"
     });
+    alert("✅ 방송 시작 알림톡 발송 완료");
+  } catch (e) {
+    alert("❌ 방송 시작 알림 실패");
+  }
+}
 
-    console.log("✅ 알림톡 발송 성공:", response.data);
-    alert("알림톡이 성공적으로 발송되었습니다.");
-  } catch (error) {
-    console.error("❌ 알림톡 발송 실패:", error.response?.data || error.message);
-    alert("알림톡 발송 중 오류가 발생했습니다.");
+async function testVerificationCode() {
+  try {
+    await sendVerificationCodeAlimtalk({
+      to: "01081272572",
+      code: "928374"
+    });
+    alert("✅ 인증번호 발송 완료");
+  } catch (e) {
+    alert("❌ 인증번호 발송 실패");
+  }
+}
+
+async function testClientReservationStarted() {
+  try {
+    await sendClientReservationStartedAlimtalk({
+      to: "01081272572",
+      client: "홍길동",
+      lawyer: "박건희",
+      datetime: "2025-06-05 15:00"
+    });
+    alert("✅ 상담 임박(의뢰인) 발송 완료");
+  } catch (e) {
+    alert("❌ 상담 임박(의뢰인) 실패");
+  }
+}
+
+async function testLawyerReservationStarted() {
+  try {
+    await sendLawyerReservationStartedAlimtalk({
+      to: "01081272572",
+      lawyer: "박건희",
+      client: "홍길동",
+      datetime: "2025-06-05 15:00",
+      summary: "음주운전 관련 문의"
+    });
+    alert("✅ 상담 임박(변호사) 발송 완료");
+  } catch (e) {
+    alert("❌ 상담 임박(변호사) 실패");
+  }
+}
+
+async function testClientReservationCreated() {
+  try {
+    await sendClientReservationCreatedAlimtalk({
+      to: "01081272572",
+      client: "홍길동",
+      lawyer: "박건희",
+      datetime: "2025-06-05 15:00",
+      summary: "음주운전 벌금 문의"
+    });
+    alert("✅ 상담 신청 완료(의뢰인) 발송 완료");
+  } catch (e) {
+    alert("❌ 상담 신청(의뢰인) 실패");
+  }
+}
+
+async function testLawyerReservationCreated() {
+  try {
+    await sendLawyerReservationCreatedAlimtalk({
+      to: "01081272572",
+      lawyer: "박건희",
+      client: "홍길동",
+      datetime: "2025-06-05 15:00",
+      summary: "음주운전 벌금 문의"
+    });
+    alert("✅ 상담 신청 완료(변호사) 발송 완료");
+  } catch (e) {
+    alert("❌ 상담 신청(변호사) 실패");
+  }
+}
+
+async function testLawyerReservationCanceled() {
+  try {
+    await sendLawyerReservationCanceledAlimtalk({
+      to: "01081272572",
+      lawyer: "박건희",
+      client: "홍길동",
+      datetime: "2025-06-05 15:00"
+    });
+    alert("✅ 상담 취소(변호사) 발송 완료");
+  } catch (e) {
+    alert("❌ 상담 취소(변호사) 실패");
   }
 }
 </script>
@@ -129,10 +219,14 @@ async function sendAlimtalkTest() {
               />
             </div>
           </div>
-          <br>
-          <p>
-            <a href="#" @click.prevent="sendAlimtalkTest">알림톡 발송 테스트하기 1</a>
-          </p>
+          <hr />
+          <p><a href="#" @click.prevent="testBroadcastStart">🟡 방송 시작 알림톡 테스트</a></p>
+          <p><a href="#" @click.prevent="testVerificationCode">🔵 인증번호 발송 테스트</a></p>
+          <p><a href="#" @click.prevent="testClientReservationStarted">🟢 상담 임박 (의뢰인)</a></p>
+          <p><a href="#" @click.prevent="testLawyerReservationStarted">🟠 상담 임박 (변호사)</a></p>
+          <p><a href="#" @click.prevent="testClientReservationCreated">🟤 신규 상담 (의뢰인)</a></p>
+          <p><a href="#" @click.prevent="testLawyerReservationCreated">⚪ 신규 상담 (변호사)</a></p>
+          <p><a href="#" @click.prevent="testLawyerReservationCanceled">🔴 상담 취소 (변호사)</a></p>
         </div>
       </div>
     </div>
