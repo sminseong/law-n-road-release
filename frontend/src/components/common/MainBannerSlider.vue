@@ -25,7 +25,7 @@ function getReservationLink(banner) {
   // banner.lawyerNo가 있다면, 네임드 라우트 + params 방식으로 이동
   if (banner.lawyerNo) {
     return {
-      name: 'UserReservations',
+      name: 'ClientReservations',
       params: {lawyerNo: banner.lawyerNo}
     }
   }
