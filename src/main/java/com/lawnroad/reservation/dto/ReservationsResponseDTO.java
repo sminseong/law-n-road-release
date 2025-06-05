@@ -1,6 +1,6 @@
 package com.lawnroad.reservation.dto;
 
-import com.lawnroad.reservation.domain.ReservationsVO.Status;
+import com.lawnroad.reservation.model.ReservationsVO.Status;
 import lombok.Data;
 
 import java.time.LocalDate;

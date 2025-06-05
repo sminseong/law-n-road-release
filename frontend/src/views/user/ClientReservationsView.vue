@@ -1,12 +1,13 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import {ref, onMounted} from 'vue'
 import axios from 'axios'
-import { useRoute } from 'vue-router'
+import {useRoute} from 'vue-router'
 import TimeSlot from "@/components/common/TimeSlot.vue";
 import UserFrame from "@/components/layout/User/UserFrame.vue";
 
 const route = useRoute()
 const lawyerNo = ref(route.params.lawyerNo)
+const lawyerName = ref(route.params.lawyerName)
 
 const startDate = ref(new Date().toISOString().slice(0, 10))
 
@@ -26,41 +27,41 @@ onMounted(async () => {
       {
         date: '2025-05-17',
         slots: [
-          { slotTime: '08:00', status: 1 },
-          { slotTime: '09:00', status: 0 },
-          { slotTime: '10:00', status: 1 },
-          { slotTime: '11:00', status: 1 },
-          { slotTime: '12:00', status: 0 },
-          { slotTime: '13:00', status: 1 },
-          { slotTime: '14:00', status: 1 },
-          { slotTime: '15:00', status: 0 },
-          { slotTime: '16:00', status: 1 },
-          { slotTime: '17:00', status: 1 },
-          { slotTime: '18:00', status: 0 },
-          { slotTime: '19:00', status: 1 },
-          { slotTime: '20:00', status: 1 },
-          { slotTime: '21:00', status: 0 },
-          { slotTime: '22:00', status: 1 }
+          {slotTime: '08:00', status: 1},
+          {slotTime: '09:00', status: 0},
+          {slotTime: '10:00', status: 1},
+          {slotTime: '11:00', status: 1},
+          {slotTime: '12:00', status: 0},
+          {slotTime: '13:00', status: 1},
+          {slotTime: '14:00', status: 1},
+          {slotTime: '15:00', status: 0},
+          {slotTime: '16:00', status: 1},
+          {slotTime: '17:00', status: 1},
+          {slotTime: '18:00', status: 0},
+          {slotTime: '19:00', status: 1},
+          {slotTime: '20:00', status: 1},
+          {slotTime: '21:00', status: 0},
+          {slotTime: '22:00', status: 1}
         ]
       },
       {
         date: '2025-05-18',
         slots: [
-          { slotTime: '08:00', status: 0 },
-          { slotTime: '09:00', status: 1 },
-          { slotTime: '10:00', status: 1 },
-          { slotTime: '11:00', status: 0 },
-          { slotTime: '12:00', status: 1 },
-          { slotTime: '13:00', status: 0 },
-          { slotTime: '14:00', status: 1 },
-          { slotTime: '15:00', status: 1 },
-          { slotTime: '16:00', status: 0 },
-          { slotTime: '17:00', status: 1 },
-          { slotTime: '18:00', status: 1 },
-          { slotTime: '19:00', status: 0 },
-          { slotTime: '20:00', status: 1 },
-          { slotTime: '21:00', status: 1 },
-          { slotTime: '22:00', status: 0 }
+          {slotTime: '08:00', status: 0},
+          {slotTime: '09:00', status: 1},
+          {slotTime: '10:00', status: 1},
+          {slotTime: '11:00', status: 0},
+          {slotTime: '12:00', status: 1},
+          {slotTime: '13:00', status: 0},
+          {slotTime: '14:00', status: 1},
+          {slotTime: '15:00', status: 1},
+          {slotTime: '16:00', status: 0},
+          {slotTime: '17:00', status: 1},
+          {slotTime: '18:00', status: 1},
+          {slotTime: '19:00', status: 0},
+          {slotTime: '20:00', status: 1},
+          {slotTime: '21:00', status: 1},
+          {slotTime: '22:00', status: 0}
         ]
       }
     ]
@@ -76,16 +77,16 @@ function handleSelect(payload) {
 
 <template>
   <UserFrame>
-  <div class="container mx-auto p-6">
-    <h1 class="text-2xl font-bold mb-6">
-      변호사 {{ lawyerNo }}님 주간 예약 가능한 시간
-    </h1>
+    <div class="container mx-auto p-6">
+      <h1 class="text-2xl font-bold mb-6">
+        변호사 {{ lawyerName }}님 주간 예약 가능한 시간
+      </h1>
 
-    <TimeSlot
-        :weeklySlots="weeklySlots"
-        @select="handleSelect"
-    />
-  </div>
+      <TimeSlot
+          :weeklySlots="weeklySlots"
+          @select="handleSelect"
+      />
+    </div>
   </UserFrame>
 </template>
 

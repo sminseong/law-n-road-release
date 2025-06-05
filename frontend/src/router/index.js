@@ -70,7 +70,7 @@ const router = createRouter({
       component: () => import('@/views/user/TemplateView.vue')
     },
     {
-      path: '/client/reservations/:lawyerNo',
+      path: '/client/reservations/:lawyerNo/:lawyerName',
       name: 'ClientReservations',
       component: () => import('@/views/user/ClientReservationsView.vue')
     },

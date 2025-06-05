@@ -1,4 +1,4 @@
-package com.lawnroad.reservation.domain;
+package com.lawnroad.reservation.model;
 
 import lombok.Getter;
 

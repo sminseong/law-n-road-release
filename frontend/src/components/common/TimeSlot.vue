@@ -1,4 +1,3 @@
-<!-- src/components/common/TimeSlot.vue -->
 <script setup>
 import { ref, computed, defineProps, defineEmits } from 'vue'
 
@@ -66,15 +65,15 @@ function getButtonClass(dayObj, hour) {
   const selected = isSelected(dayObj, hour)
 
   if (!active) {
-    return 'px-2 py-2 text-sm font-medium rounded-md w-full bg-gray-200 text-gray-500 cursor-not-allowed'
+    return 'px-3 py-2 text-sm font-medium rounded-lg w-full bg-gray-100 text-gray-400 cursor-not-allowed'
   }
   // 활성 상태인 경우
   if (selected) {
-    // 선택된 상태: 주황색보다 더 진한 테두리와 배경
-    return 'px-2 py-2 text-sm font-medium rounded-md w-full bg-orange-700 text-white ring-2 ring-offset-1 ring-orange-500'
+    // 선택된 상태: 진한 테두리와 배경
+    return 'px-3 py-2 text-sm font-medium rounded-lg w-full bg-orange-600 text-white ring-2 ring-offset-1 ring-orange-400'
   }
   // 활성 상태지만 선택 안 된 상태
-  return 'px-2 py-2 text-sm font-medium rounded-md w-full bg-orange-500 text-white hover:bg-orange-600'
+  return 'px-3 py-2 text-sm font-medium rounded-lg w-full bg-orange-400 text-white hover:bg-orange-500'
 }
 
 /**
@@ -86,7 +85,7 @@ function onClickHour(dayObj, hour) {
   if (!isActive(dayObj, hour)) return
 
   const hhmm = formatHour(hour)
-  // 이미 같은 버튼을 클릭한 경우: 토글하지 않고 선택 해제
+  // 이미 같은 버튼을 클릭한 경우: 선택 해제
   if (isSelected(dayObj, hour)) {
     selectedDate.value = null
     selectedTime.value = null
@@ -104,24 +103,24 @@ function onClickHour(dayObj, hour) {
 </script>
 
 <template>
-  <div class="space-y-8">
+  <div class="space-y-6">
     <!-- 날짜별 반복 -->
     <div
         v-for="(dayObj, idx) in props.weeklySlots"
         :key="`day-${dayObj.date}-${idx}`"
-        class="border rounded-lg p-6 shadow-sm"
+        class="bg-white rounded-lg shadow-md p-5"
     >
       <!-- 날짜 헤더 -->
-      <h2 class="text-lg font-bold mb-4">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">
         {{ formatDateKorean(dayObj.date) }} 예약 가능한 시간
       </h2>
 
-      <!-- 오전 (08:00 ~ 11:00) -->
+      <!-- 오전 섹션 -->
       <div class="mb-6">
         <div class="flex items-center mb-2">
-          <span class="text-base font-semibold">오전 (08:00 ~ 11:00)</span>
+          <span class="text-base font-medium text-gray-700">오전 (08:00 ~ 11:00)</span>
         </div>
-        <div class="grid grid-cols-4 gap-x-4 gap-y-2">
+        <div class="grid grid-cols-4 gap-3">
           <button
               v-for="hour in morningHours"
               :key="`m-${dayObj.date}-${hour}`"
@@ -134,12 +133,12 @@ function onClickHour(dayObj, hour) {
         </div>
       </div>
 
-      <!-- 오후 (12:00 ~ 22:00) -->
+      <!-- 오후 섹션 -->
       <div>
         <div class="flex items-center mb-2">
-          <span class="text-base font-semibold">오후 (12:00 ~ 22:00)</span>
+          <span class="text-base font-medium text-gray-700">오후 (12:00 ~ 22:00)</span>
         </div>
-        <div class="grid grid-cols-4 gap-x-4 gap-y-2">
+        <div class="grid grid-cols-4 gap-3">
           <button
               v-for="hour in afternoonHours"
               :key="`a-${dayObj.date}-${hour}`"
@@ -156,5 +155,10 @@ function onClickHour(dayObj, hour) {
 </template>
 
 <style scoped>
-/* scoped 영역이지만 Tailwind 유틸 클래스를 그대로 사용하여 구체적인 스타일을 지정 */
+button {
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+button:active {
+  transform: scale(0.97);
+}
 </style>
