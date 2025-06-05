@@ -15,7 +15,8 @@
       desc: '전문가와 함께라면 사고 처리도, 합의도<br />더 이상 어렵지 않습니다.',
       image: '/img/ads/slider-1-1.png',
       link: '/lawyer.html',
-      lawyerId: 101,
+      lawyerNo:'1',
+      lawyerName: '김수영'
       // badge 생략 → 본문에서 전달한 defaultBadgeText 사용됨
     },
     {
@@ -23,8 +24,9 @@
       desc: '신속한 대응과 확실한 전략으로<br />당신의 권리를 지켜드립니다.',
       image: '/img/ads/slider-2-1.png',
       link: '/lawyer.html',
-      lawyerId: 205,
-      badge: '교통사고 전문 상담',
+      lawyerNo:'2',
+      lawyerName: '정은혜',
+      badge: '교통사고 전문 상담'
     }
   ]
 
@@ -289,14 +291,16 @@ const loadFn = async ({ page, size }) => {
       description: '상담시 최대 ',
       highlight: '30% 할인',
       image: '/img/ads/slider-image-1.jpg',
-      lawyerId: 101,
+      lawyerNo: 101,
+      lawyerName: '이민수',
     },
     {
       title: '교통사고 합의 전문가 김하늘',
       description: '첫 의뢰 시 ',
       highlight: '무료 전화상담 제공',
       image: '/img/ads/slider-image-3.jpg',
-      lawyerId: 205,
+      lawyerNo: 205,
+      lawyerName: '이민수',
     },
   ]
 </script>
