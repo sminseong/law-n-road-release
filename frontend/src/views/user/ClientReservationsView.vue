@@ -15,14 +15,14 @@ const weeklySlots = ref([])
 
 onMounted(async () => {
   try {
-    const res = await axios.get(
-        `/api/lawyers/${lawyerNo.value}/weekly-timeslots`,
-        {
-          params: {
-            startDate: startDate.value
-          }
-        }
-    )
+    // const res = await axios.get(
+    //     `/api/lawyers/${lawyerNo.value}/weekly-timeslots`,
+    //     {
+    //       params: {
+    //         startDate: startDate.value
+    //       }
+    //     }
+    // )
     weeklySlots.value = [
       {
         date: '2025-05-17',

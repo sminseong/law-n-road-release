@@ -5,7 +5,8 @@
   import LiveBroadcastCard from '@/components/common/LiveBroadcastCard.vue'
   import CardSlider from '@/components/common/CardSlider.vue'
   import CardTable from '@/components/table/CardTable.vue'
-  import BasicTable from '@/components/table/BasicTable.vue'
+  import ProductCard from '@/components/common/ProductCard.vue'
+  import AdBannerPair from '@/components/common/SlotCard.vue'
 
   // 메인 베너
   const mainBanners = [
@@ -23,6 +24,8 @@
       desc: '신속한 대응과 확실한 전략으로<br />당신의 권리를 지켜드립니다.',
       image: '/img/ads/slider-2-1.png',
       link: '/lawyer.html',
+      lawyerNo:'2',
+      lawyerName: '정은혜',
       badge: '교통사고 전문 상담'
     }
   ]
@@ -199,6 +202,107 @@ const loadFn = async ({ page, size }) => {
   })
 }
 
+  const productList = [
+    {
+      id: 42,
+      title: '1인 민사소송 키트 음주운전 관련 합의서 포함 설명서 세트',
+      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
+      originalPrice: '20,000원',
+      discountPercent: '44%',
+      discountedPrice: '11,200원',
+    },
+    {
+      id: 108,
+      title: '내용증명 작성 가이드 + 샘플 문서 모음',
+      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
+      originalPrice: '15,000원',
+      discountPercent: '33%',
+      discountedPrice: '10,000원',
+    },
+    {
+      id: 203,
+      title: '임대차 계약서 세트 (상가/주택 전용)',
+      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
+      originalPrice: '25,000원',
+      discountPercent: '40%',
+      discountedPrice: '15,000원',
+    },
+    {
+      id: 304,
+      title: '이혼 합의서 양식 + 재산분할 설명서',
+      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
+      originalPrice: '18,000원',
+      discountPercent: '28%',
+      discountedPrice: '13,000원',
+    },
+    {
+      id: 405,
+      title: '지급명령 신청서 + 설명서 세트',
+      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
+      originalPrice: '17,000원',
+      discountPercent: '30%',
+      discountedPrice: '11,900원',
+    },
+    {
+      id: 506,
+      title: '교통사고 합의서 키트 + 보험사 응대 매뉴얼',
+      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
+      originalPrice: '22,000원',
+      discountPercent: '36%',
+      discountedPrice: '14,000원',
+    },
+    {
+      id: 607,
+      title: '채무 변제 각서 + 확약서 작성 가이드',
+      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
+      originalPrice: '12,000원',
+      discountPercent: '25%',
+      discountedPrice: '9,000원',
+    },
+    {
+      id: 708,
+      title: '고소장 작성 키트 (형사 고소 전용)',
+      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
+      originalPrice: '19,000원',
+      discountPercent: '31%',
+      discountedPrice: '13,100원',
+    },
+    {
+      id: 809,
+      title: '위임장/동의서 통합 세트',
+      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
+      originalPrice: '14,000원',
+      discountPercent: '20%',
+      discountedPrice: '11,200원',
+    },
+    {
+      id: 910,
+      title: '내용증명 반송 대응 키트 + 체크리스트',
+      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
+      originalPrice: '16,000원',
+      discountPercent: '35%',
+      discountedPrice: '10,400원',
+    },
+  ]
+
+  const banners = [
+    {
+      title: '형사 전문 변호사 이민수',
+      description: '상담시 최대 ',
+      highlight: '30% 할인',
+      image: '/img/ads/slider-image-1.jpg',
+      lawyerNo: 101,
+      lawyerName: '이민수',
+    },
+    {
+      title: '교통사고 합의 전문가 김하늘',
+      description: '첫 의뢰 시 ',
+      highlight: '무료 전화상담 제공',
+      image: '/img/ads/slider-image-3.jpg',
+      lawyerNo: 205,
+      lawyerName: '이민수',
+    },
+  ]
 </script>
 
 <template>
@@ -245,13 +349,29 @@ const loadFn = async ({ page, size }) => {
     </div>
     <CardTable :List="qnaSampleList" :maxLines="4" />
 
-    <!-- 일반 테이블 -->
-     
-    <BasicTable
-      :columns="columns"
-      :fullData="fullData"
-      :pageSize="5"
-    />
+    <!-- 서브 베너 -->
+    <AdBannerPair :banners="banners" />
+
+    <!-- 템플릿 상품 판매 -->
+    <div class="row">
+      <div class="col-12 mb-6">
+        <h3 class="mb-0">많이 찾는 법률문서 베스트 10</h3>
+      </div>
+    </div>
+
+    <div class="row g-4 row-cols-lg-5 row-cols-2 row-cols-md-3">
+      <div class="col-md-3 mb-4" v-for="product in productList" :key="product.id">
+        <ProductCard
+            :id="product.id"
+            :imageUrl="product.imageUrl"
+            :title="product.title"
+            :originalPrice="product.originalPrice"
+            :discountPercent="product.discountPercent"
+            :discountedPrice="product.discountedPrice"
+        />
+      </div>
+    </div>
+
   </UserFrame>
 </template>
 
