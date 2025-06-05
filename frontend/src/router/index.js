@@ -69,6 +69,13 @@ const router = createRouter({
       name: 'UserTemplates',
       component: () => import('@/views/user/TemplateView.vue')
     },
+    {
+      path: '/broadcasts',
+      name: 'UserBroadcasts',
+      component: () => import('@/views/user/TemplateView.vue')
+    },
+
+
   ]
 })
 
