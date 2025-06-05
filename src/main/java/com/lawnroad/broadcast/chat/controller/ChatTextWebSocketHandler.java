@@ -27,7 +27,7 @@ public class ChatTextWebSocketHandler extends TextWebSocketHandler {
         nicknames.put(session, nickname);
         sessions.add(session);
 
-        String message = "[" + nickname + "] 님이 접속했습니다.";
+        String message = "[" + nickname + "]　님이 접속했습니다.";
         broadcast(message);
     }
 
@@ -36,7 +36,7 @@ public class ChatTextWebSocketHandler extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String nickname = nicknames.get(session);
         String payload = message.getPayload();
-        String fullMessage = "[" + nickname + "] " + payload;
+        String fullMessage = "[" + nickname + "]　" + payload;
         broadcast(fullMessage);
     }
 
