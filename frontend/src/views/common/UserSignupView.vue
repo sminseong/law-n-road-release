@@ -1,4 +1,3 @@
-<!-- src/views/account/UserSignupView.vue -->
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -7,26 +6,75 @@ import AccountFrame from '@/components/layout/account/AccountFrame.vue'
 
 const router = useRouter()
 
-// 입력값을 담을 ref 선언
+const client_id = ref('')
+const nickname = ref('')
+const phone = ref('')
 const fullName = ref('')
 const email = ref('')
+const authCode = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 const agreeTerms = ref(false)
 
+async function checkIdDuplicate() {
+  if (!client_id.value) {
+    alert('아이디를 입력하세요.')
+    return
+  }
+
+  try {
+    const res = await axios.get(`/api/auth/check-id?client_id=${client_id.value}`)
+    if (res.data.available) {
+      alert('사용 가능한 아이디입니다.')
+    } else {
+      alert('이미 사용 중인 아이디입니다.')
+    }
+  } catch (err) {
+    console.error(err)
+    alert('아이디 중복 확인 중 오류가 발생했습니다.')
+  }
+}
+
+async function checkNicknameDuplicate() {
+  if (!nickname.value) {
+    alert('닉네임을 입력하세요.')
+    return
+  }
+
+  try {
+    const res = await axios.get(`/api/auth/check-nickname?nickname=${nickname.value}`)
+    if (res.data.available) {
+      alert('사용 가능한 닉네임입니다.')
+    } else {
+      alert('이미 사용 중인 닉네임입니다.')
+    }
+  } catch (err) {
+    console.error(err)
+    alert('닉네임 중복 확인 중 오류가 발생했습니다.')
+  }
+}
+
+// 이메일 인증 요청
+function requestEmailCode() {
+  // TODO: 이메일 인증번호 요청 로직 구현
+}
+
+// 이메일 인증번호 확인
+function verifyEmailCode() {
+  // TODO: 인증번호 확인 로직 구현
+}
+
 async function onSubmit() {
-  // 비밀번호 일치 여부 확인
   if (password.value !== confirmPassword.value) {
     alert('비밀번호와 비밀번호 확인이 일치하지 않습니다.')
     return
   }
-  // 약관 동의 체크
+
   if (!agreeTerms.value) {
     alert('이용약관에 동의해야 회원가입이 가능합니다.')
     return
   }
 
-  // TODO: 실제 회원가입 API 호출 경로와 payload 확인 후 사용하세요.
   try {
     const payload = {
       fullName: fullName.value,
@@ -34,7 +82,7 @@ async function onSubmit() {
       password: password.value,
       type: 'user'
     }
-    // 예시: '/api/auth/signup'
+
     await axios.post('/api/auth/signup', payload)
 
     alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.')
@@ -47,33 +95,52 @@ async function onSubmit() {
 </script>
 
 <template>
-  <!-- AccountFrame에 title 속성으로 '회원가입'을 전달 -->
   <AccountFrame title="회원가입">
     <section class="w-100" style="max-width: 420px;">
       <form @submit.prevent="onSubmit">
-        <!-- 이름 필드 -->
+        <!-- 이름 -->
         <div class="mb-3">
-          <input
-              type="text"
-              v-model="fullName"
-              class="form-control"
-              placeholder="이름(실명)"
-              required
-          />
+          <input type="text" v-model="fullName" class="form-control" placeholder="이름(실명)" required />
         </div>
 
-        <!-- 이메일 필드 -->
+        <!-- 아이디 -->
         <div class="mb-3">
-          <input
-              type="email"
-              v-model="email"
-              class="form-control"
-              placeholder="이메일"
-              required
-          />
+          <div class="input-group">
+            <input type="text" v-model="client_id" class="form-control" placeholder="아이디" required />
+            <button type="button" class="btn btn-outline-secondary" @click="checkIdDuplicate">중복 확인</button>
+          </div>
         </div>
 
-        <!-- 비밀번호 필드 -->
+        <!-- 닉네임 -->
+        <div class="mb-3">
+          <div class="input-group">
+            <input type="text" v-model="nickname" class="form-control" placeholder="닉네임" required />
+            <button type="button" class="btn btn-outline-secondary" @click="checkNicknameDuplicate">중복 확인</button>
+          </div>
+        </div>
+
+        <!-- 전화번호 -->
+        <div class="mb-3">
+          <input type="text" v-model="phone" class="form-control" placeholder="전화번호" required />
+        </div>
+
+        <!-- 이메일 + 인증 요청 -->
+        <div class="mb-3">
+          <div class="input-group">
+            <input type="email" v-model="email" class="form-control" placeholder="이메일" required />
+            <button type="button" class="btn btn-outline-secondary" @click="requestEmailCode">인증 요청</button>
+          </div>
+        </div>
+
+        <!-- 인증번호 + 인증 승인 -->
+        <div class="mb-3">
+          <div class="input-group">
+            <input type="text" v-model="authCode" class="form-control" placeholder="이메일 인증번호" required />
+            <button type="button" class="btn btn-outline-secondary" @click="verifyEmailCode">인증 승인</button>
+          </div>
+        </div>
+
+        <!-- 비밀번호 -->
         <div class="mb-3">
           <input
               type="password"
@@ -85,7 +152,7 @@ async function onSubmit() {
           />
         </div>
 
-        <!-- 비밀번호 확인 필드 -->
+        <!-- 비밀번호 확인 -->
         <div class="mb-3">
           <input
               type="password"
@@ -99,28 +166,18 @@ async function onSubmit() {
 
         <!-- 이용약관 동의 -->
         <div class="form-check mb-4">
-          <input
-              class="form-check-input"
-              type="checkbox"
-              id="agreeTerms"
-              v-model="agreeTerms"
-          />
+          <input class="form-check-input" type="checkbox" id="agreeTerms" v-model="agreeTerms" />
           <label class="form-check-label" for="agreeTerms">
             이용약관 및 개인정보처리방침에 동의합니다.
           </label>
         </div>
 
-        <!-- 제출 버튼 -->
-        <button type="submit" class="btn btn-primary w-100 mb-3">
-          회원가입
-        </button>
+        <!-- 제출 -->
+        <button type="submit" class="btn btn-primary w-100 mb-3">회원가입</button>
 
-        <!-- 로그인 페이지로 이동 -->
         <div class="text-center small">
           이미 계정이 있으신가요?
-          <a href="/login?type=user" class="ms-1 text-decoration-none">
-            로그인
-          </a>
+          <a href="/login?type=user" class="ms-1 text-decoration-none">로그인</a>
         </div>
       </form>
     </section>
@@ -128,12 +185,9 @@ async function onSubmit() {
 </template>
 
 <style scoped>
-/* 회원가입 폼 영역 최대 너비 제한 */
 section {
   margin: 0 auto;
 }
-
-/* 버튼 높이 통일 */
 .btn {
   height: 44px;
   font-weight: 500;
