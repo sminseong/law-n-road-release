@@ -10,9 +10,12 @@ export default defineComponent({
     const message = ref("");
     const messages = ref([]);
     const messageContainer = ref(null); // 메시지 영역 DOM 참조
+    const broadcastNo = 2; // 예시. 실제 방송 ID로 교체해야 함
 
     const connectWebSocket = () => {
-      socket.value = new WebSocket(`ws://localhost:8080/ws/chat?nickname=${encodeURIComponent(nickname)}`);
+      socket.value = new WebSocket(
+          `ws://localhost:8080/ws/chat?nickname=${encodeURIComponent(nickname)}&broadcastNo=${broadcastNo}`
+      );
 
       socket.value.onmessage = (event) => {
         messages.value.push(event.data);
