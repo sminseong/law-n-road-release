@@ -79,6 +79,11 @@ const router = createRouter({
       name: 'UserBroadcasts',
       component: () => import('@/views/user/UserBroadcasts.vue')
     },
+    {
+      path: '/qna',
+      name: 'UserQaList',
+      component: () => import('@/views/common/UserQaListView.vue')
+    }
 
 
   ]
