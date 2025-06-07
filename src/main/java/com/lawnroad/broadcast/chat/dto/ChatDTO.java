@@ -32,4 +32,5 @@ public class ChatDTO {
 
     /** 생성 일시 */
     private LocalDateTime createdAt;
+
 }

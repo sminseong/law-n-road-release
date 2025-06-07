@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MongoChatRepository extends MongoRepository<ChatDocument, String> {
-    // 추가 쿼리 메서드 정의 가능
 }

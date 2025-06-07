@@ -56,7 +56,7 @@ public class ChatBackupService {
     private <T> T fromJson(String json, Class<T> type) {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule()); // 🧩 LocalDateTime 역직렬화 지원
+            mapper.registerModule(new JavaTimeModule()); //  LocalDateTime 역직렬화 지원
             mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); // Optional: 날짜 포맷을 배열 대신 ISO로
             return mapper.readValue(json, type);
         } catch (JsonProcessingException e) {
