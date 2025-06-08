@@ -8,7 +8,7 @@ import { onMounted } from 'vue'
 
 const router = useRouter()
 
-// 샘플 데이터
+// DB 데이터 가져오기
 const templateList = ref([])
 onMounted(async () => {
   try {
@@ -16,6 +16,7 @@ onMounted(async () => {
     console.log(res.data)
     templateList.value = res.data.map(t => ({
       no: t.no,
+      categoryNo: '', // 수정에서 카테고리 no를 알기 위해 필요
       categoryName: t.category_name,
       name: t.name,
       price: `₩${t.price.toLocaleString()}`,

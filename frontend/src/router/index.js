@@ -35,7 +35,7 @@ const router = createRouter({
       component: () => import('@/views/lawyer/template/TemplateFormView.vue')
     },
     {
-      path: '/lawyer/templates/edit/:id',
+      path: '/lawyer/templates/edit/:no',
       name: 'TemplateEdit',
       component: () => import('@/views/lawyer/template/TemplateFormView.vue'),
       props: true

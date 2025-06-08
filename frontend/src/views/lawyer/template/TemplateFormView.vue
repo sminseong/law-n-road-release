@@ -7,8 +7,8 @@ import http from '@/libs/HttpRequester'
 const route = useRoute()
 const router = useRouter()
 
-const isEditMode = route.params.no !== undefined
-const templateNo = route.params.no || null
+const templateNo = ref(route.params.no)
+const isEditMode = ref(!!templateNo.value)
 
 const name = ref('')
 const price = ref('')
@@ -17,6 +17,7 @@ const category_no = ref('')
 const description = ref('')
 const file = ref(null)
 const previewUrl = ref(null)
+const oldThumbnailPath = ref(null)
 
 function onFileChange(event) {
   const uploaded = event.target.files[0]
@@ -25,46 +26,66 @@ function onFileChange(event) {
 }
 
 function loadTemplate(no) {
+  const categoryMap = {
+    '교통사고': 1,
+    '형사': 2,
+    '가사': 3,
+    '민사': 4,
+    '이혼': 5,
+    '기타': 6
+  }
+
   const templates = JSON.parse(localStorage.getItem('templateList') || '[]')
   const selected = templates.find(t => String(t.no) === String(no))
   if (selected) {
     name.value = selected.name
     price.value = selected.price?.replace(/[^0-9]/g, '') ?? ''
     discount_rate.value = selected.discountRate?.replace('%', '') ?? ''
-    category_no.value = selected.categoryName // 추후 category_no로 매핑 필요
+    category_no.value = categoryMap[selected.categoryName] || ''
     description.value = selected.description || ''
     previewUrl.value = selected.imageUrl
+    oldThumbnailPath.value = selected.imageUrl
   }
 }
 
 onMounted(() => {
-  if (templateNo) loadTemplate(templateNo)
+  if (isEditMode.value) loadTemplate(templateNo.value)
 })
 
 watch(() => route.params.no, (newNo) => {
+  templateNo.value = newNo
+  isEditMode.value = !!newNo
   if (newNo) loadTemplate(newNo)
 })
 
 async function handleSubmit() {
-  const mode = isEditMode ? '수정' : '등록'
-
+  const mode = isEditMode.value ? '수정' : '등록'
   const formData = new FormData()
+
   formData.append('category_no', category_no.value)
   formData.append('name', name.value)
   formData.append('price', price.value)
   formData.append('discount_rate', discount_rate.value)
   formData.append('description', description.value)
-  formData.append('file', file.value)
+  formData.append('thumbnail_path', oldThumbnailPath.value)
+
+  if (!file.value && oldThumbnailPath.value) {
+    const response = await fetch(oldThumbnailPath.value)
+    const blob = await response.blob()
+    const filename = oldThumbnailPath.value.split('/').pop()
+    const reconstructedFile = new File([blob], filename, { type: blob.type })
+    formData.append('file', reconstructedFile)
+  } else if (file.value) {
+    formData.append('file', file.value)
+  }
 
   try {
-    if (isEditMode) {
-      await http.put(`/api/templates/lawyer/${templateNo}`, formData, {
+    if (isEditMode.value) {
+      await http.put(`/api/templates/lawyer/${templateNo.value}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
     } else {
-      await http.post('/api/templates/lawyer', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
+      await http.post('/api/templates/lawyer', formData)
     }
     alert(`${mode}이 완료되었습니다.`)
     router.push('/lawyer/templates')
@@ -79,10 +100,8 @@ async function handleSubmit() {
   <LawyerFrame>
     <div class="container py-4">
       <h3 class="mb-4 fw-bold">{{ isEditMode ? '템플릿 수정' : '템플릿 등록' }}</h3>
-
       <div class="card p-4">
         <div class="row mb-3">
-          <!-- 이미지 -->
           <div class="col-md-4">
             <label class="form-label">상품 이미지</label>
             <div class="preview-box mb-2 d-flex align-items-center justify-content-center border rounded">
@@ -91,38 +110,29 @@ async function handleSubmit() {
             </div>
             <input type="file" class="form-control" @change="onFileChange" />
           </div>
-
-          <!-- 정보 입력 -->
           <div class="col-md-8">
             <label class="form-label">상품명</label>
             <input v-model="name" class="form-control mb-2" />
-
             <label class="form-label">금액</label>
             <input v-model="price" type="number" class="form-control mb-2" />
-
             <label class="form-label">할인율 (%)</label>
             <input v-model="discount_rate" type="number" class="form-control mb-2" />
-
             <label class="form-label">카테고리</label>
-            <select v-model="category_no" class="form-select">
+            <select v-model.number="category_no" class="form-select">
               <option value="" disabled>카테고리 선택</option>
-              <option value="1">교통사고</option>
-              <option value="2">형사</option>
-              <option value="3">가사</option>
-              <option value="4">민사</option>
-              <option value="5">이혼</option>
-              <option value="6">기타</option>
+              <option :value="1">교통사고</option>
+              <option :value="2">형사</option>
+              <option :value="3">가사</option>
+              <option :value="4">민사</option>
+              <option :value="5">이혼</option>
+              <option :value="6">기타</option>
             </select>
           </div>
         </div>
-
-        <!-- 상세 설명 -->
         <div class="mb-3">
           <label class="form-label">상세 설명</label>
           <textarea v-model="description" rows="5" class="form-control" />
         </div>
-
-        <!-- 버튼 영역 -->
         <div class="d-flex justify-content-end gap-2">
           <button class="btn btn-secondary" @click="router.push('/lawyer/templates')">취소</button>
           <button class="btn btn-primary" @click="handleSubmit">

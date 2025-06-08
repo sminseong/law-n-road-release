@@ -78,9 +78,35 @@ public class TemplateController {
     templateService.createTemplate(dto, 1L);
   }
   
-  // [변호사] 템플릿 수정
-  @PutMapping("/lawyer/{no}")
-  public void updateTemplate(@PathVariable Long no, @RequestBody TemplateUpdateDto dto) {
+  @PutMapping(value = "/lawyer/{no}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public void updateTemplate(
+      @PathVariable Long no,
+      @RequestParam("category_no") Long categoryNo,
+      @RequestParam("name") String name,
+      @RequestParam("price") Integer price,
+      @RequestParam("discount_rate") Integer discountRate,
+      @RequestParam("description") String description,
+      @RequestParam("thumbnail_path") String oldThumbnailPath,
+      @RequestParam(value = "file", required = false) MultipartFile file
+  ) {
+    String thumbnailPath;
+    
+    if (file != null && !file.isEmpty()) {
+      thumbnailPath = fileStorageService.save(file, "uploads/images");
+    } else {
+      thumbnailPath = oldThumbnailPath; // 기존 썸네일 유지
+    }
+    
+    TemplateUpdateDto dto = new TemplateUpdateDto();
+    dto.setCategory_no(categoryNo);
+    dto.setName(name);
+    dto.setPrice(price);
+    dto.setDiscount_rate(discountRate);
+    dto.setDescription(description);
+    
+    dto.setTemplate_path("http://localhost:8080" + thumbnailPath); // 템플릿 파일 실제 경로
+    dto.setThumbnail_path("http://localhost:8080" + thumbnailPath); // 상대경로 or 전체경로 맞춰서
+    
     templateService.updateTemplate(no, dto, 1L);
   }
   
