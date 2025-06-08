@@ -60,8 +60,18 @@ function handleEdit(row) {
 }
 
 // 삭제 버튼 클릭 -> 해당 행 소프트 딜리트
-function handleCancel(row) {
-  console.log('취소 버튼 눌림', row)
+async function handleCancel(row) {
+  if (!confirm(`'${row.name}' 템플릿을 삭제하시겠습니까?`)) return
+  try {
+    await http.delete(`/api/templates/lawyer/${row.no}`)
+    // 삭제 후 목록 갱신
+    templateList.value = templateList.value.filter(t => t.no !== row.no)
+    localStorage.setItem('templateList', JSON.stringify(templateList.value))
+    alert('삭제되었습니다.')
+  } catch (e) {
+    console.error('삭제 실패:', e)
+    alert('삭제 중 오류가 발생했습니다.')
+  }
 }
 </script>
 
