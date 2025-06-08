@@ -3,9 +3,9 @@ defineProps({
   id: Number,
   imageUrl: String,
   title: String,
-  originalPrice: String,
-  discountPercent: String,
-  discountedPrice: String,
+  originalPrice: [String, Number],
+  discountPercent: [String, Number],
+  discountedPrice: [String, Number],
 })
 </script>
 

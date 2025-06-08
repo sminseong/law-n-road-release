@@ -17,16 +17,16 @@
     </resultMap>
 
     <!-- 공통 전체 조회 -->
-    <select id="findAll" resultType="com.lawnroad.template.dto.TemplateListDto">
+    <select id="findAll" resultMap="templateListMap">
         SELECT
         t.no AS no,
         c.name AS category_name,
-        t.name,
-        t.price,
-        t.discount_rate,
-        t.sales_count,
-        t.created_at,
-        t.thumbnail_path
+        t.name AS name,
+        t.price AS price,
+        t.discount_rate AS discount_rate,
+        t.sales_count AS sales_count,
+        t.created_at AS created_at,
+        t.thumbnail_path AS thumbnail_path
         FROM template t
         INNER JOIN category c ON t.category_no = c.no
         WHERE t.is_deleted = 0
