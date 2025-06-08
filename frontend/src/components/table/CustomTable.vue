@@ -134,7 +134,7 @@ function changePage(page) {
             <template v-else-if="props.imageConfig.enabled && col.key === props.imageConfig.targetKey">
               <div class="d-flex align-items-center gap-3">
                 <img :src="row[props.imageConfig.key]" alt="상품 이미지" width="80" height="80" class="rounded" />
-                <div>{{ row[col.key] }}</div>
+<!--                <div>{{ row[col.key] }}</div>-->
               </div>
             </template>
             <template v-else-if="col.key === 'status'">

@@ -13,15 +13,16 @@ const templateList = ref([])
 onMounted(async () => {
   try {
     const res = await http.get('/api/templates/lawyer')
+    console.log(res.data)
     templateList.value = res.data.map(t => ({
       no: t.no,
-      categoryName: t.categoryName,
+      categoryName: t.category_name,
       name: t.name,
       price: `₩${t.price.toLocaleString()}`,
-      discountRate: `${t.discountRate}%`,
-      salesCount: t.salesCount,
-      createdAt: t.createdAt?.split('T')[0],
-      imageUrl: t.thumbnailPath
+      discountRate: t.discount_rate != null ? `${t.discount_rate}%` : '0%',
+      salesCount: t.sales_count ?? 0,
+      createdAt: t.created_at?.split('T')[0],
+      imageUrl: t.thumbnail_path
     }))
     // ✅ 여기에 옮긴다
     localStorage.setItem('templateList', JSON.stringify(templateList.value))
@@ -32,13 +33,12 @@ onMounted(async () => {
 
 // 테이블 열
 const columns = [
-  { label: '번호', key: 'no' },
-  { label: '이미지', key: 'img' },
-  { label: '카테고리', key: 'categoryName' },
+  { label: '이미지', key: 'imageUrl' },
   { label: '템플릿명', key: 'name' },
   { label: '가격', key: 'price' },
   { label: '할인율', key: 'discountRate' },
   { label: '판매량', key: 'salesCount' },
+  { label: '카테고리', key: 'categoryName' },
   { label: '생성일시', key: 'createdAt' },
   { label: '관리', key: 'actions' }
 ]
@@ -77,7 +77,7 @@ function handleCancel(row) {
           :columns="columns"
           :filters="filters"
           :rows-per-page="10"
-          :image-config="{ enabled: true, key: 'imageUrl', targetKey: 'img' }"
+          :image-config="{ enabled: true, key: 'imageUrl', targetKey: 'imageUrl' }"
           :action-buttons="{ edit: true, delete: true }"
           @row-click="onRowClick"
           @edit-action="handleEdit"

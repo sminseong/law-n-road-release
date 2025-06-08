@@ -12,6 +12,6 @@ public class TemplateListDto {
   private Integer price;
   private Integer discount_rate;
   private Integer sales_count;
-  private LocalDateTime created_at;
+  private String  created_at;
   private String thumbnail_path;
 }

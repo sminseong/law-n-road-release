@@ -11,7 +11,7 @@ public interface TemplateMapper {
   
   List<TemplateListDto> findAll();
   
-  List<TemplateDto> findByUserNo(@Param("userNo") Long userNo);
+  List<TemplateListDto> findByUserNo(@Param("userNo") Long userNo);
   
   TemplateDto findByNoAndUserNo(@Param("no") Long no, @Param("userNo") Long userNo);
   

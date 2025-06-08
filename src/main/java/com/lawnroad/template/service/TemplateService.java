@@ -9,7 +9,7 @@ public interface TemplateService {
   List<TemplateListDto> getAllTemplates();
   
   // 사용자
-  List<TemplateDto> getUserTemplatesByUserNo(Long userNo);
+  List<TemplateListDto> getUserTemplatesByUserNo(Long userNo);
   TemplateDto getUserTemplateByNo(Long no, Long userNo);
   
   // 변호사

@@ -29,7 +29,7 @@ public class TemplateController {
   
   // [사용자] 내가 구매한 템플릿 전체 조회
   @GetMapping("/user")
-  public List<TemplateDto> getUserTemplates() {
+  public List<TemplateListDto> getUserTemplates() {
     return templateService.getUserTemplatesByUserNo(1L);
   }
   
@@ -74,7 +74,7 @@ public class TemplateController {
     }
     dto.setTemplate_path("http://localhost:8080" + thumbnailPath);     // 템플릿 파일 실제 경로
     dto.setThumbnail_path("http://localhost:8080" + thumbnailPath);
-    System.out.println(dto.getThumbnail_path()); // null이면 문제
+    
     templateService.createTemplate(dto, 1L);
   }
   
