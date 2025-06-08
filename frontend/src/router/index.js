@@ -26,8 +26,19 @@ const router = createRouter({
     },
     {
       path: '/lawyer/templates',
-      name: 'LawyerTemplates',
-      component: () => import('@/views/lawyer/TemplateManagementView.vue')
+      name: 'TemplateList',
+      component: () => import('@/views/lawyer/template/TemplateListView.vue')
+    },
+    {
+      path: '/lawyer/templates/register',
+      name: 'TemplateRegister',
+      component: () => import('@/views/lawyer/template/TemplateFormView.vue')
+    },
+    {
+      path: '/lawyer/templates/edit/:id',
+      name: 'TemplateEdit',
+      component: () => import('@/views/lawyer/template/TemplateFormView.vue'),
+      props: true
     },
     {
       path: '/lawyer/ads',
