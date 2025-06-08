@@ -132,13 +132,47 @@ export default defineComponent({
     <!-- 전체 화면 기준으로 방송화면 + 채팅 분리 -->
     <div class="position-relative w-100 vh-100">
 
-      <!-- 방송화면 (왼쪽) -->
+      <!-- 방송화면 + 방송 정보 영역을 묶는 wrapper -->
       <div
-          ref="videoContainer"
-          class="position-absolute top-0 start-0 bg-dark shadow rounded"
-          style="width: calc(100% - 480px); height: 520px; margin: 2rem;"
+          class="position-absolute top-0 start-0 bg-dark shadow rounded d-flex flex-column"
+          style="width: calc(100% - 480px); margin: 2rem;"
       >
-        <!-- OpenVidu 영상이 이 안에 동적으로 붙음 -->
+        <!-- 방송 영상 -->
+        <div
+            ref="videoContainer"
+            style="height: 520px;"
+            class="rounded-top"
+        ></div>
+
+        <!-- 방송 정보 -->
+        <div class="bg-light text-dark p-7  rounded-bottom">
+
+          <!-- 제목 + 키워드 -->
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <!-- 방송 제목 -->
+            <h2 class="fs-3 fw-bold mb-0">교통사고 과실비율 및 손해배상 관련 라이브</h2>
+
+            <!-- 키워드 -->
+            <div>
+              <span class="badge bg-primary me-1 fs-6">#교통사고</span>
+              <span class="badge bg-success me-1 fs-6">#과실비율</span>
+              <span class="badge bg-warning text-dark fs-6">#손해배상</span>
+            </div>
+          </div>
+
+          <!-- 프로필 + 이름 -->
+          <div class="d-flex align-items-center mt-5">
+            <!-- 동그란 이미지 -->
+            <img
+                src="/img/profiles/lee.png"
+                alt="변호사 프로필"
+                class="rounded-circle me-3"
+                style="width: 75px; height: 75px; border: 3px solid #15ea7e;"
+            />
+            <!-- 이름 -->
+            <div class="fs-5 fw-bold">이영훈 변호사</div>
+          </div>
+        </div>
       </div>
 
       <div
