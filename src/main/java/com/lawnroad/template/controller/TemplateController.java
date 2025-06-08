@@ -1,5 +1,6 @@
 package com.lawnroad.template.controller;
 
+import com.lawnroad.common.util.FileStorageUtil;
 import com.lawnroad.template.dto.TemplateCreateDto;
 import com.lawnroad.template.dto.TemplateDto;
 import com.lawnroad.template.dto.TemplateListDto;
@@ -18,6 +19,7 @@ import java.util.List;
 public class TemplateController {
   
   private final TemplateService templateService;
+  private final FileStorageUtil fileStorageService;
   
   // [공통] 전체 템플릿 목록 조회 (공개)
   @GetMapping
@@ -59,7 +61,7 @@ public class TemplateController {
       @RequestParam("description") String description,
       @RequestParam("file") MultipartFile file
   ) {
-    String thumbnailPath = fileStorageService.save(file); // 👉 파일 저장하고 경로 반환
+    String thumbnailPath = fileStorageService.save(file, "uploads/images"); // 👉 파일 저장하고 경로 반환
     
     TemplateCreateDto dto = new TemplateCreateDto();
     dto.setCategory_no(categoryNo);
@@ -67,8 +69,12 @@ public class TemplateController {
     dto.setPrice(price);
     dto.setDiscount_rate(discountRate);
     dto.setDescription(description);
-    dto.setThumbnail_path(thumbnailPath);
-    
+    if (thumbnailPath == null || thumbnailPath.isEmpty()) {
+      throw new IllegalArgumentException("템플릿 파일 경로가 없습니다.");
+    }
+    dto.setTemplate_path("http://localhost:8080" + thumbnailPath);     // 템플릿 파일 실제 경로
+    dto.setThumbnail_path("http://localhost:8080" + thumbnailPath);
+    System.out.println(dto.getThumbnail_path()); // null이면 문제
     templateService.createTemplate(dto, 1L);
   }
   
