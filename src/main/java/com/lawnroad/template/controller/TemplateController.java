@@ -27,6 +27,12 @@ public class TemplateController {
     return templateService.getAllTemplates();
   }
   
+  // [공통] 템플릿 상세 조회 (공개)
+  @GetMapping("/{no}")
+  public TemplateDto getTemplateByNo(@PathVariable Long no) {
+    return templateService.getTemplateByNo(no);
+  }
+  
   // [사용자] 내가 구매한 템플릿 전체 조회
   @GetMapping("/user")
   public List<TemplateListDto> getUserTemplates() {
@@ -78,6 +84,7 @@ public class TemplateController {
     templateService.createTemplate(dto, 1L);
   }
   
+  // [변호사] 템플릿 수정
   @PutMapping(value = "/lawyer/{no}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public void updateTemplate(
       @PathVariable Long no,

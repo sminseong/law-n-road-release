@@ -19,6 +19,11 @@ public class TemplateServiceImpl implements TemplateService {
     return templateMapper.findAll();
   }
   
+  @Override
+  public TemplateDto getTemplateByNo(Long no) {
+    return templateMapper.findByNo(no); // 또는 적절한 DTO 매핑
+  }
+  
   // 사용자
   @Override
   public List<TemplateListDto> getUserTemplatesByUserNo(Long userNo) {

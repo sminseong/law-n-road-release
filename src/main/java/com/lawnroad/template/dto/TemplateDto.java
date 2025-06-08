@@ -9,6 +9,7 @@ public class TemplateDto {
   private Long no;
   private Long user_no;
   private Long category_no;
+  private String category_name;
   private String name;
   private String description;
   private Integer price;

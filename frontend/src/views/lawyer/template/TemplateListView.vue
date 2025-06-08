@@ -49,9 +49,9 @@ const filters = [ ]
 
 // 행 클릭 -> 상세 조회 페이지
 const onRowClick = (row) => {
+  console.log('✅ row.no:', row.no) // undefined면 문제
   router.push(`/lawyer/templates/${row.no}`)
 }
-
 
 // 수정 버튼 클릭 -> 수정 페이지
 function handleEdit(row) {

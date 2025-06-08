@@ -7,6 +7,7 @@ import java.util.List;
 public interface TemplateService {
   // 공통
   List<TemplateListDto> getAllTemplates();
+  public TemplateDto getTemplateByNo(Long no);
   
   // 사용자
   List<TemplateListDto> getUserTemplatesByUserNo(Long userNo);

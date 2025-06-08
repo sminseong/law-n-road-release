@@ -6,7 +6,7 @@ import LawyerFrame from '@/components/layout/Lawyer/LawyerFrame.vue'
 const route = useRoute()
 const router = useRouter()
 
-const templateNo = ref(route.params.no)
+const templateNo = route.params.no
 
 const name = ref('')
 const price = ref('')
@@ -17,7 +17,7 @@ const previewUrl = ref(null)
 
 onMounted(() => {
   const templates = JSON.parse(localStorage.getItem('templateList') || '[]')
-  const selected = templates.find(t => String(t.no) === String(templateNo.value))
+  const selected = templates.find(t => String(t.no) === String(templateNo))
   if (selected) {
     name.value = selected.name
     price.value = selected.price

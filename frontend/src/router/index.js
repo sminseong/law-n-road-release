@@ -36,7 +36,7 @@ const router = createRouter({
     },
     {
       path: '/lawyer/templates/:no',
-      name: 'TemplateDetail',
+      name: 'LawyerTemplateDetail',
       component: () => import('@/views/lawyer/template/TemplateDetailView.vue')
     },
     {
@@ -100,7 +100,11 @@ const router = createRouter({
       name: 'UserBroadcasts',
       component: () => import('@/views/user/template/TemplateListView.vue')
     },
-
+    {
+      path: '/templates/:no',
+      name: 'UserTemplateDetail',
+      component: () => import('@/views/user/template/TemplateDetailView.vue')
+    }
 
   ]
 })

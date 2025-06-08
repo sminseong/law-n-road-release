@@ -7,7 +7,7 @@ import UserFrame from "@/components/layout/User/UserFrame.vue";
 // 상태 정의
 const fullList = ref([])
 const currentPage = ref(1)
-const rowsPerPage = 10
+const rowsPerPage = 20
 
 // API 호출
 onMounted(async () => {
@@ -15,7 +15,7 @@ onMounted(async () => {
     const res = await http.get('/api/templates') // 변호사/유저 구분 없이 전체 템플릿
     console.log('이미지 URL 확인:', res)
     fullList.value = res.data.map(item => ({
-      id: item.no,
+      no: item.no,
       imageUrl: item.thumbnail_path,
       title: item.name,
       originalPrice: item.price,
@@ -53,9 +53,9 @@ function changePage(page) {
       </div>
 
       <div class="row g-4 row-cols-lg-5 row-cols-md-3 row-cols-2">
-        <div class="col" v-for="product in paginatedList" :key="product.id">
+        <div class="col" v-for="product in paginatedList" :key="product.no">
           <ProductCard
-              :id="product.id"
+              :no="product.no"
               :imageUrl="product.imageUrl"
               :title="product.title"
               :originalPrice="product.originalPrice"

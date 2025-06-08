@@ -16,6 +16,19 @@
         <result property="thumbnail_path" column="thumbnail_path"/>
     </resultMap>
 
+    <resultMap id="templateResultMap" type="com.lawnroad.template.dto.TemplateDto">
+        <id property="no" column="no"/>
+        <result property="name" column="name"/>
+        <result property="price" column="price"/>
+        <result property="discount_rate" column="discount_rate"/>
+        <result property="description" column="description"/>
+        <result property="template_path" column="template_path"/>
+        <result property="thumbnail_path" column="thumbnail_path"/>
+        <result property="created_at" column="created_at"/>
+        <result property="sales_count" column="sales_count"/>
+        <result property="category_name" column="category_name"/>
+    </resultMap>
+
     <!-- 공통 전체 조회 -->
     <select id="findAll" resultMap="templateListMap">
         SELECT
@@ -31,6 +44,25 @@
         INNER JOIN category c ON t.category_no = c.no
         WHERE t.is_deleted = 0
         ORDER BY t.created_at DESC
+    </select>
+
+    <!-- 공통 상세 조회 -->
+    <select id="findByNo" resultMap="templateResultMap">
+        SELECT
+        t.no,
+        t.name,
+        t.price,
+        t.discount_rate,
+        t.description,
+        t.template_path,
+        t.thumbnail_path,
+        t.created_at,
+        t.sales_count,
+        c.name AS category_name
+        FROM template t
+        INNER JOIN category c ON t.category_no = c.no
+        WHERE t.no = #{no}
+        AND t.is_deleted = 0
     </select>
 
     <!-- 사용자용 전체 구매 템플릿 조회 -->
