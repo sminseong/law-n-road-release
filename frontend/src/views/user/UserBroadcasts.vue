@@ -62,8 +62,9 @@ export default defineComponent({
 
     // --- 채팅 WebSocket 관련 ---
     const stompClient = ref(null);
-    const nickname = "홍길동";           // 실제 로그인 닉네임으로 대체
-    const broadcastNo = 3;             // 실제 방송 ID로 대체
+    const randomNickname = () => "유저" + Math.floor(1000 + Math.random() * 9000);
+    const nickname = randomNickname(); // 실제 로그인 닉네임으로 대체 예정
+    const broadcastNo = 3;             // 실제 방송 ID로 대체 예정
     const message = ref("");
     const messages = ref([]);
     const messageContainer = ref(null);
@@ -141,8 +142,7 @@ export default defineComponent({
       <div
           ref="videoContainer"
           class="position-absolute top-0 start-0 bg-dark shadow rounded d-flex align-items-center justify-content-center"
-          style="width: calc(100% - 480px); height: 520px; margin: 2rem; overflow: hidden;"
-      >
+          style="width: calc(100% - 480px); height: 520px; margin: 2rem; overflow: hidden;">
         <!-- OpenVidu 영상이 여기에 붙음 -->
       </div>
 
@@ -155,7 +155,8 @@ export default defineComponent({
             ref="messageContainer"
             class="flex-grow-1 overflow-auto mb-3 scroll-hidden"
             style="scroll-behavior: smooth;">
-          <div v-for="(msg, index) in messages" :key="index" class="mb-3">
+          <div v-for="(msg, index) in messages" :key="index" class="mb-3"
+               style="font-size: 1.0rem; font-weight: bold;">
             {{ msg }}
           </div>
         </div>

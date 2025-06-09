@@ -25,13 +25,13 @@ public class WebConfig implements WebMvcConfigurer { //  WebMvcConfigurer  웹 �
     public void addCorsMappings(CorsRegistry registry) {
         // 어떤 URL에 대해 어디서 요청을 허용할지 설정
         registry.addMapping("/mail/**")
-                .allowedOrigins("http://localhost:5173") // 어디에서 온 요청을 허용
+                .allowedOrigins("*") // 어디에서 온 요청을 허용
                 .allowedMethods("GET", "POST", "OPTIONS") // ✅ OPTIONS 추가!
                 .allowedHeaders("*") // 모든 헤더 허용
                 .allowCredentials(false);
 
         registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:5173")
+                .allowedOrigins("*")
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*") // 모든 헤더 허용
                 .allowCredentials(false);
