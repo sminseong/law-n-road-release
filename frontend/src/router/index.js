@@ -79,6 +79,11 @@ const router = createRouter({
       name: 'UserBroadcasts',
       component: () => import('@/views/user/UserBroadcasts.vue')
     },
+    {
+      path: '/broadcasts/start',
+      name: 'LawyerBroadcasts',
+      component: () => import('@/views/lawyer/LawyerBroadcasts.vue')
+    },
 
 
   ]

@@ -41,6 +41,8 @@ dependencies {
 
     // kakao api
     implementation 'net.nurigo:sdk:4.2.7'
+    // openvidu
+    implementation 'io.openvidu:openvidu-java-client:2.30.0'
 }
 
 tasks.named('test') {
