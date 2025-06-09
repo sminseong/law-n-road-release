@@ -24,17 +24,21 @@ public class ChatStompController {
     // 사용자가 입장했을 때
     @MessageMapping("/chat.addUser")
     public void addUser(@Payload ChatDTO chatDTO) {
-        String notice = "　　　　　" + chatDTO.getNickname() + " 님이 접속했습니다.";
-        messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), notice);
+        chatDTO.setType("ENTER");
+        chatDTO.setMessage(chatDTO.getNickname() + " 님이 접속했습니다.");
+        chatDTO.setCreatedAt(LocalDateTime.now());
+
+        messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), chatDTO);
     }
 
     // 실제 채팅 메시지 전송
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload ChatDTO chatDTO) {
         chatDTO.setCreatedAt(LocalDateTime.now());
+        chatDTO.setType("CHAT");
         chatRedisService.saveChatMessage(chatDTO);
 
-        String fullMessage = "[" + chatDTO.getNickname() + "]　" + chatDTO.getMessage();
-        messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), fullMessage);
+        messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), chatDTO);
     }
+
 }

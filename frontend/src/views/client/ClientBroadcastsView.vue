@@ -93,7 +93,8 @@ export default defineComponent({
           stompClient.value.subscribe(
               `/topic/${broadcastNo}`,
               (msg) => {
-                messages.value.push(msg.body);
+                const data = JSON.parse(msg.body);
+                messages.value.push(data);
                 scrollToBottom();
               }
           );
@@ -146,29 +147,40 @@ export default defineComponent({
         <!-- OpenVidu 영상이 여기에 붙음 -->
       </div>
 
-      <!-- 채팅 입력 영역 -->
+      <!-- 채팅 입력 영역 전체 -->
       <div
           class="position-absolute border rounded shadow p-4 d-flex flex-column"
-          style="width: 400px; height: 700px; top: 2rem; right: 2rem;">
+          style="width: 400px; height: 700px; top: 2rem; right: 2rem;"
+      >
         <!-- 메시지 출력 영역 (스크롤 + 자동 아래로 이동) -->
         <div
             ref="messageContainer"
             class="flex-grow-1 overflow-auto mb-3 scroll-hidden"
             style="scroll-behavior: smooth;">
-          <div v-for="(msg, index) in messages" :key="index" class="mb-3"
-               style="font-size: 1.0rem; font-weight: bold;">
-            {{ msg }}
+          <div v-for="(msg, index) in messages" :key="index" class="mb-3">
+            <div
+                v-if="msg.type === 'ENTER'"
+                class="w-100 text-center"
+                style="color: #007bff; font-size: 1.1rem;">
+              {{ msg.message }}
+            </div>
+            <div
+                v-else
+                style="font-size: 1.0rem; font-weight: bold;">
+              {{ msg.nickname }} : {{ msg.message }}
+            </div>
           </div>
         </div>
 
-        <!-- 입력창 영역 -->
+        <!-- 입력창 영역 (항상 하단 고정) -->
         <div class="d-flex">
           <input
               v-model="message"
               type="text"
               class="form-control me-2"
               placeholder="메시지를 입력하세요"
-              @keyup.enter="sendMessage"/>
+              @keyup.enter="sendMessage"
+          />
         </div>
       </div>
     </div>
