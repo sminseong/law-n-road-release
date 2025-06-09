@@ -16,8 +16,33 @@
                 #{amount}
             )
     </insert>
+
     <select id="getPrice" parameterType="long" resultType="long">
         SELECT consult_price FROM lawyer WHERE no = #{userNo}
+    </select>
+
+    <update id="updateStatus" parameterType="com.lawnroad.reservation.model.TimeSlotVO">
+        UPDATE weekly_time_slots
+        SET status    = #{status}
+        WHERE user_no  = #{userNo}
+          AND slot_date = #{slotDate}
+          AND slot_time = #{slotTime}
+    </update>
+
+    <select id="getWeeklyTimeSlots"
+            parameterType="map"
+            resultType="com.lawnroad.reservation.model.TimeSlotVO">
+        SELECT
+            no,
+            user_no    AS userNo,
+            slot_date  AS slotDate,
+            slot_time  AS slotTime,
+            status,
+            amount
+        FROM weekly_time_slots
+        WHERE user_no  = #{userNo}
+          AND slot_date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY slot_date, slot_time
     </select>
 
 </mapper>

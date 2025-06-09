@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.stream.IntStream;
 
 //회원가입 성공 시 일주일 치의 컬럼 생성 하는 서비스
@@ -39,5 +40,17 @@ public class TimeSlotService {
                 timeSlotMapper.insertTimeSlot(vo);
             });
         });
+    }
+    // 주간 슬롯 상태 변경
+    @Transactional
+    public void updateSlotStatuses(List<TimeSlotVO> timeSlotVOList) {
+        timeSlotVOList.forEach(timeSlotMapper::updateStatus);
+    }
+
+    // 주간 슬롯 모두 조회
+    @Transactional(readOnly = true)
+    public List<TimeSlotVO> getWeeklyTimeSlots(Long userNo, LocalDate startDate) {
+        LocalDate endDate = startDate.plusDays(6);
+        return timeSlotMapper.getWeeklyTimeSlots(userNo, startDate, endDate);
     }
 }
