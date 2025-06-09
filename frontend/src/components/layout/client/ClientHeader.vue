@@ -1,4 +1,4 @@
-<!-- src/components/layout/User/UserHeader.vue -->
+<!-- src/components/layout/User/ClientHeader.vue -->
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
 
@@ -7,7 +7,7 @@ const route = useRoute()
 
 // “마이페이지로 이동” 버튼(아이콘) 클릭 핸들러
 function goToMyPage() {
-  const target = '/user/mypage'
+  const target = '/client/mypage'
   if (route.path === target) {
     // 이미 마이페이지에 있는 경우, 새로고침
     window.location.reload()
@@ -161,7 +161,7 @@ function goToMyPage() {
                 <div class="list-inline-item">
                   <a
                       class="text-muted position-relative"
-                      href="/user/cart"
+                      href="/client/cart"
                       role="button"
                       aria-controls="offcanvasRight"
                   >
@@ -246,10 +246,10 @@ function goToMyPage() {
                   <a class="nav-link" href="/">홈</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/broadcasts">라이브 방송</a>
+                  <a class="nav-link" href="/client/broadcasts">라이브 방송</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/replay">방송 다시보기</a>
+                  <a class="nav-link" href="/client/vod">방송 다시보기</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="/templates">법률서류 템플릿</a>

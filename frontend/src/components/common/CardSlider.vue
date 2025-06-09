@@ -45,11 +45,11 @@ onMounted(() => {
 
 <template>
   <div class="vod-slider mb-10 ">
-    <div class="item" v-for="chunk in groupedItems" :key="chunk[0].id">
+    <div class="item" v-for="chunk in groupedItems" :key="chunk[0].no">
       <div class="row">
         <div
           v-for="(vod, index) in chunk"
-          :key="vod.id"
+          :key="vod.no"
           :class="`col-md-${12 / itemsPerRow} mb-4`"
         >
           <div class="card h-100">

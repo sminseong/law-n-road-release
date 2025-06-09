@@ -3,11 +3,11 @@ import { defineComponent, ref, onMounted, onBeforeUnmount, nextTick } from "vue"
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import { OpenVidu } from "openvidu-browser";
-import UserFrame from "@/components/layout/User/UserFrame.vue";
+import ClientFrame from "@/components/layout/Client/ClientFrame.vue";
 import axios from "axios";
 
 export default defineComponent({
-  components: { UserFrame },
+  components: { ClientFrame },
   setup() {
     //openvidu
     const OV = ref(null)
@@ -30,10 +30,6 @@ export default defineComponent({
         // 3. OpenVidu 세션 연결
         OV.value = new OpenVidu()
         session.value = OV.value.initSession()
-
-        session.value.on('streamCreated', (event) => {
-          const subscriber = session.value.subscribe(event.stream, undefined)
-        })
 
         await session.value.connect(token)
 
@@ -145,7 +141,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <UserFrame>
+  <ClientFrame>
     <!-- 전체 화면 기준으로 방송화면 + 채팅 분리 -->
     <div class="position-relative w-100 vh-100">
 
@@ -219,7 +215,7 @@ export default defineComponent({
         </div>
       </div>
     </div>
-  </UserFrame>
+  </ClientFrame>
 </template>
 
 

@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import http from '@/libs/HttpRequester'
 import ProductCard from '@/components/common/ProductCard.vue'
-import UserFrame from "@/components/layout/User/UserFrame.vue";
+import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 
 // 상태 정의
 const fullList = ref([])
@@ -44,7 +44,7 @@ function changePage(page) {
 </script>
 
 <template>
-  <userFrame>
+  <ClientFrame>
     <div class="container py-5">
       <div class="row mb-4">
         <div class="col-12">
@@ -79,7 +79,7 @@ function changePage(page) {
         </ul>
       </div>
     </div>
-  </userFrame>
+  </ClientFrame>
 </template>
 
 <style scoped>

@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import CustomTable from '@/components/table/CustomTable.vue'
-import LawyerFrame from '@/components/layout/Lawyer/LawyerFrame.vue'
+import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 import http from '@/libs/HttpRequester'
 import { useRouter } from 'vue-router'
 import { onMounted } from 'vue'
@@ -25,7 +25,7 @@ onMounted(async () => {
       createdAt: t.created_at?.split('T')[0],
       imageUrl: t.thumbnail_path
     }))
-    // ✅ 여기에 옮긴다
+    // 여기에 옮긴다
     localStorage.setItem('templateList', JSON.stringify(templateList.value))
   } catch (e) {
     console.error('템플릿 목록 조회 실패:', e)

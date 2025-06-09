@@ -1,5 +1,5 @@
 <script setup>
-import LawyerFrame from '@/components/layout/Lawyer/LawyerFrame.vue'
+import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 </script>
 
 <template>

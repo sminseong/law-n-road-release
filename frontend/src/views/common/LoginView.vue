@@ -8,11 +8,11 @@ import AccountFrame from '@/components/layout/account/AccountFrame.vue'
 const router = useRouter()
 const route = useRoute()
 
-const tab = ref('user') // 기본값: 의뢰인
+const tab = ref('client') // 기본값: 의뢰인
 
 watchEffect(() => {
   const queryType = route.query.type
-  if (queryType === 'lawyer' || queryType === 'user') {
+  if (queryType === 'lawyer' || queryType === 'client') {
     tab.value = queryType
   }
 })
@@ -33,8 +33,8 @@ const submitLogin = async () => {
     localStorage.setItem('token', token)
     localStorage.setItem('accountType', tab.value)
 
-    //router.push(tab.value === 'lawyer' ? '/lawyer' : '/user')
-    router.push(tab.value === 'lawyer' ? '/lawyer' : '/user/mypage')
+    //router.push(tab.value === 'lawyer' ? '/lawyer' : '/client')
+    router.push(tab.value === 'lawyer' ? '/lawyer' : '/client/mypage')
 
   } catch (err) {
     alert('로그인 실패: 이메일 또는 비밀번호가 잘못되었습니다.')
@@ -49,8 +49,8 @@ const submitLogin = async () => {
       <div class="btn-group w-100 mb-4">
         <button
             class="btn"
-            :class="tab === 'user' ? 'btn-primary' : 'btn-outline-secondary'"
-            @click="tab = 'user'"
+            :class="tab === 'client' ? 'btn-primary' : 'btn-outline-secondary'"
+            @click="tab = 'client'"
         >
           의뢰인 로그인
         </button>
@@ -100,14 +100,14 @@ const submitLogin = async () => {
 
       <div class="text-center mt-3">
         <span class="small text-muted">
-          {{ tab === 'user' ? '아직 계정이 없으신가요?' : '변호사 계정이 없으신가요?' }}
+          {{ tab === 'client' ? '아직 계정이 없으신가요?' : '변호사 계정이 없으신가요?' }}
         </span>
         <!-- 탭에 따라 서로 다른 라우트로 이동 -->
         <router-link
-            :to="tab === 'user' ? '/user/signup' : '/lawyer/signup'"
+            :to="tab === 'client' ? '/client/signup' : '/lawyer/signup'"
             class="ms-1 small"
         >
-          {{ tab === 'user' ? '회원가입' : '변호사 회원가입' }}
+          {{ tab === 'client' ? '회원가입' : '변호사 회원가입' }}
         </router-link>
       </div>
     </section>
