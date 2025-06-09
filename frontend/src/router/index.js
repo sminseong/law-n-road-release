@@ -104,7 +104,7 @@ const router = createRouter({
 
     {
       path: '/templates',
-      name: 'UserBroadcasts',
+      name: 'TemplateListView',
       component: () => import('@/views/user/template/TemplateListView.vue')
     },
     {
