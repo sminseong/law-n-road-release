@@ -121,8 +121,6 @@ export default defineComponent({
       message.value = "";
       scrollToBottom();
     };
-
-    onMounted(connect);
     onBeforeUnmount(() => stompClient.value?.deactivate());
 
     return {
