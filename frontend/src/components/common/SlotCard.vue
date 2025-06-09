@@ -32,7 +32,7 @@ defineProps({
                   {{ banner.description }}
                   <span class="fw-bold">{{ banner.highlight }}</span>
                 </p>
-                <a :href="`/lawyer/${banner.lawyerId}`" class="btn btn-dark">
+                <a :href="`/lawyer/${banner.lawyerNo}`" class="btn btn-dark">
                   변호사 보기
                 </a>
               </div>
