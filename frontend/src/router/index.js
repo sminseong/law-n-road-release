@@ -81,11 +81,21 @@ const router = createRouter({
     },
     {
       path: '/qna',
-      name: 'UserQaList',
-      component: () => import('@/views/common/UserQaListView.vue')
-    }
-
-
+      name: 'ClientQaList',
+      component: () => import('@/views/common/QaListView.vue')
+    },
+    // 로그인한 “client” 권한으로만 글쓰기
+    {
+     path: '/client/qna/register',
+     name: 'ClientQaRegister',
+     component: () => import('@/views/user/ClientQaRegister.vue'),
+     meta: { requiresAuth: true, role: 'client' }
+    },
+    {
+      path: '/qna/:id',
+      name: 'ClientQaDetail',
+      component: () => import('@/views/common/QaDetailView.vue'),
+    },
   ]
 })
 
