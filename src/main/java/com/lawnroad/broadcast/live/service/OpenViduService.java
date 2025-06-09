@@ -4,24 +4,28 @@ import io.openvidu.java.client.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 @Service
 @RequiredArgsConstructor
 public class OpenViduService {
 
     private final OpenVidu openVidu;
 
-    // 세션 생성
+    // 세션 저장소 추가
+    private static final Map<String, Session> sessionMap = new ConcurrentHashMap<>();
+
     public String createSession() throws OpenViduJavaClientException, OpenViduHttpException {
-        SessionProperties properties = new SessionProperties.Builder().build();
-        Session session = openVidu.createSession(properties);
+        Session session = openVidu.createSession();
+        sessionMap.put(session.getSessionId(), session);
         return session.getSessionId();
     }
 
-    // 토큰 발급
     public String generateToken(String sessionId, OpenViduRole role) throws OpenViduJavaClientException, OpenViduHttpException {
-        Session session = openVidu.getActiveSession(sessionId);
+        Session session = sessionMap.get(sessionId);
         if (session == null) {
-            throw new RuntimeException("No active session found for sessionId: " + sessionId);
+            throw new RuntimeException("No session found in map for sessionId: " + sessionId);
         }
 
         ConnectionProperties properties = new ConnectionProperties.Builder()
@@ -30,5 +34,9 @@ public class OpenViduService {
                 .build();
 
         return session.createConnection(properties).getToken();
+    }
+
+    public void removeSession(String sessionId) {
+        sessionMap.remove(sessionId);
     }
 }

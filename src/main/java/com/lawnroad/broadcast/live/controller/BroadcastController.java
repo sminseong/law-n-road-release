@@ -17,34 +17,47 @@ public class BroadcastController {
 
     private final OpenViduService openViduService;
 
-    /** 방송 시작: Session 생성 */
+    /** 방송 시작: 세션 생성 */
     @PostMapping("/start")
     public ResponseEntity<String> startBroadcast() {
         try {
             String sessionId = openViduService.createSession();
-            return ResponseEntity.ok(sessionId); // Vue에서 .data 로 받음
+            return ResponseEntity.ok(sessionId);
         } catch (OpenViduJavaClientException | OpenViduHttpException e) {
-            return ResponseEntity.internalServerError().body("세션 생성 실패");
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("⚠ 세션 생성 실패: " + e.getMessage());
         }
     }
 
-    /**
-     * 방송 입장: Token 발급 (방송자/시청자 공용)
-     * 요청 JSON 예시: { "sessionId": "ses_abc123", "role": "PUBLISHER" 또는 "SUBSCRIBER" }
-     */
+    /** 토큰 발급: 방송자/시청자 공용 */
     @PostMapping("/token")
     public ResponseEntity<String> getToken(@RequestBody Map<String, String> requestBody) {
         try {
             String sessionId = requestBody.get("sessionId");
-            String roleStr = requestBody.getOrDefault("role", "SUBSCRIBER"); // 기본값은 시청자
+            if (sessionId == null || sessionId.isBlank()) {
+                return ResponseEntity.badRequest().body("❌ sessionId가 누락되었습니다.");
+            }
+
+            String roleStr = requestBody.getOrDefault("role", "SUBSCRIBER");
             OpenViduRole role = OpenViduRole.valueOf(roleStr.toUpperCase());
 
             String token = openViduService.generateToken(sessionId, role);
             return ResponseEntity.ok(token);
+
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("잘못된 role 값입니다. (예: PUBLISHER 또는 SUBSCRIBER)");
+            return ResponseEntity.badRequest().body("❌ 유효하지 않은 role입니다. (PUBLISHER | SUBSCRIBER)");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("❌ 세션이 존재하지 않습니다. sessionId: " + requestBody.get("sessionId"));
         } catch (OpenViduJavaClientException | OpenViduHttpException e) {
-            return ResponseEntity.internalServerError().body("토큰 발급 실패");
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("⚠ 토큰 발급 실패: " + e.getMessage());
         }
+    }
+
+    /** 방송 종료 (선택사항) */
+    @DeleteMapping("/end/{sessionId}")
+    public ResponseEntity<String> endBroadcast(@PathVariable String sessionId) {
+        openViduService.removeSession(sessionId);
+        return ResponseEntity.ok("✅ 세션 종료 및 제거 완료: " + sessionId);
     }
 }
