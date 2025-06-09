@@ -15,9 +15,11 @@ const authCode = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 const agreeTerms = ref(false)
+const isEmailVerified = ref(false) // ✅ 이메일 인증 완료 여부
 
+// 아이디 중복 확인
 async function checkIdDuplicate() {
-  if (!client_id.value) {
+  if (!client_id.value.trim()) {
     alert('아이디를 입력하세요.')
     return
   }
@@ -35,6 +37,7 @@ async function checkIdDuplicate() {
   }
 }
 
+// 닉네임 중복 확인
 async function checkNicknameDuplicate() {
   if (!nickname.value) {
     alert('닉네임을 입력하세요.')
@@ -55,15 +58,58 @@ async function checkNicknameDuplicate() {
 }
 
 // 이메일 인증 요청
-function requestEmailCode() {
-  // TODO: 이메일 인증번호 요청 로직 구현
+async function requestEmailCode() {
+  if (!email.value) {
+    alert("이메일을 입력해주세요.");
+    return;
+  }
+
+  try {
+    const res = await axios.get(`/api/auth/check-email?email=${email.value}`)
+    if (!res.data.available) {
+      alert("❌ 이미 가입된 이메일입니다.");
+      return;
+    }
+
+    const verifyRes = await axios.post('/mail/send', null, {
+      params: { email: email.value }
+    });
+
+    alert("✅ 인증번호가 전송되었습니다.");
+  } catch (err) {
+    console.error("이메일 인증 요청 중 오류:", err);
+    alert("이메일 인증 요청 실패");
+  }
 }
 
 // 이메일 인증번호 확인
-function verifyEmailCode() {
-  // TODO: 인증번호 확인 로직 구현
+async function verifyEmailCode() {
+  if (!email.value || !authCode.value) {
+    alert("이메일과 인증번호를 모두 입력해주세요.");
+    return;
+  }
+
+  try {
+    const res = await axios.post('/mail/verify', null, {
+      params: {
+        email: email.value,
+        code: authCode.value
+      }
+    });
+
+    if (res.data === "인증 성공") {
+      isEmailVerified.value = true  // ✅ 여기 중요!
+      alert("✅ 이메일 인증에 성공했습니다!");
+    } else {
+      alert("❌ 인증번호가 일치하지 않습니다.");
+    }
+  } catch (err) {
+    console.error("인증 확인 실패:", err);
+    alert("인증 확인 중 문제가 발생했습니다.");
+  }
 }
 
+// 회원가입
 async function onSubmit() {
   if (password.value !== confirmPassword.value) {
     alert('비밀번호와 비밀번호 확인이 일치하지 않습니다.')
@@ -75,16 +121,23 @@ async function onSubmit() {
     return
   }
 
+  if (!isEmailVerified.value) {
+    alert('이메일 인증을 먼저 완료해주세요.')
+    return
+  }
+
   try {
     const payload = {
+      clientId: client_id.value,
+      nickname: nickname.value,
+      phone: phone.value,
       fullName: fullName.value,
       email: email.value,
       password: password.value,
-      type: 'user'
+      type: 'CLIENT'
     }
 
     await axios.post('/api/auth/signup', payload)
-
     alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.')
     router.push({ path: '/login', query: { type: 'user' } })
   } catch (err) {

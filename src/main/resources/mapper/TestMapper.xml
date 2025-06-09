@@ -6,7 +6,11 @@
 <mapper namespace="com.lawnroad.mapper.TestMapper">
 
 
-
+    <select id="countByClientId" resultType="int">
+        SELECT COUNT(*)
+        FROM client
+        WHERE client_id = #{clientId}
+    </select>
 
 
 
