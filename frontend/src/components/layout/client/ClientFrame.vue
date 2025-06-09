@@ -1,24 +1,24 @@
 <script setup>
-import UserHeader from './UserHeader.vue'
-import UserFooter from './UserFooter.vue'
-import UserSidebar from './UserSidebar.vue'
-import UserPageWrapper from './UserPageWrapper.vue'
+import ClientHeader from './ClientHeader.vue'
+import ClientFooter from './ClientFooter.vue'
+import ClientSidebar from './ClientSidebar.vue'
+import ClientPageWrapper from './ClientPageWrapper.vue'
 </script>
 
 <template>
   <div class="layout-wrapper d-flex min-vh-100">
     <!-- 사이드바 -->
-    <UserSidebar />
+    <ClientSidebar />
 
     <!-- 우측 본문 영역 -->
     <div class="content-wrapper d-flex flex-column flex-grow-1">
-      <UserHeader />
+      <ClientHeader />
       <main class="flex-grow-1">
-        <UserPageWrapper>
+        <ClientPageWrapper>
           <slot></slot>
-        </UserPageWrapper>
+        </ClientPageWrapper>
       </main>
-      <UserFooter />
+      <ClientFooter />
     </div>
   </div>
 </template>

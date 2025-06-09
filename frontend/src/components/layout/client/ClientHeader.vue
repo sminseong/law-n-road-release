@@ -1,4 +1,4 @@
-<!-- src/components/layout/User/UserHeader.vue -->
+<!-- src/components/layout/User/ClientHeader.vue -->
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
 
@@ -7,7 +7,7 @@ const route = useRoute()
 
 // “마이페이지로 이동” 버튼(아이콘) 클릭 핸들러
 function goToMyPage() {
-  const target = '/user/mypage'
+  const target = '/client/mypage'
   if (route.path === target) {
     // 이미 마이페이지에 있는 경우, 새로고침
     window.location.reload()
@@ -161,7 +161,7 @@ function goToMyPage() {
                 <div class="list-inline-item">
                   <a
                       class="text-muted position-relative"
-                      href="/user/cart"
+                      href="/client/cart"
                       role="button"
                       aria-controls="offcanvasRight"
                   >
