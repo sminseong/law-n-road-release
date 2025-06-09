@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import http from '@/libs/HttpRequester'
-import UserFrame from '@/components/layout/User/UserFrame.vue'
+import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 
 const route = useRoute()
 const templateNo = route.params.no
@@ -24,7 +24,7 @@ const purchaseNow = () => alert('결제 페이지로 이동합니다!')
 </script>
 
 <template>
-  <UserFrame>
+  <ClientFrame>
     <div class="container py-5" v-if="template">
       <div class="row">
         <!-- 이미지 -->
@@ -69,7 +69,7 @@ const purchaseNow = () => alert('결제 페이지로 이동합니다!')
         </div>
       </div>
     </div>
-  </UserFrame>
+  </ClientFrame>
 </template>
 
 <style scoped>

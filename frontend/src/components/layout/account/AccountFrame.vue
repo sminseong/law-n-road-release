@@ -75,7 +75,7 @@ const props = defineProps({
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-/* UserHeader.vue와 동일하게 로고는 원본 크기 그대로 렌더링 */
+/* ClientHeader.vue와 동일하게 로고는 원본 크기 그대로 렌더링 */
 .navbar-brand img {
   display: block;
   width: auto;

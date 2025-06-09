@@ -139,7 +139,7 @@ async function onSubmit() {
 
     await axios.post('/api/auth/signup', payload)
     alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.')
-    router.push({ path: '/login', query: { type: 'user' } })
+    router.push({ path: '/login', query: { type: 'client' } })
   } catch (err) {
     console.error(err)
     alert('회원가입 중 오류가 발생했습니다. 다시 시도해주세요.')
@@ -230,7 +230,7 @@ async function onSubmit() {
 
         <div class="text-center small">
           이미 계정이 있으신가요?
-          <a href="/login?type=user" class="ms-1 text-decoration-none">로그인</a>
+          <a href="/login?type=client" class="ms-1 text-decoration-none">로그인</a>
         </div>
       </form>
     </section>

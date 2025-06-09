@@ -2,11 +2,11 @@
 // Vue와 라우터, 레이아웃 컴포넌트 불러오기
 import {ref, computed, onMounted} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
-import UserFrame from '@/components/layout/User/UserFrame.vue'
+import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 
 const route = useRoute()
 const router = useRouter()
-const qaId = route.params.id // /qna/:id 에서 넘어온 글 ID
+const qaNo = route.params.no // /qna/:no 에서 넘어온 글 NO
 
 // Q&A 상세 데이터
 const qa = ref({
@@ -19,9 +19,9 @@ const qa = ref({
 
 // 변호사 답변 더미 데이터
 const answers = ref([
-  {id: 1, avatar: '/img/profiles/kim.png', author: '김서연 변호사', content: '첫 번째 답변 예시입니다.', isSelected: false},
-  {id: 2, avatar: '/img/profiles/lee.png', author: '유재석 변호사', content: '두 번째 답변 예시입니다.', isSelected: false},
-  {id: 3, avatar: '/img/profiles/park.png', author: '이재용 변호사', content: '세 번째 답변 예시입니다.', isSelected: false}
+  {no: 1, avatar: '/img/profiles/kim.png', author: '김서연 변호사', content: '첫 번째 답변 예시입니다.', isSelected: false},
+  {no: 2, avatar: '/img/profiles/lee.png', author: '유재석 변호사', content: '두 번째 답변 예시입니다.', isSelected: false},
+  {no: 3, avatar: '/img/profiles/park.png', author: '이재용 변호사', content: '세 번째 답변 예시입니다.', isSelected: false}
 ])
 
 // 모달 표시 여부
@@ -30,7 +30,7 @@ const showDeleteModal = ref(false)
 // 삭제 진행 함수
 function confirmDelete() {
   // TODO: 실제 API 호출
-  // await api.delete(`/qna/${qaId}`)
+  // await api.delete(`/qna/${qaNo}`)
   router.push('/qna')
 }
 
@@ -46,22 +46,22 @@ const sortedAnswers = computed(() => [
 ])
 
 // 답변 채택 함수 (하나만 true)
-function selectAnswer(answerId) {
+function selectAnswer(answerNo) {
   answers.value = answers.value.map(a => ({
     ...a,
-    isSelected: a.id === answerId
+    isSelected: a.no === answerNo
   }))
 }
 
 onMounted(async () => {
   // TODO: 실제 API 호출
-  // const { data } = await api.get(`/qna/${qaId}`)
+  // const { data } = await api.get(`/qna/${qaNo}`)
   // qa.value = data
   // 현재는 더미 데이터
   qa.value = {
     category: '교통사고 · 보상',
-    title: `상담 사례 #${qaId}`,
-    content: `여기에 상담 내용이 들어갑니다. (id: ${qaId})`,
+    title: `상담 사례 #${qaNo}`,
+    content: `여기에 상담 내용이 들어갑니다. (no: ${qaNo})`,
     date: '2025-06-01',
     writer: '닉네임',
     tags: ['#교통사고', '#보상', '#과실비율']
@@ -69,7 +69,7 @@ onMounted(async () => {
 })
 </script>
 <template>
-  <UserFrame>
+  <ClientFrame>
     <div class="qa-detail py-5 px-3 px-lg-5">
 
       <!-- 카테고리·제목·정보 -->
@@ -118,7 +118,7 @@ onMounted(async () => {
         <h4 class="fw-semibold mb-3">변호사 답변</h4>
         <div
             v-for="ans in sortedAnswers"
-            :key="ans.id"
+            :key="ans.no"
             class="answer-card border rounded p-3 mb-3"
         >
           <!-- 작성자(이미지+이름) + 채택 버튼 -->
@@ -129,7 +129,7 @@ onMounted(async () => {
               <small class="text-secondary">{{ ans.author }}</small>
             </div>
             <div>
-              <button v-if="!ans.isSelected" @click="selectAnswer(ans.id)"
+              <button v-if="!ans.isSelected" @click="selectAnswer(ans.no)"
                   class="btn btn-outline-primary btn-sm"> 채택 </button>
               <span v-else class="badge bg-primary"> 채택됨 </span>
             </div>
@@ -139,7 +139,7 @@ onMounted(async () => {
         </div>
       </div>
     </div>
-  </UserFrame>
+  </ClientFrame>
 </template>
 <style scoped>
 .answer-card {
@@ -164,7 +164,7 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1050; /* UserFrame 위에 뜨도록 충분히 크게 */
+  z-index: 1050; /* ClientFrame 위에 뜨도록 충분히 크게 */
 }
 
 /* 모달 박스 */

@@ -1,7 +1,6 @@
-<!-- src/views/user/UserMypageHome.vue -->
 <script setup>
 import { ref } from 'vue'
-import UserFrame from '@/components/layout/User/UserFrame.vue'
+import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import {
   sendBroadcastStartAlimtalk,
   sendVerificationCodeAlimtalk,
@@ -124,7 +123,7 @@ async function testLawyerReservationCanceled() {
 </script>
 
 <template>
-  <UserFrame>
+  <ClientFrame>
     <div class="mypage-home p-4">
       <h3 class="mb-3 text-muted">마이페이지 홈</h3>
       <p class="text-muted">환영합니다! 여기는 사용자님의 마이페이지 홈입니다.</p>
@@ -150,7 +149,7 @@ async function testLawyerReservationCanceled() {
               <span class="badge bg-success text-white">5건</span>
             </li>
             <li class="list-group-item text-center bg-white">
-              <a href="/user/reservation" class="text-decoration-none btn small">자세히 보기</a>
+              <a href="/client/reservation" class="text-decoration-none btn small">자세히 보기</a>
             </li>
           </ul>
         </div>
@@ -163,7 +162,7 @@ async function testLawyerReservationCanceled() {
         </div>
         <div class="card-body">
           <p class="mb-2 text-muted small">최근 구매한 템플릿이 없습니다.</p>
-          <a href="/user/templates" class="btn small">구매 내역 보기</a>
+          <a href="/client/templates" class="btn small">구매 내역 보기</a>
         </div>
       </div>
 
@@ -174,7 +173,7 @@ async function testLawyerReservationCanceled() {
         </div>
         <div class="card-body">
           <p class="mb-2 text-muted small">작성하신 글이 없습니다.</p>
-          <a href="/user/qna" class="btn small">글 보러가기</a>
+          <a href="/client/qna" class="btn small">글 보러가기</a>
         </div>
       </div>
 
@@ -185,7 +184,7 @@ async function testLawyerReservationCanceled() {
         </div>
         <div class="card-body">
           <p class="mb-2 text-muted small">관심 키워드를 설정하여 관련 알림을 받아보세요.</p>
-          <a href="/user/profile" class="btn small">설정 페이지로 이동</a>
+          <a href="/client/profile" class="btn small">설정 페이지로 이동</a>
         </div>
       </div>
 
@@ -201,7 +200,7 @@ async function testLawyerReservationCanceled() {
               <input
                   class="form-check-input"
                   type="checkbox"
-                  id="keywordSwitch"
+                  no="keywordSwitch"
                   v-model="notifyKeywordEnabled"
                   @change="toggleKeyword"
               />
@@ -213,7 +212,7 @@ async function testLawyerReservationCanceled() {
               <input
                   class="form-check-input"
                   type="checkbox"
-                  id="consultationSwitch"
+                  no="consultationSwitch"
                   v-model="notifyConsultEnabled"
                   @change="toggleConsultation"
               />
@@ -230,7 +229,7 @@ async function testLawyerReservationCanceled() {
         </div>
       </div>
     </div>
-  </UserFrame>
+  </ClientFrame>
 </template>
 
 <style scoped>

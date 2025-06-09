@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import UserFrame from '@/components/layout/User/UserFrame.vue'
+import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 
 const router = useRouter()
 const title = ref('')
@@ -22,7 +22,7 @@ function onSubmit(){
 </script>
 
 <template>
-  <UserFrame>
+  <ClientFrame>
     <div class="qa-create py-5 px-3 px-lg-5">
       <h2 class="fw-bold fs-3 mb-4">상담글 작성</h2>
       <form @submit.prevent="onSubmit">
@@ -60,7 +60,7 @@ function onSubmit(){
         </div>
       </form>
     </div>
-  </UserFrame>
+  </ClientFrame>
 </template>
 
 <style scoped>
