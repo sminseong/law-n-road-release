@@ -26,8 +26,24 @@ const router = createRouter({
     },
     {
       path: '/lawyer/templates',
-      name: 'LawyerTemplates',
-      component: () => import('@/views/lawyer/TemplateManagementView.vue')
+      name: 'TemplateList',
+      component: () => import('@/views/lawyer/template/TemplateListView.vue')
+    },
+    {
+      path: '/lawyer/templates/register',
+      name: 'TemplateRegister',
+      component: () => import('@/views/lawyer/template/TemplateFormView.vue')
+    },
+    {
+      path: '/lawyer/templates/:no',
+      name: 'LawyerTemplateDetail',
+      component: () => import('@/views/lawyer/template/TemplateDetailView.vue')
+    },
+    {
+      path: '/lawyer/templates/edit/:no',
+      name: 'TemplateEdit',
+      component: () => import('@/views/lawyer/template/TemplateFormView.vue'),
+      props: true
     },
     {
       path: '/lawyer/ads',
@@ -79,8 +95,33 @@ const router = createRouter({
       name: 'UserBroadcasts',
       component: () => import('@/views/user/UserBroadcasts.vue')
     },
-
-
+    {
+      path: '/templates',
+      name: 'UserBroadcasts',
+      component: () => import('@/views/user/template/TemplateListView.vue')
+    },
+    {
+      path: '/templates/:no',
+      name: 'UserTemplateDetail',
+      component: () => import('@/views/user/template/TemplateDetailView.vue')
+    },
+    {
+      path: '/qna',
+      name: 'ClientQaList',
+      component: () => import('@/views/common/QaListView.vue')
+    },
+    // 로그인한 “client” 권한으로만 글쓰기
+    {
+     path: '/client/qna/register',
+     name: 'ClientQaRegister',
+     component: () => import('@/views/user/ClientQaRegister.vue'),
+     meta: { requiresAuth: true, role: 'client' }
+    },
+    {
+      path: '/qna/:id',
+      name: 'ClientQaDetail',
+      component: () => import('@/views/common/QaDetailView.vue'),
+    },
   ]
 })
 
