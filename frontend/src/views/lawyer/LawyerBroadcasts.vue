@@ -31,10 +31,6 @@ export default defineComponent({
         OV.value = new OpenVidu()
         session.value = OV.value.initSession()
 
-        session.value.on('streamCreated', (event) => {
-          const subscriber = session.value.subscribe(event.stream, undefined)
-        })
-
         await session.value.connect(token)
 
         // 4. 퍼블리셔 초기화 (카메라 화면)
