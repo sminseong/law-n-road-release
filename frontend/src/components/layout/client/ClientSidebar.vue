@@ -6,15 +6,15 @@
                 <div class="ranking-title">조회수 랭킹</div>
 
                 <div class="lawyer-list collapsed mb-sm-3" id="lawyerList">
-                <div class="lawyer-card" onclick="location.href='./lawyer.html';">
+                <div class="lawyer-card" onclick="location.href='/lawyer';">
                     <img src="/img/profiles/kim.png" alt="김수영" />
                     <span>김수영</span>
                 </div>
-                <div class="lawyer-card" onclick="location.href='./lawyer.html';">
+                <div class="lawyer-card" onclick="location.href='/lawyer';">
                     <img src="/img/profiles/lee.png" alt="이철민" />
                     <span>이철민</span>
                 </div>
-                <div class="lawyer-card" onclick="location.href='./lawyer.html';">
+                <div class="lawyer-card" onclick="location.href='/lawyer';">
                     <img src="/img/profiles/park.png" alt="박하늘" />
                     <span>박하늘</span>
                 </div>
