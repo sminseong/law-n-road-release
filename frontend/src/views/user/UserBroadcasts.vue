@@ -61,7 +61,6 @@ export default defineComponent({
     };
 
     // --- 채팅 WebSocket 관련 ---
-    const socket = ref(null);
     const stompClient = ref(null);
     const nickname = "홍길동";           // 실제 로그인 닉네임으로 대체
     const broadcastNo = 3;             // 실제 방송 ID로 대체
@@ -79,7 +78,7 @@ export default defineComponent({
     };
 
     onMounted(() => {
-      connectWebSocket();
+      connect();
       connectOpenVidu();
     });
     // STOMP 연결
@@ -169,7 +168,7 @@ export default defineComponent({
               v-model="message"
               type="text"
               class="form-control me-2"
-              placeholder="메시지를 입력하세요..."
+              placeholder="메시지를 입력하세요"
               @keyup.enter="sendMessage"/>
         </div>
       </div>

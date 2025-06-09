@@ -1,5 +1,7 @@
 <script>
 import { defineComponent, ref, onMounted, onBeforeUnmount, nextTick } from "vue";
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
 import { OpenVidu } from "openvidu-browser";
 import UserFrame from "@/components/layout/User/UserFrame.vue";
 import axios from "axios";
@@ -7,12 +9,6 @@ import axios from "axios";
 export default defineComponent({
   components: { UserFrame },
   setup() {
-    const socket = ref(null);
-    const nickname = "홍길동"; // 실제 닉네임은 사용자 로그인 값으로 대체 예정
-    const message = ref("");
-    const messages = ref([]);
-    const messageContainer = ref(null); // 메시지 영역 DOM 참조
-
     //openvidu
     const OV = ref(null)
     const session = ref(null)
@@ -70,35 +66,15 @@ export default defineComponent({
       }
     }
 
-    const connectWebSocket = () => {
-      socket.value = new WebSocket(`ws://localhost:8080/ws/chat?nickname=${encodeURIComponent(nickname)}`);
+    // --- 채팅 WebSocket 관련 ---
+    const stompClient = ref(null);
+    const nickname = "홍길동";           // 실제 로그인 닉네임으로 대체
+    const broadcastNo = 3;             // 실제 방송 ID로 대체
+    const message = ref("");
+    const messages = ref([]);
+    const messageContainer = ref(null);
 
-      socket.value.onmessage = (event) => {
-        messages.value.push(event.data);
-        scrollToBottom(); // 메시지 수신 시 스크롤 아래로
-      };
-
-      socket.value.onclose = () => {
-        console.log("웹소켓 연결 종료");
-      };
-
-      socket.value.onerror = (error) => {
-        console.error("웹소켓 에러:", error);
-      };
-    };
-
-    const sendMessage = () => {
-      const trimmed = message.value.trim(); // 앞뒤 공백 제거
-      if (!trimmed) return; // 빈 문자열이면 리턴
-
-      if (socket.value && socket.value.readyState === WebSocket.OPEN) {
-        socket.value.send(message.value);
-        message.value = "";
-        scrollToBottom(); //  내가 보낼 때도 스크롤 아래로
-      }
-    };
-
-    // 메시지 영역을 아래로 스크롤
+    // 스크롤 하단 이동
     const scrollToBottom = () => {
       nextTick(() => {
         if (messageContainer.value) {
@@ -109,12 +85,53 @@ export default defineComponent({
 
     onMounted(() => {
       connectSession();
-      connectWebSocket();
+      connect();
     });
 
-    onBeforeUnmount(() => {
-      if (socket.value) socket.value.close();
-    });
+// STOMP 연결
+    const connect = () => {
+      stompClient.value = new Client({
+        // SockJS 팩토리로 연결
+        webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+        reconnectDelay: 5000,
+        onConnect: () => {
+          // 1) 구독: /topic/{broadcastNo}
+          stompClient.value.subscribe(
+              `/topic/${broadcastNo}`,
+              (msg) => {
+                messages.value.push(msg.body);
+                scrollToBottom();
+              }
+          );
+          // 2) 입장 알림 전송
+          stompClient.value.publish({
+            destination: "/app/chat.addUser",
+            body: JSON.stringify({ broadcastNo, nickname })
+          });
+        },
+        onStompError: (frame) => {
+          console.error("STOMP error:", frame);
+        }
+      });
+      stompClient.value.activate();
+    };
+
+    const sendMessage = () => {
+      const trimmed = message.value.trim();
+      if (!trimmed || !stompClient.value?.connected) return;
+
+      // 메시지 전송
+      stompClient.value.publish({
+        destination: "/app/chat.sendMessage",
+        body: JSON.stringify({ broadcastNo, nickname, message: trimmed })
+      });
+      message.value = "";
+      scrollToBottom();
+    };
+
+
+    onBeforeUnmount(() => stompClient.value?.deactivate());
+
 
     return {
       message,
@@ -196,7 +213,7 @@ export default defineComponent({
               v-model="message"
               type="text"
               class="form-control me-2"
-              placeholder="메시지를 입력하세요..."
+              placeholder="메시지를 입력하세요"
               @keyup.enter="sendMessage"
           />
         </div>
