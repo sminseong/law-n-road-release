@@ -3,7 +3,7 @@ import {ref, onMounted} from 'vue'
 import axios from 'axios'
 import {useRoute} from 'vue-router'
 import TimeSlot from "@/components/common/TimeSlot.vue";
-import UserFrame from "@/components/layout/User/UserFrame.vue";
+import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 
 const route = useRoute()
 const lawyerNo = ref(route.params.lawyerNo)
@@ -76,7 +76,7 @@ function handleSelect(payload) {
 </script>
 
 <template>
-  <UserFrame>
+  <ClientFrame>
     <div class="container mx-auto p-6">
       <h1 class="text-2xl font-bold mb-6">
         변호사 {{ lawyerName }}님 주간 예약 가능한 시간
@@ -87,7 +87,7 @@ function handleSelect(payload) {
           @select="handleSelect"
       />
     </div>
-  </UserFrame>
+  </ClientFrame>
 </template>
 
 <style scoped>

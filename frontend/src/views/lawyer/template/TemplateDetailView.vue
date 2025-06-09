@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import LawyerFrame from '@/components/layout/Lawyer/LawyerFrame.vue'
+import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 
 const route = useRoute()
 const router = useRouter()

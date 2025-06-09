@@ -85,7 +85,7 @@ const toggleSort = (key) => {
         <tr v-if="pagedData.length === 0">
           <td :colspan="columns.length" class="text-center">데이터가 없습니다.</td>
         </tr>
-        <tr v-for="item in pagedData" :key="item.id">
+        <tr v-for="item in pagedData" :key="item.no">
           <td v-for="col in columns" :key="col.key">{{ item[col.key] }}</td>
         </tr>
       </tbody>
@@ -119,7 +119,5 @@ const toggleSort = (key) => {
 </template>
 
 <style scoped>
-th {
-  user-select: none;
-}
+
 </style>
