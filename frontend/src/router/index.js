@@ -45,6 +45,11 @@ const router = createRouter({
       component: () => import('@/views/lawyer/ProfileSettingView.vue')
     },
     {
+      path: '/lawyer/:lawyerNo/timeslot/update',
+      name: 'TimeSlotUpdate',
+      component: () => import('@/views/lawyer/TimeSlotUpdate.vue')
+    },
+    {
       path: '/login',
       name: 'Login',
       component: () => import('@/views/common/LoginView.vue')
