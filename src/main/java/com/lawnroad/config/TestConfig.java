@@ -6,8 +6,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 
 @Configuration
-@EnableAutoConfiguration   // 스프링 부트의 자동 설정(예: DataSource, Transaction 등)을 켬
-@ComponentScan(basePackages = "com.lawnroad.reservation.service")
-@MapperScan("com.lawnroad.reservation.mapper")
+@EnableAutoConfiguration
+@ComponentScan("com.lawnroad.reservation")
+@MapperScan(
+        basePackages = "com.lawnroad.reservation.mapper",
+        annotationClass = org.apache.ibatis.annotations.Mapper.class
+)
 public class TestConfig {
 }
