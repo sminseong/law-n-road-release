@@ -78,22 +78,22 @@ const router = createRouter({
     {
       path: '/user/mypage',
       name: 'UserMypage',
-      component: () => import('@/views/user/MypageView.vue')
+      component: () => import('@/views/client/MypageView.vue')
     },
     {
       path: '/user/templates',
       name: 'UserTemplates',
-      component: () => import('@/views/user/TemplateView.vue')
+      component: () => import('@/views/client/TemplateView.vue')
     },
     {
       path: '/client/reservations/:lawyerNo/:lawyerName',
       name: 'ClientReservations',
-      component: () => import('@/views/user/ClientReservationsView.vue')
+      component: () => import('@/views/client/ClientReservationsView.vue')
     },
     {
       path: '/broadcasts',
       name: 'UserBroadcasts',
-      component: () => import('@/views/user/UserBroadcasts.vue')
+      component: () => import('@/views/client/ClientBroadcasts.vue')
     },
     {
       path: '/broadcasts/start',
@@ -105,12 +105,12 @@ const router = createRouter({
     {
       path: '/templates',
       name: 'TemplateListView',
-      component: () => import('@/views/user/template/TemplateListView.vue')
+      component: () => import('@/views/client/template/TemplateListView.vue')
     },
     {
       path: '/templates/:no',
       name: 'UserTemplateDetail',
-      component: () => import('@/views/user/template/TemplateDetailView.vue')
+      component: () => import('@/views/client/template/TemplateDetailView.vue')
     },
     {
       path: '/qna',
@@ -121,7 +121,7 @@ const router = createRouter({
     {
      path: '/client/qna/register',
      name: 'ClientQaRegister',
-     component: () => import('@/views/user/ClientQaRegister.vue'),
+     component: () => import('@/views/client/ClientQaRegister.vue'),
      meta: { requiresAuth: true, role: 'client' }
     },
     {
