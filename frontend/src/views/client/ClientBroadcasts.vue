@@ -2,12 +2,12 @@
 import { defineComponent, ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
-import UserFrame from "@/components/layout/User/UserFrame.vue";
+import ClientFrame from "@/components/layout/Client/ClientFrame.vue";
 import { OpenVidu } from "openvidu-browser";
 import axios from "axios";
 
 export default defineComponent({
-  components: { UserFrame },
+  components: { ClientFrame },
   setup() {
     // --- 방송 시청 OpenVidu 관련 ---
     const videoContainer = ref(null);
@@ -135,7 +135,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <UserFrame>
+  <ClientFrame>
     <div class="position-relative w-100 vh-100">
       <!-- 영상 출력 영역 -->
       <div
@@ -171,7 +171,7 @@ export default defineComponent({
         </div>
       </div>
     </div>
-  </UserFrame>
+  </ClientFrame>
 </template>
 
 <style scoped>
