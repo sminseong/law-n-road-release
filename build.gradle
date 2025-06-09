@@ -36,6 +36,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis' // redis
     implementation 'com.fasterxml.jackson.core:jackson-databind' // JSON 저장 시 필요
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'  // mongoDB
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
     // kakao api
     implementation 'net.nurigo:sdk:4.2.7'

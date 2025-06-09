@@ -33,7 +33,9 @@ const submitLogin = async () => {
     localStorage.setItem('token', token)
     localStorage.setItem('accountType', tab.value)
 
-    router.push(tab.value === 'lawyer' ? '/lawyer' : '/user')
+    //router.push(tab.value === 'lawyer' ? '/lawyer' : '/user')
+    router.push(tab.value === 'lawyer' ? '/lawyer' : '/user/mypage')
+
   } catch (err) {
     alert('로그인 실패: 이메일 또는 비밀번호가 잘못되었습니다.')
   }
