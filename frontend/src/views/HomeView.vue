@@ -204,7 +204,7 @@ const loadFn = async ({ page, size }) => {
 
   const productList = [
     {
-      id: 42,
+      no: 42,
       title: '1인 민사소송 키트 음주운전 관련 합의서 포함 설명서 세트',
       imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
       originalPrice: '20,000원',
@@ -212,7 +212,7 @@ const loadFn = async ({ page, size }) => {
       discountedPrice: '11,200원',
     },
     {
-      id: 108,
+      no: 108,
       title: '내용증명 작성 가이드 + 샘플 문서 모음',
       imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
       originalPrice: '15,000원',
@@ -220,7 +220,7 @@ const loadFn = async ({ page, size }) => {
       discountedPrice: '10,000원',
     },
     {
-      id: 203,
+      no: 203,
       title: '임대차 계약서 세트 (상가/주택 전용)',
       imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
       originalPrice: '25,000원',
@@ -228,7 +228,7 @@ const loadFn = async ({ page, size }) => {
       discountedPrice: '15,000원',
     },
     {
-      id: 304,
+      no: 304,
       title: '이혼 합의서 양식 + 재산분할 설명서',
       imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
       originalPrice: '18,000원',
@@ -236,7 +236,7 @@ const loadFn = async ({ page, size }) => {
       discountedPrice: '13,000원',
     },
     {
-      id: 405,
+      no: 405,
       title: '지급명령 신청서 + 설명서 세트',
       imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
       originalPrice: '17,000원',
@@ -244,7 +244,7 @@ const loadFn = async ({ page, size }) => {
       discountedPrice: '11,900원',
     },
     {
-      id: 506,
+      no: 506,
       title: '교통사고 합의서 키트 + 보험사 응대 매뉴얼',
       imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
       originalPrice: '22,000원',
@@ -252,7 +252,7 @@ const loadFn = async ({ page, size }) => {
       discountedPrice: '14,000원',
     },
     {
-      id: 607,
+      no: 607,
       title: '채무 변제 각서 + 확약서 작성 가이드',
       imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
       originalPrice: '12,000원',
@@ -260,7 +260,7 @@ const loadFn = async ({ page, size }) => {
       discountedPrice: '9,000원',
     },
     {
-      id: 708,
+      no: 708,
       title: '고소장 작성 키트 (형사 고소 전용)',
       imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
       originalPrice: '19,000원',
@@ -268,7 +268,7 @@ const loadFn = async ({ page, size }) => {
       discountedPrice: '13,100원',
     },
     {
-      id: 809,
+      no: 809,
       title: '위임장/동의서 통합 세트',
       imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
       originalPrice: '14,000원',
@@ -276,7 +276,7 @@ const loadFn = async ({ page, size }) => {
       discountedPrice: '11,200원',
     },
     {
-      id: 910,
+      no: 910,
       title: '내용증명 반송 대응 키트 + 체크리스트',
       imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
       originalPrice: '16,000원',
@@ -360,9 +360,9 @@ const loadFn = async ({ page, size }) => {
     </div>
 
     <div class="row g-4 row-cols-lg-5 row-cols-2 row-cols-md-3">
-      <div class="col-md-3 mb-4" v-for="product in productList" :key="product.id">
+      <div class="col-md-3 mb-4" v-for="product in productList" :key="product.no">
         <ProductCard
-            :id="product.id"
+            :no="product.no"
             :imageUrl="product.imageUrl"
             :title="product.title"
             :originalPrice="product.originalPrice"
