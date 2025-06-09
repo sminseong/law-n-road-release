@@ -32,7 +32,7 @@ public class WebConfig implements WebMvcConfigurer { //  WebMvcConfigurer  웹 �
 
         registry.addMapping("/api/**")
                 .allowedOrigins("http://localhost:5173")
-                .allowedMethods("GET", "POST", "OPTIONS") // ✅ 여기도!
+            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*") // 모든 헤더 허용
                 .allowCredentials(false);
     }

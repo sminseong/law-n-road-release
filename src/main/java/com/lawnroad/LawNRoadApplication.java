@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
+@MapperScan("com.lawnroad.template.mapper")
 @SpringBootApplication
 @MapperScan("com.lawnroad.account.mapper")
 public class LawNRoadApplication {
