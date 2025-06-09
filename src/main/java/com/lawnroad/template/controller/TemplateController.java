@@ -67,7 +67,7 @@ public class TemplateController {
       @RequestParam("description") String description,
       @RequestParam("file") MultipartFile file
   ) {
-    String thumbnailPath = fileStorageService.save(file, "uploads/images"); // 👉 파일 저장하고 경로 반환
+    String thumbnailPath = fileStorageService.save(file, "uploads/images", null); // 👉 파일 저장하고 경로 반환
     
     TemplateCreateDto dto = new TemplateCreateDto();
     dto.setCategory_no(categoryNo);
@@ -99,7 +99,11 @@ public class TemplateController {
     String thumbnailPath;
     
     if (file != null && !file.isEmpty()) {
-      thumbnailPath = fileStorageService.save(file, "uploads/images");
+      // 덮어쓰기 (같은 확장자에 대해서만, 확장자가 다를 때는 이름만 동일하고 확장자는 다른 새로운 파일 생성)
+      thumbnailPath = fileStorageService.save(file, "uploads/images", oldThumbnailPath);
+      
+      // 새로 저장한 경로는 지우면 안 되니까 보호 대상
+      fileStorageService.delete(oldThumbnailPath, thumbnailPath);
     } else {
       thumbnailPath = oldThumbnailPath; // 기존 썸네일 유지
     }
