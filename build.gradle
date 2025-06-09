@@ -38,6 +38,7 @@ dependencies {
 
 
 
+    // implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 
     // kakao api
     implementation 'net.nurigo:sdk:4.2.7'

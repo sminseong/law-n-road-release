@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lawnroad.reservation.mapper.TimeSlotMapper">
+    <insert id="insertTimeSlot" parameterType="com.lawnroad.reservation.model.TimeSlotVO">
+        INSERT INTO weekly_time_slots
+            (user_no, slot_date, slot_time, status, amount)
+        VALUES
+            (
+                #{userNo},
+                #{slotDate},
+                #{slotTime},
+                #{status},
+                #{amount}
+            )
+    </insert>
+    <select id="getPrice" parameterType="long" resultType="long">
+        SELECT consult_price FROM lawyer WHERE no = #{userNo}
+    </select>
+
+</mapper>
