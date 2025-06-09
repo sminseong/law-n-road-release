@@ -1,15 +1,33 @@
 <script setup>
 import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
+import VueCal from 'vue-cal'
+import 'vue-cal/dist/vuecal.css'
+
+const events = [
+  {
+    start: '2025-06-10 10:00',
+    end: '2025-06-10 11:00',
+    title: '교통사고 법률 방송'
+  },
+  {
+    start: '2025-06-12 14:00',
+    end: '2025-06-12 15:30',
+    title: '음주운전 Q&A'
+  }
+]
 </script>
 
 <template>
   <LawyerFrame>
-    <a href="/">메인 화면 이동하기</a>
-    <br>
-    <br>
-  <div class="container py-4">
-    <h2>방송 스케줄</h2>
-    <p>예정된 방송과 지난 방송을 확인할 수 있습니다.</p>
-  </div>
+    <div class="container py-4">
+      <VueCal
+          :events="events"
+          style="height: 600px"
+          default-view="month"
+          hide-title
+          active-view="month"
+          :on-event-click="event => alert('방송 클릭: ' + event.title)"
+      />
+    </div>
   </LawyerFrame>
 </template>
