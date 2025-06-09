@@ -74,6 +74,13 @@ const router = createRouter({
       name: 'ClientReservations',
       component: () => import('@/views/user/ClientReservationsView.vue')
     },
+    {
+      path: '/broadcasts',
+      name: 'UserBroadcasts',
+      component: () => import('@/views/user/UserBroadcasts.vue')
+    },
+
+
   ]
 })
 

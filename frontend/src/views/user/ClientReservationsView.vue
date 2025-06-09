@@ -14,15 +14,15 @@ const startDate = ref(new Date().toISOString().slice(0, 10))
 const weeklySlots = ref([])
 
 onMounted(async () => {
-  // try {
-  //   const res = await axios.get(
-  //       `/api/lawyers/${lawyerNo.value}/weekly-timeslots`,
-  //       {
-  //         params: {
-  //           startDate: startDate.value
-  //         }
-  //       }
-  //   )
+  try {
+    // const res = await axios.get(
+    //     `/api/lawyers/${lawyerNo.value}/weekly-timeslots`,
+    //     {
+    //       params: {
+    //         startDate: startDate.value
+    //       }
+    //     }
+    // )
     weeklySlots.value = [
       {
         date: '2025-05-17',
@@ -65,9 +65,9 @@ onMounted(async () => {
         ]
       }
     ]
-//   } catch (err) {
-//     console.error('주간 슬롯 조회 실패', err)
-//   }
+  } catch (err) {
+    console.error('주간 슬롯 조회 실패', err)
+  }
 })
 
 function handleSelect(payload) {
