@@ -24,7 +24,7 @@ public class ChatStompController {
     // 사용자가 입장했을 때
     @MessageMapping("/chat.addUser")
     public void addUser(@Payload ChatDTO chatDTO) {
-        String notice = "　　　　　　　　" + chatDTO.getNickname() + " 님이 접속했습니다.";
+        String notice = "　　　　　" + chatDTO.getNickname() + " 님이 접속했습니다.";
         messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), notice);
     }
 
