@@ -1,5 +1,5 @@
 <script setup>
-import UserFrame from '@/components/layout/User/UserFrame.vue'
+import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -7,7 +7,7 @@ import { useRouter } from 'vue-router'
 const dummyTrafficList = []
 for (let i = 1; i <= 300; i++) {
   dummyTrafficList.push({
-    id: i,
+    no: i,
     category: '교통사고 · 보상',
     title: `교통사고 상담 사례 #${i}`,
     content: `교통사고 내용 예시입니다. (${i}번째 글)`,
@@ -59,7 +59,7 @@ const router = useRouter()
 </script>
 
 <template>
-  <UserFrame>
+  <ClientFrame>
     <section class="qa-section py-5 px-3 px-lg-5">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold fs-3">전체 상담사례 목록</h2>
@@ -71,9 +71,9 @@ const router = useRouter()
       <div class="qa-list">
         <div
             v-for="qa in paginatedList"
-            :key="qa.id"
+            :key="qa.no"
             class="qa-card bg-white rounded shadow-sm p-4 mb-3"
-            @click="router.push(`/qna/${qa.id}`)"
+            @click="router.push(`/qna/${qa.no}`)"
             style="cursor: pointer;"
         >
           <small class="text-muted">{{ qa.category }}</small>
@@ -108,7 +108,7 @@ const router = useRouter()
         </button>
       </nav>
     </section>
-  </UserFrame>
+  </ClientFrame>
 </template>
 
 <style scoped>

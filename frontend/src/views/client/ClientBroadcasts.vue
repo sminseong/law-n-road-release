@@ -1,9 +1,9 @@
 <script>
 import { defineComponent, ref, onMounted, onBeforeUnmount, nextTick } from "vue";
-import UserFrame from "@/components/layout/User/UserFrame.vue";
+import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 
 export default defineComponent({
-  components: { UserFrame },
+  components: { ClientFrame: ClientFrame },
   setup() {
     const socket = ref(null);
     const nickname = "홍길동"; // 실제 닉네임은 사용자 로그인 값으로 대체 예정
@@ -67,7 +67,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <UserFrame>
+  <ClientFrame>
     <!-- 전체 화면 기준으로 위치 설정 -->
     <div class="position-relative w-100 vh-100">
       <div
@@ -94,7 +94,7 @@ export default defineComponent({
         </div>
       </div>
     </div>
-  </UserFrame>
+  </ClientFrame>
 </template>
 
 <style scoped>

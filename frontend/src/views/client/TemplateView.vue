@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import CustomTable from '@/components/table/CustomTable.vue'
-import UserFrame from "@/components/layout/User/UserFrame.vue";
+import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import router from "@/router/index.js";
 // 300개 아이템을 반복문으로 생성
 const purchaseHistory = ref([])
@@ -29,10 +29,10 @@ const baseData = [
 ]
 
 for (let i = 0; i < 300; i++) {
-  // baseData를 순환하면서, id만 고유하게 (i+1)로 설정
+  // baseData를 순환하면서, no만 고유하게 (i+1)로 설정
   const item = baseData[i % baseData.length]
   purchaseHistory.value.push({
-    id: String(i + 1),
+    no: String(i + 1),
     date: item.date,
     productName: item.productName,
     amount: item.amount,
@@ -68,7 +68,7 @@ const baseData2 = [
 for (let i = 0; i < 300; i++) {
   const item = baseData2[i % baseData2.length]
   purchaseHistory2.value.push({
-    id: String(i + 1),
+    no: String(i + 1),
     date: item.date,
     productName: item.productName,
     amount: item.amount,
@@ -99,13 +99,13 @@ const rowsPerPage = 10
 
 // (선택) 행 클릭 시 상세보기 이벤트
 const onRowClick = (row) => {
-  router.push(`/user/purchase/${row.id}`)
+  router.push(`/client/purchase/${row.no}`)
   console.log('행 클릭:', row)
 }
 </script>
 
 <template>
-  <UserFrame>
+  <ClientFrame>
     <div class="purchase-history-view p-4">
       <h3 class="mb-4">구매 내역</h3>
 
@@ -132,7 +132,7 @@ const onRowClick = (row) => {
 <!--          @row-click="onRowClick"-->
 <!--      />-->
     </div>
-  </UserFrame>
+  </ClientFrame>
 </template>
 
 <style scoped>

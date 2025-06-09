@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import LawyerFrame from '@/components/layout/Lawyer/LawyerFrame.vue'
+import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 import http from '@/libs/HttpRequester'
 
 const route = useRoute()
@@ -27,12 +27,12 @@ function onFileChange(event) {
 
 function loadTemplate(no) {
   const categoryMap = {
-    '교통사고': 1,
-    '형사': 2,
-    '가사': 3,
-    '민사': 4,
-    '이혼': 5,
-    '기타': 6
+    '사고 발생/처리': 1,
+    '중대사고·형사처벌': 2,
+    '음주·무면허 운전': 3,
+    '보험·행정처분': 4,
+    '과실 분쟁': 5,
+    '차량 외 사고': 6
   }
 
   const templates = JSON.parse(localStorage.getItem('templateList') || '[]')
@@ -120,12 +120,12 @@ async function handleSubmit() {
             <label class="form-label">카테고리</label>
             <select v-model.number="category_no" class="form-select">
               <option value="" disabled>카테고리 선택</option>
-              <option :value="1">교통사고</option>
-              <option :value="2">형사</option>
-              <option :value="3">가사</option>
-              <option :value="4">민사</option>
-              <option :value="5">이혼</option>
-              <option :value="6">기타</option>
+              <option :value="1">사고 발생/처리</option>
+              <option :value="2">중대사고·형사처벌</option>
+              <option :value="3">음주·무면허 운전</option>
+              <option :value="4">보험·행정처분</option>
+              <option :value="5">과실 분쟁</option>
+              <option :value="6">차량 외 사고</option>
             </select>
           </div>
         </div>
