@@ -25,7 +25,7 @@ const router = createRouter({
       component: () => import('@/views/lawyer/ReservationView.vue')
     },
     {
-      path: '/lawyer/broadcasts',
+      path: '/lawyer/broadcasts/schedule',
       name: 'LawyerBroadcasts',
       component: () => import('@/views/lawyer/BroadcastScheduleView.vue')
     },
@@ -91,12 +91,12 @@ const router = createRouter({
       component: () => import('@/views/client/TemplateView.vue')
     },
     {
-      path: '/broadcasts',
+      path: '/client/broadcasts',
       name: 'ClientBroadcasts',
       component: () => import('@/views/client/ClientBroadcasts.vue')
     },
     {
-      path: '/broadcasts/start',
+      path: '/lawyer/broadcasts/live',
       name: 'LawyerBroadcasts',
       component: () => import('@/views/lawyer/LawyerBroadcasts.vue')
     },
