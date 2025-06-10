@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lawnroad.broadcast.live.mapper.ScheduleMapper">
+
+    <insert id="insertSchedule" parameterType="com.lawnroad.broadcast.live.model.ScheduleVo" useGeneratedKeys="true" keyProperty="no">
+        INSERT INTO broadcast_schedule (
+        user_no,
+        category_no,
+        name,
+        content,
+        thumbnail_path,
+        date,
+        start_time,
+        end_time,
+        created_at
+        )
+        VALUES (
+        #{userNo},
+        #{categoryNo},
+        #{name},
+        #{content},
+        #{thumbnailPath},
+        #{date},
+        #{startTime},
+        #{endTime},
+        NOW()
+        )
+    </insert>
+
+</mapper>
