@@ -1,7 +1,5 @@
 <script setup>
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
-import { ref } from "vue";
-const questionInput = ref('교차로에서 사고가 났');
 </script>
 
 <template>
@@ -10,26 +8,32 @@ const questionInput = ref('교차로에서 사고가 났');
       <div class="bg-white border border-2 rounded-4 shadow px-5 py-4 w-100">
         <div class="row align-items-start" style="min-height: 70vh;">
           <!-- 왼쪽: 프로필+방송정보 한 박스 안에 가로 배치 -->
-          <div class="col-md-5 d-flex flex-column justify-content-end align-items-center" style="min-height: 70vh;">
-            <div class="bg-light rounded-3 p-4 w-100 d-flex flex-row align-items-center gap-10">
+          <div class="col-md-7 d-flex flex-column justify-content-center align-items-center" style="min-height: 70vh;">
+            <!-- 상단 이미지  -->
+            <div class="w-100 d-flex justify-content-center" style="margin-top: 45px; margin-bottom: 48px;">
+              <img src="/img/ads/slider-image-1.jpg" alt="방송 상단 이미지" style="max-width: 100%; height: auto; border-radius: 18px;">
+            </div>
+            <!-- 프로필 + 방송정보  -->
+            <div class="bg-light rounded-3 p-4 w-100 d-flex flex-row align-items-center" style="gap: 10px; min-height: 220px;">
               <!-- 왼쪽: 프로필 이미지 -->
-              <div class="position-relative">
+              <div class="position-relative d-flex justify-content-center align-items-center" style="min-width: 170px;">
                 <img src="/img/profiles/kim.png" alt="프로필" class="rounded-circle border border-2" style="width: 96px; height: 96px;" />
               </div>
               <!-- 오른쪽: 방송 정보 텍스트 -->
               <div class="text-start flex-grow-1">
                 <div class="fw-bold fs-5 mb-1">5월 22일</div>
                 <div class="text-muted mb-1">[오후 6시 ~ 오후 7시]</div>
-                <div class="fw-semibold mb-1">통합 교통법규 Q&amp;A 라이브</div>
+                <div class="fw-semibold mb-1 fs-2" >통합 교통법규 Q&amp;A 라이브</div>
                 <div class="text-secondary">- 김수영 변호사 -</div>
               </div>
             </div>
           </div>
+
           <!-- 오른쪽: 사전 질문 등록 -->
-          <div class="col-md-7 d-flex flex-column justify-content-between" style="min-height: 70vh;">
+          <div class="col-md-5 d-flex flex-column justify-content-between" style="min-height: 70vh;">
             <div>
               <div class="mb-3">
-                <span class="fs-4 fw-bold">사전 질문 등록</span>
+                <span class="fs-4 fw-bold text-dark">사전 질문 등록</span>
               </div>
               <!-- 질문 목록 -->
               <div class="mb-3">
@@ -50,7 +54,7 @@ const questionInput = ref('교차로에서 사고가 났');
             <!-- 입력 영역 -->
             <form class="row g-2 align-items-center mt-2">
               <div class="col">
-                <input type="text" class="form-control fs-5" v-model="questionInput" />
+                <input type="text" class="form-control fs-5" placeholder="사전질문을 등록하세요"/>
               </div>
               <div class="col-auto">
                 <button type="button" class="btn btn-dark fs-5 px-4">등록</button>
@@ -58,7 +62,7 @@ const questionInput = ref('교차로에서 사고가 났');
             </form>
           </div>
         </div>
-      </div>
+        </div>
     </div>
   </ClientFrame>
 </template>
