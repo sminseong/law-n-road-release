@@ -32,6 +32,17 @@ export default [
         name: 'ClientBroadCastsVod',
         component: () => import('@/views/client/ClientVodView.vue')
     },
+    {
+        path: '/client/broadcasts/schedule',
+        name: 'ClientBroadCastsSchedule',
+        component: () => import('@/views/client/ClientScheduleView.vue')
+    },
+    {
+        path: '/client/broadcasts/schedule/:date',
+        name: 'ClientScheduleDetailView',
+        component: () => import('@/views/client/ClientScheduleDetailView.vue'),
+        props: true
+    },
 
     // ---------- 템플릿 ----------
     {
