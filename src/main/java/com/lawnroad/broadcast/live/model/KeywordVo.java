@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Builder
 public class KeywordVo {
     private Long no;              // 키워드 no (PK)
-    private Long broadcastNo;     // 방송 no (FK)
+    private Long scheduleNo;     // 방송 no (FK)
     private String keyword;       // 키워드 문자열
     private LocalDateTime createdAt; // 생성일시
 }

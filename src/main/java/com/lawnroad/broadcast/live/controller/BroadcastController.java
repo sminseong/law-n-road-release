@@ -1,6 +1,6 @@
 package com.lawnroad.broadcast.live.controller;
 
-import com.lawnroad.broadcast.live.service.OpenViduService;
+import com.lawnroad.broadcast.live.service.OpenViduServiceImpl;
 import io.openvidu.java.client.OpenViduJavaClientException;
 import io.openvidu.java.client.OpenViduHttpException;
 import io.openvidu.java.client.OpenViduRole;
@@ -15,13 +15,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BroadcastController {
 
-    private final OpenViduService openViduService;
+    private final OpenViduServiceImpl openViduServiceImpl;
 
     /** 방송 시작: 세션 생성 */
     @PostMapping("/start")
     public ResponseEntity<String> startBroadcast() {
         try {
-            String sessionId = openViduService.createSession();
+            String sessionId = openViduServiceImpl.createSession();
             return ResponseEntity.ok(sessionId);
         } catch (OpenViduJavaClientException | OpenViduHttpException e) {
             e.printStackTrace();
@@ -41,7 +41,7 @@ public class BroadcastController {
             String roleStr = requestBody.getOrDefault("role", "SUBSCRIBER");
             OpenViduRole role = OpenViduRole.valueOf(roleStr.toUpperCase());
 
-            String token = openViduService.generateToken(sessionId, role);
+            String token = openViduServiceImpl.generateToken(sessionId, role);
             return ResponseEntity.ok(token);
 
         } catch (IllegalArgumentException e) {
@@ -57,7 +57,7 @@ public class BroadcastController {
     /** 방송 종료 (선택사항) */
     @DeleteMapping("/end/{sessionId}")
     public ResponseEntity<String> endBroadcast(@PathVariable String sessionId) {
-        openViduService.removeSession(sessionId);
+        openViduServiceImpl.removeSession(sessionId);
         return ResponseEntity.ok("✅ 세션 종료 및 제거 완료: " + sessionId);
     }
 }

@@ -6,6 +6,6 @@ import java.util.List;
 
 @Data
 public class KeywordRequestDto {
-    private Long broadcastNo;
+    private Long keywordNo;
     private List<String> keywords;
 }
