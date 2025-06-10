@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.lawnroad.broadcast.chat.dto.ChatDTO;
-import com.lawnroad.broadcast.chat.dto.ChatDocument;
+import com.lawnroad.broadcast.chat.model.ChatVO;
 import com.lawnroad.broadcast.chat.repository.MongoChatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -18,11 +18,12 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ChatBackupService {
+public class ChatMongodbSaveServiceImpl implements ChatMongodbSaveService {
 
     private final StringRedisTemplate redisTemplate;
     private final MongoChatRepository mongoChatRepository; // Mongo용 Repository
 
+    @Override
     @Scheduled(fixedDelay = 10000) // 10초마다 백업
     public void backupRedisToMongo() {
         Set<String> keys = redisTemplate.keys("chat:*");
@@ -30,10 +31,10 @@ public class ChatBackupService {
             for (String key : keys) {
                 List<String> jsonList = redisTemplate.opsForList().range(key, 0, -1);
                 if (jsonList != null && !jsonList.isEmpty()) {
-                    List<ChatDocument> docs = jsonList.stream()
+                    List<ChatVO> docs = jsonList.stream()
                             .map(json -> {
                                 ChatDTO dto = fromJson(json, ChatDTO.class);
-                                return ChatDocument.builder()
+                                return ChatVO.builder()
                                         .no(dto.getNo())
                                         .userNo(dto.getUserNo())
                                         .broadcastNo(dto.getBroadcastNo())
@@ -51,7 +52,6 @@ public class ChatBackupService {
             }
         }
     }
-
 
     private <T> T fromJson(String json, Class<T> type) {
         try {
