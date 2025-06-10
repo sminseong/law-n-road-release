@@ -7,27 +7,18 @@
 
     <insert id="insertSchedule" parameterType="com.lawnroad.broadcast.live.model.ScheduleVo" useGeneratedKeys="true" keyProperty="no">
         INSERT INTO broadcast_schedule (
-        user_no,
-        category_no,
-        name,
-        content,
-        thumbnail_path,
-        date,
-        start_time,
-        end_time,
-        created_at
+        user_no, category_no, name, content, thumbnail_path, date, start_time, end_time, created_at
         )
         VALUES (
-        #{userNo},
-        #{categoryNo},
-        #{name},
-        #{content},
-        #{thumbnailPath},
-        #{date},
-        #{startTime},
-        #{endTime},
-        NOW()
+        #{userNo}, #{categoryNo}, #{name}, #{content}, #{thumbnailPath}, #{date}, #{startTime}, #{endTime}, NOW()
         )
     </insert>
+
+    <select id="findAllByDate" resultType="com.lawnroad.broadcast.live.model.ScheduleVo">
+        SELECT *
+        FROM broadcast_schedule
+        WHERE date = #{date}
+        ORDER BY start_time
+    </select>
 
 </mapper>

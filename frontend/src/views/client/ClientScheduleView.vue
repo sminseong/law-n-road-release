@@ -3,9 +3,10 @@ import ClientFrame from '@/components/layout/Client/ClientFrame.vue'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
-import 'v-calendar/style.css'
-import { setupCalendar, Calendar } from 'v-calendar'
 
+// v-calendar@next (v3.x)
+import 'v-calendar/style.css'
+import { setupCalendar } from 'v-calendar'
 setupCalendar()
 
 const router = useRouter()
@@ -14,7 +15,7 @@ const schedules = ref({}) // { '2025-06-15': [ { name: '헬멧 방송' }, { name
 
 const fetchSchedule = async () => {
   try {
-    const res = await axios.get('/api/schedule/list?month=2025-06') // 또는 현재 월 동적 계산
+    const res = await axios.get('/api/schedule/list?month=2025-06')
     const result = res.data
 
     const mapped = {}
@@ -33,7 +34,7 @@ const fetchSchedule = async () => {
 onMounted(fetchSchedule)
 
 const handleDayClick = (day) => {
-  const clickedDate = day.id
+  const clickedDate = day.id // 'YYYY-MM-DD'
   router.push(`/client/broadcasts/schedule/${clickedDate}`)
 }
 </script>
@@ -43,7 +44,7 @@ const handleDayClick = (day) => {
     <div class="container py-5">
       <h2 class="fs-3 fw-bold text-primary mb-4">📆 방송 일정 달력</h2>
 
-      <Calendar
+      <VCalendar
           class="bg-white rounded shadow p-3"
           is-expanded
           borderless
@@ -69,7 +70,7 @@ const handleDayClick = (day) => {
             </ul>
           </div>
         </template>
-      </Calendar>
+      </VCalendar>
     </div>
   </ClientFrame>
 </template>

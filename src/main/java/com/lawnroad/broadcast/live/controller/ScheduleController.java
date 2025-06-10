@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.lawnroad.broadcast.live.dto.ScheduleRequestDto;
+import com.lawnroad.broadcast.live.model.ScheduleVo;
 import com.lawnroad.broadcast.live.service.ScheduleService;
 import com.lawnroad.common.util.FileStorageUtil;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +42,7 @@ public class ScheduleController {
             throw new IllegalArgumentException("썸네일 파일 경로가 없습니다.");
         }
 
-        // ✅ keywords JSON을 List<String>으로 변환
+        // keywords JSON을 List<String>으로 변환
         List<String> keywords = null;
         if (keywordsJson != null && !keywordsJson.isBlank()) {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -67,5 +68,12 @@ public class ScheduleController {
 
         scheduleService.registerSchedule(scheduleRequestDto);
         return ResponseEntity.ok("방송 스케줄이 성공적으로 등록되었습니다.");
+    }
+
+    @GetMapping("/{date}")
+    public ResponseEntity<List<ScheduleVo>> getScheduleByDate(@PathVariable String date) {
+        LocalDate parsedDate = LocalDate.parse(date);
+        List<ScheduleVo> schedules = scheduleService.getSchedulesByDate(parsedDate);
+        return ResponseEntity.ok(schedules);
     }
 }
