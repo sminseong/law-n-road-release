@@ -2,9 +2,10 @@
 import { defineComponent, ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
-import ClientFrame from "@/components/layout/Client/ClientFrame.vue";
+import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import { OpenVidu } from "openvidu-browser";
 import axios from "axios";
+import {useRoute} from "vue-router";
 
 export default defineComponent({
   components: { ClientFrame },
@@ -64,7 +65,9 @@ export default defineComponent({
     const stompClient = ref(null);
     const randomNickname = () => "유저" + Math.floor(1000 + Math.random() * 9000);
     const nickname = randomNickname(); // 실제 로그인 닉네임으로 대체 예정
-    const broadcastNo = 3;             // 실제 방송 ID로 대체 예정
+    const route = useRoute();
+    // const sessionId = route.params.sessionId;
+    const broadcastNo = route.params.broadcastNo; // 채팅방 임시 구분
     const message = ref("");
     const messages = ref([]);
     const messageContainer = ref(null);
@@ -89,7 +92,7 @@ export default defineComponent({
         webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
         reconnectDelay: 5000,
         onConnect: () => {
-          // 1) 구독: /topic/{broadcastNo}
+          // 1) 구독: /topic/{sessionId}
           stompClient.value.subscribe(
               `/topic/${broadcastNo}`,
               (msg) => {
@@ -147,7 +150,7 @@ export default defineComponent({
         <!-- OpenVidu 영상이 여기에 붙음 -->
       </div>
 
-      <!-- 채팅 입력 영역 전체 -->
+      <!-- 채팅 영역 전체 -->
       <div
           class="position-absolute border rounded shadow p-4 d-flex flex-column"
           style="width: 400px; height: 700px; top: 2rem; right: 2rem;"
@@ -161,7 +164,7 @@ export default defineComponent({
             <div
                 v-if="msg.type === 'ENTER'"
                 class="w-100 text-center"
-                style="color: #007bff; font-size: 1.1rem;">
+                style="color: #007bff; font-size: 0.9rem;">
               {{ msg.message }}
             </div>
             <div

@@ -10,10 +10,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class ChatRedisService {
+public class ChatRedisSaveServiceImpl implements ChatRedisSaveService {
 
     private final StringRedisTemplate redisTemplate;
 
+    @Override
     public void saveChatMessage(ChatDTO chatDTO) {
         String key = "chat:" + chatDTO.getBroadcastNo();
         String json = toJson(chatDTO); // Jackson 등으로 직렬화

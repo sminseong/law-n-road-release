@@ -1,7 +1,7 @@
 package com.lawnroad.broadcast.chat.controller;
 
 import com.lawnroad.broadcast.chat.dto.ChatDTO;
-import com.lawnroad.broadcast.chat.service.ChatRedisService;
+import com.lawnroad.broadcast.chat.service.ChatRedisSaveServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -10,15 +10,15 @@ import org.springframework.stereotype.Controller;
 import java.time.LocalDateTime;
 
 @Controller
-public class ChatStompController {
+public class ChatController {
 
-    private final ChatRedisService chatRedisService;
+    private final ChatRedisSaveServiceImpl chatRedisSaveService;
     private final SimpMessagingTemplate messagingTemplate;
 
     @Autowired
-    public ChatStompController(SimpMessagingTemplate messagingTemplate, ChatRedisService chatRedisService) {
+    public ChatController(SimpMessagingTemplate messagingTemplate, ChatRedisSaveServiceImpl chatRedisSaveService) {
         this.messagingTemplate = messagingTemplate;
-        this.chatRedisService = chatRedisService;
+        this.chatRedisSaveService = chatRedisSaveService;
     }
 
     // 사용자가 입장했을 때
@@ -36,7 +36,7 @@ public class ChatStompController {
     public void sendMessage(@Payload ChatDTO chatDTO) {
         chatDTO.setCreatedAt(LocalDateTime.now());
         chatDTO.setType("CHAT");
-        chatRedisService.saveChatMessage(chatDTO);
+        chatRedisSaveService.saveChatMessage(chatDTO);
 
         messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), chatDTO);
     }
