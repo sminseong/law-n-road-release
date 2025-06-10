@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class KeywordDto {
     private Long no;
-    private Long broadcastNo;
+    private Long scheduleNo;
     private String keyword;
     private LocalDateTime createdAt;
 }
