@@ -29,13 +29,19 @@ export default [
     {
         path: '/lawyer/broadcasts/schedule',
         name: 'LawyerBroadcastsSchedule',
-        component: () => import('@/views/lawyer/BroadcastScheduleView.vue')
+        component: () => import('@/views/lawyer/LawyerScheduleView.vue')
     },
     {
         path: '/broadcasts/live',
         name: 'LawyerBroadcastsLive',
         component: () => import('@/views/lawyer/LawyerBroadcastsView.vue')
     },
+    {
+        path: '/lawyer/broadcasts/schedule/register',
+        name: 'LawyerBroadcastsScheduleRegister',
+        component: () => import('@/views/lawyer/LawyerScheduleRegisterView.vue')
+    },
+
 
     // ---------- 템플릿 ----------
     {

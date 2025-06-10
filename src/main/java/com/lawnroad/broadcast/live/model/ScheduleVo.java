@@ -1,11 +1,13 @@
 package com.lawnroad.broadcast.live.model;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
+@Builder
 public class ScheduleVo {
     private Long no;                // 스케줄 no (PK)
     private Long userNo;           // 유저 no (FK)
