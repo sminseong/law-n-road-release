@@ -1,10 +1,12 @@
 package com.lawnroad.broadcast.live.model;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
+@Builder
 public class BroadcastVodVo {
     private Long no;              // VOD no (PK)
     private Long broadcastNo;     // 방송 no (FK)

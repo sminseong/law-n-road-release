@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @MapperScan("com.lawnroad.template.mapper")
 @SpringBootApplication
 @MapperScan("com.lawnroad.account.mapper")
+@MapperScan("com.lawnroad.broadcast.live.mapper")
 public class LawNRoadApplication {
     public static void main(String[] args) {
         SpringApplication.run(LawNRoadApplication.class, args);
