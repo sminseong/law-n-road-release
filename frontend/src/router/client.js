@@ -28,7 +28,7 @@ export default [
         component: () => import('@/views/client/ClientBroadcastsView.vue')
     },
     {
-        path: '/client/vod',
+        path: '/client/vod/:broadcastNo',
         name: 'ClientBroadCastsVod',
         component: () => import('@/views/client/ClientVodView.vue')
     },
