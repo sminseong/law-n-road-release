@@ -28,9 +28,14 @@ export default [
         component: () => import('@/views/client/ClientBroadcastsView.vue')
     },
     {
-        path: '/client/vod',
+        path: '/client/vod/:broadcastNo',
         name: 'ClientBroadCastsVod',
         component: () => import('@/views/client/ClientVodView.vue')
+    },
+    {
+        path: '/client/broadcasts/:broadcastNo/preQuestion',
+        name: 'ClientBroadCastsPreQuestion',
+        component: () => import('@/views/client/preQuestion.vue')
     },
     {
         path: '/client/broadcasts/schedule',
