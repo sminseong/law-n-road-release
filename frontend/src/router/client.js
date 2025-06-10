@@ -23,7 +23,7 @@ export default [
 
     // ---------- 방송 ----------
     {
-        path: '/client/broadcasts',
+        path: '/client/broadcasts/:broadcastNo',
         name: 'ClientBroadcasts',
         component: () => import('@/views/client/ClientBroadcastsView.vue')
     },

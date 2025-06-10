@@ -3,8 +3,9 @@ import { defineComponent, ref, onMounted, onBeforeUnmount, nextTick } from "vue"
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import { OpenVidu } from "openvidu-browser";
-import ClientFrame from "@/components/layout/Client/ClientFrame.vue";
+import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import axios from "axios";
+import {useRoute} from "vue-router";
 
 export default defineComponent({
   components: { ClientFrame },
@@ -13,7 +14,6 @@ export default defineComponent({
     const OV = ref(null)
     const session = ref(null)
     const publisher = ref(null)
-
     const videoContainer = ref(null) // 방송화면 div
 
     const connectSession = async () => {
@@ -64,8 +64,11 @@ export default defineComponent({
 
     // --- 채팅 WebSocket 관련 ---
     const stompClient = ref(null);
-    const nickname = "홍길동";           // 실제 로그인 닉네임으로 대체
-    const broadcastNo = 3;             // 실제 방송 ID로 대체
+    const randomNickname = () => "유저" + Math.floor(1000 + Math.random() * 9000);
+    const nickname = randomNickname(); // 실제 로그인 닉네임으로 대체 예정
+    const route = useRoute();
+    // const sessionId = route.params.sessionId;
+    const broadcastNo = route.params.broadcastNo; // 채팅방 임시 구분
     const message = ref("");
     const messages = ref([]);
     const messageContainer = ref(null);
@@ -91,11 +94,12 @@ export default defineComponent({
         webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
         reconnectDelay: 5000,
         onConnect: () => {
-          // 1) 구독: /topic/{broadcastNo}
+          // 1) 구독: /topic/{sessionId}
           stompClient.value.subscribe(
               `/topic/${broadcastNo}`,
               (msg) => {
-                messages.value.push(msg.body);
+                const data = JSON.parse(msg.body);
+                messages.value.push(data);
                 scrollToBottom();
               }
           );
@@ -188,22 +192,32 @@ export default defineComponent({
         </div>
       </div>
 
+      <!-- 채팅 영역 전체 -->
       <div
           class="position-absolute border rounded shadow p-4 d-flex flex-column"
           style="width: 400px; height: 700px; top: 2rem; right: 2rem;"
       >
-        <!-- 메시지 출력 영역 -->
+        <!-- 메시지 출력 영역 (스크롤 + 자동 아래로 이동) -->
         <div
             ref="messageContainer"
             class="flex-grow-1 overflow-auto mb-3 scroll-hidden"
-            style="scroll-behavior: smooth;"
-        >
+            style="scroll-behavior: smooth;">
           <div v-for="(msg, index) in messages" :key="index" class="mb-3">
-            {{ msg }}
+            <div
+                v-if="msg.type === 'ENTER'"
+                class="w-100 text-center"
+                style="color: #007bff; font-size: 0.9rem;">
+              {{ msg.message }}
+            </div>
+            <div
+                v-else
+                style="font-size: 1.0rem; font-weight: bold;">
+              {{ msg.nickname }} : {{ msg.message }}
+            </div>
           </div>
         </div>
 
-        <!-- 입력창 영역 -->
+        <!-- 입력창 영역 (항상 하단 고정) -->
         <div class="d-flex">
           <input
               v-model="message"

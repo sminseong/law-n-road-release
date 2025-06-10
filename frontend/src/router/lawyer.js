@@ -32,7 +32,7 @@ export default [
         component: () => import('@/views/lawyer/BroadcastScheduleView.vue')
     },
     {
-        path: '/broadcasts/live',
+        path: '/broadcasts/live/:broadcastNo',
         name: 'LawyerBroadcastsLive',
         component: () => import('@/views/lawyer/LawyerBroadcastsView.vue')
     },
