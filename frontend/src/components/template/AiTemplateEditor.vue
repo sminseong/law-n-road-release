@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { Editor, EditorContent } from '@tiptap/vue-3'
+import { VariableNode } from '@/components/template/variable.js'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import TextStyle from '@tiptap/extension-text-style'
@@ -29,7 +30,12 @@ let isClickOnly = false
 onMounted(() => {
   editor.value = new Editor({
     content: props.content || '',
-    extensions: [StarterKit, Underline, TextStyle],
+    extensions: [
+      StarterKit.configure({}),
+      Underline,
+      TextStyle,
+      VariableNode,    // <- 여기에 추가
+    ],
     onUpdate: ({ editor }) => {
       emit('update:content', editor.getHTML())
     }
@@ -104,14 +110,20 @@ const addVariable = () => {
   const key = newVariable.value.trim()
   if (!key) return
   const val = newDescription.value.trim()
-  editor.value?.chain().focus().insertContent(`#{${key}}`).run()
-  variableMap.value[key] = val || `(${v})`
+
+  editor.value
+      .chain()
+      .focus()
+      .setVariable({ name: key, description: val })
+      .run()
+
+  // 상태 업데이트
+  variableMap.value[key] = val || ''
+  emit('update:variables',
+      Object.entries(variableMap.value).map(([name,desc])=>({ name, desc })))
   newVariable.value = ''
   newDescription.value = ''
   showModal.value = false
-
-  const result = Object.entries(variableMap.value).map(([name, description]) => ({ name, description }))
-  emit('update:variables', result)
 }
 
 // 예시 입력 함수
@@ -136,7 +148,6 @@ function insertExample() {
 
   // 🔥 에디터 본문 직접 변경
   editor.value?.commands.setContent(htmlText)
-  emit('update:content', htmlText)
 
   // 변수 맵도 업데이트
   variableMap.value = {
@@ -148,7 +159,7 @@ function insertExample() {
   }
 
   // 부모에도 알려줘야 preview 쪽 computed도 갱신됨
-  emit('update:content', newContent)
+  emit('update:content', htmlText)
   emit('update:variables', Object.entries(variableMap.value).map(([name, description]) => ({ name, description })))
 }
 </script>
