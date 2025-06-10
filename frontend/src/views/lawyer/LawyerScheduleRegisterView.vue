@@ -25,7 +25,7 @@ const categoryList = ref([])
 
 onMounted(async () => {
   try {
-    const response = await axios.get('/api/category/list') // 예시 엔드포인트
+    const response = await axios.get('/api/category/list')
     categoryList.value = response.data
   } catch (e) {
     console.error('카테고리 불러오기 실패', e)
