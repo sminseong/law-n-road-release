@@ -32,6 +32,13 @@ export default [
         name: 'ClientBroadCastsVod',
         component: () => import('@/views/client/ClientVodView.vue')
     },
+    {
+        path: '/client/broadcasts/:broadcastNo/preQuestion',
+        name: 'ClientBroadCastsPreQuestion',
+        component: () => import('@/views/client/preQuestion.vue')
+    },
+
+
 
     // ---------- 템플릿 ----------
     {

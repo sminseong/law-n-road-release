@@ -1,11 +1,9 @@
 <script>
-import { defineComponent, ref, onMounted, onBeforeUnmount, nextTick } from "vue";
-import SockJS from "sockjs-client";
-import { Client } from "@stomp/stompjs";
+import { defineComponent, ref, onMounted, nextTick } from "vue";
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import { OpenVidu } from "openvidu-browser";
 import axios from "axios";
-import {useRoute} from "vue-router";
+import { useRoute } from "vue-router";
 
 export default defineComponent({
   components: { ClientFrame },
@@ -39,10 +37,8 @@ export default defineComponent({
             const video = event.element;
             video.style.width = "100%";
             video.style.height = "100%";
-            video.style.objectFit = "cover"; // 중요: 비율 유지
-            video.style.borderRadius = "1rem"; // 추가: UI 통일
-
-            // 여기가 중요!!!
+            video.style.objectFit = "cover";
+            video.style.borderRadius = "1rem";
             nextTick(() => {
               if (videoContainer.value) {
                 videoContainer.value.innerHTML = "";
@@ -61,14 +57,9 @@ export default defineComponent({
       }
     };
 
-    // --- 채팅 WebSocket 관련 ---
-    const stompClient = ref(null);
-    const randomNickname = () => "유저" + Math.floor(1000 + Math.random() * 9000);
-    const nickname = randomNickname(); // 실제 로그인 닉네임으로 대체 예정
+    // --- VOD 채팅 재생 ---
     const route = useRoute();
-    // const sessionId = route.params.sessionId;
-    const broadcastNo = route.params.broadcastNo; // 채팅방 임시 구분
-    const message = ref("");
+    const broadcastNo = route.params.broadcastNo;
     const messages = ref([]);
     const messageContainer = ref(null);
 
@@ -81,57 +72,37 @@ export default defineComponent({
       });
     };
 
-    onMounted(() => {
-      connect();
-      connectOpenVidu();
-    });
-    // STOMP 연결
-    const connect = () => {
-      stompClient.value = new Client({
-        // SockJS 팩토리로 연결
-        webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
-        reconnectDelay: 5000,
-        onConnect: () => {
-          // 1) 구독: /topic/{sessionId}
-          stompClient.value.subscribe(
-              `/topic/${broadcastNo}`,
-              (msg) => {
-                const data = JSON.parse(msg.body);
-                messages.value.push(data);
-                scrollToBottom();
-              }
-          );
-          // 2) 입장 알림 전송
-          stompClient.value.publish({
-            destination: "/app/chat.addUser",
-            body: JSON.stringify({ broadcastNo, nickname })
-          });
-        },
-        onStompError: (frame) => {
-          console.error("STOMP error:", frame);
+    // 실시간처럼 채팅 하나씩 재생
+    const playChatsLikeLive = async () => {
+      const { data: chatLogs } = await axios.get(
+          `/api/broadcast/${broadcastNo}/chats`
+      );
+      if (!chatLogs.length) return;
+
+      messages.value = [];
+      let lastTime = new Date(chatLogs[0].createdAt).getTime();
+
+      for (let i = 0; i < chatLogs.length; i++) {
+        const msg = chatLogs[i];
+        const msgTime = new Date(msg.createdAt).getTime();
+        let delay = 0;
+        if (i > 0) {
+          delay = msgTime - lastTime;
         }
-      });
-      stompClient.value.activate();
+        await new Promise((res) => setTimeout(res, delay));
+        messages.value.push(msg);
+        scrollToBottom();
+        lastTime = msgTime;
+      }
     };
 
-    const sendMessage = () => {
-      const trimmed = message.value.trim();
-      if (!trimmed || !stompClient.value?.connected) return;
-
-      // 메시지 전송
-      stompClient.value.publish({
-        destination: "/app/chat.sendMessage",
-        body: JSON.stringify({ broadcastNo, nickname, message: trimmed })
-      });
-      message.value = "";
-      scrollToBottom();
-    };
-    onBeforeUnmount(() => stompClient.value?.deactivate());
+    onMounted(() => {
+      connectOpenVidu();
+      playChatsLikeLive();
+    });
 
     return {
-      message,
       messages,
-      sendMessage,
       messageContainer,
       videoContainer,
     };
@@ -146,7 +117,8 @@ export default defineComponent({
       <div
           ref="videoContainer"
           class="position-absolute top-0 start-0 bg-dark shadow rounded d-flex align-items-center justify-content-center"
-          style="width: calc(100% - 480px); height: 520px; margin: 2rem; overflow: hidden;">
+          style="width: calc(100% - 480px); height: 520px; margin: 2rem; overflow: hidden;"
+      >
         <!-- OpenVidu 영상이 여기에 붙음 -->
       </div>
 
@@ -159,31 +131,23 @@ export default defineComponent({
         <div
             ref="messageContainer"
             class="flex-grow-1 overflow-auto mb-3 scroll-hidden"
-            style="scroll-behavior: smooth;">
+            style="scroll-behavior: smooth;"
+        >
           <div v-for="(msg, index) in messages" :key="index" class="mb-3">
             <div
                 v-if="msg.type === 'ENTER'"
                 class="w-100 text-center"
-                style="color: #007bff; font-size: 0.9rem;">
+                style="color: #007bff; font-size: 0.9rem;"
+            >
               {{ msg.message }}
             </div>
             <div
                 v-else
-                style="font-size: 1.0rem; font-weight: bold;">
+                style="font-size: 1.0rem; font-weight: bold;"
+            >
               {{ msg.nickname }} : {{ msg.message }}
             </div>
           </div>
-        </div>
-
-        <!-- 입력창 영역 (항상 하단 고정) -->
-        <div class="d-flex">
-          <input
-              v-model="message"
-              type="text"
-              class="form-control me-2"
-              placeholder="메시지를 입력하세요"
-              @keyup.enter="sendMessage"
-          />
         </div>
       </div>
     </div>
