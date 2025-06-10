@@ -249,7 +249,7 @@ function goToMyPage() {
                  <a class="nav-link" href="/client/broadcasts/1">라이브 방송</a>  <!--  세션으로 수정 예정-->
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/client/vod">방송 다시보기</a>
+                  <a class="nav-link" href="/client/vod/1">방송 다시보기</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="/templates">법률서류 템플릿</a>
