@@ -46,7 +46,7 @@ export default [
     {
         path: '/lawyer/templates/register',
         name: 'TemplateEditor',
-        component: () => import('@/views/lawyer/template/TemplateEditorView.vue')
+        component: () => import('@/views/lawyer/template/TemplateRegisterView.vue')
     },
     {
         path: '/lawyer/templates/:no',
