@@ -25,7 +25,7 @@ public class ChatDTO {
     private String message;
 
     /** 신고 여부 (TINYINT) */
-    private Integer reportCount;
+    private Integer reportStatus;
 
     /** 생성 일시 */
     private LocalDateTime createdAt;

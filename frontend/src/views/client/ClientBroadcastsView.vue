@@ -6,7 +6,6 @@ import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import { OpenVidu } from "openvidu-browser";
 import axios from "axios";
 import { useRoute } from "vue-router";
-import {cssClasses as selectedUserNo} from "../../../public/libs/nouislider/nouislider.mjs";
 
 export default defineComponent({
   components: { ClientFrame },
@@ -52,7 +51,6 @@ export default defineComponent({
 
 
     /** 채팅 */
-
     const stompClient = ref(null);
     const randomNickname = () => "유저" + Math.floor(1000 + Math.random() * 9000);
     const nickname = randomNickname();
@@ -62,14 +60,13 @@ export default defineComponent({
     const messages = ref([]);
     const messageContainer = ref(null);
 
-
     // --- 닉네임별 고정 랜덤 색상 ---
     const nicknameColors = ref({});
     const colorPalette = [
-      "#1abc9c", "#16a085", "#2ecc71", "#27ae60",
-      "#3498db", "#2980b9", "#9b59b6", "#8e44ad",
-      "#f1c40f", "#f39c12", "#e67e22", "#d35400",
-      "#e74c3c", "#c0392b", "#95a5a6", "#7f8c8d"
+      "#1abc9c", "#034335", "#84ddaa", "#450978",
+      "#184563", "#8bc2e4", "#c791dd", "#8e44ad",
+      "#837225", "#876124", "#004aff", "#ff6400",
+      "#ec8d85", "#c0392b", "#246667", "#e4de0d"
     ];
     function getRandomColor() {
       return colorPalette[Math.floor(Math.random() * colorPalette.length)];
@@ -87,8 +84,6 @@ export default defineComponent({
     const selectedMessage = ref(null);
     const isConfirmModal = ref(false);
     const isCompleteModal = ref(false);
-
-
 
     // STOMP 연결
     const connect = () => {
@@ -128,7 +123,7 @@ export default defineComponent({
       scrollToBottom();
     };
 
-    // 자동 스크롤
+    // 자동 스크롤 하단 이동
     const scrollToBottom = () => {
       nextTick(() => {
         if (messageContainer.value) {
@@ -165,7 +160,7 @@ export default defineComponent({
     const confirmReport = async () => {
       try {
         await axios.post("/api/chat/report", {
-          userNo: 1,
+          userNo: 1,   // 신고 대상 유저 no
           nickname: selectedUser.value, // 신고 대상 닉네임
           message: selectedMessage.value, // 신고 메시지 내용
         });
@@ -182,6 +177,7 @@ export default defineComponent({
       connect();
       connectOpenVidu();
     });
+
     onBeforeUnmount(() => {
       stompClient.value?.deactivate();
       closeDropdown();
@@ -229,35 +225,35 @@ export default defineComponent({
           <div v-for="(msg, index) in messages" :key="index" class="mb-3" style="position:relative;">
             <div v-if="msg.type === 'ENTER'"
                  class="w-100 text-center"
-                 style="color: #007bff; font-size: 0.9rem;">
+                 style="color: #435879; font-size: 0.9rem;">
               {{ msg.message }}
             </div>
             <div v-else style="font-size: 1.0rem; font-weight: bold; display:flex; align-items:center;">
               <!-- 닉네임 드롭다운 & 랜덤 색상 -->
               <span
-                  v-if="msg.nickname !== nickname"
-                  @click.stop="openDropdown(index, msg)"
+                  @click.stop="msg.nickname !== nickname && openDropdown(index, msg)"
                   :style="{
-                  color: getNicknameColor(msg.nickname),
-                  cursor: 'pointer',
-                  userSelect: 'text',
-                  position: 'relative',
-                  fontWeight: 'bold'
-                }"
-              >
-                {{ msg.nickname }}
-                <!-- 드롭다운 메뉴 -->
-              <span v-if="dropdownIdx === index" class="nickname-dropdown"
-                    style="position:absolute;top:120%;left:0;z-index:10000;">
-                <ul class="dropdown-custom-menu">
-                  <li class="menu-report" @click.stop="onReportClick">
-                     🚨 메시지 신고 🚨
-                  </li>
-                </ul>
-              </span>
-
-              </span>
-              <span v-else style="color:#555;font-weight:normal;">{{ msg.nickname }}</span>
+                    color: getNicknameColor(msg.nickname),
+                    cursor: msg.nickname !== nickname ? 'pointer' : 'default',
+                    userSelect: 'text',
+                    position: 'relative',
+                    fontWeight: 'bold'
+                  }"
+                              >
+                  {{ msg.nickname }}
+                                <!-- 드롭다운 메뉴: 본인 닉네임이 아닐 때만 표시 -->
+                  <span
+                      v-if="dropdownIdx === index && msg.nickname !== nickname"
+                      class="nickname-dropdown"
+                      style="position:absolute;top:120%;left:0;z-index:10000;"
+                  >
+                    <ul class="dropdown-custom-menu">
+                      <li class="menu-report" @click.stop="onReportClick">
+                        🚨 메시지 신고 🚨
+                      </li>
+                    </ul>
+                  </span>
+                </span>
               <span style="margin-left:0.6em;">: {{ msg.message }}</span>
             </div>
           </div>
@@ -352,11 +348,6 @@ export default defineComponent({
 .dropdown-custom-menu .menu-report:hover {
   background: #33292c;
 }
-.menu-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
 
 /* 모달 오버레이, 박스, 버튼 스타일 */
 .modal-overlay-dark {
@@ -377,7 +368,6 @@ export default defineComponent({
 .modal-custom-content { padding: 36px 36px 24px 36px; }
 .modal-custom-msg { margin-bottom: 34px; }
 .modal-custom-text { font-size: 1.14rem; line-height: 1.7; font-weight: 600; }
-.modal-custom-sub { color: #8e9297; font-size: 1rem; font-weight: 400; display:block; margin-top:8px; }
 
 /* 버튼 행 중앙정렬 */
 .modal-custom-btns {
@@ -410,6 +400,4 @@ export default defineComponent({
 .modal-btn-ok:hover {
   background: #05d96d;
 }
-
-
 </style>

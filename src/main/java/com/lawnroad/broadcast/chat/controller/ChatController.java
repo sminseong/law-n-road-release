@@ -5,6 +5,8 @@ import com.lawnroad.broadcast.chat.service.ChatRedisSaveServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 
 
@@ -37,8 +39,12 @@ public class ChatController {
     public void sendMessage(@Payload ChatDTO chatDTO) {
         chatDTO.setCreatedAt(LocalDateTime.now());
         chatDTO.setType("CHAT");
-        chatRedisSaveService.saveChatMessage(chatDTO);
+        chatDTO.setReportStatus(0);
+        chatDTO.setUserNo(1L);
+        // 예시: 세션이나 JWT, userDetail 등에서 userNo 추출
+        // chatDTO.setUserNo(user.getUserNo());
 
+        chatRedisSaveService.saveChatMessage(chatDTO);
         messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), chatDTO);
     }
 
