@@ -8,15 +8,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class LawyerTemplateServiceImpl implements LawyerTemplateService {
   
   private final LawyerTemplateMapper templateMapper;
-  private final FileStorageUtil fileStorageUtil;
-  private final ObjectMapper objectMapper;
   
   // 템플릿 등록
   @Override
@@ -114,6 +115,60 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
   @Transactional(readOnly = true)
   public FileTemplateDetailDto getFileTemplateDetail(Long templateNo) {
     return templateMapper.findFileTemplateDetail(templateNo);
+  }
+  
+  // 템플릿 수정하기
+  @Override
+  public void updateTemplateByClone(LawyerTemplateUpdateDto dto, String thumbnailPath) {
+    String type = dto.getType();
+    Long originalNo = dto.getNo();
+    
+    // 1) 원본 생성일 및 메타 조회
+    LocalDateTime createdAt;
+    String originThumb;
+    String originJson;
+    if ("EDITOR".equalsIgnoreCase(type)) {
+      EditorTemplateDetailDto o = templateMapper.findEditorTemplateDetail(originalNo);
+      createdAt    = o.getCreatedAt();
+      originThumb  = o.getThumbnailPath();
+      originJson   = null;
+    } else {
+      FileTemplateDetailDto o = templateMapper.findFileTemplateDetail(originalNo);
+      createdAt    = o.getCreatedAt();
+      originThumb  = o.getThumbnailPath();
+      originJson   = o.getPathJson();
+    }
+    
+    // 2) null 대체 로직
+    String finalThumb = (thumbnailPath != null) ? thumbnailPath : originThumb;
+    String finalJson  = (dto.getPathJson() != null)  ? dto.getPathJson()  : originJson;
+    
+    // 3) 기본 정보 insert
+    TemplateDto base = new TemplateDto();
+    base.setUserNo(dto.getUserNo());
+    base.setCategoryNo(dto.getCategoryNo());
+    base.setName(dto.getName());
+    base.setDescription(dto.getDescription());
+    base.setPrice(dto.getPrice());
+    base.setDiscountRate(dto.getDiscountRate());
+    base.setThumbnailPath(finalThumb);
+    base.setType(type);
+    base.setSalesCount(0);
+    base.setCreatedAt(createdAt);
+    base.setIsDeleted(false);
+    templateMapper.insertTemplate(base);
+    
+    // 4) 상세 insert
+    if ("EDITOR".equalsIgnoreCase(type)) {
+      templateMapper.insertEditorBasedTemplate(
+          base.getNo(), dto.getContent(), dto.getVarJson(), dto.getAiEnabled()
+      );
+    } else {
+      templateMapper.insertFileBasedTemplate(base.getNo(), finalJson);
+    }
+    
+    // 5) 기존 soft delete
+    templateMapper.markTemplateAsDeleted(originalNo);
   }
   
 }

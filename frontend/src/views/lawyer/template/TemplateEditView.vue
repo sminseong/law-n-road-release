@@ -6,6 +6,7 @@ import AiTemplateEditor from '@/components/template/AiTemplateEditor.vue'
 import UploadTemplateForm from '@/components/template/UploadTemplateForm.vue'
 import http from '@/libs/HttpRequester'
 
+const router = useRouter()
 const route = useRoute()
 const templateNo = route.params.no
 const templateType = route.query.type || 'EDITOR'
@@ -72,19 +73,17 @@ function onThumbnailChange(e) {
 }
 
 async function handleUpdate() {
-  if (!confirm('정말 수정하시겠습니까?')) return
+  if (!confirm('템플릿을 수정하면 판매기록이 초기화 됩니다. 정말 수정하시겠습니까?')) return
 
   try {
-    await http.delete(`/api/lawyer/templates/${templateNo}`)
-
     const formData = new FormData()
+    formData.append('no', templateNo) // 기존 템플릿 번호
     formData.append('name', name.value)
     formData.append('price', price.value)
     formData.append('discountRate', discountRate.value)
     formData.append('categoryNo', categoryNo.value)
     formData.append('description', description.value)
     formData.append('type', selectedTab.value === 'ai' ? 'EDITOR' : 'FILE')
-    formData.append('createdAt', createdAt.value)
 
     if (thumbnailFile.value) {
       formData.append('file', thumbnailFile.value)
@@ -95,12 +94,21 @@ async function handleUpdate() {
       formData.append('varJson', JSON.stringify(editorVariables.value))
       formData.append('aiEnabled', 1)
     } else {
-      uploadedFiles.value.forEach(file => {
-        formData.append('templateFiles', file)
-      })
+      // 삭제된 항목이 빠진 최종 메타(JSON)만 넘기기
+      formData.append(
+          'pathJson',
+          JSON.stringify(uploadedFiles.value)
+      );
+
+      // 그 중 실제 File 객체들만 다시 업로드 필드에 append
+      uploadedFiles.value
+          .filter(item => item instanceof File)
+          .forEach(f => formData.append('templateFiles', f));
     }
 
-    await http.post('/api/lawyer/templates/register', formData)
+    // 수정용 API 호출
+    await http.post('/api/lawyer/templates/update', formData)
+
     alert('수정 완료되었습니다.')
     router.push('/lawyer/templates')
   } catch (e) {

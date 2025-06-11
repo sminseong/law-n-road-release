@@ -47,4 +47,16 @@ public interface LawyerTemplateService {
    * @return 상세 정보 DTO
    */
   FileTemplateDetailDto getFileTemplateDetail(Long templateNo);
+  
+  /**
+   * 기존 템플릿 수정 (복제 후 삭제 방식)
+   * 1. 기존 템플릿 정보를 조회
+   * 2. 새로운 템플릿으로 복제 (생성일 유지, 판매수 초기화)
+   * 3. 서브 테이블(tmpl_editor_based / tmpl_file_based)도 복제
+   * 4. 기존 템플릿은 소프트 딜리트 처리
+   *
+   * @param dto 수정 요청 DTO
+   * @param thumbnailPath 썸네일 경로 (파일 저장 후 전달)
+   */
+  void updateTemplateByClone(LawyerTemplateUpdateDto dto, String thumbnailPath);
 }
