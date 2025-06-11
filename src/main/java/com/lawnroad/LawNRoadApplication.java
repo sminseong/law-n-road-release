@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @MapperScan("com.lawnroad.account.mapper")
 @MapperScan("com.lawnroad.broadcast.live.mapper")
+@MapperScan("com.lawnroad.broadcast.chat.mapper") // 패키지에 맞게!
 public class LawNRoadApplication {
     public static void main(String[] args) {
         SpringApplication.run(LawNRoadApplication.class, args);
