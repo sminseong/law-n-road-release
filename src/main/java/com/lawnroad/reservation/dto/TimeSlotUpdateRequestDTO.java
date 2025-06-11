@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-public class TimeSlotUpdateRequest {
+public class TimeSlotUpdateRequestDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate slotDate;
 

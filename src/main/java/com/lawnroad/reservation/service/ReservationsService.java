@@ -8,6 +8,7 @@ import com.lawnroad.reservation.dto.ReservationsResponseDTO;
 import com.lawnroad.reservation.dto.ReservationsUpdateDTO;
 import com.lawnroad.reservation.mapper.ReservationsMapper;
 import com.lawnroad.reservation.mapper.TimeSlotMapper;
+import com.lawnroad.reservation.model.TimeSlotVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,17 +37,21 @@ public class ReservationsService {
         // 1) slotNo 기반으로 금액 조회
         Long amount = timeSlotMapper.getAmountBySlotNo(dto.getSlotNo());
 
-        // 2) OrdersCreateDTO 오더 세팅
         OrdersCreateDTO orderDto = new OrdersCreateDTO();
         orderDto.setUserNo(dto.getUserNo());
-        orderDto.setTotalAmount(amount);
-        orderDto.setStatus("ORDERED");
+        orderDto.setTotalAmount(amount);           // front 에서 채워서 보냄
         orderDto.setOrderType("RESERVATION");
+        orderDto.setStatus("ORDERED");
         Long orderNo = ordersService.createOrder(orderDto);
-
-        // 3) 예약 생성
         dto.setOrderNo(orderNo);
+
+        // 2) reservations 삽입
         reservationsMapper.insertReservation(dto);
+
+        // 3) 슬롯 상태 업데이트(1: 예약됨)
+        timeSlotMapper.updateStatus(new TimeSlotVO(
+                dto.getSlotNo(), dto.getUserNo(), null, null, 1, null
+        ));
     }
     
     // 사용자별 예약 조회

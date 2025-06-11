@@ -137,10 +137,6 @@ async function testLawyerReservationCanceled() {
         <div class="card-body p-0">
           <ul class="list-group list-group-flush">
             <li class="list-group-item d-flex justify-content-between align-items-center">
-              상담 승인 전
-              <span class="badge bg-secondary text-white">2건</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
               상담 대기
               <span class="badge bg-warning text-dark">1건</span>
             </li>

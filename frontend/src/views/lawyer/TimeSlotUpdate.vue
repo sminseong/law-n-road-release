@@ -70,7 +70,7 @@
 import {ref, onMounted} from 'vue'
 import {useRoute} from 'vue-router'
 import axios from 'axios'
-import LawyerFrame from '@/components/layout/Lawyer/LawyerFrame.vue'
+import LawyerFrame from "@/components/layout/lawyer/LawyerFrame.vue";
 
 // route에서 lawyerNo 가져오기
 const route = useRoute()

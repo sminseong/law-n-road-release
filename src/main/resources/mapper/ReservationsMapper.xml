@@ -6,14 +6,9 @@
 <mapper namespace="com.lawnroad.reservation.mapper.ReservationsMapper">
     <insert id="insertReservation" parameterType="com.lawnroad.reservation.dto.ReservationsCreateDTO">
         INSERT INTO reservations
-            (order_no, slot_no, user_no, content)
+            (order_no, slot_no, user_no, content, status, created_at, updated_at)
         VALUES
-            (
-                #{orderNo},
-                #{slotNo},
-                #{userNo},
-                #{content}
-            )
+            (#{orderNo}, #{slotNo}, #{userNo}, #{content}, 'REQUESTED', NOW(), NOW())
     </insert>
 
     <select id="selectReservationsByUser"

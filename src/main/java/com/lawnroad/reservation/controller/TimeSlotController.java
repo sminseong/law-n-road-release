@@ -1,6 +1,7 @@
 package com.lawnroad.reservation.controller;
 
-import com.lawnroad.reservation.dto.TimeSlotUpdateRequest;
+import com.lawnroad.reservation.dto.TimeSlotResponseDTO;
+import com.lawnroad.reservation.dto.TimeSlotUpdateRequestDTO;
 import com.lawnroad.reservation.model.TimeSlotVO;
 import com.lawnroad.reservation.service.TimeSlotService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -23,7 +24,7 @@ public class TimeSlotController {
 
     // 해당 변호사의 주간 슬롯 조회
     @GetMapping
-    public List<TimeSlotVO> getWeeklySlots(
+    public List<TimeSlotResponseDTO> getWeeklySlots(
             @PathVariable Long lawyerNo,
             @RequestParam(value = "startDate", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -39,7 +40,7 @@ public class TimeSlotController {
     @PutMapping
     public ResponseEntity<Void> updateWeeklySlots(
             @PathVariable Long lawyerNo,
-            @RequestBody List<TimeSlotUpdateRequest> updates
+            @RequestBody List<TimeSlotUpdateRequestDTO> updates
     ) {
         List<TimeSlotVO> vos = updates.stream()
                 .map(r -> new TimeSlotVO(
