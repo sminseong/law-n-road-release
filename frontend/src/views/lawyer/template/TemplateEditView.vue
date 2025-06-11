@@ -158,7 +158,7 @@ async function handleUpdate() {
             v-if="selectedTab === 'ai'"
             v-model:content="editorContent"
             v-model:variables="editorVariables"
-            :editor="editor"
+            :is-edit=true
         />
 
         <UploadTemplateForm

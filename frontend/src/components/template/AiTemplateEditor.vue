@@ -10,6 +10,7 @@ import TextStyle from '@tiptap/extension-text-style'
 const props = defineProps({
   content: String,
   variables: Array,
+  isEdit: { type: Boolean, default: false }
 })
 const emit = defineEmits(['update:content', 'update:variables'])
 
@@ -67,24 +68,31 @@ onMounted(() => {
   })
 })
 
+let initialized = false
+
 watch(
-    () => props.content,
+    () => props.variables,
     (newVal) => {
-      if (editor.value && newVal) {
-        editor.value.commands.setContent(newVal)
+      if (!initialized && Array.isArray(newVal) && newVal.length > 0 && props.isEdit) {
+        const map = {}
+        newVal.forEach(v => {
+          map[v.name] = v.description
+        })
+        variableMap.value = map
+        initialized = true
       }
     },
     { immediate: true }
 )
 
+let contentInitialized = false
+
 watch(
-    () => props.variables,
+    () => props.content,
     (newVal) => {
-      if (newVal) {
-        variableMap.value = {}
-        newVal.forEach(v => {
-          variableMap.value[v.name] = v.description
-        })
+      if (!contentInitialized && editor.value && newVal) {
+        editor.value.commands.setContent(newVal)
+        contentInitialized = true
       }
     },
     { immediate: true }
