@@ -115,4 +115,15 @@ public class LawyerTemplateController {
     Long lawyerNo = 1L;  // 로그인 미적용 상태 → 임시 고정
     return ResponseEntity.ok(templateService.findTemplatesByLawyerNo(lawyerNo, condition));
   }
+  
+  /**
+   * 변호사 템플릿 삭제 API
+   *
+   * @param templateNo 템플릿 번호
+   */
+  @DeleteMapping("/{templateNo}")
+  public ResponseEntity<String> deleteTemplate(@PathVariable Long templateNo) {
+    templateService.deleteTemplate(templateNo);
+    return ResponseEntity.ok("삭제 완료");
+  }
 }

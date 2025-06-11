@@ -78,6 +78,7 @@
         FROM template t
         LEFT JOIN category c ON t.category_no = c.no
         WHERE t.user_no = #{lawyerNo}
+        AND t.is_deleted = 0
         <if test="categoryNo != null">AND t.category_no = #{categoryNo}</if>
         <if test="keyword != null and keyword != ''">AND t.name LIKE CONCAT('%', #{keyword}, '%')</if>
         <if test="type != null and type != ''">AND t.type = #{type}</if>
@@ -96,11 +97,20 @@
         SELECT COUNT(*)
         FROM template t
         WHERE t.user_no = #{lawyerNo}
+        AND t.is_deleted = 0
         <if test="categoryNo != null">AND t.category_no = #{categoryNo}</if>
         <if test="keyword != null and keyword != ''">AND t.name LIKE CONCAT('%', #{keyword}, '%')</if>
         <if test="type != null and type != ''">AND t.type = #{type}</if>
     </select>
 
+    <!-- 템플릿 삭제 -->
+    <update id="markTemplateAsDeleted">
+        UPDATE template
+        SET is_deleted = 1,
+            updated_at = NOW()
+        WHERE no = #{templateNo}
+          AND is_deleted = 0
+    </update>
 
 
 </mapper>

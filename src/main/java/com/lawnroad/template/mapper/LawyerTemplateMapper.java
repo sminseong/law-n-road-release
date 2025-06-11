@@ -35,5 +35,8 @@ public interface LawyerTemplateMapper {
                        @Param("categoryNo") Long categoryNo,
                        @Param("keyword") String keyword,
                        @Param("type") String type);
+  
+  // 템플릿 삭제
+  int markTemplateAsDeleted(@Param("templateNo") Long templateNo);
 }
 

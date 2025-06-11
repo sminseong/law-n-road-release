@@ -168,15 +168,15 @@ function handleEdit(row) {
 }
 
 async function handleDelete(row) {
-  if (!confirm(`'${row.name}' 템플릿을 삭제하시겠습니까?`)) return
+  if (!confirm(`'${row?.name}' 템플릿을 삭제하시겠습니까?`)) return
   try {
-    await http.delete(`/api/templates/lawyer/${row.no}`)
-    // 삭제 후 다시 조회
-    fetchTemplates(currentFilters.value, page.value)
+    await http.delete(`/api/lawyer/templates/${row.no}`)
+    await fetchTemplates(currentFilters.value, page.value)
     alert('삭제되었습니다.')
   } catch (e) {
     console.error('삭제 실패:', e)
-    alert('삭제 중 오류가 발생했습니다.')
+    const message = e?.response?.data?.message || '삭제 중 오류가 발생했습니다.'
+    alert(message)
   }
 }
 

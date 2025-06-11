@@ -93,4 +93,16 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
     
     return response;
   }
+  
+  // 템플릿 삭제
+  @Override
+  @Transactional
+  public void deleteTemplate(Long templateNo) {
+    int updated = templateMapper.markTemplateAsDeleted(templateNo);
+    
+    if (updated == 0) {
+      throw new IllegalArgumentException("존재하지 않거나 이미 삭제된 템플릿입니다.");
+    }
+  }
+  
 }

@@ -28,4 +28,11 @@ public interface LawyerTemplateService {
    * @return           템플릿 목록 + 전체 개수 + 전체 페이지 수
    */
   TemplateListResponse findTemplatesByLawyerNo(Long lawyerNo, TemplateSearchCondition condition);
+  
+  /**
+   * 템플릿 삭제 (PK 기준)
+   *
+   * @param templateNo 삭제할 템플릿 번호
+   */
+  void deleteTemplate(Long templateNo);
 }
