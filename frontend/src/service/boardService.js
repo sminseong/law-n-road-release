@@ -14,3 +14,13 @@ export function fetchBoardList(page = 1, size = 10) {
         params: { page, size }
     }).then(res => res.data);
 }
+// Q&A 단일 조회
+export async function fetchQnaById(id) {
+    const res = await axios.get(`${API_BASE}/api/client/qna/${id}`)
+    return res.data
+}
+
+//  Q&A 수정 요청
+export async function updateQna(id, payload) {
+    await axios.put(`/api/client/qna/${id}`, payload)
+}

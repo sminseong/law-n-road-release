@@ -24,6 +24,10 @@ const answers = ref([
   {no: 3, avatar: '/img/profiles/park.png', author: '이재용 변호사', content: '세 번째 답변 예시입니다.', isSelected: false}
 ])
 
+function goEditPage() {
+  router.push(`/client/qna/edit/${qaNo}`)
+}
+
 // 모달 표시 여부
 const showDeleteModal = ref(false)
 
@@ -88,7 +92,7 @@ onMounted(async () => {
 
       <!-- 수정/삭제 버튼 -->
       <div class="d-flex justify-content-end mb-4">
-        <button @click="onEdit" class="btn btn-link text-secondary p-0 me-2 edit-btn">
+        <button @click="goEditPage" class="btn btn-link text-secondary p-0 me-2 edit-btn" >
           <i class="fas fa-pencil-alt"></i> 수정하기
         </button>
         <button @click="onDeleteClick" class="btn btn-link text-secondary p-0 delete-btn">
