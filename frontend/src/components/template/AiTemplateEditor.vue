@@ -1,5 +1,5 @@
 <script setup>
-import {ref, computed, onMounted, watch} from 'vue'
+import {ref, computed, onMounted, watch, nextTick } from 'vue'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import { VariableNode } from '@/components/template/variable.js'
 import StarterKit from '@tiptap/starter-kit'
@@ -193,6 +193,18 @@ function insertExample() {
   emit('update:content', htmlText)
   emit('update:variables', Object.entries(variableMap.value).map(([name, description]) => ({ name, description })))
 }
+
+const inputRef = ref(null)
+const descRef = ref(null)
+
+watch(showModal, (val) => {
+  if (val) {
+    nextTick(() => {
+      inputRef.value?.focus()
+    })
+  }
+})
+
 </script>
 
 <template>
@@ -349,11 +361,12 @@ function insertExample() {
       <h5 class="fw-bold">변수 추가</h5>
       <div class="mb-2">
         <label class="form-label">변수명 (예: name)</label>
-        <input v-model="newVariable" class="form-control" />
+        <input v-model="newVariable" class="form-control" ref="inputRef" />
       </div>
       <div class="mb-3">
         <label class="form-label">예시값 또는 설명 (예: 당사자)</label>
-        <textarea v-model="newDescription" class="form-control" rows="3" />
+        <textarea v-model="newDescription" class="form-control" rows="3"
+                  ref="descRef" @keydown.enter.prevent="addVariable"/>
       </div>
       <div class="text-end">
         <button class="btn btn-secondary me-2" @click="showModal = false">취소</button>
