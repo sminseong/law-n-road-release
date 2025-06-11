@@ -25,8 +25,8 @@ function toggleConsultation() {
 async function testBroadcastStart() {
   try {
     await sendBroadcastStartAlimtalk({
-      to: "01081272572",
-      name: "박건희",
+      to: "01038578216",
+      name: "방민영",
       title: "음주운전 뺑소니 사고",
       start: "22:00"
     });

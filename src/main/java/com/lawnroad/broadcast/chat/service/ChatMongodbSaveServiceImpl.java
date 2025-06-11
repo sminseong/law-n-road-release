@@ -40,7 +40,7 @@ public class ChatMongodbSaveServiceImpl implements ChatMongodbSaveService {
                                         .broadcastNo(dto.getBroadcastNo())
                                         .nickname(dto.getNickname())
                                         .message(dto.getMessage())
-                                        .reportCount(dto.getReportCount())
+                                        .reportStatus(dto.getReportStatus())
                                         .createdAt(dto.getCreatedAt())
                                         .build();
                             })
