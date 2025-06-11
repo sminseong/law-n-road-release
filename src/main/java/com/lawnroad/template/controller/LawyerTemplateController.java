@@ -35,7 +35,7 @@ public class LawyerTemplateController {
   public ResponseEntity<String> registerTemplate(@ModelAttribute LawyerTemplateRegisterDto dto) {
     Long lawyerNo = 1L;  // 로그인 미적용 상태 → 임시 고정
     String type = dto.getType();
-    String thumbnailPath = "uploads/defaults/template-thumbnail.png";
+    String thumbnailPath = "/uploads/defaults/template-thumbnail.png";
     
     // 저장된 파일 경로들 (실패 시 삭제용)
     List<String> uploadedPaths = new ArrayList<>();
