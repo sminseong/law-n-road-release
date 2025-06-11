@@ -15,6 +15,11 @@ export default defineConfig({
         "/mail": {
             target: "http://localhost:8080",
             changeOrigin: true
+        },
+        '/uploads': { // 템플릿에서 필요합니다 지우지 마세요
+            target: 'http://localhost:8080',
+            changeOrigin: true,
+            rewrite: path => path.replace(/^\/uploads/, '/uploads')
         }
     }
   },
