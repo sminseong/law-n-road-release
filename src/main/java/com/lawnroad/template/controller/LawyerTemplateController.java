@@ -3,9 +3,7 @@ package com.lawnroad.template.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lawnroad.common.util.FileStorageUtil;
-import com.lawnroad.template.dto.LawyerTemplateRegisterDto;
-import com.lawnroad.template.dto.TemplateListResponse;
-import com.lawnroad.template.dto.TemplateSearchCondition;
+import com.lawnroad.template.dto.*;
 import com.lawnroad.template.service.LawyerTemplateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -126,4 +124,27 @@ public class LawyerTemplateController {
     templateService.deleteTemplate(templateNo);
     return ResponseEntity.ok("삭제 완료");
   }
+  
+  /**
+   * 템플릿 상세 조회
+   * @param templateNo 템플릿 PK
+   * @param type 템플릿 유형 (EDITOR 또는 FILE)
+   */
+  @GetMapping("/{templateNo}")
+  public ResponseEntity<?> getTemplateDetail(
+      @PathVariable Long templateNo,
+      @RequestParam String type
+  ) {
+    if ("EDITOR".equalsIgnoreCase(type)) {
+      EditorTemplateDetailDto dto = templateService.getEditorTemplateDetail(templateNo);
+      return ResponseEntity.ok(dto);
+    } else if ("FILE".equalsIgnoreCase(type)) {
+      FileTemplateDetailDto dto = templateService.getFileTemplateDetail(templateNo);
+      return ResponseEntity.ok(dto);
+    } else {
+      return ResponseEntity.badRequest().body("잘못된 템플릿 유형입니다: " + type);
+    }
+  }
+  
+  
 }

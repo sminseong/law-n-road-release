@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import {ref, watch} from 'vue'
 
 const props = defineProps({
   templateFiles: {
@@ -11,6 +11,14 @@ const props = defineProps({
 const emit = defineEmits(['update:templateFiles'])
 
 const fileList = ref([])
+
+watch(
+    () => props.templateFiles,
+    (newVal) => {
+      fileList.value = newVal || []
+    },
+    { immediate: true }
+)
 
 const handleFileChange = (e) => {
   const files = Array.from(e.target.files)
@@ -47,10 +55,22 @@ const removeFile = (index) => {
 
     <input type="file" class="form-control mb-3" accept=".pdf,.doc,.docx" multiple @change="handleFileChange" />
 
-    <ul v-if="fileList.length" class="list-group">
-      <li v-for="(file, i) in fileList" :key="i" class="list-group-item d-flex justify-content-between align-items-center">
-        {{ file.name }}
-        <button class="btn btn-sm btn-outline-danger" @click="removeFile(i)">삭제</button>
+    <ul
+        v-if="fileList.length"
+        class="bg-white border rounded"
+        style="list-style: none; padding: 0;"
+    >
+      <li
+          v-for="(file, i) in fileList"
+          :key="i"
+          class="d-flex justify-content-between align-items-center"
+          :style="{
+      padding: '0.75rem 1rem',
+      borderBottom: i !== fileList.length - 1 ? '1px solid #eee' : 'none'
+    }"
+      >
+        <span>{{ file.originalName || file.name }}</span>
+        <button class="btn btn-outline-danger btn-sm" @click="removeFile(i)">삭제</button>
       </li>
     </ul>
 

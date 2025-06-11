@@ -8,7 +8,7 @@ import http from '@/libs/HttpRequester'
 
 const route = useRoute()
 const templateNo = route.params.no
-const templateType = route.query.type // 'EDITOR' 또는 'FILE'
+const templateType = route.query.type || 'EDITOR'
 
 // 공통 필드
 const name = ref('')
@@ -33,26 +33,34 @@ const uploadedFiles = ref([])
 
 onMounted(async () => {
   try {
-    const res = await http.get(`/api/lawyer/templates/${templateNo}`)
+    const res = await http.get(`/api/lawyer/templates/${templateNo}`, { type: templateType })
     const data = res.data
 
+    console.log(data)
+
+    // 공통 필드 세팅
     name.value = data.name
     price.value = data.price
     discountRate.value = data.discountRate
     categoryNo.value = data.categoryNo
     description.value = data.description
-    selectedTab.value = data.type === 'EDITOR' ? 'ai' : 'upload'
+    createdAt.value = data.createdAt
     oldThumbnailPath.value = data.thumbnailPath
     thumbnailPreview.value = data.thumbnailPath
-    createdAt.value = data.createdAt
 
-    if (data.type === 'EDITOR') {
+    // 유형별 분기
+    if (templateType === 'EDITOR') {
+      selectedTab.value = 'ai'
       editorContent.value = data.content
       editorVariables.value = JSON.parse(data.varJson || '[]')
-    } else {
+    } else if (templateType === 'FILE') {
+      selectedTab.value = 'upload'
       uploadedFiles.value = JSON.parse(data.pathJson || '[]')
+    } else {
+      throw new Error(`알 수 없는 템플릿 유형: ${templateType}`)
     }
   } catch (e) {
+    console.error(e)
     alert('템플릿 정보를 불러오지 못했습니다.')
   }
 })
@@ -150,6 +158,7 @@ async function handleUpdate() {
             v-if="selectedTab === 'ai'"
             v-model:content="editorContent"
             v-model:variables="editorVariables"
+            :editor="editor"
         />
 
         <UploadTemplateForm

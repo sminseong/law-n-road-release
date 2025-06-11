@@ -112,5 +112,44 @@
           AND is_deleted = 0
     </update>
 
+    <!-- 템플릿 수정 (복제 후 원본 삭제) -->
+
+    <!-- Editor 기반 템플릿 상세 조회 -->
+    <select id="findEditorTemplateDetail" resultType="com.lawnroad.template.dto.EditorTemplateDetailDto">
+        SELECT
+            t.no,
+            t.name,
+            t.price,
+            t.discount_rate,
+            t.category_no,
+            t.description,
+            t.thumbnail_path,
+            e.content,
+            e.var_json,
+            e.ai_enabled,
+            t.created_at
+        FROM template t
+                 JOIN tmpl_editor_based e ON t.no = e.no
+        WHERE t.no = #{templateNo}
+          AND t.is_deleted = 0
+    </select>
+
+    <!-- File 기반 템플릿 상세 조회 -->
+    <select id="findFileTemplateDetail" resultType="com.lawnroad.template.dto.FileTemplateDetailDto">
+        SELECT
+            t.no,
+            t.name,
+            t.price,
+            t.discount_rate,
+            t.category_no,
+            t.description,
+            t.thumbnail_path,
+            f.path_json,
+            t.created_at
+        FROM template t
+                 JOIN tmpl_file_based f ON t.no = f.no
+        WHERE t.no = #{templateNo}
+          AND t.is_deleted = 0
+    </select>
 
 </mapper>

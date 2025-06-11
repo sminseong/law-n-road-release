@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import {ref, computed, onMounted, watch} from 'vue'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import { VariableNode } from '@/components/template/variable.js'
 import StarterKit from '@tiptap/starter-kit'
@@ -9,7 +9,7 @@ import TextStyle from '@tiptap/extension-text-style'
 // props
 const props = defineProps({
   content: String,
-  variables: Array
+  variables: Array,
 })
 const emit = defineEmits(['update:content', 'update:variables'])
 
@@ -66,6 +66,29 @@ onMounted(() => {
     showAiPopover.value = true
   })
 })
+
+watch(
+    () => props.content,
+    (newVal) => {
+      if (editor.value && newVal) {
+        editor.value.commands.setContent(newVal)
+      }
+    },
+    { immediate: true }
+)
+
+watch(
+    () => props.variables,
+    (newVal) => {
+      if (newVal) {
+        variableMap.value = {}
+        newVal.forEach(v => {
+          variableMap.value[v.name] = v.description
+        })
+      }
+    },
+    { immediate: true }
+)
 
 const fixTone = async (tone) => {
   const text = window.getSelection().toString()

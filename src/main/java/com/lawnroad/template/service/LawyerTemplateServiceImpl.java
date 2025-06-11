@@ -2,10 +2,7 @@ package com.lawnroad.template.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lawnroad.common.util.FileStorageUtil;
-import com.lawnroad.template.dto.LawyerTemplateRegisterDto;
-import com.lawnroad.template.dto.TemplateDto;
-import com.lawnroad.template.dto.TemplateListResponse;
-import com.lawnroad.template.dto.TemplateSearchCondition;
+import com.lawnroad.template.dto.*;
 import com.lawnroad.template.mapper.LawyerTemplateMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -103,6 +100,20 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
     if (updated == 0) {
       throw new IllegalArgumentException("존재하지 않거나 이미 삭제된 템플릿입니다.");
     }
+  }
+  
+  // 에디터 기반 템플릿 상세 조회
+  @Override
+  @Transactional(readOnly = true)
+  public EditorTemplateDetailDto getEditorTemplateDetail(Long templateNo) {
+    return templateMapper.findEditorTemplateDetail(templateNo);
+  }
+  
+  // 파일 기반 템플릿 상세 조회
+  @Override
+  @Transactional(readOnly = true)
+  public FileTemplateDetailDto getFileTemplateDetail(Long templateNo) {
+    return templateMapper.findFileTemplateDetail(templateNo);
   }
   
 }

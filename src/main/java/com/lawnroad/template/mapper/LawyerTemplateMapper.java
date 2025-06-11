@@ -1,5 +1,7 @@
 package com.lawnroad.template.mapper;
 
+import com.lawnroad.template.dto.EditorTemplateDetailDto;
+import com.lawnroad.template.dto.FileTemplateDetailDto;
 import com.lawnroad.template.dto.TemplateDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -38,5 +40,10 @@ public interface LawyerTemplateMapper {
   
   // 템플릿 삭제
   int markTemplateAsDeleted(@Param("templateNo") Long templateNo);
+  
+  // 에디터 기반 템플릿 상세 조회
+  EditorTemplateDetailDto findEditorTemplateDetail(@Param("templateNo") Long templateNo);
+  
+  // 파일 기반 템플릿 상세 조회
+  FileTemplateDetailDto findFileTemplateDetail(@Param("templateNo") Long templateNo);
 }
-

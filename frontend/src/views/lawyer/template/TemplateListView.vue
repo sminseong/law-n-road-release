@@ -176,7 +176,7 @@ function handleRowClick(row) {
 function handleEdit(row) {
   router.push({
     path: `/lawyer/templates/edit/${row.no}`,
-    query: { type: row.type }
+    query: { type: typeLabelToCode[row.type] } // 예: 'AI 생성형 템플릿' → 'EDITOR'
   })
 }
 
