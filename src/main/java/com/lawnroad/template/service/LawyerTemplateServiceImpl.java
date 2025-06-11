@@ -1,19 +1,31 @@
-package com.lawnroad.template2.service;
+package com.lawnroad.template.service;
 
-import com.lawnroad.template2.dto.LawyerTemplateRegisterDto;
-import com.lawnroad.template2.dto.TemplateDto;
-import com.lawnroad.template2.mapper.LawyerTemplateMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lawnroad.common.util.FileStorageUtil;
+import com.lawnroad.template.dto.LawyerTemplateRegisterDto;
+import com.lawnroad.template.dto.TemplateDto;
+import com.lawnroad.template.mapper.LawyerTemplateMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class LawyerTemplateServiceImpl implements LawyerTemplateService {
   
   private final LawyerTemplateMapper templateMapper;
+  private final FileStorageUtil fileStorageUtil;
+  private final ObjectMapper objectMapper;
   
   @Override
-  public void registerTemplate(LawyerTemplateRegisterDto dto, String thumbnailPath, String filePath) {
+  @Transactional
+  public void registerTemplate(LawyerTemplateRegisterDto dto, String thumbnailPath) {
     // 1. 공통 템플릿 정보 insert
     TemplateDto template = new TemplateDto();
     template.setUserNo(1L);  // 로그인 전 임시 하드코딩
@@ -39,8 +51,8 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
     }
     
     // 3. 파일 기반이면 tmpl_file_based insert
-    if ("FILE".equals(dto.getType())) {
-      templateMapper.insertFileBasedTemplate(template.getNo(), filePath);
+    if ("FILE".equalsIgnoreCase(dto.getType())) {
+      templateMapper.insertFileBasedTemplate(template.getNo(), dto.getPathJson());
     }
   }
 }

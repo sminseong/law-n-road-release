@@ -3,10 +3,12 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.lawnroad.template2.mapper.LawyerTemplateMapper">
+<mapper namespace="com.lawnroad.template.mapper.LawyerTemplateMapper">
 
     <!-- 템플릿 테이블 등록 -->
-    <insert id="insertTemplate" parameterType="com.lawnroad.template2.dto.TemplateDto" useGeneratedKeys="true" keyProperty="no">
+    <insert id="insertTemplate"
+            parameterType="com.lawnroad.template.dto.TemplateDto"
+            useGeneratedKeys="true" keyProperty="no">
         INSERT INTO template (
             `user_no`,
             `category_no`,
@@ -48,10 +50,10 @@
     <insert id="insertFileBasedTemplate">
         INSERT INTO tmpl_file_based (
             no,
-            path
+            path_json
         ) VALUES (
                      #{no},
-                     #{path}
+                     #{pathJson}
                  )
     </insert>
 

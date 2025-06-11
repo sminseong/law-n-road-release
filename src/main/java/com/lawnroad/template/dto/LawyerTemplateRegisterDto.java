@@ -1,7 +1,9 @@
-package com.lawnroad.template2.dto;
+package com.lawnroad.template.dto;
 
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Data
 public class LawyerTemplateRegisterDto {
@@ -33,5 +35,8 @@ public class LawyerTemplateRegisterDto {
   
   // 파일 기반
   // 템플릿 파일 경로
-  private MultipartFile templateFile;
+  // MultipartFile 리스트로 다중 바인딩
+  private List<MultipartFile> templateFiles;
+  // 실제 DB에 저장할 JSON 메타 (원본명 + 저장경로 리스트)
+  private String pathJson;
 }

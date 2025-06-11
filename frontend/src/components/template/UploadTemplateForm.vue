@@ -2,7 +2,10 @@
 import { ref } from 'vue'
 
 const props = defineProps({
-  templateFiles: Array // 부모는 v-model:templateFiles로 넘겨야 함
+  templateFiles: {
+    type: Array,
+    default: () => []
+  }
 })
 
 const emit = defineEmits(['update:templateFiles'])

@@ -16,12 +16,16 @@ const router = useRouter()
 
 // 공통 필드
 const name = ref('')
-const price = ref('')
-const discountRate = ref('')
-const categoryNo = ref('')
+const price = ref(0)
+const discountRate = ref(0)
+const categoryNo = ref(null)
 const description = ref('')
 const thumbnailFile = ref(null)
 const thumbnailPreview = ref(null)
+const content = ref('')
+const varJson = ref('')
+const aiEnabled = ref(1)
+const uploadedFiles = ref([])
 
 // 탭 상태
 const selectedTab = ref('ai') // 'ai' or 'upload'
@@ -30,44 +34,45 @@ const selectedTab = ref('ai') // 'ai' or 'upload'
 const editorContent = ref('')
 const editorVariables = ref([])
 
-// 일반 업로드용
-const uploadedFile = ref(null)
-
-function onThumbnailChange(e) {
-  const file = e.target.files[0]
-  thumbnailFile.value = file
-  thumbnailPreview.value = file ? URL.createObjectURL(file) : null
-}
-
+// 제출 핸들러
 async function handleSubmit() {
   const formData = new FormData()
 
   formData.append('name', name.value)
   formData.append('price', price.value)
-  formData.append('discount_rate', discountRate.value)
-  formData.append('category_no', categoryNo.value)
+  formData.append('discountRate', discountRate.value)
+  formData.append('categoryNo', categoryNo.value)
   formData.append('description', description.value)
+  formData.append('type', selectedTab.value === 'ai' ? 'EDITOR' : 'FILE')
+
   if (thumbnailFile.value) {
     formData.append('file', thumbnailFile.value)
   }
 
   if (selectedTab.value === 'ai') {
-    formData.append('title', editorTitle.value)
     formData.append('content', editorContent.value)
-    formData.append('var_json', JSON.stringify(editorVariables.value))
-    formData.append('ai_enabled', 1)
+    formData.append('varJson', JSON.stringify(editorVariables.value))
+    formData.append('aiEnabled', 1)
   } else {
-    formData.append('template_file', uploadedFile.value)
+    uploadedFiles.value.forEach(file => {
+      formData.append('templateFiles', file)
+    })
   }
 
   try {
-    await http.post('/api/templates/lawyer', formData)
+    await http.post('/api/lawyer/templates/register', formData)
     alert('템플릿이 등록되었습니다.')
     router.push('/lawyer/templates')
   } catch (e) {
     console.error(e)
     alert('등록 실패')
   }
+}
+
+function onThumbnailChange(e) {
+  const file = e.target.files[0]
+  thumbnailFile.value = file
+  thumbnailPreview.value = file ? URL.createObjectURL(file) : null
 }
 </script>
 
@@ -149,7 +154,7 @@ async function handleSubmit() {
 
         <UploadTemplateForm
             v-if="selectedTab === 'upload'"
-            v-model:templateFile="uploadedFile"
+            v-model:templateFiles="uploadedFiles"
         />
       </div>
 
@@ -195,7 +200,7 @@ async function handleSubmit() {
 }
 
 .template-wrapper {
-  background-color: #f7f8fb; /* 부드러운 옅은 회색-파랑 */
+  background-color: #f7f8fb;/* 부드러운 옅은 회색-파랑 */
   border: 1px solid #d6dbe8;
   border-radius: 0.5rem;
   padding: 1.5rem;

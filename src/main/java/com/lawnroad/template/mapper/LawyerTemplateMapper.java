@@ -1,6 +1,6 @@
-package com.lawnroad.template2.mapper;
+package com.lawnroad.template.mapper;
 
-import com.lawnroad.template2.dto.TemplateDto;
+import com.lawnroad.template.dto.TemplateDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -17,5 +17,5 @@ public interface LawyerTemplateMapper {
   
   // 파일 기반 추가 정보 등록
   void insertFileBasedTemplate(@Param("no") Long templateNo,
-                               @Param("path") String path);
+                               @Param("pathJson") String pathJson);
 }
