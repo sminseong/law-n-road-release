@@ -45,4 +45,10 @@
         ORDER BY slot_date, slot_time
     </select>
 
+    <select id="getAmountBySlotNo" parameterType="long" resultType="long">
+        SELECT amount
+        FROM weekly_time_slots
+        WHERE no = #{slotNo}
+    </select>
+
 </mapper>

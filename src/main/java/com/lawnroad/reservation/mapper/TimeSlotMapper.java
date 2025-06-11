@@ -26,4 +26,7 @@ public interface TimeSlotMapper {
             @Param("startDate") LocalDate startDate,
             @Param("endDate")   LocalDate endDate
     );
+    
+    // 주간 슬롯에서 가격을 가져오기
+    Long getAmountBySlotNo(@Param("slotNo") Long slotNo);
 }

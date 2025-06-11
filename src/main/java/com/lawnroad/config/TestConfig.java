@@ -7,10 +7,13 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 
 @Configuration
 @EnableAutoConfiguration
-@ComponentScan("com.lawnroad.reservation")
-@MapperScan(
-        basePackages = "com.lawnroad.reservation.mapper",
-        annotationClass = org.apache.ibatis.annotations.Mapper.class
-)
+@ComponentScan(basePackages = {
+        "com.lawnroad.reservation.service",
+        "com.lawnroad.payment.service"
+})
+@MapperScan({
+        "com.lawnroad.reservation.mapper",
+        "com.lawnroad.payment.mapper"
+})
 public class TestConfig {
 }
