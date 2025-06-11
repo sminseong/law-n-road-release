@@ -1,5 +1,7 @@
 package com.lawnroad.broadcast.live.service;
 
+import com.lawnroad.broadcast.live.dto.ScheduleCalendarDto;
+import com.lawnroad.broadcast.live.dto.ScheduleDateDto;
 import com.lawnroad.broadcast.live.dto.ScheduleRequestDto;
 import com.lawnroad.broadcast.live.mapper.ScheduleMapper;
 import com.lawnroad.broadcast.live.model.KeywordVo;
@@ -48,7 +50,12 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     @Override
-    public List<ScheduleVo> getSchedulesByDate(LocalDate date) {
+    public List<ScheduleDateDto> getSchedulesByDate(LocalDate date) {
         return scheduleMapper.findAllByDate(date);
+    }
+
+    @Override
+    public List<ScheduleCalendarDto> getSchedulesByMonth(String month) {
+        return scheduleMapper.findAllByMonth(month);
     }
 }

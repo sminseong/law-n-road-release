@@ -1,5 +1,7 @@
 package com.lawnroad.broadcast.live.mapper;
 
+import com.lawnroad.broadcast.live.dto.ScheduleCalendarDto;
+import com.lawnroad.broadcast.live.dto.ScheduleDateDto;
 import com.lawnroad.broadcast.live.model.ScheduleVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -11,5 +13,6 @@ import java.util.List;
 public interface ScheduleMapper {
     // 스케줄 등록(insert)
     void insertSchedule(ScheduleVo scheduleVo);
-    List<ScheduleVo> findAllByDate(@Param("date") LocalDate date);
+    List<ScheduleDateDto> findAllByDate(@Param("date") LocalDate date);
+    List<ScheduleCalendarDto> findAllByMonth(@Param("month") String month);
 }

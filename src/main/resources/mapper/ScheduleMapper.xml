@@ -14,11 +14,33 @@
         )
     </insert>
 
-    <select id="findAllByDate" resultType="com.lawnroad.broadcast.live.model.ScheduleVo">
-        SELECT *
-        FROM broadcast_schedule
+    <select id="findAllByDate" resultType="com.lawnroad.broadcast.live.dto.ScheduleDateDto">
+        SELECT bs.no,
+        bs.name,
+        bs.content,
+        bs.date,
+        bs.start_time,
+        bs.end_time,
+        l.name AS lawyer_name
+        FROM broadcast_schedule bs
+        JOIN user u ON (bs.user_no = u.no)
+        JOIN lawyer l ON (u.no = l.no)
         WHERE date = #{date}
-        ORDER BY start_time
+        ORDER BY bs.start_time
+    </select>
+
+    <select id="findAllByMonth" resultType="com.lawnroad.broadcast.live.dto.ScheduleCalendarDto">
+        SELECT
+        bs.no AS scheduleNo,
+        bs.name AS title,
+        bs.date,
+        bs.start_time,
+        l.name AS lawyer_name
+        FROM broadcast_schedule bs
+        JOIN user u ON (bs.user_no = u.no)
+        JOIN lawyer l ON (u.no = l.no)
+        WHERE DATE_FORMAT(bs.date, '%Y-%m') = #{month}
+        ORDER BY bs.date, bs.start_time
     </select>
 
 </mapper>

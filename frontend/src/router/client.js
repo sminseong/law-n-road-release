@@ -33,7 +33,7 @@ export default [
         component: () => import('@/views/client/ClientVodView.vue')
     },
     {
-        path: '/client/broadcasts/:broadcastNo/preQuestion',
+        path: '/client/broadcasts/schedule/:scheduleNo/preQuestion',
         name: 'ClientBroadCastsPreQuestion',
         component: () => import('@/views/client/preQuestion.vue')
     },
