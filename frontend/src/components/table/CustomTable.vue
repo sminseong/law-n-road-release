@@ -49,8 +49,6 @@ function onFilterChange(key, value) {
     ...selectedFilters.value,
     keyword: searchKeyword.value
   })
-  // Reset to first page on filter change
-  emit('page-change', 1)
 }
 
 watch(searchKeyword, () => {
@@ -58,7 +56,6 @@ watch(searchKeyword, () => {
     ...selectedFilters.value,
     keyword: searchKeyword.value
   })
-  emit('page-change', 1)
 })
 
 // Pagination group logic

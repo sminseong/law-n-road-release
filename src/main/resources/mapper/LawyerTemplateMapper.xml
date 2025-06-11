@@ -65,14 +65,16 @@
     <select id="selectMyTemplates" resultType="com.lawnroad.template.dto.TemplateDto">
         SELECT
         t.no,
+        t.user_no        AS userNo,
+        t.category_no    AS categoryNo,
+        t.type,
+        c.name           AS category_name,
         t.name,
         t.price,
         t.discount_rate,
         t.thumbnail_path,
         t.sales_count,
-        t.created_at,
-        t.type,
-        c.name AS category_name
+        t.created_at
         FROM template t
         LEFT JOIN category c ON t.category_no = c.no
         WHERE t.user_no = #{lawyerNo}

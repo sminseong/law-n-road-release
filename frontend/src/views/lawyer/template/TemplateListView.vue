@@ -16,7 +16,7 @@ const totalPages = ref(1)
 
 // 컬럼 정의
 const columns = [
-  { label: '썸네일', key: 'imageUrl' },
+  { label: '썸네일', key: 'thumbnailPath' },
   { label: '템플릿명', key: 'name' },
   { label: '유형', key: 'type' },
   { label: '카테고리', key: 'categoryName' },
@@ -76,11 +76,11 @@ async function fetchTemplates(filters, pageNo) {
       categoryNo: t.categoryNo,
       categoryName: mapCategoryNoToName(t.categoryNo),
       name: t.name,
-      price: `₩${t.price.toLocaleString()}`,
+      price: `${t.price.toLocaleString()}원`,
       discountRate: t.discountRate != null ? `${t.discountRate}%` : '0%',
       salesCount: t.salesCount ?? 0,
       createdAt: t.createdAt?.split('T')[0],
-      imageUrl: t.thumbnailPath
+      thumbnailPath: t.thumbnailPath
     }))
     totalPages.value = tp
   } catch (e) {
@@ -92,7 +92,7 @@ async function fetchTemplates(filters, pageNo) {
 function normalizeFilters(filters) {
   return {
     categoryNo: filters.categoryName === '전체' ? null : mapCategoryNameToNo(filters.categoryName),
-    type: filters.type === '전체' ? null : (filters.type === 'AI 생성형 템플릿' ? 'EDITOR' : 'FILE'),
+    type: convertType(filters.type),
     sort: convertSort(filters.sort),
     keyword: filters.keyword || null
   }
@@ -135,6 +135,19 @@ function convertSort(sortLabel) {
       return 'priceAsc'
     case '최고가순':
       return 'priceDesc'
+    default:
+      return null
+  }
+}
+
+// 서버가 받는 코드로 매핑
+function convertType(typeLabel) {
+  switch (typeLabel) {
+    case 'AI 생성형 템플릿':
+      return 'EDITOR'
+    case '문서 기반 템플릿':
+      return 'FILE'
+    case '전체':
     default:
       return null
   }
@@ -196,7 +209,7 @@ function goToRegister() {
         :columns="columns"
         :filters="filters"
         :show-search-input="true"
-        :image-config="{ enabled: true, key: 'imageUrl', targetKey: 'imageUrl' }"
+        :image-config="{ enabled: true, key: 'thumbnailPath', targetKey: 'thumbnailPath' }"
         :action-buttons="{ edit: true, delete: true }"
         :current-page="page"
         :total-pages="totalPages"
