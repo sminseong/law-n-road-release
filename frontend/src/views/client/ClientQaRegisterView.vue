@@ -2,30 +2,49 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
+import { createQna } from '@/service/boardService.js'
 
 const router = useRouter()
+
+// 입력 필드 데이터
 const title = ref('')
-const date  = ref('')
+const incidentDate  = ref('')
 const content = ref('')
+const userNo = ref(1) // 🔐 임시: 로그인 후 실제 사용자 ID로 대체
 
 // 유효성
 const isTitleValid   = computed(() => title.value.trim().length >= 10)
-const isDateValid    = computed(() => !!date.value)
+const isDateValid    = computed(() => !!incidentDate.value)
 const isContentValid = computed(() => content.value.trim().length >= 100)
 const isFormValid    = computed(() => isTitleValid.value && isDateValid.value && isContentValid.value)
 
-function onSubmit(){
-  if(!isFormValid.value) return
-  // TODO: API 호출...
-  router.push('/qna')
+// 등록 함수
+const submit = async () => {
+  try {
+    const payload = {
+      title: title.value,
+      content: content.value,
+      incidentDate: incidentDate.value,
+      userNo: userNo.value,
+      categoryNo: 3
+    }
+
+    await createQna(payload) // boardService.js에서 불러온 함수
+    alert('등록 성공!')
+    router.push('/qna')
+  } catch (err) {
+    console.error('🚨 등록 실패:', err.response?.data || err)
+    alert('등록 실패')
+  }
 }
+
 </script>
 
 <template>
   <ClientFrame>
     <div class="qa-create py-5 px-3 px-lg-5">
       <h2 class="fw-bold fs-3 mb-4">상담글 작성</h2>
-      <form @submit.prevent="onSubmit">
+      <form @submit.prevent="submit">
         <!-- 제목 -->
         <div class="mb-4">
           <label class="form-label fw-semibold">
@@ -41,7 +60,7 @@ function onSubmit(){
           <label class="form-label fw-semibold">
             최초 사건 발생 일자<span class="text-danger">*</span>
           </label>
-          <input v-model="date" type="date" class="form-control"
+          <input v-model="incidentDate" type="date" class="form-control"
               :class="{ 'is-valid': isDateValid,'invalid-hover': !isDateValid}" />
         </div>
 

@@ -1,5 +1,6 @@
 package com.lawnroad.board.service;
 
+import com.lawnroad.board.dto.BoardCreateDto;
 import com.lawnroad.board.dto.BoardListDto;
 
 import java.util.List;
@@ -17,5 +18,11 @@ public interface BoardService {
      * @return 게시글 총 개수 (페이징 계산용)
      */
     int getBoardCount();
+
+    /**
+     * 게시글 등록
+     * @param dto 등록할 게시글 데이터 (제목, 내용, 사건발생일자, 작성자 ID 포함)
+     */
+    void register(BoardCreateDto dto);
 
 }

@@ -1,7 +1,5 @@
 import axios from 'axios';
-
-const API_BASE = import.meta.env.VITE_API_BASE || '';
-// VITE_API_BASE를 .env에 설정했으면 사용, 아니라면 빈 문자열로 두고 개발서버 프록시 설정 활용
+import httpRequester from "@/libs/HttpRequester.js";
 
 /**
  * 게시글 목록 조회
@@ -10,17 +8,27 @@ const API_BASE = import.meta.env.VITE_API_BASE || '';
  * @returns {Promise<{ content: Array, page: number, size: number, totalElements?: number, totalPages?: number }>}
  */
 export function fetchBoardList(page = 1, size = 10) {
-    return axios.get(`${API_BASE}/api/client/qna`, {
+    return axios.get(`/api/client/qna`, {
         params: { page, size }
     }).then(res => res.data);
 }
 // Q&A 단일 조회
 export async function fetchQnaById(id) {
-    const res = await axios.get(`${API_BASE}/api/client/qna/${id}`)
+    const res = await axios.get(`/api/client/qna/${id}`)
     return res.data
 }
 
 //  Q&A 수정 요청
 export async function updateQna(id, payload) {
     await axios.put(`/api/client/qna/${id}`, payload)
+}
+
+/**
+ * 게시글 등록
+ * @param {Object} payload - 게시글 등록 데이터 (title, content, incidentDate, userNo 포함)
+ * @returns {Promise<string>}
+ */
+export async function createQna(payload) {
+    console.log('payload', payload)
+    return await httpRequester.post(`/api/client/qna`, payload)
 }

@@ -34,6 +34,14 @@
         SELECT COUNT(*) FROM board
     </select>
 
+    <!-- 게시글 등록 -->
+    <insert id="insertBoard" parameterType="com.lawnroad.board.dto.BoardCreateDto">
+        INSERT INTO board ( category_no, user_no, title, content, incident_date, created_at, updated_at )
+        VALUES ( #{categoryNo}, #{userNo}, #{title}, #{content}, #{incidentDate}, NOW(), NOW() )
+    </insert>
+
+
+
 <!--    &lt;!&ndash; 게시글 상세 조회: 카테고리명/사용자명 조인 포함 &ndash;&gt;-->
 <!--    <resultMap id="BoardDetailMap" type="com.lawnroad.board.dto.BoardDetailDto">-->
 <!--        <id property="no" column="no"/>-->
@@ -66,26 +74,6 @@
 <!--        WHERE b.no = #{no}-->
 <!--    </select>-->
 
-<!--    &lt;!&ndash; 게시글 생성 &ndash;&gt;-->
-<!--    <insert id="insertBoard" parameterType="BoardCreateDto" useGeneratedKeys="true" keyProperty="no">-->
-<!--        INSERT INTO board (-->
-<!--        category_no,-->
-<!--        user_no,-->
-<!--        title,-->
-<!--        content,-->
-<!--        incident_date,-->
-<!--        created_at,-->
-<!--        updated_at-->
-<!--        ) VALUES (-->
-<!--        #{categoryNo},-->
-<!--        #{userNo},-->
-<!--        #{title},-->
-<!--        #{content},-->
-<!--        #{incidentDate},-->
-<!--        NOW(),-->
-<!--        NOW()-->
-<!--        )-->
-<!--    </insert>-->
 
 <!--    &lt;!&ndash; 게시글 수정 &ndash;&gt;-->
 <!--    <update id="updateBoard" parameterType="BoardUpdateDto">-->

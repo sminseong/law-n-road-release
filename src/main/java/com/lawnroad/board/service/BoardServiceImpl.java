@@ -1,21 +1,19 @@
 package com.lawnroad.board.service;
 
+import com.lawnroad.board.dto.BoardCreateDto;
 import com.lawnroad.board.dto.BoardListDto;
 import com.lawnroad.board.mapper.BoardMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service // 스프링 빈으로 등록되는 서비스 계층 클래스임을 명시
+@RequiredArgsConstructor
 public class BoardServiceImpl implements BoardService {
 
     // BoardMapper 의존성 주입: DB와 직접 연결하는 MyBatis 매퍼
     private final BoardMapper boardMapper;
-
-    // 생성자 주입 방식으로 BoardMapper를 주입받음
-    public BoardServiceImpl(BoardMapper boardMapper) {
-        this.boardMapper = boardMapper;
-    }
 
     //페이징된 게시글 목록을 조회하는 메서드
     @Override
@@ -34,5 +32,11 @@ public class BoardServiceImpl implements BoardService {
     public int getBoardCount() {
         // 매퍼를 통해 DB에서 게시글 개수(count)를 조회
         return boardMapper.getBoardCount();
+    }
+
+    //게시글 등록
+    @Override
+    public void register(BoardCreateDto dto) {
+        boardMapper.insertBoard(dto);
     }
 }

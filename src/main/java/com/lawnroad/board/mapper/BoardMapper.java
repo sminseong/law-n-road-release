@@ -1,5 +1,6 @@
 package com.lawnroad.board.mapper;
 
+import com.lawnroad.board.dto.BoardCreateDto;
 import com.lawnroad.board.dto.BoardListDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -12,4 +13,6 @@ public interface BoardMapper {
     List<BoardListDto> selectBoardList(@Param("offset") int offset, @Param("limit") int limit);
     // 게시글 총 개수 조회
     int getBoardCount();
+
+    void insertBoard(BoardCreateDto dto);
 }
