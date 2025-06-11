@@ -15,8 +15,8 @@ const totalPages = ref(null)   // 전체 페이지 수 (백엔드가 제공하�
 const isLoading = ref(false)   // 로딩 상태
 const error = ref(null)        // 오류 상태
 
-// 페이지네이션 그룹 계산 (예: 5개씩 묶음)
-const pagesInGroup = 5
+// 페이지네이션 그룹 계산 (예: 10개씩 묶음)
+const pagesInGroup = 10
 const startPage = computed(() => Math.floor((page.value - 1) / pagesInGroup) * pagesInGroup + 1)
 const pageNumbers = computed(() => {
   const endPage = Math.min(startPage.value + pagesInGroup - 1, totalPages.value)
@@ -55,20 +55,17 @@ async function loadList() {
     }
 
     // ✅ 임시 하드코딩
-    totalPages.value = 20
+    //totalPages.value = 20
 
-    // ✅ 아래는 나중에 백엔드 연결하면 쓰기
-    // // totalElements, totalPages 처리
-    // if (data.totalElements != null) {
-    //   totalElements.value = data.totalElements
-    // }
-    // if (data.totalPages != null) {
-    //   totalPages.value = data.totalPages
-    // } else if (totalElements.value != null) {
-    //   totalPages.value = Math.ceil(totalElements.value / size.value)
-    // } else {
-    //   totalPages.value = null
-    // }
+    // totalElements, totalPages 처리
+    if (data.totalPages != null) {
+      totalPages.value = data.totalPages
+    } else if (data.totalElements != null) {
+      totalElements.value = data.totalElements
+      totalPages.value = Math.ceil(totalElements.value / size.value)
+    } else {
+      totalPages.value = null
+    }
   } catch (err) {
     console.error('목록 조회 실패', err)
     error.value = err
@@ -144,41 +141,6 @@ watch(page, () => {
           <i class="lc lc-chevron-right"></i>
         </button>
       </nav>
-
-<!--      <nav-->
-<!--          v-if="totalPages == null ? list.length === size : totalPages > 1"-->
-<!--          class="pagination-wrapper mt-4 d-flex justify-content-center align-items-center"-->
-<!--      >-->
-<!--        <button-->
-<!--            v-if="page > 1"-->
-<!--            class="btn btn-link p-0 me-3"-->
-<!--            @click="gotoPage(page - 1)"-->
-<!--        >-->
-<!--          <i class="lc lc-chevron-left"></i>-->
-<!--          <span class="lt-desktop">이전</span>-->
-<!--        </button>-->
-
-<!--        <div class="pagination-button-wrap">-->
-<!--          <button-->
-<!--              v-for="p in (totalPages != null ? totalPages : (list.length === size ? page + 1 : page))"-->
-<!--              :key="p"-->
-<!--              class="pagination-button mx-1 px-2 py-1 border rounded"-->
-<!--              :class="{ on: page === p }"-->
-<!--              @click="gotoPage(p)"-->
-<!--          >-->
-<!--            {{ p }}-->
-<!--          </button>-->
-<!--        </div>-->
-
-<!--        <button-->
-<!--            v-if="totalPages == null ? list.length === size : page < totalPages"-->
-<!--            class="btn btn-link p-0 ms-3"-->
-<!--            @click="gotoPage(page + 1)"-->
-<!--        >-->
-<!--          <span class="lt-desktop">다음</span>-->
-<!--          <i class="lc lc-chevron-right"></i>-->
-<!--        </button>-->
-<!--      </nav>-->
     </section>
   </ClientFrame>
 </template>

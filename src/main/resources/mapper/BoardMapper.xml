@@ -29,10 +29,10 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
-<!--    &lt;!&ndash; 게시글 총 개수 조회 &ndash;&gt;-->
-<!--    <select id="selectBoardCount" resultType="int">-->
-<!--        SELECT COUNT(*) FROM board-->
-<!--    </select>-->
+    <!-- 게시글 총 개수 조회 -->
+    <select id="getBoardCount" resultType="int">
+        SELECT COUNT(*) FROM board
+    </select>
 
 <!--    &lt;!&ndash; 게시글 상세 조회: 카테고리명/사용자명 조인 포함 &ndash;&gt;-->
 <!--    <resultMap id="BoardDetailMap" type="com.lawnroad.board.dto.BoardDetailDto">-->

@@ -12,6 +12,5 @@ const API_BASE = import.meta.env.VITE_API_BASE || '';
 export function fetchBoardList(page = 1, size = 10) {
     return axios.get(`${API_BASE}/api/client/qna`, {
         params: { page, size }
-    })
-        .then(res => res.data);
+    }).then(res => res.data);
 }

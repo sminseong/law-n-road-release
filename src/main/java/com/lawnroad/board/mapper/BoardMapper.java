@@ -8,6 +8,8 @@ import java.util.List;
 
 @Mapper
 public interface BoardMapper {
-    // 목록 조회: offset, limit 파라미터를 @Param으로 지정
+    // 페이징 목록 조회 (offset & limit)
     List<BoardListDto> selectBoardList(@Param("offset") int offset, @Param("limit") int limit);
+    // 게시글 총 개수 조회
+    int getBoardCount();
 }
