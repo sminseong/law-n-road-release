@@ -4,14 +4,13 @@ package com.lawnroad.template.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lawnroad.common.util.FileStorageUtil;
 import com.lawnroad.template.dto.LawyerTemplateRegisterDto;
+import com.lawnroad.template.dto.TemplateListResponse;
+import com.lawnroad.template.dto.TemplateSearchCondition;
 import com.lawnroad.template.service.LawyerTemplateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -102,5 +101,18 @@ public class LawyerTemplateController {
       }
       return ResponseEntity.internalServerError().body("등록 실패: " + e.getMessage());
     }
+  }
+  
+  /**
+   * 변호사 본인 템플릿 목록 조회 API
+   *
+   * @param condition 검색 조건 (페이지, 카테고리, 정렬 등)
+   * @return 템플릿 목록 + 총 개수 + 총 페이지 수
+   */
+  @GetMapping
+  public ResponseEntity<TemplateListResponse> getMyTemplates(TemplateSearchCondition condition) {
+    System.out.println("▶ condition = {}" + condition);
+    Long lawyerNo = 1L;  // 로그인 미적용 상태 → 임시 고정
+    return ResponseEntity.ok(templateService.findTemplatesByLawyerNo(lawyerNo, condition));
   }
 }

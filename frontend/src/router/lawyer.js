@@ -38,11 +38,6 @@ export default [
         name: 'LawyerTemplateList',
         component: () => import('@/views/lawyer/template/TemplateListView.vue')
     },
-    // {
-    //     path: '/lawyer/templates/register',
-    //     name: 'TemplateRegister',
-    //     component: () => import('@/views/lawyer/template/TemplateFormView.vue')
-    // },
     {
         path: '/lawyer/templates/register',
         name: 'TemplateEditor',

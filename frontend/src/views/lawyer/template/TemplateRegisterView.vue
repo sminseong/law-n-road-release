@@ -94,7 +94,7 @@ function onThumbnailChange(e) {
           </div>
           <div class="col-md-8">
             <label class="form-label">상품명</label>
-            <input v-model="name" class="form-control mb-2" />
+            <input v-model="name" class="form-control mb-2" placeholder="예) 손해배상청구 내용증명 템플릿" />
             <label class="form-label">가격 (원)</label>
             <input v-model="price" type="number" class="form-control mb-2" />
             <label class="form-label">할인율 (%)</label>

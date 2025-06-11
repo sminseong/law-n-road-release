@@ -4,16 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lawnroad.common.util.FileStorageUtil;
 import com.lawnroad.template.dto.LawyerTemplateRegisterDto;
 import com.lawnroad.template.dto.TemplateDto;
+import com.lawnroad.template.dto.TemplateListResponse;
+import com.lawnroad.template.dto.TemplateSearchCondition;
 import com.lawnroad.template.mapper.LawyerTemplateMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +21,7 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
   private final FileStorageUtil fileStorageUtil;
   private final ObjectMapper objectMapper;
   
+  // 템플릿 등록
   @Override
   @Transactional
   public void registerTemplate(LawyerTemplateRegisterDto dto, String thumbnailPath) {
@@ -54,5 +53,44 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
     if ("FILE".equalsIgnoreCase(dto.getType())) {
       templateMapper.insertFileBasedTemplate(template.getNo(), dto.getPathJson());
     }
+  }
+  
+  // 템플릿 조회
+  @Override
+  @Transactional(readOnly = true)
+  public TemplateListResponse findTemplatesByLawyerNo(Long lawyerNo, TemplateSearchCondition condition) {
+    
+    // 1. offset 계산
+    int offset = (condition.getPage() - 1) * condition.getLimit();
+    
+    // 2. 템플릿 목록 조회
+    List<TemplateDto> templates = templateMapper.selectMyTemplates(
+        lawyerNo,
+        offset,
+        condition.getLimit(),
+        condition.getCategoryNo(),
+        condition.getKeyword(),
+        condition.getType(),
+        condition.getSort()
+    );
+    
+    // 3. 총 개수 조회
+    int totalCount = templateMapper.countMyTemplates(
+        lawyerNo,
+        condition.getCategoryNo(),
+        condition.getKeyword(),
+        condition.getType()
+    );
+    
+    // 4. 총 페이지 수 계산
+    int totalPages = (int) Math.ceil((double) totalCount / condition.getLimit());
+    
+    // 5. 응답 DTO 구성
+    TemplateListResponse response = new TemplateListResponse();
+    response.setTemplates(templates);
+    response.setTotalCount(totalCount);
+    response.setTotalPages(totalPages);
+    
+    return response;
   }
 }

@@ -1,6 +1,8 @@
 package com.lawnroad.template.service;
 
 import com.lawnroad.template.dto.LawyerTemplateRegisterDto;
+import com.lawnroad.template.dto.TemplateListResponse;
+import com.lawnroad.template.dto.TemplateSearchCondition;
 
 /**
  * 변호사 템플릿 등록 서비스 인터페이스
@@ -17,4 +19,13 @@ public interface LawyerTemplateService {
    * @param thumbnailPath 썸네일 파일 저장 경로
    */
   void registerTemplate(LawyerTemplateRegisterDto dto, String thumbnailPath);
+  
+  /**
+   * 변호사 본인 템플릿 목록 조회
+   *
+   * @param lawyerNo   로그인한 변호사 번호
+   * @param condition  검색 조건 (페이지, 카테고리, 키워드, 정렬 등)
+   * @return           템플릿 목록 + 전체 개수 + 전체 페이지 수
+   */
+  TemplateListResponse findTemplatesByLawyerNo(Long lawyerNo, TemplateSearchCondition condition);
 }
