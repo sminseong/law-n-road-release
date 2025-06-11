@@ -72,7 +72,7 @@ async function fetchTemplates(filters, pageNo) {
     const { templates, totalPages: tp } = res.data
     templateList.value = templates.map(t => ({
       no: t.no,
-      type: t.type,
+      type: mapTypeCodeToLabel(t.type),
       categoryNo: t.categoryNo,
       categoryName: mapCategoryNoToName(t.categoryNo),
       name: t.name,
@@ -92,7 +92,7 @@ async function fetchTemplates(filters, pageNo) {
 function normalizeFilters(filters) {
   return {
     categoryNo: filters.categoryName === '전체' ? null : mapCategoryNameToNo(filters.categoryName),
-    type: convertType(filters.type),
+    type: mapTypeLabelToCode(filters.type),
     sort: convertSort(filters.sort),
     keyword: filters.keyword || null
   }
@@ -140,17 +140,26 @@ function convertSort(sortLabel) {
   }
 }
 
-// 서버가 받는 코드로 매핑
-function convertType(typeLabel) {
-  switch (typeLabel) {
-    case 'AI 생성형 템플릿':
-      return 'EDITOR'
-    case '문서 기반 템플릿':
-      return 'FILE'
-    case '전체':
-    default:
-      return null
-  }
+// 화면 → 서버 전송용
+const typeLabelToCode = {
+  'AI 생성형 템플릿': 'EDITOR',
+  '문서 기반 템플릿': 'FILE',
+  '전체': null
+}
+
+// 서버 → 화면 표시용
+const typeCodeToLabel = {}
+Object.entries(typeLabelToCode).forEach(([label, code]) => {
+  if (code !== null) typeCodeToLabel[code] = label
+})
+
+// 변환 함수들
+function mapTypeLabelToCode(label) {
+  return typeLabelToCode[label] ?? null
+}
+
+function mapTypeCodeToLabel(code) {
+  return typeCodeToLabel[code] ?? '전체'
 }
 
 // 최초 로딩
@@ -158,15 +167,20 @@ onMounted(() => {
   fetchTemplates(currentFilters.value, page.value)
 })
 
-// 이벤트 핸들러
+// 이벤트 핸들러 :: 행 클릭
 function handleRowClick(row) {
   router.push(`/lawyer/templates/${row.no}`)
 }
 
+// 이벤트 핸들러 :: 수정 버튼 클릭
 function handleEdit(row) {
-  router.push(`/lawyer/templates/edit/${row.no}`)
+  router.push({
+    path: `/lawyer/templates/edit/${row.no}`,
+    query: { type: row.type }
+  })
 }
 
+// 이벤트 핸들러 :: 삭제 버튼 클릭
 async function handleDelete(row) {
   if (!confirm(`'${row?.name}' 템플릿을 삭제하시겠습니까?`)) return
   try {
@@ -189,10 +203,6 @@ function handleFilterChange(newFilters) {
 function handlePageChange(newPage) {
   page.value = newPage
   fetchTemplates(currentFilters.value, page.value)
-}
-
-function goToRegister() {
-  router.push('/lawyer/templates/register')
 }
 </script>
 
