@@ -7,10 +7,15 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
   server: {
     proxy: {
-      "/api": {
+        "/api": {
         target: "http://localhost:8080",
-        changeOrigin: true
-      }
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/api/, '/api') // 필요하면 수정
+        },
+        "/mail": {
+            target: "http://localhost:8080",
+            changeOrigin: true
+        }
     }
   },
   plugins: [

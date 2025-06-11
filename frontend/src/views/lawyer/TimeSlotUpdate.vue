@@ -12,7 +12,7 @@
             v-for="(day, dIdx) in weeklySlots"
             :key="day.date"
             class="bg-white rounded-lg shadow p-4"
-        >
+            style="margin-top: 10px">
           <h3 class="text-lg font-medium mb-2">
             {{ formatDate(day.date) }}
           </h3>
@@ -29,7 +29,7 @@
                   @click="toggleSlot(dIdx, day.slots.indexOf(slot))"
                   :class="slot.status === 1 ? activeClass : inactiveClass"
               >
-                {{ slot.slotTime.slice(0,5) }}
+                {{ slot.slotTime.slice(0, 5) }}
               </button>
             </div>
           </div>
@@ -46,7 +46,7 @@
                   @click="toggleSlot(dIdx, day.slots.indexOf(slot))"
                   :class="slot.status === 1 ? activeClass : inactiveClass"
               >
-                {{ slot.slotTime.slice(0,5) }}
+                {{ slot.slotTime.slice(0, 5) }}
               </button>
             </div>
           </div>
@@ -57,7 +57,7 @@
           <button
               @click="submitUpdates"
               class="px-4 py-2 text-white rounded hover:bg-green-700"
-          style="background-color: green; margin-top: 10px">
+              style="background-color: green; margin-top: 10px">
             확인
           </button>
         </div>
@@ -67,22 +67,22 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import {ref, onMounted} from 'vue'
+import {useRoute} from 'vue-router'
 import axios from 'axios'
 import LawyerFrame from '@/components/layout/Lawyer/LawyerFrame.vue'
 
 // route에서 lawyerNo 가져오기
-const route    = useRoute()
+const route = useRoute()
 const lawyerNo = route.params.lawyerNo
 
-const loading     = ref(true)
-const rawSlots    = ref([])
+const loading = ref(true)
+const rawSlots = ref([])
 const weeklySlots = ref([])
 
 // 버튼 스타일 정의
-const activeClass   = 'px-3 py-2 text-sm font-medium rounded-lg w-full bg-green-200 text-green-800'
-const inactiveClass = 'px-3 py-2 text-sm font-medium rounded-lg w-full bg-gray-100 text-gray-400'
+const activeClass = 'px-3 py-2 text-sm font-medium rounded-lg w-full text-green-800'
+const inactiveClass = 'px-3 py-2 text-sm font-medium rounded-lg w-full text-gray-400'
 
 // DB에서 받아온 예약을 날짜별로 묶기
 function groupByDate(list) {
@@ -91,14 +91,14 @@ function groupByDate(list) {
     if (!map[s.slotDate]) map[s.slotDate] = []
     map[s.slotDate].push({
       slotTime: s.slotTime,
-      status:   s.status
+      status: s.status
     })
   })
   return Object.entries(map)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([date, slots]) => ({
         date,
-        slots: slots.sort((a,b) => a.slotTime.localeCompare(b.slotTime))
+        slots: slots.sort((a, b) => a.slotTime.localeCompare(b.slotTime))
       }))
 }
 
@@ -106,12 +106,12 @@ function groupByDate(list) {
 async function fetchSlots() {
   loading.value = true
   try {
-    const startDate = new Date().toISOString().slice(0,10)
+    const startDate = new Date().toISOString().slice(0, 10)
     const res = await axios.get(
         `/api/lawyers/${lawyerNo}/slots`,
-        { params: { startDate } }
+        {params: {startDate}}
     )
-    rawSlots.value    = res.data
+    rawSlots.value = res.data
     weeklySlots.value = groupByDate(res.data)
   } catch (err) {
     console.error(err)
@@ -135,7 +135,7 @@ async function submitUpdates() {
       day.slots.map(s => ({
         slotDate: day.date,
         slotTime: s.slotTime,
-        status:   s.status
+        status: s.status
       }))
   )
 
