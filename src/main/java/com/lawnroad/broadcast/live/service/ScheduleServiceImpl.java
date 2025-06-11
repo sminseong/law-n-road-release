@@ -1,11 +1,16 @@
 package com.lawnroad.broadcast.live.service;
 
+import com.lawnroad.broadcast.live.dto.ScheduleCalendarDto;
+import com.lawnroad.broadcast.live.dto.ScheduleDateDto;
 import com.lawnroad.broadcast.live.dto.ScheduleRequestDto;
 import com.lawnroad.broadcast.live.mapper.ScheduleMapper;
 import com.lawnroad.broadcast.live.model.KeywordVo;
 import com.lawnroad.broadcast.live.model.ScheduleVo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -42,5 +47,15 @@ public class ScheduleServiceImpl implements ScheduleService {
                 keywordService.insertKeyword(keywordVo);
             }
         }
+    }
+
+    @Override
+    public List<ScheduleDateDto> getSchedulesByDate(LocalDate date) {
+        return scheduleMapper.findAllByDate(date);
+    }
+
+    @Override
+    public List<ScheduleCalendarDto> getSchedulesByMonth(String month) {
+        return scheduleMapper.findAllByMonth(month);
     }
 }

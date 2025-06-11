@@ -33,12 +33,21 @@ export default [
         component: () => import('@/views/client/ClientVodView.vue')
     },
     {
-        path: '/client/broadcasts/:broadcastNo/preQuestion',
+        path: '/client/broadcasts/schedule/:scheduleNo/preQuestion',
         name: 'ClientBroadCastsPreQuestion',
         component: () => import('@/views/client/preQuestion.vue')
     },
-
-
+    {
+        path: '/client/broadcasts/schedule',
+        name: 'ClientBroadCastsSchedule',
+        component: () => import('@/views/client/ClientScheduleView.vue')
+    },
+    {
+        path: '/client/broadcasts/schedule/:date',
+        name: 'ClientScheduleDetailView',
+        component: () => import('@/views/client/ClientScheduleDetailView.vue'),
+        props: true
+    },
 
     // ---------- 템플릿 ----------
     {

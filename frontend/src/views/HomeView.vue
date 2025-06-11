@@ -316,7 +316,10 @@ const loadFn = async ({ page, size }) => {
       <a href="/client/mypage">의뢰인 대시보드 이동하기</a>
     </p>
     <p>
-      <a href="/client/broadcasts/1/preQuestion">사전질문 등록하기</a>
+      <a href="/client/broadcasts/schedule/1/preQuestion">사전질문 등록하기</a>
+    </p>
+    <p>
+      <a href="/client/broadcasts/schedule">의뢰인 방송 스케줄 보기 이동</a>
     </p>
 
     <!-- 메인 베너 -->
