@@ -18,10 +18,12 @@ const generateConfig = () => {
 };
 
 export default {
-    get(url, params) {
+    get(url, queryParams = {}) {
         const config = generateConfig();
-        config.params = params;
-        return instance.get(url, config);
+        return instance.get(url, {
+            ...config,
+            params: queryParams
+        });
     },
     post(url, params) {
         return instance.post(url, params, generateConfig());
