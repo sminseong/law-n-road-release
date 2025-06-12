@@ -94,13 +94,14 @@ onMounted(async () => {
 
 <template>
   <LawyerFrame>
-    <div class="container py-4">
-      <h3 class="mb-4 fw-bold">템플릿 상세 조회</h3>
+    <div class="container py-3">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0">템플릿 상세 조회</h3>
 
-      <!-- 수정/삭제 버튼 -->
-      <div class="text-end mb-4">
-        <button class="btn btn-outline-primary me-2" @click="goEdit">수정</button>
-        <button class="btn btn-outline-danger" @click="handleDelete">삭제</button>
+        <div>
+          <button class="btn btn-outline-primary me-2" @click="goEdit">수정</button>
+          <button class="btn btn-outline-danger" @click="handleDelete">삭제</button>
+        </div>
       </div>
 
       <!-- 공통 정보 카드 -->

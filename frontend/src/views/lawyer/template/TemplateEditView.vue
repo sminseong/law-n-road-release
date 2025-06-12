@@ -68,9 +68,11 @@ onMounted(async () => {
   }
 })
 
+const removeExistingThumbnail = ref(false)
 function clearThumbnail() {
-  thumbnailFile.value    = null
+  thumbnailFile.value = null
   thumbnailPreview.value = null
+  removeExistingThumbnail.value = true  // 기존 썸네일도 지운다고 표시
 }
 
 function onThumbnailChange(e) {
@@ -110,6 +112,7 @@ async function handleUpdate() {
     formData.append('categoryNo', categoryNo.value)
     formData.append('description', description.value)
     formData.append('type', selectedTab.value === 'ai' ? 'EDITOR' : 'FILE')
+    formData.append('removeThumbnail', removeExistingThumbnail.value ? 1 : 0)
 
     if (thumbnailFile.value) {
       formData.append('file', thumbnailFile.value)
@@ -166,7 +169,7 @@ async function handleUpdate() {
                   @click="clearThumbnail"
               > </button>
               <img v-if="thumbnailPreview" :src="thumbnailPreview" alt="미리보기" class="img-fluid h-100" style="object-fit: contain" />
-              <p v-else class="text-muted" style="text-align: center">이미지를 등록해 주세요</p>
+              <p v-else class="text-muted" style="text-align: center">상품 목록에 보여질 대표 이미지입니다.<br>이미지를 등록해 주세요</p>
             </div>
             <input type="file" class="form-control" accept="image/*" @change="onThumbnailChange" />
           </div>
