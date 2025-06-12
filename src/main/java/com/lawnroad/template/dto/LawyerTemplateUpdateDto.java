@@ -44,4 +44,6 @@ public class LawyerTemplateUpdateDto {
   
   // 로그인한 유저번호 (Controller에서 주입)
   private Long userNo;
+  // 1이면 삭제, 0 또는 null이면 유지
+  private Integer removeThumbnail;
 }

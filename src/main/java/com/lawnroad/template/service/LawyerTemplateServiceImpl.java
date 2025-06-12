@@ -139,9 +139,8 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
       originJson   = o.getPathJson();
     }
     
-    // 2) null 대체 로직
-    String finalThumb = (thumbnailPath != null) ? thumbnailPath : originThumb;
-    String finalJson  = (dto.getPathJson() != null)  ? dto.getPathJson()  : originJson;
+    // 2) 썸네일 및 파일 JSON 처리
+    String finalJson  = (dto.getPathJson() != null) ? dto.getPathJson() : originJson;
     
     // 3) 기본 정보 insert
     TemplateDto base = new TemplateDto();
@@ -151,7 +150,7 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
     base.setDescription(dto.getDescription());
     base.setPrice(dto.getPrice());
     base.setDiscountRate(dto.getDiscountRate());
-    base.setThumbnailPath(finalThumb);
+    base.setThumbnailPath(thumbnailPath);
     base.setType(type);
     base.setSalesCount(0);
     base.setCreatedAt(createdAt);
