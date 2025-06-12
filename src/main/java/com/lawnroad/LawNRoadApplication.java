@@ -4,6 +4,8 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @EnableScheduling
 @MapperScan("com.lawnroad.template.mapper")
@@ -13,6 +15,15 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @MapperScan("com.lawnroad.broadcast.chat.mapper")
 public class LawNRoadApplication {
     public static void main(String[] args) {
+
+        PasswordEncoder encoder = new BCryptPasswordEncoder();
+
+        String raw = "!tlqk"; // 로그인 시 입력한 비번
+        String hashed = "$2a$10$OPqvUfC54R/PlyCYBaZdjeJgCS3NTxz4F2jyCyhAf8AQ/3bAMNTeK"; // DB 값
+
+        System.out.println("일치? " + encoder.matches(raw, hashed)); // true or false
+
+
         SpringApplication.run(LawNRoadApplication.class, args);
     }
 }

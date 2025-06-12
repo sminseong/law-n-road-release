@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import {ref, computed, onMounted, watch, nextTick } from 'vue'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import { VariableNode } from '@/components/template/variable.js'
 import StarterKit from '@tiptap/starter-kit'
@@ -9,7 +9,8 @@ import TextStyle from '@tiptap/extension-text-style'
 // props
 const props = defineProps({
   content: String,
-  variables: Array
+  variables: Array,
+  isEdit: { type: Boolean, default: false }
 })
 const emit = defineEmits(['update:content', 'update:variables'])
 
@@ -30,15 +31,32 @@ let isClickOnly = false
 onMounted(() => {
   editor.value = new Editor({
     content: props.content || '',
-    extensions: [
-      StarterKit.configure({}),
-      Underline,
-      TextStyle,
-      VariableNode,    // <- 여기에 추가
-    ],
+    extensions: [StarterKit, Underline, TextStyle, VariableNode],
     onUpdate: ({ editor }) => {
-      emit('update:content', editor.getHTML())
-    }
+      // 1. 본문 반영
+      const html = editor.getHTML()
+      emit('update:content', html)
+
+      // 2. #{변수} 추출
+      const matches = html.match(/#\{(.*?)\}/g) || []
+      const updatedVars = [...new Set(matches.map(m => m.slice(2, -1)))]
+
+      // 3. variableMap 갱신
+      updatedVars.forEach(name => {
+        if (!variableMap.value[name]) {
+          variableMap.value[name] = name // 디스크립션 기본값 = 변수명
+        }
+      })
+
+      // 4. emit
+      emit(
+          'update:variables',
+          Object.entries(variableMap.value).map(([name, description]) => ({
+            name,
+            description,
+          }))
+      )
+    },
   })
 
   document.addEventListener('mousedown', () => { isClickOnly = true })
@@ -67,6 +85,36 @@ onMounted(() => {
   })
 })
 
+let initialized = false
+
+watch(
+    () => props.variables,
+    (newVal) => {
+      if (!initialized && Array.isArray(newVal) && newVal.length > 0 && props.isEdit) {
+        const map = {}
+        newVal.forEach(v => {
+          map[v.name] = v.description
+        })
+        variableMap.value = map
+        initialized = true
+      }
+    },
+    { immediate: true }
+)
+
+let contentInitialized = false
+
+watch(
+    () => props.content,
+    (newVal) => {
+      if (!contentInitialized && editor.value && newVal) {
+        editor.value.commands.setContent(newVal)
+        contentInitialized = true
+      }
+    },
+    { immediate: true }
+)
+
 const fixTone = async (tone) => {
   const text = window.getSelection().toString()
   if (!text) return
@@ -90,10 +138,21 @@ const usedVariables = computed(() => {
   return [...new Set(matches.map(v => v.slice(2, -1)))]
 })
 
+// const previewText = computed(() => {
+//   let html = props.content.replace(/#{(.*?)}/g, (_, v) => variableMap.value[v] || `(${v})`)
+//   // 빈 <p></p>나 <p><br></p> 줄에 &nbsp; 추가
+//   return html.replace(/<p>(\s|<br\s*\/?\>)*<\/p>/g, '<p>&nbsp;</p>')
+// })
+
 const previewText = computed(() => {
-  let html = props.content.replace(/#{(.*?)}/g, (_, v) => variableMap.value[v] || `(${v})`)
-  // 빈 <p></p>나 <p><br></p> 줄에 &nbsp; 추가
-  return html.replace(/<p>(\s|<br\s*\/?\>)*<\/p>/g, '<p>&nbsp;</p>')
+  console.log(variableMap.value)
+  return props.content
+      .replace(/#\{(.*?)\}/g, (_, v) =>
+          variableMap.value[v] != null
+              ? `<span class="text-danger">${variableMap.value[v]}</span>`
+              : `#{${v}}`
+      )
+      .replace(/<p>(\s|<br\s*\/?>)*<\/p>/g, '<p>&nbsp;</p>')
 })
 
 const isEditorEmpty = computed(() => {
@@ -120,7 +179,7 @@ const addVariable = () => {
   // 상태 업데이트
   variableMap.value[key] = val || ''
   emit('update:variables',
-      Object.entries(variableMap.value).map(([name,desc])=>({ name, desc })))
+      Object.entries(variableMap.value).map(([name,description])=>({ name, description })))
   newVariable.value = ''
   newDescription.value = ''
   showModal.value = false
@@ -162,6 +221,18 @@ function insertExample() {
   emit('update:content', htmlText)
   emit('update:variables', Object.entries(variableMap.value).map(([name, description]) => ({ name, description })))
 }
+
+const inputRef = ref(null)
+const descRef = ref(null)
+
+watch(showModal, (val) => {
+  if (val) {
+    nextTick(() => {
+      inputRef.value?.focus()
+    })
+  }
+})
+
 </script>
 
 <template>
@@ -318,11 +389,12 @@ function insertExample() {
       <h5 class="fw-bold">변수 추가</h5>
       <div class="mb-2">
         <label class="form-label">변수명 (예: name)</label>
-        <input v-model="newVariable" class="form-control" />
+        <input v-model="newVariable" class="form-control" ref="inputRef" />
       </div>
       <div class="mb-3">
         <label class="form-label">예시값 또는 설명 (예: 당사자)</label>
-        <textarea v-model="newDescription" class="form-control" rows="3" />
+        <textarea v-model="newDescription" class="form-control" rows="3"
+                  ref="descRef" @keydown.enter.prevent="addVariable"/>
       </div>
       <div class="text-end">
         <button class="btn btn-secondary me-2" @click="showModal = false">취소</button>
