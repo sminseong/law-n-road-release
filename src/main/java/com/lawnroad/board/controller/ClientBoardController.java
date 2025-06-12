@@ -1,6 +1,7 @@
 package com.lawnroad.board.controller;
 
 import com.lawnroad.board.dto.BoardCreateDto;
+import com.lawnroad.board.dto.BoardDetailDto;
 import com.lawnroad.board.dto.BoardListDto;
 import com.lawnroad.board.service.BoardService;
 import kotlinx.serialization.Required;
@@ -56,6 +57,14 @@ public class ClientBoardController {
     public ResponseEntity<String> register(@RequestBody BoardCreateDto dto) {
         boardService.register(dto);
         return ResponseEntity.ok("게시글이 성공적으로 등록되었습니다.");
+    }
+
+    //게시글 상세 조회
+    @GetMapping("/{id}")
+    public ResponseEntity<BoardDetailDto> getDetail(@PathVariable("id") Long id) {
+        //System.out.println(id);
+        BoardDetailDto dto = boardService.getBoardDetail(id);
+        return ResponseEntity.ok(dto);
     }
 
 }

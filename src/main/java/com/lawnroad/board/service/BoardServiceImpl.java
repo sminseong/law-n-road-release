@@ -1,6 +1,7 @@
 package com.lawnroad.board.service;
 
 import com.lawnroad.board.dto.BoardCreateDto;
+import com.lawnroad.board.dto.BoardDetailDto;
 import com.lawnroad.board.dto.BoardListDto;
 import com.lawnroad.board.mapper.BoardMapper;
 import lombok.RequiredArgsConstructor;
@@ -38,5 +39,10 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public void register(BoardCreateDto dto) {
         boardMapper.insertBoard(dto);
+    }
+
+    @Override
+    public BoardDetailDto getBoardDetail(Long id) {
+        return boardMapper.selectBoardById(id);
     }
 }

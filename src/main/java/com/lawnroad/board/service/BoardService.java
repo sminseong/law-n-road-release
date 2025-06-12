@@ -1,6 +1,7 @@
 package com.lawnroad.board.service;
 
 import com.lawnroad.board.dto.BoardCreateDto;
+import com.lawnroad.board.dto.BoardDetailDto;
 import com.lawnroad.board.dto.BoardListDto;
 
 import java.util.List;
@@ -24,5 +25,12 @@ public interface BoardService {
      * @param dto 등록할 게시글 데이터 (제목, 내용, 사건발생일자, 작성자 ID 포함)
      */
     void register(BoardCreateDto dto);
+
+    /**
+     * 게시글 상세 조회
+     * @param id 게시글 번호 (PK)
+     * @return 게시글 상세 정보 DTO
+     */
+    BoardDetailDto getBoardDetail(Long id);
 
 }

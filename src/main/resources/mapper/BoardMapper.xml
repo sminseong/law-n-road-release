@@ -40,41 +40,36 @@
         VALUES ( #{categoryNo}, #{userNo}, #{title}, #{content}, #{incidentDate}, NOW(), NOW() )
     </insert>
 
+    <!-- 게시글 상세 조회: 카테고리명/사용자명 조인 포함 -->
+    <resultMap id="BoardDetailMap" type="com.lawnroad.board.dto.BoardDetailDto">
+        <id property="no" column="no"/>
+        <result property="categoryNo" column="category_no"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="userNo" column="user_no"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="incidentDate" column="incident_date"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
 
-
-<!--    &lt;!&ndash; 게시글 상세 조회: 카테고리명/사용자명 조인 포함 &ndash;&gt;-->
-<!--    <resultMap id="BoardDetailMap" type="com.lawnroad.board.dto.BoardDetailDto">-->
-<!--        <id property="no" column="no"/>-->
-<!--        <result property="categoryNo" column="category_no"/>-->
-<!--        <result property="categoryName" column="category_name"/>-->
-<!--        <result property="userNo" column="user_no"/>-->
-<!--        <result property="userName" column="user_name"/>-->
-<!--        <result property="title" column="title"/>-->
-<!--        <result property="content" column="content"/>-->
-<!--        <result property="incidentDate" column="incident_date"/>-->
-<!--        <result property="createdAt" column="created_at"/>-->
-<!--        <result property="updatedAt" column="updated_at"/>-->
-<!--    </resultMap>-->
-
-<!--    <select id="selectBoardById" resultMap="BoardDetailMap" parameterType="long">-->
-<!--        SELECT-->
-<!--        b.no,-->
-<!--        b.category_no,-->
-<!--        c.name AS category_name,-->
-<!--        b.user_no,-->
-<!--        u.name AS user_name,-->
-<!--        b.title,-->
-<!--        b.content,-->
-<!--        b.incident_date,-->
-<!--        b.created_at,-->
-<!--        b.updated_at-->
-<!--        FROM board b-->
-<!--        LEFT JOIN category c ON b.category_no = c.no-->
-<!--        LEFT JOIN user u ON b.user_no = u.no-->
-<!--        WHERE b.no = #{no}-->
-<!--    </select>-->
-
-
+    <select id="selectBoardById" resultMap="BoardDetailMap" parameterType="long">
+        SELECT
+        b.no,
+        b.category_no,
+        c.name AS category_name,
+        b.user_no,
+        b.title,
+        b.content,
+        b.incident_date,
+        b.created_at,
+        b.updated_at
+        FROM board b
+        LEFT JOIN category c ON b.category_no = c.no
+        LEFT JOIN user u ON b.user_no = u.no
+        WHERE b.no = #{id}
+    </select>
+    
 <!--    &lt;!&ndash; 게시글 수정 &ndash;&gt;-->
 <!--    <update id="updateBoard" parameterType="BoardUpdateDto">-->
 <!--        UPDATE board-->

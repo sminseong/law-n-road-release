@@ -12,16 +12,6 @@ export function fetchBoardList(page = 1, size = 10) {
         params: { page, size }
     }).then(res => res.data);
 }
-// Q&A 단일 조회
-export async function fetchQnaById(id) {
-    const res = await axios.get(`/api/client/qna/${id}`)
-    return res.data
-}
-
-//  Q&A 수정 요청
-export async function updateQna(id, payload) {
-    await axios.put(`/api/client/qna/${id}`, payload)
-}
 
 /**
  * 게시글 등록
@@ -31,4 +21,13 @@ export async function updateQna(id, payload) {
 export async function createQna(payload) {
     console.log('payload', payload)
     return await httpRequester.post(`/api/client/qna`, payload)
+}
+
+//Q&A 상세 조회
+export const fetchBoardDetail = async (id) => {
+    return await axios.get(`/api/client/qna/${id}`)
+}
+//Q&A 수정
+export async function updateQna(id, payload) {
+    return  await httpRequester.put(`/api/qna/${id}`, payload)
 }
