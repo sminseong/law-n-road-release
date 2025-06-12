@@ -42,17 +42,20 @@ function goEdit() {
 
 // 삭제
 async function handleDelete() {
-  if (!confirm('정말 삭제하시겠습니까?')) return
+  // name은 템플릿명(ref로 받아온 값)
+  if (!confirm(`'${name.value}' 템플릿을 삭제하시겠습니까?`)) return
+
   try {
-    const res = await http.delete(`/api/lawyer/templates/${templateNo}`)
-    if (res.status === 200) {
-      alert('삭제되었습니다.')
-      router.push({ name: 'TemplateList' })
-    } else {
-      alert('삭제에 실패했습니다.')
-    }
-  } catch {
-    alert('삭제에 실패했습니다.')
+    // ID는 templateNo
+    await http.delete(`/api/lawyer/templates/${templateNo}`)
+    alert('삭제되었습니다.')
+    // 목록으로 복귀
+    router.push({ name: 'LawyerTemplateList' })
+  } catch (e) {
+    console.error('삭제 실패:', e)
+    // 백엔드가 보내준 메시지가 있으면 우선 보여주고, 없으면 기본
+    const message = e?.response?.data?.message || '삭제 중 오류가 발생했습니다.'
+    alert(message)
   }
 }
 

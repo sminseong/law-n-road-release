@@ -39,18 +39,34 @@ onMounted(() => {
       const html = editor.getHTML()
       emit('update:content', html)
 
-      // 2. #{변수} 추출
-      const matches = html.match(/#\{(.*?)\}/g) || []
-      const updatedVars = [...new Set(matches.map(m => m.slice(2, -1)))]
+      // 2) JSON 문서 가져오기
+      const doc = editor.getJSON()
+      const found = new Set()
 
-      // 3. variableMap 갱신
-      updatedVars.forEach(name => {
+      // 3) 재귀 순회로 variable 노드만 골라내기
+      function traverse(nodes) {
+        if (!nodes) return
+        for (const node of nodes) {
+          if (node.type === 'variable' && node.attrs?.name) {
+            found.add(node.attrs.name)
+          }
+          // 자식이 있으면 내려가서 또 찍어 보고
+          if (node.content) {
+            traverse(node.content)
+          }
+        }
+      }
+      traverse(doc.content)
+
+      // 4) variableMap 동기화
+      found.forEach(name => {
         if (!variableMap.value[name]) {
-          variableMap.value[name] = name // 디스크립션 기본값 = 변수명
+          // 기존에 없던 변수면 description 기본값은 name
+          variableMap.value[name] = name
         }
       })
 
-      // 4. emit
+      // 5) emit variables
       emit(
           'update:variables',
           Object.entries(variableMap.value).map(([name, description]) => ({
