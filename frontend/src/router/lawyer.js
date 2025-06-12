@@ -40,8 +40,8 @@ export default [
     },
     {
         path: '/lawyer/templates/register',
-        name: 'TemplateRegister',
-        component: () => import('@/views/lawyer/template/TemplateFormView.vue')
+        name: 'TemplateEditor',
+        component: () => import('@/views/lawyer/template/TemplateRegisterView.vue')
     },
     {
         path: '/lawyer/templates/:no',
@@ -51,7 +51,7 @@ export default [
     {
         path: '/lawyer/templates/edit/:no',
         name: 'TemplateEdit',
-        component: () => import('@/views/lawyer/template/TemplateFormView.vue'),
+        component: () => import('@/views/lawyer/template/TemplateEditView.vue'),
         props: true
     },
 

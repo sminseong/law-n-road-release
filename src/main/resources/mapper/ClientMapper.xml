@@ -19,15 +19,20 @@
         INSERT INTO client (
             no, client_id, pw_hash, email, name, nickname, phone, content, alert_content
         ) VALUES (
-                     #{no}, #{client_id}, #{pw_hash}, #{email}, #{name}, #{nickname}, #{phone}, #{content}, #{alert_content}
+                     #{no}, #{clientId}, #{pwHash}, #{email}, #{name}, #{nickname}, #{phone}, #{content}, #{alert_content}
                  )
     </insert>
 
 
 
-    <select id="findByEmail" resultType="com.lawnroad.account.entity.ClientEntity">
-        SELECT * FROM client WHERE email = #{email}
+<!--    <select id="findByEmail" resultType="com.lawnroad.account.entity.ClientEntity">-->
+<!--        SELECT * FROM client WHERE email = #{email}-->
+<!--    </select>-->
+
+    <select id="findByClientId" resultType="ClientEntity">
+        SELECT * FROM client WHERE client_id = #{clientId}
     </select>
+
 
     <select id="countByEmail" resultType="int">
         SELECT COUNT(*) FROM client WHERE email = #{email}

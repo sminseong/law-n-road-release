@@ -11,4 +11,6 @@ public interface UserMapper {
 
     void insertUser(UserEntity user);
 
+    UserEntity findByNo(Long no);
+
 }

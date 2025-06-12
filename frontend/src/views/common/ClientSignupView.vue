@@ -6,7 +6,7 @@ import AccountFrame from '@/components/layout/account/AccountFrame.vue'
 
 const router = useRouter()
 
-const client_id = ref('')
+const clientId = ref('')
 const nickname = ref('')
 const phone = ref('')
 const fullName = ref('')
@@ -19,13 +19,13 @@ const isEmailVerified = ref(false) // ✅ 이메일 인증 완료 여부
 
 // 아이디 중복 확인
 async function checkIdDuplicate() {
-  if (!client_id.value.trim()) {
+  if (!clientId.value.trim()) {
     alert('아이디를 입력하세요.')
     return
   }
 
   try {
-    const res = await axios.get(`/api/auth/check-id?client_id=${client_id.value}`)
+    const res = await axios.get(`/api/auth/check-id?clientId=${clientId.value}`)
     if (res.data.available) {
       alert('사용 가능한 아이디입니다.')
     } else {
@@ -128,7 +128,7 @@ async function onSubmit() {
 
   try {
     const payload = {
-      clientId: client_id.value,
+      clientId: clientId.value,
       nickname: nickname.value,
       phone: phone.value,
       fullName: fullName.value,
@@ -159,7 +159,7 @@ async function onSubmit() {
         <!-- 아이디 -->
         <div class="mb-3">
           <div class="input-group">
-            <input type="text" v-model="client_id" class="form-control" placeholder="아이디" required />
+            <input type="text" v-model="clientId" class="form-control" placeholder="아이디" required />
             <button type="button" class="btn btn-outline-secondary" @click="checkIdDuplicate">중복 확인</button>
           </div>
         </div>
