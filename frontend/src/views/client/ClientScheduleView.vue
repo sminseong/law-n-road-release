@@ -35,15 +35,36 @@ const calendarOptions = ref({
     }
     router.push(`/client/broadcasts/schedule/${dateStr}`)
   },
-  eventContent: function (info) {
+  eventContent: (info) => {
     const title = info.event.title
-    const start = new Date(info.event.start).toTimeString().slice(0, 5)
-    const lawyer = info.event.extendedProps.original?.lawyerName || ''
-    const tooltip = `[${start}] ${title} (${lawyer} 변호사)`
+    const original = info.event.extendedProps.original
+    const startTime = new Date(original.startTime)
+    const endTime = original.endTime ? new Date(original.endTime) : null
+
+    const startDate = startTime.toISOString().slice(0, 10)
+    const startHour = String(startTime.getHours()).padStart(2, '0')
+    const startMin = String(startTime.getMinutes()).padStart(2, '0')
+    const startStr = `${startHour}:${startMin}`
+
+    let timeRange = `[${startStr}`
+    if (endTime) {
+      const endDate = endTime.toISOString().slice(0, 10)
+      if (startDate === endDate) {
+        const endHour = String(endTime.getHours()).padStart(2, '0')
+        const endMin = String(endTime.getMinutes()).padStart(2, '0')
+        const endStr = `${endHour}:${endMin}`
+        timeRange += ` ~ ${endStr}`
+      }
+    }
+    timeRange += `]`
+
+    const lawyer = original.lawyerName || ''
+    const tooltip = `${timeRange} ${title} (${lawyer} 변호사)`
+
     return {
       html: `
         <div title="${tooltip}" class="fc-custom-event">
-          <div class="fc-event-title fw-semibold">${title}</div>
+          <div class="fc-event-title text-dark fw-semibold">${title}</div>
           <div class="fc-lawyer-name text-muted small">${lawyer} 변호사</div>
         </div>
       `
@@ -56,14 +77,17 @@ const fetchMonthlySchedule = async () => {
     const now = new Date()
     const month = now.toISOString().slice(0, 7)
     const res = await axios.get(`/api/schedule/month?month=${month}`)
-    events.value = res.data.map(ev => ({
-      title: ev.title,
-      start: ev.startTime,
-      extendedProps: {
-        lawyerName: ev.lawyerName,
-        original: ev
+    events.value = res.data.map(ev => {
+      const startDateOnly = ev.startTime.slice(0, 10)
+      return {
+        title: ev.title,
+        start: startDateOnly,
+        extendedProps: {
+          lawyerName: ev.lawyerName,
+          original: ev
+        }
       }
-    }))
+    })
     calendarOptions.value.events = events.value
   } catch (err) {
     console.error('스케줄 로드 실패:', err)
@@ -78,10 +102,7 @@ onMounted(fetchMonthlySchedule)
     <div class="w-100 vh-100 d-flex flex-column p-4">
       <h2 class="fs-3 fw-bold mb-4 text-primary">📅 방송 스케줄</h2>
       <div class="flex-grow-1">
-        <FullCalendar
-            ref="calendarRef"
-            :options="calendarOptions"
-        />
+        <FullCalendar ref="calendarRef" :options="calendarOptions" />
       </div>
     </div>
   </ClientFrame>
@@ -91,20 +112,14 @@ onMounted(fetchMonthlySchedule)
 ::v-deep(.fc) {
   background-color: white;
 }
-
-/* 요일 헤더 */
 ::v-deep(.fc-col-header) {
   background-color: #e9ecef;
   font-weight: 600;
 }
-
-/* 본문 배경 */
 ::v-deep(.fc-daygrid-body) {
   background-color: #f8f9fb;
   border-radius: 0 0 0.5rem 0.5rem;
 }
-
-/* 셀 hover & 클릭 */
 ::v-deep(.fc-daygrid-day) {
   transition: background-color 0.2s;
 }
@@ -116,17 +131,17 @@ onMounted(fetchMonthlySchedule)
   animation: clickFlash 0.2s ease-in-out;
 }
 @keyframes clickFlash {
-  0% { background-color: rgba(33, 150, 243, 0.08); }
-  100% { background-color: transparent; }
+  0% {
+    background-color: rgba(33, 150, 243, 0.08);
+  }
+  100% {
+    background-color: transparent;
+  }
 }
-
-/* 셀 내부 이벤트 */
 ::v-deep(.fc-daygrid-day-events) {
   overflow: hidden;
   position: relative;
 }
-
-/* 개별 이벤트 */
 ::v-deep(.fc-event) {
   max-width: 100% !important;
   overflow: hidden;
@@ -139,8 +154,6 @@ onMounted(fetchMonthlySchedule)
 ::v-deep(.fc-event:hover) {
   background-color: #ebedf0;
 }
-
-/* 커스텀 이벤트 콘텐츠 */
 .fc-custom-event {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -148,11 +161,9 @@ onMounted(fetchMonthlySchedule)
 }
 .fc-event-title {
   display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-size: 0.85rem;
   font-weight: 600;
+  color: #212529;
 }
 .fc-lawyer-name {
   display: block;

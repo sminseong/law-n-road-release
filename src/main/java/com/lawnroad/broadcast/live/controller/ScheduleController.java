@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lawnroad.broadcast.live.dto.ScheduleCalendarDto;
 import com.lawnroad.broadcast.live.dto.ScheduleDateDto;
 import com.lawnroad.broadcast.live.dto.ScheduleRequestDto;
+import com.lawnroad.broadcast.live.dto.ScheduleResponseDto;
 import com.lawnroad.broadcast.live.model.ScheduleVo;
 import com.lawnroad.broadcast.live.service.ScheduleService;
 import com.lawnroad.common.util.FileStorageUtil;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -84,5 +86,12 @@ public class ScheduleController {
         LocalDate parsedDate = LocalDate.parse(date);
         List<ScheduleDateDto> schedules = scheduleService.getSchedulesByDate(parsedDate);
         return ResponseEntity.ok(schedules);
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<List<ScheduleResponseDto>> getLawyerSchedules() {
+        long userNo = 1L;
+        List<ScheduleResponseDto> list = scheduleService.getSchedulesByLawyer(userNo);
+        return ResponseEntity.ok(list);
     }
 }

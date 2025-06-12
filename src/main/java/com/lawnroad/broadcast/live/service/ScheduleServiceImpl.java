@@ -3,6 +3,7 @@ package com.lawnroad.broadcast.live.service;
 import com.lawnroad.broadcast.live.dto.ScheduleCalendarDto;
 import com.lawnroad.broadcast.live.dto.ScheduleDateDto;
 import com.lawnroad.broadcast.live.dto.ScheduleRequestDto;
+import com.lawnroad.broadcast.live.dto.ScheduleResponseDto;
 import com.lawnroad.broadcast.live.mapper.ScheduleMapper;
 import com.lawnroad.broadcast.live.model.KeywordVo;
 import com.lawnroad.broadcast.live.model.ScheduleVo;
@@ -48,14 +49,18 @@ public class ScheduleServiceImpl implements ScheduleService {
             }
         }
     }
-
+    // 클라이언트 방송 스케줄 달력
+    @Override
+    public List<ScheduleCalendarDto> getSchedulesByMonth(String month) {
+        return scheduleMapper.findAllByMonth(month);
+    }
+    // 클라이언트 방송 스케줄 일별 리스트
     @Override
     public List<ScheduleDateDto> getSchedulesByDate(LocalDate date) {
         return scheduleMapper.findAllByDate(date);
     }
-
-    @Override
-    public List<ScheduleCalendarDto> getSchedulesByMonth(String month) {
-        return scheduleMapper.findAllByMonth(month);
+    // 변호사 대시보드 본인 방송 스케줄 리스트 출력용
+    public List<ScheduleResponseDto> getSchedulesByLawyer(Long userNo) {
+        return scheduleMapper.findAllByLawyer(userNo);
     }
 }
