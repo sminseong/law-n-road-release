@@ -10,4 +10,8 @@
         VALUES (#{scheduleNo}, #{keyword}, NOW())
     </insert>
 
+    <delete id="deleteByScheduleNo" parameterType="long">
+        DELETE FROM keyword WHERE schedule_no = #{scheduleNo}
+    </delete>
+
 </mapper>

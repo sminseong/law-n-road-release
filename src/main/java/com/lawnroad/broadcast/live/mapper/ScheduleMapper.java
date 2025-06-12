@@ -1,8 +1,6 @@
 package com.lawnroad.broadcast.live.mapper;
 
-import com.lawnroad.broadcast.live.dto.ScheduleCalendarDto;
-import com.lawnroad.broadcast.live.dto.ScheduleDateDto;
-import com.lawnroad.broadcast.live.dto.ScheduleResponseDto;
+import com.lawnroad.broadcast.live.dto.*;
 import com.lawnroad.broadcast.live.model.ScheduleVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -17,4 +15,7 @@ public interface ScheduleMapper {
     List<ScheduleDateDto> findAllByDate(@Param("date") LocalDate date);
     List<ScheduleCalendarDto> findAllByMonth(@Param("month") String month);
     List<ScheduleResponseDto> findAllByLawyer(@Param("userNo") Long userNo);
+    ScheduleDetailDto findByScheduleNo(@Param("scheduleNo") Long scheduleNo);
+
+    void updateSchedule(ScheduleUpdateDto scheduleUpdateDto);
 }

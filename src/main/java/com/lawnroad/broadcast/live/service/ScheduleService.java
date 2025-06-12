@@ -1,9 +1,6 @@
 package com.lawnroad.broadcast.live.service;
 
-import com.lawnroad.broadcast.live.dto.ScheduleCalendarDto;
-import com.lawnroad.broadcast.live.dto.ScheduleDateDto;
-import com.lawnroad.broadcast.live.dto.ScheduleRequestDto;
-import com.lawnroad.broadcast.live.dto.ScheduleResponseDto;
+import com.lawnroad.broadcast.live.dto.*;
 import com.lawnroad.broadcast.live.model.ScheduleVo;
 
 import java.time.LocalDate;
@@ -14,4 +11,6 @@ public interface ScheduleService {
     List<ScheduleDateDto> getSchedulesByDate(LocalDate date);
     List<ScheduleCalendarDto> getSchedulesByMonth(String month);
     List<ScheduleResponseDto> getSchedulesByLawyer(Long userNo);
+    ScheduleDetailDto findDetailByScheduleNo(Long scheduleNo);
+    void updateSchedule(ScheduleUpdateDto scheduleUpdateDto);
 }

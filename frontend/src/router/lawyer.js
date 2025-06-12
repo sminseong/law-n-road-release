@@ -43,8 +43,8 @@ export default [
     },
     {
         path: '/lawyer/broadcasts/schedule/:scheduleNo',
-        name: 'LawyerBroadcastsScheduleModify',
-        component: () => import('@/views/lawyer/LawyerScheduleModifyView.vue')
+        name: 'LawyerBroadcastsScheduleDetail',
+        component: () => import('@/views/lawyer/LawyerScheduleDetailView.vue')
     },
 
 

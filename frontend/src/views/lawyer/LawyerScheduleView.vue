@@ -29,8 +29,12 @@ const groupByDate = (items) => {
 
 const goToDetail = (scheduleNo) => {
   if (scheduleNo) {
-    router.push(`/lawyer/broadcasts/schedule/${scheduleNo}`)
+    router.push({ name: 'LawyerBroadcastsScheduleDetail', params: { scheduleNo } })
   }
+}
+
+const goToRegister = () => {
+  router.push('/lawyer/broadcasts/schedule/register')
 }
 
 onMounted(fetchSchedules)
@@ -39,14 +43,22 @@ onMounted(fetchSchedules)
 <template>
   <LawyerFrame>
     <div class="container py-4">
-      <h2 class="fs-3 fw-bold text-primary mb-4">등록한 방송 스케줄</h2>
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fs-3 fw-bold text-primary mb-0">등록한 방송 스케줄</h2>
+        <button class="btn btn-outline-primary" @click="goToRegister">➕ 새 스케줄 등록</button>
+      </div>
 
       <div v-if="Object.keys(groupedSchedules).length === 0" class="text-muted">방송 스케줄이 없습니다.</div>
 
       <div v-for="(list, date) in groupedSchedules" :key="date" class="mb-5">
         <h4 class="mb-3 fw-semibold border-bottom pb-2">📆 {{ date }}</h4>
 
-        <div v-for="schedule in list" :key="schedule.no" class="border rounded p-3 mb-3 shadow-sm schedule-item cursor-pointer" @click="goToDetail(schedule.no)">
+        <div
+            v-for="schedule in list"
+            :key="schedule.scheduleNo"
+            class="border rounded p-3 mb-3 shadow-sm schedule-item"
+            @click="goToDetail(schedule.scheduleNo)"
+        >
           <div class="d-flex justify-content-between align-items-center mb-2">
             <div class="text-primary fw-semibold">
               🕒 {{ schedule.startTime.slice(11, 16) }} ~ {{ schedule.endTime.slice(11, 16) }}
@@ -62,6 +74,9 @@ onMounted(fetchSchedules)
 </template>
 
 <style scoped>
+.schedule-item {
+  cursor: pointer;
+}
 .schedule-item:hover {
   background-color: #f8f9fa;
   transition: background-color 0.2s;

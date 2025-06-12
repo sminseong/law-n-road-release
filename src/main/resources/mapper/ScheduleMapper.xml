@@ -5,6 +5,22 @@
 
 <mapper namespace="com.lawnroad.broadcast.live.mapper.ScheduleMapper">
 
+    <resultMap id="ScheduleDetailMap" type="com.lawnroad.broadcast.live.dto.ScheduleDetailDto">
+        <id property="scheduleNo" column="schedule_no"/>
+        <result property="userNo" column="user_no"/>
+        <result property="categoryNo" column="category_no"/>
+        <result property="name" column="name"/>
+        <result property="content" column="content"/>
+        <result property="thumbnailPath" column="thumbnail_path"/>
+        <result property="date" column="date"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="categoryName" column="category_name"/>
+
+        <!-- 키워드 리스트 매핑 -->
+        <collection property="keywords" ofType="string" column="keyword"/>
+    </resultMap>
+
     <insert id="insertSchedule" parameterType="com.lawnroad.broadcast.live.model.ScheduleVo" useGeneratedKeys="true" keyProperty="no">
         INSERT INTO broadcast_schedule (
         user_no, category_no, name, content, thumbnail_path, date, start_time, end_time, created_at
@@ -57,5 +73,34 @@
         WHERE bs.user_no = #{userNo}
         ORDER BY bs.date ASC, bs.start_time ASC
     </select>
+
+    <select id="findByScheduleNo" resultMap="ScheduleDetailMap">
+        SELECT
+        bs.no AS schedule_no,
+        bs.user_no,
+        bs.category_no,
+        bs.name,
+        bs.content,
+        bs.thumbnail_path,
+        bs.date,
+        bs.start_time,
+        bs.end_time,
+        c.name AS category_name,
+        k.keyword AS keyword
+        FROM broadcast_schedule bs
+        JOIN category c ON bs.category_no = c.no
+        LEFT JOIN keyword k ON k.schedule_no = bs.no
+        WHERE bs.no = #{scheduleNo}
+    </select>
+
+    <update id="updateSchedule" parameterType="com.lawnroad.broadcast.live.dto.ScheduleUpdateDto">
+        UPDATE broadcast_schedule
+        SET
+        category_no = #{categoryNo},
+        name = #{name},
+        content = #{content},
+        thumbnail_path = #{thumbnailPath}
+        WHERE no = #{scheduleNo}
+    </update>
 
 </mapper>

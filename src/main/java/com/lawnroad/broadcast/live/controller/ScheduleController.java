@@ -3,18 +3,12 @@ package com.lawnroad.broadcast.live.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.lawnroad.broadcast.live.dto.ScheduleCalendarDto;
-import com.lawnroad.broadcast.live.dto.ScheduleDateDto;
-import com.lawnroad.broadcast.live.dto.ScheduleRequestDto;
-import com.lawnroad.broadcast.live.dto.ScheduleResponseDto;
-import com.lawnroad.broadcast.live.model.ScheduleVo;
+import com.lawnroad.broadcast.live.dto.*;
 import com.lawnroad.broadcast.live.service.ScheduleService;
 import com.lawnroad.common.util.FileStorageUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -94,4 +88,56 @@ public class ScheduleController {
         List<ScheduleResponseDto> list = scheduleService.getSchedulesByLawyer(userNo);
         return ResponseEntity.ok(list);
     }
+
+    @GetMapping("/my/{scheduleNo}")
+    public ResponseEntity<ScheduleDetailDto> getScheduleDetail(@PathVariable Long scheduleNo) {
+        ScheduleDetailDto detail = scheduleService.findDetailByScheduleNo(scheduleNo);
+        System.out.println("📦 [GET /api/schedule/my/" + scheduleNo + "] 조회 결과: " + detail);
+
+        if (detail == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(detail);
+    }
+
+    @PostMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> updateSchedule(
+            @RequestParam("scheduleNo") Long scheduleNo,
+            @RequestParam("categoryNo") Long categoryNo,
+            @RequestParam("name") String name,
+            @RequestParam("content") String content,
+            @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
+            @RequestParam(value = "keywords", required = false) String keywordsJson
+    ) {
+        String path = null;
+        if (thumbnail != null && !thumbnail.isEmpty()) {
+            path = "http://localhost:8080" + fileStorageUtil.save(thumbnail, "uploads/images", null);
+        } else {
+            path = scheduleService.findDetailByScheduleNo(scheduleNo).getThumbnailPath();
+        }
+
+        // keywords JSON → List<String>
+        List<String> keywords = null;
+        if (keywordsJson != null && !keywordsJson.isBlank()) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                keywords = objectMapper.readValue(keywordsJson, new TypeReference<List<String>>() {});
+            } catch (Exception e) {
+                throw new RuntimeException("키워드 파싱 오류", e);
+            }
+        }
+
+        ScheduleUpdateDto dto = ScheduleUpdateDto.builder()
+                .scheduleNo(scheduleNo)
+                .categoryNo(categoryNo)
+                .name(name)
+                .content(content)
+                .thumbnailPath(path)
+                .keywords(keywords)
+                .build();
+
+        scheduleService.updateSchedule(dto);
+        return ResponseEntity.ok("스케줄이 성공적으로 수정되었습니다.");
+    }
+
 }

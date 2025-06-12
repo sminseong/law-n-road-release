@@ -126,7 +126,7 @@ const submitSchedule = async () => {
     })
 
     alert('✅ 방송 스케줄 등록 성공!')
-    router.push('/lawyer/schedule')
+    router.push('/lawyer/broadcasts/schedule')
   } catch (err) {
     console.error(err)
     alert('⚠️ 등록 중 오류 발생')
