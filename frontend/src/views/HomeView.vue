@@ -340,7 +340,7 @@ const loadFn = async ({ page, size }) => {
 
     <p>
       <a href="/lawyer">변호사 대시보드 이동하기</a>
-    </p>a
+    </p>
     <p>
       <a href="/client/mypage">의뢰인 대시보드 이동하기</a>
     </p>

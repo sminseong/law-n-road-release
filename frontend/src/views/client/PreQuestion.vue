@@ -1,85 +1,94 @@
 <script setup>
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
-import {onMounted, ref} from "vue";
+import { onMounted, ref } from "vue";
 import axios from "axios";
-import {useRoute} from "vue-router";
+import { useRoute } from "vue-router";
 
-const preQuestions = ref({});
+const preQuestions = ref([]);
 const route = useRoute();
 
+// 방송 정보 + 사전 질문 불러오기
 onMounted(async () => {
   const scheduleNo = route.params.scheduleNo;
   const preQRes = await axios.get(`/api/broadcasts/schedule/${scheduleNo}/preQuestion`);
-
   preQuestions.value = preQRes.data;
-  console.log('응답 전체:', preQRes.data);
-
-  console.log("방송 정보 응답", preQuestions.value);
+  console.log("응답 전체:", preQRes.data);
 });
 
+// 배경 색상
+function getQuestionStyle(index) {
+  const colors = ['bg-success bg-opacity-10', 'bg-warning bg-opacity-10', 'bg-danger bg-opacity-10'];
+  return colors[index % colors.length];
+}
+
+// 닉네임 색상
+function getTextColorClass(index) {
+  const colors = ['text-success', 'text-warning', 'text-danger'];
+  return colors[index % colors.length];
+}
 </script>
 
 <template>
   <ClientFrame>
-    <div class="container my-5 min-vh-80 d-flex" style="min-height: 80vh;">
-      <div class="bg-white border border-2 rounded-4 shadow px-5 py-4 w-100" style="min-height:70vh;">
-        <div class="row" style="height:100%;">
-          <!-- 왼쪽: 프로필+방송정보 -->
-          <div class="col-md-7 d-flex flex-column justify-content-center align-items-center" style="min-height:70vh;">
-            <!-- 상단 이미지  -->
+    <div class="container my-5 min-vh-80 d-flex">
+      <div class="bg-white border border-2 rounded-4 shadow px-5 py-4 w-100" style="min-height: 70vh;">
+        <div class="row" style="height: 100%;">
+          <!-- 왼쪽: 방송 정보 -->
+          <div class="col-md-7 d-flex flex-column justify-content-center align-items-center" style="min-height: 70vh;">
+            <!-- 상단 이미지 -->
             <div class="w-100 d-flex justify-content-center" style="margin-top: 45px; margin-bottom: 48px;">
-              <img src="/img/ads/slider-image-1.jpg" alt="방송 상단 이미지" style="max-width: 100%; height: auto; border-radius: 18px;">
+              <img :src="preQuestions[0]?.thumbnailPath || '/img/ads/slider-image-1.jpg'" alt="방송 이미지"
+                   style="max-width: 100%; height: auto; border-radius: 18px;">
             </div>
-            <!-- 프로필 + 방송정보  -->
+
+            <!-- 방송 상세 정보 -->
             <div class="bg-light rounded-3 p-4 w-100 d-flex flex-row align-items-center" style="gap: 10px; min-height: 220px;">
               <!-- 프로필 이미지 -->
               <div class="position-relative d-flex justify-content-center align-items-center" style="min-width: 170px;">
-                <img src="/img/profiles/kim.png" alt="프로필" class="rounded-circle border border-2" style="width: 96px; height: 96px;" />
+                <img src="/img/profiles/kim.png" alt="프로필" class="rounded-circle border border-2"
+                     style="width: 96px; height: 96px;" />
               </div>
-              <!-- 방송 정보 -->
+              <!-- 방송 정보 텍스트 -->
               <div class="text-start flex-grow-1">
-                <div class="fw-semibold mb-1 fs-2">{{ preQuestions.name }}</div>
-                <div class="fw-bold fs-5 mb-1">{{ preQuestions.content }}</div>
-                <div class="fw-bold fs-5 mb-1">{{ preQuestions.date }}　　{{ preQuestions.startTime?.slice(11, 16) }} ~ {{ preQuestions.endTime?.slice(11, 16) }}</div>
-                <div class="text-muted mb-1">
-
+                <div class="fw-semibold mb-1 fs-2">{{ preQuestions[0]?.name }}</div>
+                <div class="fw-bold fs-5 mb-1">{{ preQuestions[0]?.scheduleContent }}</div>
+                <div class="fw-bold fs-5 mb-1">
+                  {{ preQuestions[0]?.date }}　　
+                  {{ preQuestions[0]?.startTime?.slice(11, 16) }} ~ {{ preQuestions[0]?.endTime?.slice(11, 16) }}
                 </div>
-                <div class="text-secondary mb-2">- {{ preQuestions.lawyerName }} 변호사 -</div>
+                <div class="text-secondary mb-2">- {{ preQuestions[0]?.lawyerName }} 변호사 -</div>
                 <div class="mt-2">
-                <span class="badge bg-primary me-1" v-for="(kw, idx) in preQuestions.keywords" :key="idx">
-                 # {{ kw }}
-                </span>
+                  <span class="badge bg-primary me-1" v-for="(kw, idx) in preQuestions[0]?.keywords" :key="idx">
+                    # {{ kw }}
+                  </span>
                 </div>
               </div>
-
-
             </div>
           </div>
-          <!-- 오른쪽: 사전 질문 등록 -->
-          <div class="col-md-5 d-flex flex-column" style="min-height:70vh;">
+
+          <!-- 오른쪽: 사전 질문 영역 -->
+          <div class="col-md-5 d-flex flex-column" style="min-height: 70vh;">
             <div class="mb-3">
               <span class="fs-4 fw-bold text-dark">사전 질문 등록</span>
             </div>
-            <div class="flex-grow-1 overflow-auto" style="min-height:0;">
-              <div class="flex-grow-1 overflow-auto" style="min-height:0;">
-                <div class="bg-success bg-opacity-10 rounded-3 p-3 mb-2">
-                  <div class="fw-bold text-success">[닉네임1]</div>
-                  <div>음주운전으로 가드레일을 받았는데, 자차 보험으로 해결되나요?</div>
-                </div>
-                <div class="bg-warning bg-opacity-10 rounded-3 p-3 mb-2">
-                  <div class="fw-bold text-warning">[닉네임2]</div>
-                  <div>상대방이 신호위반으로 저를 부딪쳤는데, 과실 비율이 100:0 아닌가요?</div>
-                </div>
-                <div class="bg-danger bg-opacity-10 rounded-3 p-3">
-                  <div class="fw-bold text-danger">[닉네임3]</div>
-                  <div>음주운전 첫 적발인데 벌금 말고 다른 처벌도 있나요?</div>
-                </div>
+
+            <!-- 사전 질문 목록 -->
+            <div class="flex-grow-1 overflow-auto" style="min-height: 0;">
+              <!-- 사전 질문 목록 -->
+              <div
+                  v-for="(q, index) in preQuestions[0]?.preQuestions"
+                  :key="index"
+                  class="rounded-3 p-3 mb-2"
+                  :class="getQuestionStyle(index)">
+                <div class="fw-bold" :class="getTextColorClass(index)">[{{ q.nickname }}]</div>
+                <div>{{ q.preQuestionContent }}</div>
               </div>
             </div>
-            <!-- 입력 영역: mt-auto로 무조건 맨 밑에 고정 -->
-            <form class="row g-2 align-items-center mt-auto" style="margin-bottom:0;">
+
+            <!-- 질문 입력창 -->
+            <form class="row g-2 align-items-center mt-auto" style="margin-bottom: 0;">
               <div class="col">
-                <input type="text" class="form-control fs-5" placeholder="사전질문을 등록하세요"/>
+                <input type="text" class="form-control fs-5" placeholder="사전질문을 등록하세요" />
               </div>
               <div class="col-auto">
                 <button type="button" class="btn btn-dark fs-5 px-4">등록</button>

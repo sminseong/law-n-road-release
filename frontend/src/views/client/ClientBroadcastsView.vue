@@ -52,13 +52,12 @@ export default defineComponent({
 
     /** 채팅 */
     const stompClient = ref(null);
-    const randomNickname = () => "유저" + Math.floor(1000 + Math.random() * 9000);
-    const nickname = randomNickname();
     const route = useRoute();
     const broadcastNo = route.params.broadcastNo;
     const message = ref("");
     const messages = ref([]);
     const messageContainer = ref(null);
+    const nickname = ref('회원')
 
     // --- 닉네임별 고정 랜덤 색상 ---
     const nicknameColors = ref({});
@@ -101,7 +100,8 @@ export default defineComponent({
           );
           stompClient.value.publish({
             destination: "/app/chat.addUser",
-            body: JSON.stringify({ broadcastNo, nickname }),
+            body: JSON.stringify({ broadcastNo, nickname: nickname.value
+            }),
           });
         },
         onStompError: (frame) => {
@@ -117,7 +117,8 @@ export default defineComponent({
       if (!trimmed || !stompClient.value?.connected) return;
       stompClient.value.publish({
         destination: "/app/chat.sendMessage",
-        body: JSON.stringify({ broadcastNo, nickname, message: trimmed }),
+        body: JSON.stringify({ broadcastNo, nickname: nickname.value,
+             message: trimmed }),
       });
       message.value = "";
       scrollToBottom();
@@ -173,9 +174,22 @@ export default defineComponent({
       isCompleteModal.value = false;
     };
 
-    onMounted(() => {
+    onMounted(async () => {
+      const clientId = localStorage.getItem('clientId');
+      const password = localStorage.getItem('password');
+
+      if (clientId && password) {
+        await axios.post("/chat/test", {
+          clientId,
+          password
+        });
+      }
       connect();
       connectOpenVidu();
+      const nick = localStorage.getItem('nickname')
+      if (nick && nick !== 'null') {
+        nickname.value = nick
+      }
     });
 
     onBeforeUnmount(() => {

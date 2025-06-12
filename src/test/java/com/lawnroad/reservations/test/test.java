@@ -6,19 +6,24 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.List;
+
 
 @SpringBootTest
 public class test {
-
-
 
     @Autowired
     private PreQuestionMapper mapper;
 
     @Test
     void preQuestionMapperTest() {
-        PreQuestionDTO dto = mapper.findBySchedule(3);
-        System.out.println(dto);
+        List<PreQuestionDTO> list = mapper.findByPreQuestion(3);
+        for (PreQuestionDTO preQuestionDTO : list) {
+            System.out.println(preQuestionDTO);
+        }
+
     }
+
+
 
 }
