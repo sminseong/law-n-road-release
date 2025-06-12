@@ -122,7 +122,7 @@ function onThumbnailChange(e) {
                 title="누가, 언제, 어떻게 사용할 수 있는지 설명해 주세요"
             />
           </label>
-          <textarea v-model="description" rows="4" class="form-control" />
+          <textarea v-model="description" rows="6" class="form-control" />
         </div>
       </div>
 

@@ -158,7 +158,7 @@ async function handleUpdate() {
 
         <div>
           <label class="form-label">상세 설명</label>
-          <textarea v-model="description" rows="4" class="form-control" />
+          <textarea v-model="description" rows="6" class="form-control" />
         </div>
       </div>
 
