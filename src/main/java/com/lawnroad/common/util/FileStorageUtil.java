@@ -119,4 +119,31 @@ public class FileStorageUtil {
       System.err.println("파일 삭제 예외 발생: " + e.getMessage());
     }
   }
+  
+  /**
+   * 저장된 파일 경로를 기준으로 단일 파일 삭제 (확장자 불문)
+   * @param path 정적 접근용 경로 (예: /uploads/lawyers/1/thumbnails/abc.png)
+   */
+  public void delete(String path) {
+    try {
+      if (path == null || path.isBlank()) return;
+      
+      // URL prefix 제거 (http://... 제거)
+      String cleanedPath = path.replaceFirst("^https?://[^/]+", "");
+      
+      // 실제 파일 시스템 경로 계산
+      String basePath = new File("").getAbsolutePath();
+      String relativePath = cleanedPath.replaceFirst("^/", "").replace("/", File.separator);
+      
+      File file = new File(basePath + File.separator + relativePath);
+      if (file.exists()) {
+        boolean deleted = file.delete();
+        if (!deleted) {
+          System.err.println("파일 삭제 실패: " + file.getAbsolutePath());
+        }
+      }
+    } catch (Exception e) {
+      System.err.println("파일 삭제 중 예외 발생: " + e.getMessage());
+    }
+  }
 }

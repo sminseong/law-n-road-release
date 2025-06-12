@@ -38,6 +38,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'  // mongoDB
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
 
     // kakao api
     implementation 'net.nurigo:sdk:4.2.7'
