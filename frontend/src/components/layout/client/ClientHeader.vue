@@ -270,7 +270,7 @@ function goToMyPage() {
                   <a class="nav-link" href="/">홈</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/broadcasts">라이브 방송</a>
+                  <a class="nav-link" href="/client/broadcasts">라이브 방송</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="/replay">방송 다시보기</a>

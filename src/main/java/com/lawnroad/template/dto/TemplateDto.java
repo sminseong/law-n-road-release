@@ -4,19 +4,34 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+// 템플릿 테이블 엔티티
+
 @Data
 public class TemplateDto {
+  // 템플릿 no
   private Long no;
-  private Long user_no;
-  private Long category_no;
-  private String category_name;
+  // 유저 no (작성한 변호사)
+  private Long userNo;
+  // 카테고리 no
+  private Long categoryNo;
+  // 템플릿 타입
+  private String type; // "FILE" or "EDITOR"
+  // 템플릿명
   private String name;
+  // 상세설명
   private String description;
+  // 가격
   private Integer price;
-  private String template_path;
-  private String thumbnail_path;
-  private Integer sales_count;
-  private Integer discount_rate;
-  private LocalDateTime created_at;
-  private LocalDateTime updated_at;
+  // 썸네일 이미지 경로
+  private String thumbnailPath;
+  // 누적 판매량
+  private Integer salesCount;
+  // 할인률
+  private Integer discountRate;
+  // 삭제 여부
+  private Boolean isDeleted;
+  // 생성일시
+  private LocalDateTime createdAt;
+  // 수정일시
+  private LocalDateTime updatedAt;
 }
