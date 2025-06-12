@@ -117,7 +117,19 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
     return templateMapper.findFileTemplateDetail(templateNo);
   }
   
-  // 템플릿 수정하기
+  // 템플릿 수정하기 (메타 데이터만)
+  @Override
+  @Transactional
+  public void updateTemplateMeta(TemplateDto dto, String thumbnailPath) {
+    // 썸네일이 교체/제거된 경우만 경로 세팅
+    if (thumbnailPath != null && !thumbnailPath.isBlank()) {
+      dto.setThumbnailPath(thumbnailPath);
+    }
+    // 나머지 메타필드(dto) 세팅해서 쿼리
+    templateMapper.updateTemplateMeta(dto);
+  }
+  
+  // 템플릿 수정하기 (복제 방식)
   @Override
   public void updateTemplateByClone(LawyerTemplateUpdateDto dto, String thumbnailPath) {
     String type = dto.getType();

@@ -24,6 +24,11 @@ const thumbnailPreview = ref(null)
 const oldThumbnailPath = ref(null)
 const createdAt = ref('')
 
+// 수정 전 원본값 저장용
+const originEditorContent = ref('')
+const originEditorVariables = ref([])
+const originUploadedFiles = ref([])
+
 // 템플릿 타입 고정 (탭 제거)
 const selectedTab = ref(templateType === 'EDITOR' ? 'ai' : 'upload')
 
@@ -33,6 +38,9 @@ const editorVariables = ref([])
 
 // 파일 업로드용
 const uploadedFiles = ref([])
+
+// 썸네일 제거 플래그
+const removeExistingThumbnail = ref(false)
 
 onMounted(async () => {
   try {
@@ -51,6 +59,14 @@ onMounted(async () => {
     oldThumbnailPath.value = data.thumbnailPath
     thumbnailPreview.value = data.thumbnailPath
 
+    // 초기값 저장
+    originEditorContent.value = data.content || ''
+    originEditorVariables.value = JSON.parse(data.varJson || '[]')
+    if (templateType === 'FILE') {
+      originUploadedFiles.value = JSON.parse(data.pathJson || '[]')
+      uploadedFiles.value = JSON.parse(data.pathJson || '[]')
+    }
+
     // 유형별 분기
     if (templateType === 'EDITOR') {
       selectedTab.value = 'ai'
@@ -68,7 +84,6 @@ onMounted(async () => {
   }
 })
 
-const removeExistingThumbnail = ref(false)
 function clearThumbnail() {
   thumbnailFile.value = null
   thumbnailPreview.value = null
@@ -96,16 +111,47 @@ function onThumbnailChange(e) {
   }
 
   // 정상 통과 시
-  thumbnailFile.value    = file
+  thumbnailFile.value = file
   thumbnailPreview.value = URL.createObjectURL(file)
 }
 
 async function handleUpdate() {
-  if (!confirm('템플릿을 수정하면 판매기록이 초기화 됩니다. 정말 수정하시겠습니까?')) return
+  // 1) 변경 여부 비교
+  let isContentChanged = false
+  let isFileChanged = false
 
+  if (selectedTab.value === 'ai') {
+    isContentChanged =
+        editorContent.value !== originEditorContent.value ||
+        JSON.stringify(editorVariables.value) !== JSON.stringify(originEditorVariables.value)
+  } else {
+    // 기존 파일 메타(객체)와 비교
+    const existingMetaOnly = uploadedFiles.value.filter(item => !(item instanceof File))
+    isFileChanged =
+        uploadedFiles.value.some(item => item instanceof File) ||
+        JSON.stringify(existingMetaOnly) !== JSON.stringify(originUploadedFiles.value)
+  }
+
+  // 2) 분기: 복제 방식 또는 메타 업데이트
+  try {
+    if (isContentChanged || isFileChanged) {
+      if (!confirm('템플릿을 수정하면 판매기록이 초기화 됩니다. 정말 수정하시겠습니까?')) return
+      await callUpdateCloneAPI()
+    } else {
+      await callUpdateMetaAPI()
+    }
+    alert('수정 완료되었습니다.')
+    router.push('/lawyer/templates')
+  } catch (e) {
+    console.error(e)
+    alert('수정 실패')
+  }
+}
+
+async function callUpdateCloneAPI() {
   try {
     const formData = new FormData()
-    formData.append('no', templateNo) // 기존 템플릿 번호
+    formData.append('no', templateNo)
     formData.append('name', name.value)
     formData.append('price', price.value)
     formData.append('discountRate', discountRate.value)
@@ -123,29 +169,43 @@ async function handleUpdate() {
       formData.append('varJson', JSON.stringify(editorVariables.value))
       formData.append('aiEnabled', 1)
     } else {
-      // 1) 기존 메타 객체만 뽑아서 JSON
       const existingMeta = uploadedFiles.value.filter(
           item => item.originalName && item.savedPath
-      );
-      formData.append('pathJson', JSON.stringify(existingMeta));
-
-      // 2) 새로 추가된 실제 File 객체만
+      )
+      formData.append('pathJson', JSON.stringify(existingMeta))
       uploadedFiles.value
           .filter(item => item instanceof File)
           .forEach(file => {
-            formData.append('templateFiles', file);
-          });
+            formData.append('templateFiles', file)
+          })
     }
 
-    // 수정용 API 호출
     await http.post('/api/lawyer/templates/update', formData)
-
     alert('수정 완료되었습니다.')
     router.push('/lawyer/templates')
   } catch (e) {
     console.error(e)
     alert('수정 실패')
   }
+}
+
+async function callUpdateMetaAPI() {
+  const formData = new FormData()
+  formData.append('no', templateNo)
+  formData.append('name', name.value)
+  formData.append('price', price.value)
+  formData.append('discountRate', discountRate.value)
+  formData.append('categoryNo', categoryNo.value)
+  formData.append('description', description.value)
+  formData.append('type', selectedTab.value === 'ai' ? 'EDITOR' : 'FILE')
+  formData.append('removeThumbnail', removeExistingThumbnail.value ? 1 : 0)
+  // 썸네일 교체가 있는 경우만
+  if (thumbnailFile.value) {
+    formData.append('file', thumbnailFile.value)
+  }
+
+  // Axios(또는 http)로 보내면, 자동으로 Content-Type: multipart/form-data 가 세팅됩니다.
+  await http.post('/api/lawyer/templates/update-meta', formData)
 }
 </script>
 
