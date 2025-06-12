@@ -12,8 +12,8 @@ public class PreQuestionController {
     @Autowired
     private PreQuestionService preQuestionService;
 
-    @GetMapping("/client/broadcasts/schedule/{scheduleNo}/preQuestion")
-    public List<PreQuestionDTO> reportChat(@PathVariable int scheduleNo) {
+    @GetMapping("/api/broadcasts/schedule/{scheduleNo}/preQuestion")
+    public PreQuestionDTO reportChat(@PathVariable int scheduleNo) {
        return preQuestionService.findBySchedule(scheduleNo);
     }
 

@@ -5,15 +5,14 @@ import axios from "axios";
 import {useRoute} from "vue-router";
 
 const preQuestions = ref({});
-const route = useRoute(); // ✅ 이 줄이 반드시 필요함
+const route = useRoute();
 
 onMounted(async () => {
   const scheduleNo = route.params.scheduleNo;
-  const preQRes = await axios.get(`/client/broadcasts/schedule/${scheduleNo}/preQuestion`);
+  const preQRes = await axios.get(`/api/broadcasts/schedule/${scheduleNo}/preQuestion`);
 
-  // ✅ 첫 번째 객체만 저장 (단일 DTO이므로)
-  preQuestions.value = preQRes.data[0];
-  console.log('응답 전체:', preQRes.data); // ✅ 콘솔 확인
+  preQuestions.value = preQRes.data;
+  console.log('응답 전체:', preQRes.data);
 
   console.log("방송 정보 응답", preQuestions.value);
 });
@@ -38,18 +37,20 @@ onMounted(async () => {
                 <img src="/img/profiles/kim.png" alt="프로필" class="rounded-circle border border-2" style="width: 96px; height: 96px;" />
               </div>
               <!-- 방송 정보 -->
-              <div class="text-start flex-grow-1" v-if="preQuestions.name">
-                <div class="fw-bold fs-5 mb-1">{{ preQuestions.date }}</div>
-                <div class="text-muted mb-1">{{ preQuestions.date }}</div>
+              <div class="text-start flex-grow-1">
                 <div class="fw-semibold mb-1 fs-2">{{ preQuestions.name }}</div>
-                <div class="text-secondary">- {{ preQuestions.lawyerName }} -</div>
-              </div>
+                <div class="fw-bold fs-5 mb-1">{{ preQuestions.content }}</div>
+                <div class="fw-bold fs-5 mb-1">{{ preQuestions.date }}　　{{ preQuestions.startTime?.slice(11, 16) }} ~ {{ preQuestions.endTime?.slice(11, 16) }}</div>
+                <div class="text-muted mb-1">
 
-              <ul class="mt-2">
-                <li v-for="(kw, i) in preQuestions.keywords" :key="i" class="badge bg-info me-1">
-                  {{ kw }}
-                </li>
-              </ul>
+                </div>
+                <div class="text-secondary mb-2">- {{ preQuestions.lawyerName }} 변호사 -</div>
+                <div class="mt-2">
+                <span class="badge bg-primary me-1" v-for="(kw, idx) in preQuestions.keywords" :key="idx">
+                 # {{ kw }}
+                </span>
+                </div>
+              </div>
 
 
             </div>

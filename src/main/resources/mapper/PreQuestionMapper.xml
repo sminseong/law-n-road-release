@@ -5,42 +5,36 @@
 
 <mapper namespace="com.lawnroad.broadcast.chat.mapper.PreQuestionMapper">
 
-    <!-- DTO 매핑에 맞춘 resultMap 정의 -->
     <resultMap id="PreQuestionResultMap" type="com.lawnroad.broadcast.chat.dto.PreQuestionDTO">
-        <result property="categoryNo"     column="category_no"/>
-        <result property="lawyerName"     column="lawyer_name"/>
-        <result property="name"           column="name"/> <!-- title → name -->
-        <result property="content"        column="content"/>
-        <result property="thumbnailPath"  column="thumbnail_path"/>
-        <result property="date"           column="date"/>
-        <result property="startTime"      column="start_time"/>
-        <result property="endTime"        column="end_time"/>
-        <collection property="keywords" ofType="string" column="schedule_no"
-                    select="findKeywordsBySchedule"/>
+        <id     property="categoryNo"    column="category_no"/>
+        <result property="name"          column="name"/>
+        <result property="content"       column="content"/>
+        <result property="thumbnailPath" column="thumbnail_path"/>
+        <result property="date"          column="date"/>
+        <result property="startTime"     column="start_time"/>
+        <result property="endTime"       column="end_time"/>
+        <result property="lawyerName"    column="lawyer_name"/>
+        <collection property="keywords" ofType="string">
+            <result column="keyword"/>
+        </collection>
     </resultMap>
 
-    <!-- 메인 쿼리 -->
     <select id="findBySchedule" resultMap="PreQuestionResultMap">
         SELECT
         bs.category_no,
-        l.name AS lawyer_name,
         bs.name,
         bs.content,
         bs.thumbnail_path,
         bs.date,
         bs.start_time,
         bs.end_time,
-        bs.no AS schedule_no
+        l.name AS lawyer_name,
+        k.keyword
         FROM broadcast_schedule bs
-        JOIN lawyer l ON bs.user_no = l.no
+        JOIN `user` u ON bs.user_no = u.no
+        JOIN lawyer l ON l.no = u.no
+        LEFT JOIN keyword k ON k.schedule_no = bs.no
         WHERE bs.no = #{scheduleNo}
-    </select>
-
-    <!-- 키워드 조회 서브 쿼리 -->
-    <select id="findKeywordsBySchedule" resultType="string">
-        SELECT keyword
-        FROM keyword
-        WHERE schedule_no = #{schedule_no}
     </select>
 
 </mapper>
