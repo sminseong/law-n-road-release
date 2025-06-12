@@ -6,6 +6,8 @@ import AiTemplateEditor from '@/components/template/AiTemplateEditor.vue'
 import UploadTemplateForm from '@/components/template/UploadTemplateForm.vue'
 import http from '@/libs/HttpRequester'
 
+// 최대 썸네일 용량 (10MB)
+const MAX_THUMBNAIL_SIZE = 10 * 1024 * 1024  // 10MB
 const router = useRouter()
 const route = useRoute()
 const templateNo = route.params.no
@@ -66,10 +68,36 @@ onMounted(async () => {
   }
 })
 
+const removeExistingThumbnail = ref(false)
+function clearThumbnail() {
+  thumbnailFile.value = null
+  thumbnailPreview.value = null
+  removeExistingThumbnail.value = true  // 기존 썸네일도 지운다고 표시
+}
+
 function onThumbnailChange(e) {
   const file = e.target.files[0]
-  thumbnailFile.value = file
-  thumbnailPreview.value = file ? URL.createObjectURL(file) : oldThumbnailPath.value
+  if (!file) return
+
+  // 이미지 타입 검증
+  if (!file.type.startsWith('image/')) {
+    alert('❌ 이미지 파일만 업로드할 수 있습니다.')
+    e.target.value = null
+    clearThumbnail()
+    return
+  }
+
+  // 용량 제한 검증
+  if (file.size > MAX_THUMBNAIL_SIZE) {
+    alert('❌ 썸네일 이미지는 10MB 이하만 업로드 가능합니다.')
+    e.target.value = null
+    clearThumbnail()
+    return
+  }
+
+  // 정상 통과 시
+  thumbnailFile.value    = file
+  thumbnailPreview.value = URL.createObjectURL(file)
 }
 
 async function handleUpdate() {
@@ -84,6 +112,7 @@ async function handleUpdate() {
     formData.append('categoryNo', categoryNo.value)
     formData.append('description', description.value)
     formData.append('type', selectedTab.value === 'ai' ? 'EDITOR' : 'FILE')
+    formData.append('removeThumbnail', removeExistingThumbnail.value ? 1 : 0)
 
     if (thumbnailFile.value) {
       formData.append('file', thumbnailFile.value)
@@ -130,11 +159,19 @@ async function handleUpdate() {
         <div class="row mb-3">
           <div class="col-md-4">
             <label class="form-label">썸네일 이미지</label>
-            <div class="preview-box mb-2 d-flex align-items-center justify-content-center border rounded">
+            <div class="preview-box position-relative mb-2 d-flex align-items-center justify-content-center border rounded">
+              <button
+                  v-if="thumbnailPreview"
+                  type="button"
+                  class="btn-close position-absolute top-0 end-0 m-2"
+                  aria-label="Remove thumbnail"
+                  style="z-index:10"
+                  @click="clearThumbnail"
+              > </button>
               <img v-if="thumbnailPreview" :src="thumbnailPreview" alt="미리보기" class="img-fluid h-100" style="object-fit: contain" />
-              <p v-else class="text-muted" style="text-align: center">이미지를 등록해 주세요</p>
+              <p v-else class="text-muted" style="text-align: center">상품 목록에 보여질 대표 이미지입니다.<br>이미지를 등록해 주세요</p>
             </div>
-            <input type="file" class="form-control" @change="onThumbnailChange" />
+            <input type="file" class="form-control" accept="image/*" @change="onThumbnailChange" />
           </div>
           <div class="col-md-8">
             <label class="form-label">상품명</label>
@@ -158,7 +195,7 @@ async function handleUpdate() {
 
         <div>
           <label class="form-label">상세 설명</label>
-          <textarea v-model="description" rows="4" class="form-control" />
+          <textarea v-model="description" rows="6" class="form-control" />
         </div>
       </div>
 
