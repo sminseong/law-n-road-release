@@ -63,6 +63,7 @@ const removeFile = (index) => {
       <li
           v-for="(file, i) in fileList"
           :key="i"
+          v-if="(file.originalName || file.name)?.trim()"
           class="d-flex justify-content-between align-items-center"
           :style="{
       padding: '0.75rem 1rem',
