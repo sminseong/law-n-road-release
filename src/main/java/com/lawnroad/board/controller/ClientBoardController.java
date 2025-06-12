@@ -3,6 +3,8 @@ package com.lawnroad.board.controller;
 import com.lawnroad.board.dto.BoardCreateDto;
 import com.lawnroad.board.dto.BoardListDto;
 import com.lawnroad.board.service.BoardService;
+import kotlinx.serialization.Required;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,13 +14,10 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/client/qna") // 이 컨트롤러의 모든 API는 /api/client/qna로 시작함
 public class ClientBoardController {
     private final BoardService boardService;
-
-    public ClientBoardController(BoardService boardService) {
-        this.boardService = boardService;
-    }
 
     //상담 게시글 목록 조회 (페이징 포함)
     @GetMapping
@@ -56,8 +55,7 @@ public class ClientBoardController {
     @PostMapping
     public ResponseEntity<String> register(@RequestBody BoardCreateDto dto) {
         boardService.register(dto);
-        return ResponseEntity
-                .ok("게시글이 성공적으로 등록되었습니다.");
+        return ResponseEntity.ok("게시글이 성공적으로 등록되었습니다.");
     }
 
 }
