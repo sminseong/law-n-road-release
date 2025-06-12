@@ -94,16 +94,18 @@ async function handleUpdate() {
       formData.append('varJson', JSON.stringify(editorVariables.value))
       formData.append('aiEnabled', 1)
     } else {
-      // 삭제된 항목이 빠진 최종 메타(JSON)만 넘기기
-      formData.append(
-          'pathJson',
-          JSON.stringify(uploadedFiles.value)
+      // 1) 기존 메타 객체만 뽑아서 JSON
+      const existingMeta = uploadedFiles.value.filter(
+          item => item.originalName && item.savedPath
       );
+      formData.append('pathJson', JSON.stringify(existingMeta));
 
-      // 그 중 실제 File 객체들만 다시 업로드 필드에 append
+      // 2) 새로 추가된 실제 File 객체만
       uploadedFiles.value
           .filter(item => item instanceof File)
-          .forEach(f => formData.append('templateFiles', f));
+          .forEach(file => {
+            formData.append('templateFiles', file);
+          });
     }
 
     // 수정용 API 호출
