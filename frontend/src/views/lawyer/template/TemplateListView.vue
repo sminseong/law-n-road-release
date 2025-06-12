@@ -169,7 +169,10 @@ onMounted(() => {
 
 // 이벤트 핸들러 :: 행 클릭
 function handleRowClick(row) {
-  router.push(`/lawyer/templates/${row.no}`)
+  router.push({
+    path: `/lawyer/templates/${row.no}`,
+    query: { type: typeLabelToCode[row.type] } // 예: 'AI 생성형 템플릿' → 'EDITOR'
+  })
 }
 
 // 이벤트 핸들러 :: 수정 버튼 클릭

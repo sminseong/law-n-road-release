@@ -10,7 +10,8 @@ import TextStyle from '@tiptap/extension-text-style'
 const props = defineProps({
   content: String,
   variables: Array,
-  isEdit: { type: Boolean, default: false }
+  isEdit: { type: Boolean, default: false },
+  isDetail: { type: Boolean, default: false }
 })
 const emit = defineEmits(['update:content', 'update:variables'])
 
@@ -31,24 +32,41 @@ let isClickOnly = false
 onMounted(() => {
   editor.value = new Editor({
     content: props.content || '',
+    editable: !props.isDetail,
     extensions: [StarterKit, Underline, TextStyle, VariableNode],
     onUpdate: ({ editor }) => {
       // 1. 본문 반영
       const html = editor.getHTML()
       emit('update:content', html)
 
-      // 2. #{변수} 추출
-      const matches = html.match(/#\{(.*?)\}/g) || []
-      const updatedVars = [...new Set(matches.map(m => m.slice(2, -1)))]
+      // 2) JSON 문서 가져오기
+      const doc = editor.getJSON()
+      const found = new Set()
 
-      // 3. variableMap 갱신
-      updatedVars.forEach(name => {
+      // 3) 재귀 순회로 variable 노드만 골라내기
+      function traverse(nodes) {
+        if (!nodes) return
+        for (const node of nodes) {
+          if (node.type === 'variable' && node.attrs?.name) {
+            found.add(node.attrs.name)
+          }
+          // 자식이 있으면 내려가서 또 찍어 보고
+          if (node.content) {
+            traverse(node.content)
+          }
+        }
+      }
+      traverse(doc.content)
+
+      // 4) variableMap 동기화
+      found.forEach(name => {
         if (!variableMap.value[name]) {
-          variableMap.value[name] = name // 디스크립션 기본값 = 변수명
+          // 기존에 없던 변수면 description 기본값은 name
+          variableMap.value[name] = name
         }
       })
 
-      // 4. emit
+      // 5) emit variables
       emit(
           'update:variables',
           Object.entries(variableMap.value).map(([name, description]) => ({
@@ -90,7 +108,7 @@ let initialized = false
 watch(
     () => props.variables,
     (newVal) => {
-      if (!initialized && Array.isArray(newVal) && newVal.length > 0 && props.isEdit) {
+      if (!initialized && Array.isArray(newVal) && newVal.length > 0 && (props.isEdit || props.isDetail)) {
         const map = {}
         newVal.forEach(v => {
           map[v.name] = v.description
@@ -233,10 +251,19 @@ watch(showModal, (val) => {
   }
 })
 
+watch(
+    () => props.isDetail,
+    (detail) => {
+      if (editor.value) {
+        editor.value.setOptions({ editable: props.isEdit && !detail })
+      }
+    }
+)
+
 </script>
 
 <template>
-  <div class="card p-3 mb-4 bg-light-subtle template-guide">
+  <div v-if="!isDetail" class="card p-3 mb-4 bg-light-subtle template-guide">
     <div class="d-flex justify-content-between align-items-center">
       <strong>AI 템플릿이란?</strong>
       <button class="btn btn-outline-secondary btn-sm" @click="insertExample">입력 예시 불러오기</button>
@@ -258,7 +285,7 @@ watch(showModal, (val) => {
   </div>
 
   <!-- 변수 목록 및 추가 -->
-  <div class="card p-3 mb-4 ">
+  <div v-if="!isDetail" class="card p-3 mb-4 ">
     <div class="d-flex justify-content-between mb-2">
       <span class="form-label fw-bold">사용된 변수</span>
       <button class="btn btn-sm btn-outline-primary" @click="showModal = true">+ 변수 추가</button>
@@ -281,7 +308,7 @@ watch(showModal, (val) => {
 
           <!-- 입력보조 버튼 -->
           <div
-              v-if="showAiPopover"
+              v-if="!isDetail && showAiPopover"
               class="ai-helper-popover position-absolute bg-white border rounded shadow-sm p-2"
               :style="{ top: `${popoverY}px`, left: `${popoverX}px` }"
           >
