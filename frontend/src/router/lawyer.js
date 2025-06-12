@@ -62,7 +62,7 @@ export default [
     {
         path: '/lawyer/templates/edit/:no',
         name: 'TemplateEdit',
-        component: () => import('@/views/lawyer/template/TemplateFormView.vue'),
+        component: () => import('@/views/lawyer/template/TemplateEditView.vue'),
         props: true
     },
 

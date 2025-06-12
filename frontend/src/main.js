@@ -17,3 +17,4 @@ app.use(router)
 app.mount('#app')
 
 window.global = window;
+
