@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref,onMounted } from 'vue'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import {
   sendBroadcastStartAlimtalk,
@@ -11,8 +11,23 @@ import {
   sendLawyerReservationCanceledAlimtalk
 } from "@/service/notification.js";
 
+
+
 const notifyKeywordEnabled = ref(true)
 const notifyConsultEnabled = ref(true)
+
+const nickname = ref('회원') // 🔧 기본값 설정
+
+onMounted(() => {
+  const storedNickname = localStorage.getItem('nickname')
+  if (storedNickname && storedNickname !== 'null') {
+    nickname.value = storedNickname
+  }
+})
+
+
+
+
 
 function toggleKeyword() {
   console.log('방송 키워드 알림 수신 여부:', notifyKeywordEnabled.value ? '수신함' : '수신 안 함')
@@ -126,7 +141,7 @@ async function testLawyerReservationCanceled() {
   <ClientFrame>
     <div class="mypage-home p-4">
       <h3 class="mb-3 text-muted">마이페이지 홈</h3>
-      <p class="text-muted">환영합니다! 여기는 사용자님의 마이페이지 홈입니다.</p>
+      <p class="text-muted">환영합니다! {{nickname}}님 마이페이지 홈입니다.</p>
 
       <!-- 1:1 상담내역 카드 -->
       <div class="card mb-4 border-light">

@@ -51,7 +51,7 @@ public class ClientService {
         // 2. client 테이블 삽입
         ClientEntity client = new ClientEntity();
         client.setNo(user.getNo());
-        client.setClient_id(request.getClientId());
+        client.setClientId(request.getClientId());
         client.setPwHash(passwordEncoder.encode(request.getPassword()));
         client.setEmail(request.getEmail());
         client.setName(request.getFullName());
@@ -71,10 +71,10 @@ public class ClientService {
     }
 
 
-    public ClientEntity login(String email, String rawPassword) {
-        ClientEntity client = clientMapper.findByEmail(email);
+    public ClientEntity login(String clientId, String rawPassword) {
+        ClientEntity client = clientMapper.findByClientId(clientId);
         if (client == null) {
-            throw new IllegalArgumentException("이메일이 존재하지 않음");
+            throw new IllegalArgumentException("아이디 존재하지 않음");
         }
 
         // ✅ 여기에 디버깅 로그 삽입

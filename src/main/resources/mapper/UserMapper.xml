@@ -8,6 +8,11 @@
         INSERT INTO user (type) VALUES (#{type})
     </insert>
 
+    <select id="findByNo" resultType="com.lawnroad.account.entity.UserEntity">
+        SELECT no, type FROM user WHERE no = #{no}
+    </select>
+
+
 
 
 </mapper>

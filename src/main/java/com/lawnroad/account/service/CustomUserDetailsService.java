@@ -18,10 +18,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final ClientMapper clientMapper;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        ClientEntity client = clientMapper.findByEmail(email);
+    public UserDetails loadUserByUsername(String client_id) throws UsernameNotFoundException {
+        ClientEntity client = clientMapper.findByEmail(client_id);
         if (client == null) {
-            throw new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email);
+            throw new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + client_id);
         }
 
         return User.builder()

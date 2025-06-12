@@ -1,6 +1,4 @@
 package com.lawnroad.common.util;
-
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -8,8 +6,6 @@ import org.springframework.stereotype.Component;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import javax.crypto.SecretKey;
-
-
 import java.security.Key;
 import java.util.Date;
 import java.util.Map;
@@ -18,36 +14,40 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class JwtTokenUtil {
-
-    private final String SECRET_KEY = "정수만의초강력비밀키정수만의초강력비밀키"; // 최소 256bit
+//정수만의초강력비밀키정수만의초강력비밀키
+    private final String SECRET_KEY = "sdkfjkdljfweifhaghghfkgdjkfhkdsjhfuehfegfdhfgsdhfhjhgshd"; // 최소 256bit
     private final SecretKey key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
     private final Map<String, String> refreshTokenStore = new ConcurrentHashMap<>();
 
-    public String generateAccessToken(String email) {
+    public String generateAccessToken(String clientId,Long no,String role,String nickname) {
         return Jwts.builder()
-                .setSubject(email)
+                .setSubject(clientId)
+                .claim("no", no)
+                //.claim("role", role)
+                .claim("role",role)
+                .claim("nickname", nickname)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String generateRefreshToken(String email) {
+    public String generateRefreshToken(String clientId) {
         return Jwts.builder()
-                .setSubject(email)
+                .setSubject(clientId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 7))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public void storeRefreshToken(String email, String refreshToken) {
-        refreshTokenStore.put(email, refreshToken);
+    public void storeRefreshToken(String clientId, String refreshToken) {
+        refreshTokenStore.put(clientId, refreshToken);
     }
 
-    public boolean isRefreshTokenValid(String email, String refreshToken) {
-        return refreshToken.equals(refreshTokenStore.get(email));
+    public boolean isRefreshTokenValid(String clientId, String refreshToken) {
+        return refreshToken.equals(refreshTokenStore.get(clientId));
     }
 
     public boolean validateToken(String token) {
@@ -59,13 +59,26 @@ public class JwtTokenUtil {
         }
     }
 
-    public String getEmailFromToken(String token) {
+    public String getClientIdFromToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+
+
+    public Long getUserNoFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        System.out.println("claims 전체: " + claims);
+        System.out.println("claims.get(\"no\"): " + claims.get("no"));
+        return claims.get("no", Long.class);
     }
 
     public void printPayload(String token) {
@@ -81,9 +94,23 @@ public class JwtTokenUtil {
         }
     }
 
+    // 필요하면 nickname, role 추출 메서드도 만들면 편함
+    public String getRoleFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("role", String.class);
+    }
 
-
-
-
+    public String getNicknameFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("nickname", String.class);
+    }
 
 }

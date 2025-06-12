@@ -5,6 +5,8 @@ import com.lawnroad.account.dto.ClientSignupRequest;
 import com.lawnroad.account.dto.LoginRequest;
 import com.lawnroad.account.dto.LoginResponseDto;
 import com.lawnroad.account.entity.ClientEntity;
+import com.lawnroad.account.entity.UserEntity;
+import com.lawnroad.account.mapper.UserMapper;
 import com.lawnroad.account.service.ClientService;
 import com.lawnroad.common.util.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
@@ -26,16 +28,11 @@ public class AuthController {
     @Autowired
     private ClientService clientService;
     private final JwtTokenUtil jwtTokenUtil;
-
-    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
-
-
-
-
+    private final UserMapper userMapper;
 
     @GetMapping("/check-id")
-    public ResponseEntity<Map<String, Object>> checkIdDuplicate(@RequestParam String client_id) {
-        boolean available = clientService.isClientIdAvailable(client_id);
+    public ResponseEntity<Map<String, Object>> checkIdDuplicate(@RequestParam String clientId) {
+        boolean available = clientService.isClientIdAvailable(clientId);
 
         Map<String, Object> response = new HashMap<>();
         response.put("available", available);
@@ -60,6 +57,7 @@ public class AuthController {
         return ResponseEntity.ok().body("회원가입 완료");
     }
 
+
     @GetMapping("/check-email")
     public ResponseEntity<Map<String, Object>> checkEmailDuplicate(@RequestParam String email) {
         boolean available = clientService.isEmailAvailable(email);
@@ -70,75 +68,43 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-
-
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-//        try {
-//            if (!"client".equals(request.getType())) {
-//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("지원되지 않는 로그인 유형입니다.");
-//            }
-//
-//            ClientEntity client = clientService.login(request.getEmail(), request.getPassword());
-//
-//            Map<String, String> result = new HashMap<>();
-//
-//            result.put("name", client.getName());
-//            result.put("client_id", client.getClient_id());
-//
-//            return ResponseEntity.ok(result);
-//
-//        } catch (IllegalArgumentException e) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류 발생");
-//        }
-//    }
         try {
-            ClientEntity client = clientService.login(request.getEmail(), request.getPassword());
+            ClientEntity client = clientService.login(request.getClientId(), request.getPassword());
 
-            String accessToken = jwtTokenUtil.generateAccessToken(client.getEmail());
-            String refreshToken = jwtTokenUtil.generateRefreshToken(client.getEmail());
+            //ClientEntity client = clientMapper.findByClientId(clientId);
+            UserEntity user = userMapper.findByNo(client.getNo());
+            String accessToken = jwtTokenUtil.generateAccessToken(client.getClientId(),client.getNo(),user.getType(),client.getNickname());
+            String refreshToken = jwtTokenUtil.generateRefreshToken(client.getClientId());
 
+            // 🔍 여기에서 확인
             System.out.println("✅ Access Token: " + accessToken);
-            jwtTokenUtil.printPayload(accessToken);
+            jwtTokenUtil.printPayload(accessToken); // 👈 payload 출력
+            Long no = jwtTokenUtil.getUserNoFromToken(accessToken);
+            String nickname = jwtTokenUtil.getNicknameFromToken(accessToken);
+            String role = jwtTokenUtil.getRoleFromToken(accessToken);
+            System.out.println("test 진행 중 : " + no);
+            System.out.println("test 진행 중 : " + nickname);
+            System.out.println("test 진행 중 : " + role);
 
-            // ✅ 확인용 콘솔 출력
-            System.out.println("✅ Access Token: " + accessToken);
-            System.out.println("🔄 Refresh Token: " + refreshToken);
-
-            // refreshToken은 DB 또는 Redis에 저장 가능
-            jwtTokenUtil.storeRefreshToken(client.getEmail(), refreshToken);
+            jwtTokenUtil.storeRefreshToken(client.getClientId(), refreshToken);
 
             Map<String, Object> result = new HashMap<>();
             result.put("accessToken", accessToken);
             result.put("refreshToken", refreshToken);
             result.put("name", client.getName());
+            result.put("nickname", client.getNickname());
+            result.put("role", user.getType());
+
             return ResponseEntity.ok(result);
 
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패");
         }
-
-}
-
-    @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(@RequestBody Map<String, String> payload) {
-        String refreshToken = payload.get("refreshToken");
-
-        if (!jwtTokenUtil.validateToken(refreshToken)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh Token 만료");
-        }
-
-        String email = jwtTokenUtil.getEmailFromToken(refreshToken);
-        if (!jwtTokenUtil.isRefreshTokenValid(email, refreshToken)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh Token 불일치");
-        }
-
-        String newAccessToken = jwtTokenUtil.generateAccessToken(email);
-        return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
     }
+
+
 
 
 

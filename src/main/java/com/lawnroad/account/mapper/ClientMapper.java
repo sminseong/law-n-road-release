@@ -16,11 +16,8 @@ public interface ClientMapper {
 
     ClientEntity findByEmail(String email);
 
+    ClientEntity findByClientId(String clientId);
+
     int countByEmail(@Param("email") String email);
-
-
-
-
-
 
 }
