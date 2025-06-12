@@ -1,12 +1,11 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, toRefs } from 'vue'
 
 const props = defineProps({
-  rows: Array,
-  columns: Array,
+  rows: { type: Array, default: () => [] },
+  columns: { type: Array, default: () => [] },
   showSearchInput: { type: Boolean, default: true },
   filters: { type: Array, default: () => [] },
-  rowsPerPage: { type: Number, default: 10 },
   imageConfig: {
     type: Object,
     default: () => ({
@@ -21,49 +20,49 @@ const props = defineProps({
       edit: true,
       delete: true
     })
-  }
+  },
+  currentPage: { type: Number, required: true },
+  totalPages: { type: Number, required: true }
 })
 
-const emit = defineEmits(['row-click', 'edit-action', 'delete-action'])
+const emit = defineEmits([
+  'update:filters',
+  'page-change',
+  'row-click',
+  'edit-action',
+  'delete-action'
+])
+
+// Unwrap reactive props
+const { rows, columns, showSearchInput, filters, imageConfig, actionButtons, currentPage, totalPages } = toRefs(props)
 
 const searchKeyword = ref('')
-const currentPage = ref(1)
 const selectedFilters = ref({})
-
-props.filters.forEach(filter => {
-  selectedFilters.value[filter.key] = 'All'
+// Initialize filters
+filters.value.forEach(filter => {
+  selectedFilters.value[filter.key] = filter.options.includes('전체') ? '전체' : filter.options[0]
 })
 
-const filteredRows = computed(() => {
-  let result = props.rows
-  for (const { key } of props.filters) {
-    const selected = selectedFilters.value[key]
-    if (selected && selected !== 'All') {
-      result = result.filter(row => row[key] === selected)
-    }
-  }
-  if (searchKeyword.value) {
-    const keyword = searchKeyword.value.toLowerCase()
-    result = result.filter(row =>
-        Object.values(row).some(val => String(val).toLowerCase().includes(keyword))
-    )
-  }
-  return result
+function onFilterChange(key, value) {
+  selectedFilters.value[key] = value
+  emit('update:filters', {
+    ...selectedFilters.value,
+    keyword: searchKeyword.value
+  })
+}
+
+watch(searchKeyword, () => {
+  emit('update:filters', {
+    ...selectedFilters.value,
+    keyword: searchKeyword.value
+  })
 })
 
-const totalPages = computed(() =>
-    Math.ceil(filteredRows.value.length / props.rowsPerPage)
-)
-
-const paginatedRows = computed(() => {
-  const start = (currentPage.value - 1) * props.rowsPerPage
-  return filteredRows.value.slice(start, start + props.rowsPerPage)
-})
-
+// Pagination group logic
 const pageGroup = computed(() => {
   const groupSize = 5
-  const groupIndex = Math.floor((currentPage.value - 1) / groupSize)
-  const start = groupIndex * groupSize + 1
+  const gIndex = Math.floor((currentPage.value - 1) / groupSize)
+  const start = gIndex * groupSize + 1
   const end = Math.min(start + groupSize - 1, totalPages.value)
   const pages = Array.from({ length: end - start + 1 }, (_, i) => start + i)
   return {
@@ -76,14 +75,15 @@ const pageGroup = computed(() => {
 })
 
 function changePage(page) {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
+  if (page >= 1 && page <= totalPages.value && page !== currentPage.value) {
+    emit('page-change', page)
   }
 }
 </script>
 
 <template>
   <div class="card card-lg h-100">
+    <!-- Header: Search and Filters -->
     <div class="px-4 py-4">
       <div class="row justify-content-between">
         <div class="col-md-6" v-if="showSearchInput">
@@ -93,8 +93,11 @@ function changePage(page) {
         <div class="col-md-6 d-flex gap-2 justify-content-end">
           <div v-for="filter in filters" :key="filter.key" class="w-auto">
             <label class="form-label mb-1">{{ filter.label }}</label>
-            <select v-model="selectedFilters[filter.key]" class="form-select">
-              <option v-if="!filter.options.includes('All')" value="All">All</option>
+            <select
+                v-model="selectedFilters[filter.key]"
+                class="form-select"
+                @change="onFilterChange(filter.key, selectedFilters[filter.key])"
+            >
               <option v-for="opt in filter.options" :key="opt" :value="opt">{{ opt }}</option>
             </select>
           </div>
@@ -102,6 +105,7 @@ function changePage(page) {
       </div>
     </div>
 
+    <!-- Table -->
     <div class="table-responsive">
       <table class="table table-hover mb-0 text-nowrap">
         <thead class="bg-light">
@@ -111,80 +115,86 @@ function changePage(page) {
         </thead>
         <tbody>
         <tr
-            v-for="(row, index) in paginatedRows"
+            v-for="(row, index) in rows"
             :key="index"
             class="cursor-pointer"
             @click="emit('row-click', row)"
         >
           <td v-for="col in columns" :key="col.key" class="align-middle">
+            <!-- Actions -->
             <template v-if="col.key === 'actions'">
               <div class="d-flex gap-2">
                 <button
-                    v-if="props.actionButtons.edit"
+                    v-if="actionButtons.edit"
                     class="btn btn-sm btn-outline-primary"
                     @click.stop.prevent="emit('edit-action', row)"
                 >수정</button>
                 <button
-                    v-if="props.actionButtons.delete"
+                    v-if="actionButtons.delete"
                     class="btn btn-sm btn-outline-secondary"
                     @click.stop.prevent="emit('delete-action', row)"
                 >삭제</button>
               </div>
             </template>
-            <template v-else-if="props.imageConfig.enabled && col.key === props.imageConfig.targetKey">
+            <!-- Image -->
+            <template v-else-if="imageConfig.enabled && col.key === imageConfig.targetKey">
               <div class="d-flex align-items-center gap-3">
-                <img :src="row[props.imageConfig.key]" alt="상품 이미지" width="80" height="80" class="rounded" />
-<!--                <div>{{ row[col.key] }}</div>-->
+                <img
+                    :src="row[imageConfig.key]"
+                    alt="상품 이미지"
+                    width="80"
+                    height="80"
+                    class="rounded"
+                />
               </div>
             </template>
+            <!-- Status Badge -->
             <template v-else-if="col.key === 'status'">
-                <span class="badge"
-                      :class="{
-                        'bg-primary': row[col.key] === '완료',
-                        'bg-warning': row[col.key] === '진행 중',
-                        'bg-danger': row[col.key] === '취소'
-                      }">
-                  {{ row[col.key] }}
-                </span>
+                <span
+                    class="badge"
+                    :class="{
+                    'bg-primary': row[col.key] === '완료',
+                    'bg-warning': row[col.key] === '진행 중',
+                    'bg-danger': row[col.key] === '취소'
+                  }"
+                >{{ row[col.key] }}</span>
             </template>
+            <!-- Default -->
             <template v-else>
               <span>{{ row[col.key] }}</span>
             </template>
           </td>
         </tr>
-        <tr v-if="filteredRows.length === 0">
-          <td :colspan="columns.length" class="text-center">
-            데이터가 없습니다.
-          </td>
+        <tr v-if="rows.length === 0">
+          <td :colspan="columns.length" class="text-center">데이터가 없습니다.</td>
         </tr>
         </tbody>
       </table>
     </div>
 
+    <!-- Pagination -->
     <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top">
-      <span>
-        Showing
-        {{ (currentPage - 1) * rowsPerPage + 1 }}
-        to
-        {{ Math.min(currentPage * rowsPerPage, filteredRows.length) }}
-        of
-        {{ filteredRows.length }} entries
-      </span>
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
       <ul class="pagination mb-0">
         <li class="page-item" :class="{ disabled: currentPage === 1 }">
-          <a class="page-link" @click="changePage(currentPage - 1)">Previous</a>
+          <button class="page-link" @click="changePage(currentPage - 1)">Previous</button>
         </li>
         <li class="page-item" :class="{ disabled: !pageGroup.hasPrevGroup }">
           <button class="page-link" @click="changePage(pageGroup.prevPage)">«</button>
         </li>
-        <li v-for="p in pageGroup.pages" :key="p" class="page-item" :class="{ active: p === currentPage }">
+        <li
+            v-for="p in pageGroup.pages"
+            :key="p"
+            class="page-item"
+            :class="{ active: p === currentPage }"
+        >
           <button class="page-link" @click="changePage(p)">{{ p }}</button>
         </li>
         <li class="page-item" :class="{ disabled: !pageGroup.hasNextGroup }">
           <button class="page-link" @click="changePage(pageGroup.nextPage)">»</button>
         </li>
         <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-          <a class="page-link" @click="changePage(currentPage + 1)">Next</a>
+          <button class="page-link" @click="changePage(currentPage + 1)">Next</button>
         </li>
       </ul>
     </div>
