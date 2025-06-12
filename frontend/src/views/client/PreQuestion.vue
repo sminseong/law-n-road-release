@@ -1,5 +1,23 @@
 <script setup>
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
+import {onMounted, ref} from "vue";
+import axios from "axios";
+import {useRoute} from "vue-router";
+
+const preQuestions = ref({});
+const route = useRoute(); // ✅ 이 줄이 반드시 필요함
+
+onMounted(async () => {
+  const scheduleNo = route.params.scheduleNo;
+  const preQRes = await axios.get(`/client/broadcasts/schedule/${scheduleNo}/preQuestion`);
+
+  // ✅ 첫 번째 객체만 저장 (단일 DTO이므로)
+  preQuestions.value = preQRes.data[0];
+  console.log('응답 전체:', preQRes.data); // ✅ 콘솔 확인
+
+  console.log("방송 정보 응답", preQuestions.value);
+});
+
 </script>
 
 <template>
@@ -20,12 +38,20 @@ import ClientFrame from "@/components/layout/client/ClientFrame.vue";
                 <img src="/img/profiles/kim.png" alt="프로필" class="rounded-circle border border-2" style="width: 96px; height: 96px;" />
               </div>
               <!-- 방송 정보 -->
-              <div class="text-start flex-grow-1">
-                <div class="fw-bold fs-5 mb-1">5월 22일</div>
-                <div class="text-muted mb-1">[오후 6시 ~ 오후 7시]</div>
-                <div class="fw-semibold mb-1 fs-2" >통합 교통법규 Q&amp;A 라이브</div>
-                <div class="text-secondary">- 김수영 변호사 -</div>
+              <div class="text-start flex-grow-1" v-if="preQuestions.name">
+                <div class="fw-bold fs-5 mb-1">{{ preQuestions.date }}</div>
+                <div class="text-muted mb-1">{{ preQuestions.date }}</div>
+                <div class="fw-semibold mb-1 fs-2">{{ preQuestions.name }}</div>
+                <div class="text-secondary">- {{ preQuestions.lawyerName }} -</div>
               </div>
+
+              <ul class="mt-2">
+                <li v-for="(kw, i) in preQuestions.keywords" :key="i" class="badge bg-info me-1">
+                  {{ kw }}
+                </li>
+              </ul>
+
+
             </div>
           </div>
           <!-- 오른쪽: 사전 질문 등록 -->

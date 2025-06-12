@@ -389,7 +389,7 @@ export default defineComponent({
   transition: background 0.13s, color 0.12s;
 }
 .modal-btn-cancel {
-  background: #ca7d57;
+  background: #f47e4a;
   color: #ffffff;
 }
 .modal-btn-cancel:hover { background: #efb485; }

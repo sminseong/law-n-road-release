@@ -373,6 +373,7 @@ export default defineComponent({
   -ms-overflow-style: none;
 }
 /* 드롭다운 메뉴 스타일 */
+/* 드롭다운 메뉴 스타일 */
 .dropdown-custom-menu {
   background: #232428;
   color: #dedede;
@@ -413,13 +414,13 @@ export default defineComponent({
   z-index: 9999;
 }
 .modal-custom-box {
-  background: #232428;
+  background: white;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.28);
   min-width: 360px;
   padding: 0;
   overflow: hidden;
-  color: #dedede;
+  color: black;
 }
 .modal-custom-content { padding: 36px 36px 24px 36px; }
 .modal-custom-msg { margin-bottom: 34px; }
@@ -445,15 +446,15 @@ export default defineComponent({
   transition: background 0.13s, color 0.12s;
 }
 .modal-btn-cancel {
-  background: #292b2f;
-  color: #dedede;
+  background: #f47e4a;
+  color: #ffffff;
 }
-.modal-btn-cancel:hover { background: #222327; }
+.modal-btn-cancel:hover { background: #efb485; }
 .modal-btn-ok {
-  background: #12fa91;
-  color: #141519;
+  background: #435879;
+  color: #ffffff;
 }
 .modal-btn-ok:hover {
-  background: #05d96d;
+  background: #7d8bbd;
 }
 </style>
