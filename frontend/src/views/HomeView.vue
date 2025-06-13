@@ -8,24 +8,41 @@
   import ProductCard from '@/components/common/ProductCard.vue'
   import AdBannerPair from '@/components/common/SubBannerSlider.vue'
   import { ref, onMounted } from 'vue'
+  import { useRouter } from 'vue-router'
+  import axios from 'axios'
+  const router = useRouter()
+  const nickname = ref('')
+  const isLoggedIn = ref(false)
 
 
-  const nickname = ref('회원')
 
   onMounted(() => {
+    const token = localStorage.getItem('token')
     const nick = localStorage.getItem('nickname')
+
+    isLoggedIn.value = !!token
     if (nick && nick !== 'null') {
       nickname.value = nick
     }
   })
 
-  const isLoggedIn = ref(false)
+  // 로그아웃 처리
+  const logout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('accountType')
+    localStorage.removeItem('name')
+    localStorage.removeItem('nickname')
 
-  onMounted(() => {
-    const token = localStorage.getItem('token')
-    isLoggedIn.value = !!token
-  })
+    //axios.defaults.headers.common["Authorization"] = null
+    delete axios.defaults.headers.common['Authorization']
 
+    isLoggedIn.value = false
+    nickname.value = '회원'
+
+    router.push('/login')
+    setTimeout(() => location.reload(), 300) // 선택적 새로고침
+  }
 
 
   // 메인 베너
@@ -190,6 +207,8 @@
   }
 ]
 
+
+
 // 공용 테이블 보기
 const columns = [
   { label: '이름', key: 'name' },
@@ -331,12 +350,16 @@ const loadFn = async ({ page, size }) => {
 
 
 
-    <section class="p-4">
-      <!-- 🔧 닉네임 출력 -->
+    <!-- 로그인 상태일 때 -->
+    <div v-if="isLoggedIn">
       <h3 class="mb-4">{{ nickname }}님, 환영합니다.</h3>
+      <button @click="logout" class="btn btn-outline-danger">로그아웃</button>
+    </div>
 
-      <!-- 생략된 콘텐츠 -->
-    </section>
+    <!-- 비로그인 상태일 때 -->
+    <div v-else>
+      <router-link to="/login" class="btn btn-primary">로그인</router-link>
+    </div>
 
     <p>
       <a href="/lawyer">변호사 대시보드 이동하기</a>
