@@ -22,7 +22,12 @@ export default [
     {
         path: '/lawyer/reservation',
         name: 'LawyerReservation',
-        component: () => import('@/views/lawyer/ReservationView.vue')
+        component: () => import('@/views/lawyer/LawyerReservationView.vue')
+    },
+    {
+        path: '/lawyer/:lawyerNo/slots',
+        name: 'TimeSlotUpdate',
+        component: () => import('@/views/lawyer/TimeSlotUpdate.vue')
     },
 
     // ---------- 방송 ----------

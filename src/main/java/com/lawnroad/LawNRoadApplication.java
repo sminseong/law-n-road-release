@@ -6,14 +6,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
-@MapperScan("com.lawnroad.template.mapper")
 @SpringBootApplication
-@MapperScan("com.lawnroad.account.mapper")
-@MapperScan("com.lawnroad.broadcast.live.mapper")
-@MapperScan("com.lawnroad.broadcast.chat.mapper")
+@MapperScan({"com.lawnroad.template.mapper", "com.lawnroad.account.mapper", "com.lawnroad.board.mapper"})
 public class LawNRoadApplication {
     public static void main(String[] args) {
 

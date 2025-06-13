@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -108,7 +107,7 @@ public class LawyerTemplateController {
    * @return 템플릿 목록 + 총 개수 + 총 페이지 수
    */
   @GetMapping
-  public ResponseEntity<TemplateListResponse> getMyTemplates(TemplateSearchCondition condition) {
+  public ResponseEntity<TemplateListResponseDto> getMyTemplates(TemplateSearchConditionDto condition) {
     Long lawyerNo = 1L;  // 로그인 미적용 상태 → 임시 고정
     return ResponseEntity.ok(templateService.findTemplatesByLawyerNo(lawyerNo, condition));
   }
@@ -145,8 +144,45 @@ public class LawyerTemplateController {
     }
   }
   
+  // 1) 메타데이터만 업데이트
+  @PostMapping(value = "/update-meta", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<String> updateTemplateMeta(
+      @ModelAttribute TemplateDto dto,               // 모든 메타데이터 필드
+      @RequestParam(value = "file", required = false) MultipartFile thumbFile,
+      @RequestParam(value = "removeThumbnail", required = false) Integer removeThumbnail
+  ) {
+    Long lawyerNo = 1L; // TODO: 인증 적용 후 교체
+    dto.setUserNo(lawyerNo);
+    
+    String thumbnailPath = null;
+    
+    try {
+      // 1. 썸네일 분기
+      if (removeThumbnail != null && removeThumbnail == 1) {
+        // 썸네일 제거
+        thumbnailPath = "/uploads/defaults/template-thumbnail.png";
+      } else if (thumbFile != null && !thumbFile.isEmpty()) {
+        // 썸네일 교체
+        thumbnailPath = fileStorageUtil.save(
+            thumbFile,
+            "uploads/lawyers/" + lawyerNo + "/thumbnails",
+            null
+        );
+      } // 아니면 기존 경로를 유지(=null)
+      
+      // 2. 서비스 호출 (썸네일 경로 포함)
+      templateService.updateTemplateMeta(dto, thumbnailPath);
+      
+      return ResponseEntity.ok("메타데이터 수정 완료");
+    } catch (Exception e) {
+      // (썸네일 업로드 실패 시 롤백 등 필요하면 추가)
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body("수정 실패: " + e.getMessage());
+    }
+  }
+  
   /**
-   * 템플릿 수정 (복제 방식)
+   * 2) 본문/첨부파일까지 바뀌는 경우 (복제)
    * 1. 기존 썸네일·파일 메타 조회
    * 2. 썸네일 교체 시 새로 저장, 아니면 기존 유지
    * 3. 프론트에서 전달된 pathJson(삭제된 항목 제외) 파싱 + 신규 파일 메타 추가

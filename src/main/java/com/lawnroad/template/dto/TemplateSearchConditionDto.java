@@ -6,7 +6,7 @@ import lombok.Data;
  * 템플릿 목록 검색 조건 DTO (변호사, 사용자, 공통 조회용)
  */
 @Data
-public class TemplateSearchCondition {
+public class TemplateSearchConditionDto {
   
   // 현재 페이지 번호 (1부터 시작)
   private int page;
