@@ -7,6 +7,26 @@
   import CardTable from '@/components/table/CardTable.vue'
   import ProductCard from '@/components/common/ProductCard.vue'
   import AdBannerPair from '@/components/common/SubBannerSlider.vue'
+  import { ref, onMounted } from 'vue'
+
+
+  const nickname = ref('회원')
+
+  onMounted(() => {
+    const nick = localStorage.getItem('nickname')
+    if (nick && nick !== 'null') {
+      nickname.value = nick
+    }
+  })
+
+  const isLoggedIn = ref(false)
+
+  onMounted(() => {
+    const token = localStorage.getItem('token')
+    isLoggedIn.value = !!token
+  })
+
+
 
   // 메인 베너
   const mainBanners = [
@@ -309,9 +329,18 @@ const loadFn = async ({ page, size }) => {
   <!-- 의뢰인 타입 본문 콘텐츠 -->
   <ClientFrame>
 
+
+
+    <section class="p-4">
+      <!-- 🔧 닉네임 출력 -->
+      <h3 class="mb-4">{{ nickname }}님, 환영합니다.</h3>
+
+      <!-- 생략된 콘텐츠 -->
+    </section>
+
     <p>
       <a href="/lawyer">변호사 대시보드 이동하기</a>
-    </p>
+    </p>a
     <p>
       <a href="/client/mypage">의뢰인 대시보드 이동하기</a>
     </p>
