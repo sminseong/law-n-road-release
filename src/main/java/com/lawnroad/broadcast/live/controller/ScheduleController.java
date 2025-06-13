@@ -7,6 +7,7 @@ import com.lawnroad.broadcast.live.dto.*;
 import com.lawnroad.broadcast.live.service.ScheduleService;
 import com.lawnroad.common.util.FileStorageUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -139,4 +140,13 @@ public class ScheduleController {
         return ResponseEntity.ok("스케줄이 성공적으로 수정되었습니다.");
     }
 
+    @DeleteMapping("/delete/{scheduleNo}")
+    public ResponseEntity<String> deleteSchedule(@PathVariable Long scheduleNo) {
+        int deletedCount = scheduleService.deleteScheduleByNo(scheduleNo);
+        if (deletedCount == 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("삭제할 스케줄이 존재하지 않습니다.");
+        }
+        return ResponseEntity.ok("삭제 완료");
+    }
 }

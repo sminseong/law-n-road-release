@@ -13,4 +13,5 @@ public interface ScheduleService {
     List<ScheduleResponseDto> getSchedulesByLawyer(Long userNo);
     ScheduleDetailDto findDetailByScheduleNo(Long scheduleNo);
     void updateSchedule(ScheduleUpdateDto scheduleUpdateDto);
+    int deleteScheduleByNo(Long scheduleNo);
 }

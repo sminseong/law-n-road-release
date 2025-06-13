@@ -11,13 +11,21 @@ const router = useRouter()
 const fetchSchedules = async () => {
   try {
     const res = await axios.get('/api/schedule/my')
-    schedules.value = res.data
-    groupedSchedules.value = groupByDate(res.data)
+    const futureSchedules = filterFutureSchedules(res.data)
+    schedules.value = futureSchedules
+    groupedSchedules.value = groupByDate(futureSchedules)
   } catch (err) {
     console.error('방송 스케줄 로딩 실패:', err)
   }
 }
 
+// 현재 시간 이후인 스케줄만 필터링
+const filterFutureSchedules = (items) => {
+  const now = new Date()
+  return items.filter(item => new Date(item.endTime) > now)
+}
+
+// 날짜별로 스케줄 그룹핑
 const groupByDate = (items) => {
   return items.reduce((acc, item) => {
     const date = item.date
@@ -51,7 +59,9 @@ onMounted(fetchSchedules)
         <button class="btn btn-outline-primary" @click="goToRegister">➕ 새 스케줄 등록</button>
       </div>
 
-      <div v-if="Object.keys(groupedSchedules).length === 0" class="text-muted">방송 스케줄이 없습니다.</div>
+      <div v-if="Object.keys(groupedSchedules).length === 0" class="text-muted">
+        방송 스케줄이 없습니다.
+      </div>
 
       <div v-for="(list, date) in groupedSchedules" :key="date" class="mb-5">
         <h4 class="mb-3 fw-semibold border-bottom pb-2">📆 {{ date }}</h4>
