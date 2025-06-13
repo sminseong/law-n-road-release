@@ -1,12 +1,32 @@
 <script setup>
-  import UserFrame from '@/components/layout/User/UserFrame.vue'
+  import ClientFrame from '@/components/layout/client/ClientFrame.vue'
   import MainBannerSlider from '@/components/common/MainBannerSlider.vue'
   import RoundCategory from '@/components/common/RoundCategory.vue'
   import LiveBroadcastCard from '@/components/common/LiveBroadcastCard.vue'
   import CardSlider from '@/components/common/CardSlider.vue'
   import CardTable from '@/components/table/CardTable.vue'
   import ProductCard from '@/components/common/ProductCard.vue'
-  import AdBannerPair from '@/components/common/SlotCard.vue'
+  import AdBannerPair from '@/components/common/SubBannerSlider.vue'
+  import { ref, onMounted } from 'vue'
+
+
+  const nickname = ref('회원')
+
+  onMounted(() => {
+    const nick = localStorage.getItem('nickname')
+    if (nick && nick !== 'null') {
+      nickname.value = nick
+    }
+  })
+
+  const isLoggedIn = ref(false)
+
+  onMounted(() => {
+    const token = localStorage.getItem('token')
+    isLoggedIn.value = !!token
+  })
+
+
 
   // 메인 베너
   const mainBanners = [
@@ -67,74 +87,74 @@
   // VOD 다시보기
   const vodList = [
     {
-      id: 1,
+      no: 1,
       thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
       title: '음주운전 대처법',
       link: '/replay.html'
     },
     {
-      id: 2,
+      no: 2,
       thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
       title: '합의 시 유의사항',
       link: '/replay.html'
     },
     {
-      id: 3,
+      no: 3,
       thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
       title: '블랙박스 제출 전략',
       link: '/replay.html'
     },
     {
-      id: 4,
+      no: 4,
       thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
       title: '음주운전 대처법',
       link: '/replay.html'
     },
     {
-      id: 5,
+      no: 5,
       thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
       title: '합의 시 유의사항',
       link: '/replay.html'
     },
     {
-      id: 6,
+      no: 6,
       thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
       title: '블랙박스 제출 전략',
       link: '/replay.html'
     },
-    
+
     {
-      id: 1,
+      no: 1,
       thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
       title: '음주운전 대처법',
       link: '/replay.html'
     },
     {
-      id: 2,
+      no: 2,
       thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
       title: '합의 시 유의사항',
       link: '/replay.html'
     },
     {
-      id: 3,
+      no: 3,
       thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
       title: '블랙박스 제출 전략',
       link: '/replay.html'
     },
     {
-      id: 4,
+      no: 4,
       thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
       title: '음주운전 대처법',
       link: '/replay.html'
     },
     {
-      id: 5,
+      no: 5,
       thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
       title: '합의 시 유의사항',
       link: '/replay.html'
     },
     {
-      id: 6,
+      no: 6,
       thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
       title: '블랙박스 제출 전략',
       link: '/replay.html'
@@ -144,27 +164,27 @@
   // qna 테이블
   const qnaSampleList = [
   {
-    id: 1,
+    no: 1,
     question: '음주운전 삼진아웃이 세 번까지 봐준다는 말인가요?',
     answerPreview: '아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며...'
   },
   {
-    id: 2,
+    no: 2,
     question: '무면허 운전.. 구제 가능한가요...?',
     answerPreview: '구제 가능 여부는 사안에 따라 다르며, 음주·무면허 사안은...'
   },
   {
-    id: 3,
+    no: 3,
     question: '음주운전 삼진아웃이 세 번까지 봐준다는 말인가요?',
     answerPreview: '아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며...'
   },
   {
-    id: 4,
+    no: 4,
     question: '무면허 운전.. 구제 가능한가요...?',
     answerPreview: '아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 구제 가능 여부는 사안에 따라 다르며, 음주·무면허 사안은...'
   },
   {
-    id: 5,
+    no: 5,
     question: '음주운전 삼진아웃이 세 번까지 봐준다는 말인가요?',
     answerPreview: '아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 .'
   }
@@ -177,7 +197,7 @@ const columns = [
 ]
 
 const fullData = Array.from({ length: 300 }, (_, i) => ({
-  id: i + 1,
+  no: i + 1,
   name: `홍길동 ${i + 1}`,
   age: 20 + (i % 10) // 20~29 반복
 }))
@@ -307,13 +327,22 @@ const loadFn = async ({ page, size }) => {
 
 <template>
   <!-- 의뢰인 타입 본문 콘텐츠 -->
-  <UserFrame>
+  <ClientFrame>
+
+
+
+    <section class="p-4">
+      <!-- 🔧 닉네임 출력 -->
+      <h3 class="mb-4">{{ nickname }}님, 환영합니다.</h3>
+
+      <!-- 생략된 콘텐츠 -->
+    </section>
 
     <p>
       <a href="/lawyer">변호사 대시보드 이동하기</a>
-    </p>
+    </p>a
     <p>
-      <a href="/user/mypage">의뢰인 대시보드 이동하기</a>
+      <a href="/client/mypage">의뢰인 대시보드 이동하기</a>
     </p>
 
     <!-- 메인 베너 -->
@@ -328,7 +357,7 @@ const loadFn = async ({ page, size }) => {
           <h3 class="mb-0">변호사와 함께하는 실시간 라이브 방송</h3>
         </div>
       </div>
-      
+
     <!-- <LiveBroadcastCard :broadcast="liveBroadcast" /> -->
     <LiveBroadcastCard :broadcast="liveBroadcast2" />
 
@@ -372,7 +401,7 @@ const loadFn = async ({ page, size }) => {
       </div>
     </div>
 
-  </UserFrame>
+  </ClientFrame>
 </template>
 
 <style scoped>

@@ -1,44 +1,86 @@
-<!-- src/views/account/LoginView.vue -->
+src/views/account/LoginView.vue
 <script setup>
 import { ref, watchEffect } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import AccountFrame from '@/components/layout/account/AccountFrame.vue'
 
+const token = localStorage.getItem('token')
+if (token) {
+  axios.defaults.headers.common['Authorization'] = `Bearer ${token}` // ✅ 수정
+}
+
 const router = useRouter()
 const route = useRoute()
 
-const tab = ref('user') // 기본값: 의뢰인
+const tab = ref('client')
 
 watchEffect(() => {
   const queryType = route.query.type
-  if (queryType === 'lawyer' || queryType === 'user') {
+  if (queryType === 'lawyer' || queryType === 'client') {
     tab.value = queryType
   }
 })
 
-const email = ref('')
+//const email = ref('')
+const clientId = ref('')
 const password = ref('')
 const remember = ref(false)
 
 const submitLogin = async () => {
   try {
-    const res = await axios.post('/api/auth/login', {
-      email: email.value,
+    console.log('📨 로그인 요청 데이터:', {
+      clientId: clientId.value,
       password: password.value,
       type: tab.value
     })
 
-    const { token } = res.data
-    localStorage.setItem('token', token)
-    localStorage.setItem('accountType', tab.value)
+    const res = await axios.post('/api/auth/login', {
+      clientId: clientId.value,
+      password: password.value,
+      type: tab.value
+    })
 
-    router.push(tab.value === 'lawyer' ? '/lawyer' : '/user')
+    console.log('✅ 로그인 성공 응답:', res.data)
+
+    const { accessToken, refreshToken, name,nickname } = res.data
+
+    localStorage.setItem('token', accessToken)
+    localStorage.setItem('refreshToken', refreshToken)
+    localStorage.setItem('accountType', tab.value)
+    localStorage.setItem('name', name)
+    localStorage.setItem('nickname',nickname)
+
+    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}` // ✅ 수정
+
+    // console.log('✅ 저장된 localStorage 값:')
+    // console.log('🔐 token:', localStorage.getItem('token'))
+    // console.log('🔄 refreshToken:', localStorage.getItem('refreshToken'))
+    // console.log('🙍 name:', localStorage.getItem('name'))
+    // console.log('🧭 accountType:', localStorage.getItem('accountType'))
+
+    router.push(tab.value === 'lawyer' ? '/lawyer' : '/')
+
   } catch (err) {
-    alert('로그인 실패: 이메일 또는 비밀번호가 잘못되었습니다.')
+    console.error('❌ 로그인 실패:', err)
+
+    if (err.response) {
+      console.log('🔐 accessToken:', accessToken)
+      console.log('🙍 nickname:', nickname)
+
+      console.error('📡 상태코드:', err.response.status)
+      console.error('📩 에러 메시지:', err.response.data)
+      alert(`로그인 실패: ${err.response.data}`) // ✅ 수정
+    } else {
+      alert('네트워크 오류 또는 서버 응답 없음')
+    }
   }
 }
 </script>
+
+
+
+
 
 <template>
   <AccountFrame>
@@ -47,8 +89,8 @@ const submitLogin = async () => {
       <div class="btn-group w-100 mb-4">
         <button
             class="btn"
-            :class="tab === 'user' ? 'btn-primary' : 'btn-outline-secondary'"
-            @click="tab = 'user'"
+            :class="tab === 'client' ? 'btn-primary' : 'btn-outline-secondary'"
+            @click="tab = 'client'"
         >
           의뢰인 로그인
         </button>
@@ -63,15 +105,26 @@ const submitLogin = async () => {
 
       <!-- 로그인 폼 -->
       <form @submit.prevent="submitLogin">
+<!--        <div class="mb-3">-->
+<!--          <input-->
+<!--              v-model="email"-->
+<!--              type="email"-->
+<!--              class="form-control"-->
+<!--              placeholder="이메일"-->
+<!--              required-->
+<!--          />-->
+<!--        </div>-->
         <div class="mb-3">
           <input
-              v-model="email"
-              type="email"
+              v-model="clientId"
+              type="text"
               class="form-control"
-              placeholder="이메일"
+              placeholder="아이디"
               required
           />
         </div>
+
+
         <div class="mb-3">
           <input
               v-model="password"
@@ -98,14 +151,14 @@ const submitLogin = async () => {
 
       <div class="text-center mt-3">
         <span class="small text-muted">
-          {{ tab === 'user' ? '아직 계정이 없으신가요?' : '변호사 계정이 없으신가요?' }}
+          {{ tab === 'client' ? '아직 계정이 없으신가요?' : '변호사 계정이 없으신가요?' }}
         </span>
         <!-- 탭에 따라 서로 다른 라우트로 이동 -->
         <router-link
-            :to="tab === 'user' ? '/user/signup' : '/lawyer/signup'"
+            :to="tab === 'client' ? '/client/signup' : '/lawyer/signup'"
             class="ms-1 small"
         >
-          {{ tab === 'user' ? '회원가입' : '변호사 회원가입' }}
+          {{ tab === 'client' ? '회원가입' : '변호사 회원가입' }}
         </router-link>
       </div>
     </section>

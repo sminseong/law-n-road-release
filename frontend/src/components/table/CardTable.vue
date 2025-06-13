@@ -22,8 +22,8 @@ const lineHeight = 1.4 // em 기준 줄 간격
         <div class="col-lg-12">
           <div class="recommend-box p-4 bg-light-subtle">
             <ul class="list-unstyled mb-0">
-              <li class="qa-item" v-for="qna in List" :key="qna.id">
-                <RouterLink :to="`/qna/${qna.id}`">
+              <li class="qa-item" v-for="qna in List" :key="qna.no">
+                <RouterLink :to="`/qna/${qna.no}`">
                   <div class="question">Q. {{ qna.question }}</div>
                   <div
                     class="answer-preview"

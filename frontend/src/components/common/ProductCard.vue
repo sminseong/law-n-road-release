@@ -39,7 +39,7 @@ defineProps({
           <span class="text-danger me-2">{{ discountPercent }}%</span>
           <span class="text-dark">{{ discountedPrice }}</span>
         </p>
-        <a href="/cart" class="btn btn-outline-primary btn-sm ms-2 cart-btn">
+        <a href="/client/cart" class="btn btn-outline-primary btn-sm ms-2 cart-btn">
           장바구니
         </a>
       </div>

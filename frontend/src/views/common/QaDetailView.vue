@@ -2,27 +2,32 @@
 // Vue와 라우터, 레이아웃 컴포넌트 불러오기
 import {ref, computed, onMounted} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
-import UserFrame from '@/components/layout/User/UserFrame.vue'
+import ClientFrame from '@/components/layout/client/ClientFrame.vue'
+import { fetchBoardDetail } from '@/service/boardService.js'
 
 const route = useRoute()
 const router = useRouter()
-const qaId = route.params.id // /qna/:id 에서 넘어온 글 ID
+const id = route.params.id
 
-// Q&A 상세 데이터
+// 게시글 상세 데이터
 const qa = ref({
-  category: '',
+  categoryName: '',
   title: '',
   content: '',
-  date: '',
-  writer: '',
+  incidentDate: '',
+  createdAt: ''
 })
 
 // 변호사 답변 더미 데이터
 const answers = ref([
-  {id: 1, avatar: '/img/profiles/kim.png', author: '김서연 변호사', content: '첫 번째 답변 예시입니다.', isSelected: false},
-  {id: 2, avatar: '/img/profiles/lee.png', author: '유재석 변호사', content: '두 번째 답변 예시입니다.', isSelected: false},
-  {id: 3, avatar: '/img/profiles/park.png', author: '이재용 변호사', content: '세 번째 답변 예시입니다.', isSelected: false}
+  {no: 1, avatar: '/img/profiles/kim.png', author: '김서연 변호사', content: '첫 번째 답변 예시입니다.', isSelected: false},
+  {no: 2, avatar: '/img/profiles/lee.png', author: '유재석 변호사', content: '두 번째 답변 예시입니다.', isSelected: false},
+  {no: 3, avatar: '/img/profiles/park.png', author: '이재용 변호사', content: '세 번째 답변 예시입니다.', isSelected: false}
 ])
+
+function goEditPage() {
+  router.push(`/client/qna/edit/${id}`)
+}
 
 // 모달 표시 여부
 const showDeleteModal = ref(false)
@@ -30,8 +35,8 @@ const showDeleteModal = ref(false)
 // 삭제 진행 함수
 function confirmDelete() {
   // TODO: 실제 API 호출
-  // await api.delete(`/qna/${qaId}`)
-  router.push('/qna')
+  // await api.delete(`/qna/${id}`)
+  router.push('/client/qna/list')
 }
 
 // 버튼 핸들러: 모달 띄우기
@@ -46,49 +51,66 @@ const sortedAnswers = computed(() => [
 ])
 
 // 답변 채택 함수 (하나만 true)
-function selectAnswer(answerId) {
+function selectAnswer(answerNo) {
   answers.value = answers.value.map(a => ({
     ...a,
-    isSelected: a.id === answerId
+    isSelected: a.no === answerNo
   }))
 }
 
 onMounted(async () => {
-  // TODO: 실제 API 호출
-  // const { data } = await api.get(`/qna/${qaId}`)
-  // qa.value = data
-  // 현재는 더미 데이터
-  qa.value = {
-    category: '교통사고 · 보상',
-    title: `상담 사례 #${qaId}`,
-    content: `여기에 상담 내용이 들어갑니다. (id: ${qaId})`,
-    date: '2025-06-01',
-    writer: '닉네임',
-    tags: ['#교통사고', '#보상', '#과실비율']
+  console.log('🧩 현재 경로 ID:', route.params.id)
+
+  try {
+    const data = await fetchBoardDetail(route.params.id)
+    console.log('✅ 게시글 상세:', data.data)
+
+    //정확한 필드명으로 수정
+    qa.value = {
+      categoryName: data.data.categoryName,
+      title: data.data.title,
+      content: data.data.content,
+      incidentDate: data.data.incidentDate,
+      createdAt: data.data.createdAt
+    }
+
+  } catch (err) {
+    console.error('🚨 게시글 상세 조회 실패:', err.response?.status, err.response?.data)
+    alert('게시글을 불러오지 못했습니다.')
   }
 })
 </script>
 <template>
-  <UserFrame>
+  <ClientFrame>
     <div class="qa-detail py-5 px-3 px-lg-5">
 
-      <!-- 카테고리·제목·정보 -->
-      <div class="mb-4">
-        <small class="text-muted">{{ qa.category }}</small>
-        <h2 class="fw-bold mt-1">{{ qa.title }}</h2>
-        <div class="text-secondary">
-          {{ qa.date }} · 작성자: {{ qa.writer }}
-        </div>
+      <!-- 카테고리 -->
+      <div class="text-sm text-muted mb-2">
+        {{ qa.categoryName }}
       </div>
 
-      <!-- 질문 본문 -->
-      <div class="p-4 mb-5">
-        <p class="mb-0" style="white-space: pre-wrap">{{ qa.content }}</p>
+      <div class="mb-4 small text-muted">
+        사건 발생일: {{ qa.incidentDate }}
+      </div>
+
+      <!-- 제목 -->
+      <h1 class="qa-title mb-4">
+        {{ qa.title }}
+      </h1>
+
+      <!-- 본문 -->
+      <p class="qa-content text-dark">
+        {{ qa.content }}
+      </p>
+
+      <!-- 날짜 정보 -->
+      <div class="mb-4 small text-muted">
+         작성일: {{ qa.createdAt }}
       </div>
 
       <!-- 수정/삭제 버튼 -->
       <div class="d-flex justify-content-end mb-4">
-        <button @click="onEdit" class="btn btn-link text-secondary p-0 me-2 edit-btn">
+        <button @click="goEditPage" class="btn btn-link text-secondary p-0 me-2 edit-btn" >
           <i class="fas fa-pencil-alt"></i> 수정하기
         </button>
         <button @click="onDeleteClick" class="btn btn-link text-secondary p-0 delete-btn">
@@ -118,7 +140,7 @@ onMounted(async () => {
         <h4 class="fw-semibold mb-3">변호사 답변</h4>
         <div
             v-for="ans in sortedAnswers"
-            :key="ans.id"
+            :key="ans.no"
             class="answer-card border rounded p-3 mb-3"
         >
           <!-- 작성자(이미지+이름) + 채택 버튼 -->
@@ -129,7 +151,7 @@ onMounted(async () => {
               <small class="text-secondary">{{ ans.author }}</small>
             </div>
             <div>
-              <button v-if="!ans.isSelected" @click="selectAnswer(ans.id)"
+              <button v-if="!ans.isSelected" @click="selectAnswer(ans.no)"
                   class="btn btn-outline-primary btn-sm"> 채택 </button>
               <span v-else class="badge bg-primary"> 채택됨 </span>
             </div>
@@ -139,7 +161,7 @@ onMounted(async () => {
         </div>
       </div>
     </div>
-  </UserFrame>
+  </ClientFrame>
 </template>
 <style scoped>
 .answer-card {
@@ -164,7 +186,7 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1050; /* UserFrame 위에 뜨도록 충분히 크게 */
+  z-index: 1050; /* ClientFrame 위에 뜨도록 충분히 크게 */
 }
 
 /* 모달 박스 */
@@ -193,4 +215,18 @@ onMounted(async () => {
 .btn-link {
   text-decoration: none !important;
 }
+
+.qa-title {
+  font-size: 1.75rem;
+  line-height: 1.4;
+}
+
+.qa-content {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  white-space: pre-line;
+  padding-right: 0.5rem;
+}
+
 </style>
+
