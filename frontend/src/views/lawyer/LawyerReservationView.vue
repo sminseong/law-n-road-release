@@ -4,7 +4,11 @@ import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 
 <template>
   <LawyerFrame>
-    <a href="/">메인 화면 이동하기</a>
+    <a href="/">메인 화면 이동하기</a><br>
+    <router-link
+        :to="{ name: 'TimeSlotUpdate', params: { lawyerNo: 1 } }">
+      예약 스케줄 설정
+    </router-link>
     <br>
     <br>
   <div class="container py-4">

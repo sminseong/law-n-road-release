@@ -1,12 +1,16 @@
 package com.lawnroad.reservation.service;
 
+import com.lawnroad.reservation.dto.TimeSlotResponseDTO;
 import com.lawnroad.reservation.mapper.TimeSlotMapper;
 import com.lawnroad.reservation.model.TimeSlotVO;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 //회원가입 성공 시 일주일 치의 컬럼 생성 하는 서비스
@@ -39,5 +43,27 @@ public class TimeSlotService {
                 timeSlotMapper.insertTimeSlot(vo);
             });
         });
+    }
+    // 주간 슬롯 상태 변경
+    @Transactional
+    public void updateSlotStatuses(List<TimeSlotVO> timeSlotVOList) {
+        timeSlotVOList.forEach(timeSlotMapper::updateStatus);
+    }
+
+    // 주간 슬롯 모두 조회
+    @Transactional(readOnly = true)
+    public List<TimeSlotResponseDTO> getWeeklyTimeSlots(Long lawyerNo, LocalDate startDate) {
+        LocalDate endDate = startDate.plusDays(6);
+        // VO 리스트 가져오기
+        List<TimeSlotVO> voList = timeSlotMapper.getWeeklyTimeSlots(lawyerNo, startDate, endDate);
+
+        // VO → DTO 변환
+        return voList.stream()
+                .map(vo -> {
+                    TimeSlotResponseDTO dto = new TimeSlotResponseDTO();
+                    BeanUtils.copyProperties(vo, dto);
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 }
