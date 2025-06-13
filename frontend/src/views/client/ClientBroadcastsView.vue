@@ -52,13 +52,12 @@ export default defineComponent({
 
     /** 채팅 */
     const stompClient = ref(null);
-    const randomNickname = () => "유저" + Math.floor(1000 + Math.random() * 9000);
-    const nickname = randomNickname();
     const route = useRoute();
     const broadcastNo = route.params.broadcastNo;
     const message = ref("");
     const messages = ref([]);
     const messageContainer = ref(null);
+    const nickname = ref('회원')
 
     // --- 닉네임별 고정 랜덤 색상 ---
     const nicknameColors = ref({});
@@ -101,7 +100,8 @@ export default defineComponent({
           );
           stompClient.value.publish({
             destination: "/app/chat.addUser",
-            body: JSON.stringify({ broadcastNo, nickname }),
+            body: JSON.stringify({ broadcastNo, nickname: nickname.value
+            }),
           });
         },
         onStompError: (frame) => {
@@ -117,7 +117,8 @@ export default defineComponent({
       if (!trimmed || !stompClient.value?.connected) return;
       stompClient.value.publish({
         destination: "/app/chat.sendMessage",
-        body: JSON.stringify({ broadcastNo, nickname, message: trimmed }),
+        body: JSON.stringify({ broadcastNo, nickname: nickname.value,
+             message: trimmed }),
       });
       message.value = "";
       scrollToBottom();
@@ -173,9 +174,22 @@ export default defineComponent({
       isCompleteModal.value = false;
     };
 
-    onMounted(() => {
+    onMounted(async () => {
+      const clientId = localStorage.getItem('clientId');
+      const password = localStorage.getItem('password');
+
+      if (clientId && password) {
+        await axios.post("/chat/test", {
+          clientId,
+          password
+        });
+      }
       connect();
       connectOpenVidu();
+      const nick = localStorage.getItem('nickname')
+      if (nick && nick !== 'null') {
+        nickname.value = nick
+      }
     });
 
     onBeforeUnmount(() => {
@@ -357,13 +371,13 @@ export default defineComponent({
   z-index: 9999;
 }
 .modal-custom-box {
-  background: #232428;
+  background: white;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.28);
   min-width: 360px;
   padding: 0;
   overflow: hidden;
-  color: #dedede;
+  color: black;
 }
 .modal-custom-content { padding: 36px 36px 24px 36px; }
 .modal-custom-msg { margin-bottom: 34px; }
@@ -389,15 +403,15 @@ export default defineComponent({
   transition: background 0.13s, color 0.12s;
 }
 .modal-btn-cancel {
-  background: #292b2f;
-  color: #dedede;
+  background: #f47e4a;
+  color: #ffffff;
 }
-.modal-btn-cancel:hover { background: #222327; }
+.modal-btn-cancel:hover { background: #efb485; }
 .modal-btn-ok {
-  background: #12fa91;
-  color: #141519;
+  background: #435879;
+  color: #ffffff;
 }
 .modal-btn-ok:hover {
-  background: #05d96d;
+  background: #7d8bbd;
 }
 </style>
