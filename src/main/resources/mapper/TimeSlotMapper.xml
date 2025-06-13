@@ -50,5 +50,15 @@
         FROM weekly_time_slots
         WHERE no = #{slotNo}
     </select>
+    <select id="getUserNoBySlot" parameterType="long" resultType="long">
+        SELECT user_no
+        FROM weekly_time_slots
+        WHERE no = #{userNo}
+    </select>
+    <select id="selectBySlotNo" parameterType="long" resultType="com.lawnroad.reservation.model.TimeSlotVO">
+        SELECT no, user_no AS userNo, slot_date AS slotDate, slot_time AS slotTime, status, amount
+        FROM weekly_time_slots
+        WHERE no = #{slotNo}
+    </select>
 
 </mapper>

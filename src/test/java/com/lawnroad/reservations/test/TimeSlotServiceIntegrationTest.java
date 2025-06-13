@@ -55,7 +55,7 @@ public class TimeSlotServiceIntegrationTest {
     @Test
     void updateWeeklyTimeSlotsSingle() {
         Long userNo = 1L;
-        LocalDate weekStart = LocalDate.of(2025, 6, 9);
+        LocalDate weekStart = LocalDate.of(2025, 6, 13);
 
         // 1) DTO 조회
         List<TimeSlotResponseDTO> dtos = timeSlotService.getWeeklyTimeSlots(userNo, weekStart);
@@ -64,11 +64,11 @@ public class TimeSlotServiceIntegrationTest {
         // 2) DTO → VO 변환
         TimeSlotResponseDTO firstDto = dtos.get(0);
         TimeSlotVO updated = new TimeSlotVO(
-                firstDto.getNo(),
+                382L,
                 userNo,
                 firstDto.getSlotDate(),
                 firstDto.getSlotTime(),
-                1,                        // 예약됨
+                0,                        // 예약됨
                 firstDto.getAmount()
         );
 

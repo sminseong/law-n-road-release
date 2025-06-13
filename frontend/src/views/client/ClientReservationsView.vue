@@ -27,11 +27,11 @@
               <button
                   v-for="slot in day.slots.filter(s => +s.slotTime.slice(0,2) < 12)"
                   :key="slot.no"
-                  :disabled="slot.status !== 0"
+                  :disabled="slot.status !== 1"
                   @click="select(slot)"
                   :class="[
                   'px-3 py-2 rounded border',
-                  slot.status !== 0
+                  slot.status !== 1
                     ? 'bg-gray-200 cursor-not-allowed'
                     : selectedNo === slot.no
                       ? 'bg-green-200 border-green-500'
@@ -52,11 +52,11 @@
               <button
                   v-for="slot in day.slots.filter(s => +s.slotTime.slice(0,2) >= 12)"
                   :key="slot.no"
-                  :disabled="slot.status !== 0"
+                  :disabled="slot.status !== 1"
                   @click="select(slot)"
                   :class="[
                   'px-3 py-2 rounded border',
-                  slot.status !== 0
+                  slot.status !== 1
                     ? 'bg-gray-200 cursor-not-allowed'
                     : selectedNo === slot.no
                       ? 'bg-green-200 border-green-500'
@@ -150,7 +150,7 @@ function formatDate(str) {
 
 // 슬롯 선택
 function select(slot) {
-  if (slot.status !== 0) return
+  if (slot.status !== 1) return
   selectedNo.value = slot.no
 }
 

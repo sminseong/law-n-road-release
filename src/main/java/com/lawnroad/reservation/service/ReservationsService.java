@@ -48,10 +48,18 @@ public class ReservationsService {
         // 2) reservations 삽입
         reservationsMapper.insertReservation(dto);
 
-        // 3) 슬롯 상태 업데이트(1: 예약됨)
-        timeSlotMapper.updateStatus(new TimeSlotVO(
-                dto.getSlotNo(), dto.getUserNo(), null, null, 1, null
-        ));
+        // 3) 슬롯 상태 업데이트(0: 예약됨)
+        TimeSlotVO slot = timeSlotMapper.selectBySlotNo(dto.getSlotNo());
+
+        TimeSlotVO updatedSlot = new TimeSlotVO(
+                slot.getNo(),
+                slot.getUserNo(),
+                slot.getSlotDate(),
+                slot.getSlotTime(),
+                0,
+                slot.getAmount()
+        );
+        timeSlotMapper.updateStatus(updatedSlot);
     }
     
     // 사용자별 예약 조회
