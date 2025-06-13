@@ -1,5 +1,6 @@
 package com.lawnroad.broadcast.chat.service;
 
+import com.lawnroad.broadcast.chat.dto.LawyerPreQuestion;
 import com.lawnroad.broadcast.chat.dto.PreQuestionDTO;
 import com.lawnroad.broadcast.chat.mapper.PreQuestionMapper;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,16 @@ public class PreQuestionServiceImpl implements PreQuestionService {
         return preQuestionMapper.findByPreQuestion(scheduleNo);
     }
 
+    @Override
+    public List<LawyerPreQuestion> findByPreQuestionLawyer(int scheduleNo) {
+        return preQuestionMapper.findByPreQuestionLawyer(scheduleNo);
+    }
+
+
+    @Override
+   public void deletePreQuestion (List<Long> preQuestionNo) {
+         preQuestionMapper.deletePreQuestion(preQuestionNo);
+   }
 
 
 }

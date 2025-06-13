@@ -1,5 +1,6 @@
 package com.lawnroad.broadcast.chat.controller;
 
+import com.lawnroad.broadcast.chat.dto.LawyerPreQuestion;
 import com.lawnroad.broadcast.chat.dto.PreQuestionDTO;
 import com.lawnroad.broadcast.chat.service.PreQuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,5 +18,14 @@ public class PreQuestionController {
        return preQuestionService.findByPreQuestion(scheduleNo);
     }
 
+    @GetMapping("/api/Lawyer/broadcasts/schedule/{scheduleNo}/preQuestion")
+    public List<LawyerPreQuestion> findByPreQuestionLawyer(@PathVariable int scheduleNo) {
+       return preQuestionService.findByPreQuestionLawyer(scheduleNo);
+    }
+
+    @PostMapping("/api/preQuestions/save")
+    public void deletePreQuestion(@RequestBody List<Long> preQuestionNo) {
+         preQuestionService.deletePreQuestion(preQuestionNo);
+    }
 
 }

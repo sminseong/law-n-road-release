@@ -25,6 +25,11 @@
         </collection>
     </resultMap>
 
+    <resultMap id="PreQuestionLawyerResultMap" type="com.lawnroad.broadcast.chat.dto.LawyerPreQuestion">
+        <result property="no" column="no"/>
+        <result property="nickname" column="nickname"/>
+        <result property="content" column="content"/>
+    </resultMap>
 
 
     <select id="findByPreQuestion" resultMap="PreQuestionResultMap">
@@ -47,5 +52,21 @@
         LEFT JOIN pre_question pq ON pq.schedule_no = bs.no
         WHERE bs.no = #{scheduleNo}
     </select>
+
+    <select id="findByPreQuestionLawyer" resultMap="PreQuestionLawyerResultMap">
+        SELECT no, nickname, content
+        FROM pre_question
+        WHERE schedule_no = #{scheduleNo}
+    </select>
+
+
+    <!--  선택된 no를 제외하고 나머지 삭제 -->
+    <delete id="deletePreQuestion" parameterType="list">
+        DELETE FROM pre_question
+        WHERE no NOT IN
+        <foreach collection="list" item="no" open="(" separator="," close=")">
+            #{no}
+        </foreach>
+    </delete>
 
 </mapper>

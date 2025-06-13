@@ -21,7 +21,6 @@ public class PreQuestionDTO {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private List<String> keywords;
-
     private List<PreQuestionItem> preQuestions;
 }
 
