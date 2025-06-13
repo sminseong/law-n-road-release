@@ -230,8 +230,19 @@ export default defineComponent({
       </div>
 
       <!-- 채팅 영역 -->
-      <div class="position-absolute border rounded shadow p-4 d-flex flex-column"
+      <div class="position-absolute border rounded shadow p-4 d-flex flex-column bg-white"
            style="width: 400px; height: 700px; top: 2rem; right: 2rem;">
+
+        <!-- ✅ 채팅 상단 제목 및 아이콘 -->
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+          <div class="fw-bold fs-5">채팅</div>
+          <div class="d-flex gap-3">
+            <i class="bi bi-people fs-5 cursor-pointer"></i>
+            <i class="bi bi-gear fs-5 cursor-pointer"></i>
+            <i class="bi bi-x fs-4 cursor-pointer"></i>
+          </div>
+        </div>
+
         <!-- 메시지 출력 -->
         <div ref="messageContainer"
              class="flex-grow-1 overflow-auto mb-3 scroll-hidden"
@@ -247,38 +258,34 @@ export default defineComponent({
               <span
                   @click.stop="msg.nickname !== nickname && openDropdown(index, msg)"
                   :style="{
-                    color: getNicknameColor(msg.nickname),
-                    cursor: msg.nickname !== nickname ? 'pointer' : 'default',
-                    userSelect: 'text',
-                    position: 'relative',
-                    fontWeight: 'bold'
-                  }"
-                              >
-                  {{ msg.nickname }}
-                                <!-- 드롭다운 메뉴: 본인 닉네임이 아닐 때만 표시 -->
-                  <span
-                      v-if="dropdownIdx === index && msg.nickname !== nickname"
-                      class="nickname-dropdown"
-                      style="position:absolute;top:120%;left:0;z-index:10000;"
-                  >
-                    <ul class="dropdown-custom-menu">
-                      <li class="menu-report" @click.stop="onReportClick">
-                        🚨 메시지 신고 🚨
-                      </li>
-                    </ul>
-                  </span>
-                </span>
+              color: getNicknameColor(msg.nickname),
+              cursor: msg.nickname !== nickname ? 'pointer' : 'default',
+              userSelect: 'text',
+              position: 'relative',
+              fontWeight: 'bold'
+            }"
+              >
+          {{ msg.nickname }}
+          <span
+              v-if="dropdownIdx === index && msg.nickname !== nickname"
+              class="nickname-dropdown"
+              style="position:absolute;top:120%;left:0;z-index:10000;">
+            <ul class="dropdown-custom-menu">
+              <li class="menu-report" @click.stop="onReportClick">🚨 메시지 신고 🚨</li>
+            </ul>
+          </span>
+        </span>
               <span style="margin-left:0.6em;">: {{ msg.message }}</span>
             </div>
           </div>
         </div>
 
-        <!-- 입력창 -->
+        <!-- ✅ 어두운 입력창 -->
         <div class="d-flex">
           <input v-model="message"
                  type="text"
-                 class="form-control me-2"
-                 placeholder="메시지를 입력하세요"
+                 class="form-control bg-body-secondary text-dark border-0 rounded-pill px-3 py-2"
+                 placeholder="채팅을 입력해 주세요."
                  @keyup.enter="sendMessage" />
         </div>
       </div>
