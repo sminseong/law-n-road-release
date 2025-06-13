@@ -27,7 +27,7 @@ export default [
         component: () => import('@/views/common/QaListView.vue')
     },
     {
-        path: '/qna/:no',
+        path: '/qna/:id',
         name: 'QaDetail',
         component: () => import('@/views/common/QaDetailView.vue')
     }

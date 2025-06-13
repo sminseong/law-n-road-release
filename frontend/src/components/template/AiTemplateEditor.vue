@@ -5,6 +5,7 @@ import { VariableNode } from '@/components/template/variable.js'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import TextStyle from '@tiptap/extension-text-style'
+import http from '@/libs/HttpRequester'
 
 // props
 const props = defineProps({
@@ -134,17 +135,21 @@ watch(
 )
 
 const fixTone = async (tone) => {
-  const text = window.getSelection().toString()
-  if (!text) return
+  const text = window.getSelection().toString().trim()
+  if (!text) {
+    alert('⚠️ 선택된 텍스트가 없습니다.')
+    return
+  }
+
   try {
-    const res = await fetch('/api/gemini/fix-tone', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, tone })
+    const res = await http.post('/api/gemini/fix-tone', {
+      text,
+      tone
     })
-    const { fixed } = await res.json()
+    const { fixed } = res.data
     editor.value.chain().focus().deleteSelection().insertContent(fixed).run()
   } catch (e) {
+    console.error('❌ 말투 교정 실패:', e)
     alert('❌ 말투 교정 실패')
   } finally {
     showAiPopover.value = false
@@ -163,7 +168,6 @@ const usedVariables = computed(() => {
 // })
 
 const previewText = computed(() => {
-  console.log(variableMap.value)
   return props.content
       .replace(/#\{(.*?)\}/g, (_, v) =>
           variableMap.value[v] != null
@@ -387,10 +391,10 @@ watch(
                 <i class="bi bi-stars"></i> AI교정
               </button>
               <ul class="dropdown-menu p-1">
-                <li><button class="dropdown-item" style="font-size: 0.75rem" @click="fixTone('맞춤법')">맞춤법 교정</button></li>
-                <li><button class="dropdown-item" style="font-size: 0.75rem" @click="fixTone('전문')">전문적인 말투</button></li>
-                <li><button class="dropdown-item" style="font-size: 0.75rem" @click="fixTone('정중')">정중한 말투</button></li>
-                <li><button class="dropdown-item" style="font-size: 0.75rem" @click="fixTone('다정')">다정한 말투</button></li>
+                <li><button class="dropdown-item" style="font-size: 0.75rem" @click="fixTone('SPELL')">맞춤법 교정</button></li>
+                <li><button class="dropdown-item" style="font-size: 0.75rem" @click="fixTone('PROFESSIONAL')">전문적인 말투</button></li>
+                <li><button class="dropdown-item" style="font-size: 0.75rem" @click="fixTone('TRUSTWORTHY')">신뢰감 있는 말투</button></li>
+                <li><button class="dropdown-item" style="font-size: 0.75rem" @click="fixTone('WARM')">다정한 말투</button></li>
               </ul>
             </div>
           </div>
