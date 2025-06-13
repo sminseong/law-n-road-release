@@ -68,28 +68,23 @@
             t.name,
             t.price,
             t.discount_rate,
-            t.category_no,
-            c.name           AS category_name,
+            c.name              AS category_name,
             t.type,
             t.thumbnail_path,
             t.sales_count,
             t.description,
+            l.name              AS lawyer_name,
+            l.profile           AS profile,
+            l.road_address      AS road_address,
+            l.land_address      AS land_address,
+            l.detail_address    AS detail_address,
+            l.office_number     AS office_number,
 
-            l.no             AS lawyer_no,
-            l.name           AS lawyer_name,
-            l.profile        AS lawyer_profile_image,
-            CONCAT(
-                    '(', IFNULL(l.zipcode, ''), ') ',
-                    IFNULL(l.road_address, l.land_address), ' ',
-                    IFNULL(l.detail_address, '')
-            )                AS lawyer_address,
-            l.office_number  AS lawyer_office_phone,
-
-            ''               AS short_intro,
-            ''               AS long_intro
+            ''                  AS short_intro,
+            ''                  AS long_intro
         FROM template t
-                 LEFT JOIN category  c ON t.category_no = c.no
-                 LEFT JOIN lawyer    l ON t.user_no     = l.no
+                 LEFT JOIN category c ON t.category_no = c.no
+                 LEFT JOIN lawyer   l ON t.user_no     = l.no
         WHERE t.no = #{templateNo}
     </select>
 

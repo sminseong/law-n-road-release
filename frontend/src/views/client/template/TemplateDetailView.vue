@@ -15,6 +15,8 @@ onMounted(async () => {
 
     const res = await http.get(`/api/client/templates/${templateNo}`)
     template.value = res.data
+    console.log('template:', template.value)
+    console.log('template.value:', template.value)
   } catch (err) {
     console.error('템플릿 조회 실패:', err)
   }
@@ -41,9 +43,6 @@ onMounted(async () => {
               <div>
                 <p class="text-muted mb-1">{{ template.categoryName }} / 누적 판매 {{ template.salesCount }}건</p>
               </div>
-              <div v-if="template.lawyerProfileImage" class="ms-3">
-                <img :src="template.lawyerProfileImage" alt="변호사 프로필" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
-              </div>
             </div>
 
             <!-- 제목 -->
@@ -60,6 +59,9 @@ onMounted(async () => {
 
             <!-- 변호사 정보 -->
             <div class="mb-3">
+              <div v-if="template.lawyerProfileImage" class="ms-3">
+                <img :src="template.lawyerProfileImage" alt="변호사 프로필" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
+              </div>
               <strong>판매자:</strong> {{ template.lawyerName }}<br />
               <small class="text-muted">{{ template.lawyerIntro }}</small><br />
               <a :href="`/lawyer/profile/${template.lawyerNo}`">프로필 보기</a>

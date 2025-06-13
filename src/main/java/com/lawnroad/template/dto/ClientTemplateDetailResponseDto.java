@@ -2,62 +2,33 @@ package com.lawnroad.template.dto;
 
 import lombok.Data;
 
-// 사용자(클라이언트)가 상세조회 시 받는 템플릿 상세 응답 DTO
+// 클라이언트용 템플릿 상세 응답 DTO
 @Data
 public class ClientTemplateDetailResponseDto {
   
   // --- 템플릿 정보 ---
   
-  // 템플릿 고유 번호
-  private Long no;
-  
-  // 템플릿명
-  private String name;
-  
-  // 카테고리명
-  private String categoryName;
-  
-  // 가격 (정가)
-  private Integer price;
-  
-  // 할인율
-  private Integer discountRate;
-  
-  // 썸네일 이미지 경로
-  private String thumbnailPath;
-  
-  // 템플릿 타입 (EDITOR 또는 FILE)
-  private String type;
-  
-  // 누적 판매량
-  private Integer salesCount;
-  
-  // 템플릿 설명
-  private String description;
+  private Long no;                     // 템플릿 번호
+  private String name;                 // 템플릿명
+  private Integer price;              // 정가
+  private Integer discountRate;       // 할인율
+  private String categoryName;        // 카테고리명
+  private String type;                // 템플릿 타입 (EDITOR / FILE)
+  private String thumbnailPath;       // 썸네일 경로
+  private Integer salesCount;         // 누적 판매량
+  private String description;         // 설명
   
   // --- 변호사 정보 ---
   
-  // 변호사 이름
-  private String lawyerName;
+  private String lawyerName;          // 변호사 이름
+  private String profile;             // 프로필 이미지 경로
+  private String roadAddress;         // 도로명 주소
+  private String landAddress;         // 지번 주소
+  private String detailAddress;       // 상세 주소
+  private String officeNumber;        // 사무실 전화번호
   
-  // 프로필 이미지 경로
-  private String profile;
+  // --- 아직 DB에 없는 소개 (placeholder) ---
   
-  // 변호사 한줄 소개 (아직 DB에는 없음)
-  private String shortIntro;
-  
-  // 변호사 상세 소개 (아직 DB에는 없음)
-  private String longIntro;
-  
-  // 도로명 주소
-  private String roadAddress;
-  
-  // 지번 주소
-  private String landAddress;
-  
-  // 상세 주소
-  private String detailAddress;
-  
-  // 사무실 전화번호
-  private String officeNumber;
+  private String shortIntro;          // 한 줄 소개
+  private String longIntro;           // 상세 소개
 }
