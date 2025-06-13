@@ -51,4 +51,9 @@ public class BoardServiceImpl implements BoardService {
     public void updateBoard(BoardUpdateDto dto) {
         boardMapper.updateBoard(dto);
     }
+
+    @Override
+    public void deleteBoard(Long id) {
+        boardMapper.deleteBoard(id);
+    }
 }

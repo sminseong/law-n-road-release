@@ -21,4 +21,6 @@ public interface BoardMapper {
     BoardDetailDto selectBoardById(Long id);
 
     int updateBoard(BoardUpdateDto dto);
+
+    int deleteBoard(Long id);
 }

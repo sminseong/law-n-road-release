@@ -80,9 +80,9 @@
         WHERE no = #{no}
     </update>
 
-<!--    &lt;!&ndash; 게시글 삭제 &ndash;&gt;-->
-<!--    <delete id="deleteBoard" parameterType="long">-->
-<!--        DELETE FROM board WHERE no = #{no}-->
-<!--    </delete>-->
+    <!-- 게시글 삭제 -->
+    <delete id="deleteBoard" parameterType="long">
+        DELETE FROM board WHERE no = #{id}
+    </delete>
 
 </mapper>

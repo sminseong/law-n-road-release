@@ -36,4 +36,6 @@ public interface BoardService {
 
     void updateBoard(BoardUpdateDto dto);
 
+    void deleteBoard(Long id);
+
 }
