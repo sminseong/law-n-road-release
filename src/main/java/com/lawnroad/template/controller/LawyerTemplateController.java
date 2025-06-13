@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -108,7 +107,7 @@ public class LawyerTemplateController {
    * @return 템플릿 목록 + 총 개수 + 총 페이지 수
    */
   @GetMapping
-  public ResponseEntity<TemplateListResponse> getMyTemplates(TemplateSearchCondition condition) {
+  public ResponseEntity<TemplateListResponseDto> getMyTemplates(TemplateSearchConditionDto condition) {
     Long lawyerNo = 1L;  // 로그인 미적용 상태 → 임시 고정
     return ResponseEntity.ok(templateService.findTemplatesByLawyerNo(lawyerNo, condition));
   }
