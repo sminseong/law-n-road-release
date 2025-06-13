@@ -1,7 +1,5 @@
 package com.lawnroad.template.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lawnroad.common.util.FileStorageUtil;
 import com.lawnroad.template.dto.*;
 import com.lawnroad.template.mapper.LawyerTemplateMapper;
 import lombok.RequiredArgsConstructor;
@@ -9,9 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -56,7 +52,7 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
   // 템플릿 조회
   @Override
   @Transactional(readOnly = true)
-  public TemplateListResponse findTemplatesByLawyerNo(Long lawyerNo, TemplateSearchCondition condition) {
+  public TemplateListResponseDto findTemplatesByLawyerNo(Long lawyerNo, TemplateSearchConditionDto condition) {
     
     // 1. offset 계산
     int offset = (condition.getPage() - 1) * condition.getLimit();
@@ -84,7 +80,7 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
     int totalPages = (int) Math.ceil((double) totalCount / condition.getLimit());
     
     // 5. 응답 DTO 구성
-    TemplateListResponse response = new TemplateListResponse();
+    TemplateListResponseDto response = new TemplateListResponseDto();
     response.setTemplates(templates);
     response.setTotalCount(totalCount);
     response.setTotalPages(totalPages);

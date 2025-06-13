@@ -25,7 +25,7 @@ public interface LawyerTemplateService {
    * @param condition  검색 조건 (페이지, 카테고리, 키워드, 정렬 등)
    * @return           템플릿 목록 + 전체 개수 + 전체 페이지 수
    */
-  TemplateListResponse findTemplatesByLawyerNo(Long lawyerNo, TemplateSearchCondition condition);
+  TemplateListResponseDto findTemplatesByLawyerNo(Long lawyerNo, TemplateSearchConditionDto condition);
   
   /**
    * 템플릿 삭제 (PK 기준)

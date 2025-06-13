@@ -181,7 +181,6 @@ async function callUpdateCloneAPI() {
     }
 
     await http.post('/api/lawyer/templates/update', formData)
-    alert('수정 완료되었습니다.')
     router.push('/lawyer/templates')
   } catch (e) {
     console.error(e)
