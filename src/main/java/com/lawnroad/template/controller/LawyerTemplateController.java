@@ -145,15 +145,45 @@ public class LawyerTemplateController {
     }
   }
   
+  // 1) 메타데이터만 업데이트
+  @PostMapping(value = "/update-meta", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<String> updateTemplateMeta(
+      @ModelAttribute TemplateDto dto,               // 모든 메타데이터 필드
+      @RequestParam(value = "file", required = false) MultipartFile thumbFile,
+      @RequestParam(value = "removeThumbnail", required = false) Integer removeThumbnail
+  ) {
+    Long lawyerNo = 1L; // TODO: 인증 적용 후 교체
+    dto.setUserNo(lawyerNo);
+    
+    String thumbnailPath = null;
+    
+    try {
+      // 1. 썸네일 분기
+      if (removeThumbnail != null && removeThumbnail == 1) {
+        // 썸네일 제거
+        thumbnailPath = "/uploads/defaults/template-thumbnail.png";
+      } else if (thumbFile != null && !thumbFile.isEmpty()) {
+        // 썸네일 교체
+        thumbnailPath = fileStorageUtil.save(
+            thumbFile,
+            "uploads/lawyers/" + lawyerNo + "/thumbnails",
+            null
+        );
+      } // 아니면 기존 경로를 유지(=null)
+      
+      // 2. 서비스 호출 (썸네일 경로 포함)
+      templateService.updateTemplateMeta(dto, thumbnailPath);
+      
+      return ResponseEntity.ok("메타데이터 수정 완료");
+    } catch (Exception e) {
+      // (썸네일 업로드 실패 시 롤백 등 필요하면 추가)
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body("수정 실패: " + e.getMessage());
+    }
+  }
+  
   /**
-   * 템플릿 수정 (복제 방식)
-   * 1. 기존 썸네일·파일 정보 조회
-   * 2. 썸네일 교체 시 새로 저장, 아니면 기존 유지
-   * 3. 파일 삭제/추가 처리 후 최종 JSON 생성
-   * 4. 서비스로 복제·수정 위임
-   */
-  /**
-   * 템플릿 수정 (복제 방식)
+   * 2) 본문/첨부파일까지 바뀌는 경우 (복제)
    * 1. 기존 썸네일·파일 메타 조회
    * 2. 썸네일 교체 시 새로 저장, 아니면 기존 유지
    * 3. 프론트에서 전달된 pathJson(삭제된 항목 제외) 파싱 + 신규 파일 메타 추가
@@ -164,27 +194,40 @@ public class LawyerTemplateController {
     Long lawyerNo = 1L;  // TODO: Authentication 적용 후 변경
     dto.setUserNo(lawyerNo);
     String type = dto.getType();
-    String thumbnailPath = null;
+    String thumbnailPath = "/uploads/defaults/template-thumbnail.png";
     List<String> uploadedPaths = new ArrayList<>();
     
     try {
-      // 1) 기존 메타 조회
-      FileTemplateDetailDto origin = null;
-      if (dto.getNo() != null && "FILE".equalsIgnoreCase(type)) {
-        origin = templateService.getFileTemplateDetail(dto.getNo());
+      // 1) 기존 메타 조회 (무조건 조회)
+      EditorTemplateDetailDto editorOrigin = null;
+      FileTemplateDetailDto fileOrigin = null;
+      if ("EDITOR".equalsIgnoreCase(type)) {
+        editorOrigin = templateService.getEditorTemplateDetail(dto.getNo());
+      } else {
+        fileOrigin = templateService.getFileTemplateDetail(dto.getNo());
       }
       
       // 2) 썸네일 처리
       MultipartFile thumbFile = dto.getFile();
-      if (thumbFile != null && !thumbFile.isEmpty()) {
+      boolean shouldRemoveThumbnail = dto.getRemoveThumbnail() != null && dto.getRemoveThumbnail() == 1;
+      
+      if (shouldRemoveThumbnail) {
+        // 삭제 요청이면 기본 썸네일
+        thumbnailPath = "/uploads/defaults/template-thumbnail.png";
+      } else if (thumbFile != null && !thumbFile.isEmpty()) {
+        // 새 파일 업로드
         thumbnailPath = fileStorageUtil.save(
             thumbFile,
             "uploads/lawyers/" + lawyerNo + "/thumbnails",
             null
         );
         uploadedPaths.add(thumbnailPath);
-      } else if (origin != null) {
-        thumbnailPath = origin.getThumbnailPath();
+      } else if ("EDITOR".equalsIgnoreCase(type) && editorOrigin != null) {
+        thumbnailPath = editorOrigin.getThumbnailPath();
+      } else if ("FILE".equalsIgnoreCase(type) && fileOrigin != null) {
+        thumbnailPath = fileOrigin.getThumbnailPath();
+      } else {
+        thumbnailPath = "/uploads/defaults/template-thumbnail.png";
       }
       
       // 3) 파일 메타 처리
@@ -198,9 +241,9 @@ public class LawyerTemplateController {
         );
       }
       // 3-2) 프론트에서 pathJson이 없고, origin이 있는 경우 origin 메타 사용
-      else if (origin != null) {
+      else if ("FILE".equalsIgnoreCase(type) && fileOrigin != null) {
         resultList = objectMapper.readValue(
-            origin.getPathJson(),
+            fileOrigin.getPathJson(),
             new TypeReference<List<Map<String,String>>>() {}
         );
       }

@@ -117,7 +117,19 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
     return templateMapper.findFileTemplateDetail(templateNo);
   }
   
-  // 템플릿 수정하기
+  // 템플릿 수정하기 (메타 데이터만)
+  @Override
+  @Transactional
+  public void updateTemplateMeta(TemplateDto dto, String thumbnailPath) {
+    // 썸네일이 교체/제거된 경우만 경로 세팅
+    if (thumbnailPath != null && !thumbnailPath.isBlank()) {
+      dto.setThumbnailPath(thumbnailPath);
+    }
+    // 나머지 메타필드(dto) 세팅해서 쿼리
+    templateMapper.updateTemplateMeta(dto);
+  }
+  
+  // 템플릿 수정하기 (복제 방식)
   @Override
   public void updateTemplateByClone(LawyerTemplateUpdateDto dto, String thumbnailPath) {
     String type = dto.getType();
@@ -139,9 +151,8 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
       originJson   = o.getPathJson();
     }
     
-    // 2) null 대체 로직
-    String finalThumb = (thumbnailPath != null) ? thumbnailPath : originThumb;
-    String finalJson  = (dto.getPathJson() != null)  ? dto.getPathJson()  : originJson;
+    // 2) 썸네일 및 파일 JSON 처리
+    String finalJson  = (dto.getPathJson() != null) ? dto.getPathJson() : originJson;
     
     // 3) 기본 정보 insert
     TemplateDto base = new TemplateDto();
@@ -151,7 +162,7 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
     base.setDescription(dto.getDescription());
     base.setPrice(dto.getPrice());
     base.setDiscountRate(dto.getDiscountRate());
-    base.setThumbnailPath(finalThumb);
+    base.setThumbnailPath(thumbnailPath);
     base.setType(type);
     base.setSalesCount(0);
     base.setCreatedAt(createdAt);
