@@ -1,3 +1,4 @@
+// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 import commonRoutes from './common'
 import lawyerRoutes from './lawyer'
@@ -12,4 +13,4 @@ const router = createRouter({
     ]
 })
 
-export default router;
+export default router
