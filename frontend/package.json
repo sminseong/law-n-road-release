@@ -9,6 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fullcalendar/daygrid": "^6.1.17",
+    "@fullcalendar/interaction": "^6.1.17",
+    "@fullcalendar/vue3": "^6.1.17",
     "@stomp/stompjs": "^7.1.1",
     "@tiptap/extension-ordered-list": "^2.14.0",
     "@tiptap/extension-text-style": "^2.14.0",
