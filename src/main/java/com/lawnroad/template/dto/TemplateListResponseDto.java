@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class TemplateListResponse {
+public class TemplateListResponseDto {
   // 조회된 전체 템플릿 개수
   private int totalCount;
   // 선택된 limit, offset 으로 계산되는 총 페이지수

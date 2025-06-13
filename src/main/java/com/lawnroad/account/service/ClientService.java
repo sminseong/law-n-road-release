@@ -30,7 +30,6 @@ public class ClientService {
     }
 
 
-
     public boolean isClientIdAvailable(String clientId) {
         int count = clientMapper.countByClientId(clientId);
         return count == 0; // 0 이면 사용 가능, true 반환
@@ -52,8 +51,8 @@ public class ClientService {
         // 2. client 테이블 삽입
         ClientEntity client = new ClientEntity();
         client.setNo(user.getNo());
-        client.setClient_id(request.getClientId());
-        client.setPw_hash(passwordEncoder.encode(request.getPassword()));
+        client.setClientId(request.getClientId());
+        client.setPwHash(passwordEncoder.encode(request.getPassword()));
         client.setEmail(request.getEmail());
         client.setName(request.getFullName());
         client.setNickname(request.getNickname());
@@ -64,15 +63,6 @@ public class ClientService {
     }
 
 
-    // ClientService.java
-//    public boolean login(LoginRequest request) {
-//        ClientEntity client = clientMapper.findByEmail(request.getEmail());
-//        if (client == null) return false;
-//
-//        // 비밀번호 비교
-//        return passwordEncoder.matches(request.getPassword(), client.getPw_hash());
-//    }
-
 
 
     public boolean isEmailAvailable(String email) {
@@ -81,12 +71,24 @@ public class ClientService {
     }
 
 
+    public ClientEntity login(String clientId, String rawPassword) {
+        ClientEntity client = clientMapper.findByClientId(clientId);
+        if (client == null) {
+            throw new IllegalArgumentException("아이디 존재하지 않음");
+        }
+
+        // ✅ 여기에 디버깅 로그 삽입
+        System.out.println("입력 비번: " + rawPassword);
+        System.out.println("DB 비번: " + client.getPwHash());
+        System.out.println("일치 여부: " + passwordEncoder.matches(rawPassword, client.getPwHash()));
+
+        if (!passwordEncoder.matches(rawPassword, client.getPwHash())) {
+            throw new IllegalArgumentException("비밀번호 불일치");
+
+        }
 
 
-
-
-
-
-
+        return client;
+    }
 
 }

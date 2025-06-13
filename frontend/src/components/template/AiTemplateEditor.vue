@@ -1,15 +1,18 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import {ref, computed, onMounted, watch, nextTick } from 'vue'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import { VariableNode } from '@/components/template/variable.js'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
 import TextStyle from '@tiptap/extension-text-style'
+import http from '@/libs/HttpRequester'
 
 // props
 const props = defineProps({
   content: String,
-  variables: Array
+  variables: Array,
+  isEdit: { type: Boolean, default: false },
+  isDetail: { type: Boolean, default: false }
 })
 const emit = defineEmits(['update:content', 'update:variables'])
 
@@ -30,15 +33,49 @@ let isClickOnly = false
 onMounted(() => {
   editor.value = new Editor({
     content: props.content || '',
-    extensions: [
-      StarterKit.configure({}),
-      Underline,
-      TextStyle,
-      VariableNode,    // <- 여기에 추가
-    ],
+    editable: !props.isDetail,
+    extensions: [StarterKit, Underline, TextStyle, VariableNode],
     onUpdate: ({ editor }) => {
-      emit('update:content', editor.getHTML())
-    }
+      // 1. 본문 반영
+      const html = editor.getHTML()
+      emit('update:content', html)
+
+      // 2) JSON 문서 가져오기
+      const doc = editor.getJSON()
+      const found = new Set()
+
+      // 3) 재귀 순회로 variable 노드만 골라내기
+      function traverse(nodes) {
+        if (!nodes) return
+        for (const node of nodes) {
+          if (node.type === 'variable' && node.attrs?.name) {
+            found.add(node.attrs.name)
+          }
+          // 자식이 있으면 내려가서 또 찍어 보고
+          if (node.content) {
+            traverse(node.content)
+          }
+        }
+      }
+      traverse(doc.content)
+
+      // 4) variableMap 동기화
+      found.forEach(name => {
+        if (!variableMap.value[name]) {
+          // 기존에 없던 변수면 description 기본값은 name
+          variableMap.value[name] = name
+        }
+      })
+
+      // 5) emit variables
+      emit(
+          'update:variables',
+          Object.entries(variableMap.value).map(([name, description]) => ({
+            name,
+            description,
+          }))
+      )
+    },
   })
 
   document.addEventListener('mousedown', () => { isClickOnly = true })
@@ -67,18 +104,52 @@ onMounted(() => {
   })
 })
 
+let initialized = false
+
+watch(
+    () => props.variables,
+    (newVal) => {
+      if (!initialized && Array.isArray(newVal) && newVal.length > 0 && (props.isEdit || props.isDetail)) {
+        const map = {}
+        newVal.forEach(v => {
+          map[v.name] = v.description
+        })
+        variableMap.value = map
+        initialized = true
+      }
+    },
+    { immediate: true }
+)
+
+let contentInitialized = false
+
+watch(
+    () => props.content,
+    (newVal) => {
+      if (!contentInitialized && editor.value && newVal) {
+        editor.value.commands.setContent(newVal)
+        contentInitialized = true
+      }
+    },
+    { immediate: true }
+)
+
 const fixTone = async (tone) => {
-  const text = window.getSelection().toString()
-  if (!text) return
+  const text = window.getSelection().toString().trim()
+  if (!text) {
+    alert('⚠️ 선택된 텍스트가 없습니다.')
+    return
+  }
+
   try {
-    const res = await fetch('/api/gemini/fix-tone', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, tone })
+    const res = await http.post('/api/gemini/fix-tone', {
+      text,
+      tone
     })
-    const { fixed } = await res.json()
+    const { fixed } = res.data
     editor.value.chain().focus().deleteSelection().insertContent(fixed).run()
   } catch (e) {
+    console.error('❌ 말투 교정 실패:', e)
     alert('❌ 말투 교정 실패')
   } finally {
     showAiPopover.value = false
@@ -90,10 +161,20 @@ const usedVariables = computed(() => {
   return [...new Set(matches.map(v => v.slice(2, -1)))]
 })
 
+// const previewText = computed(() => {
+//   let html = props.content.replace(/#{(.*?)}/g, (_, v) => variableMap.value[v] || `(${v})`)
+//   // 빈 <p></p>나 <p><br></p> 줄에 &nbsp; 추가
+//   return html.replace(/<p>(\s|<br\s*\/?\>)*<\/p>/g, '<p>&nbsp;</p>')
+// })
+
 const previewText = computed(() => {
-  let html = props.content.replace(/#{(.*?)}/g, (_, v) => variableMap.value[v] || `(${v})`)
-  // 빈 <p></p>나 <p><br></p> 줄에 &nbsp; 추가
-  return html.replace(/<p>(\s|<br\s*\/?\>)*<\/p>/g, '<p>&nbsp;</p>')
+  return props.content
+      .replace(/#\{(.*?)\}/g, (_, v) =>
+          variableMap.value[v] != null
+              ? `<span class="text-danger">${variableMap.value[v]}</span>`
+              : `#{${v}}`
+      )
+      .replace(/<p>(\s|<br\s*\/?>)*<\/p>/g, '<p>&nbsp;</p>')
 })
 
 const isEditorEmpty = computed(() => {
@@ -120,7 +201,7 @@ const addVariable = () => {
   // 상태 업데이트
   variableMap.value[key] = val || ''
   emit('update:variables',
-      Object.entries(variableMap.value).map(([name,desc])=>({ name, desc })))
+      Object.entries(variableMap.value).map(([name,description])=>({ name, description })))
   newVariable.value = ''
   newDescription.value = ''
   showModal.value = false
@@ -162,10 +243,31 @@ function insertExample() {
   emit('update:content', htmlText)
   emit('update:variables', Object.entries(variableMap.value).map(([name, description]) => ({ name, description })))
 }
+
+const inputRef = ref(null)
+const descRef = ref(null)
+
+watch(showModal, (val) => {
+  if (val) {
+    nextTick(() => {
+      inputRef.value?.focus()
+    })
+  }
+})
+
+watch(
+    () => props.isDetail,
+    (detail) => {
+      if (editor.value) {
+        editor.value.setOptions({ editable: props.isEdit && !detail })
+      }
+    }
+)
+
 </script>
 
 <template>
-  <div class="card p-3 mb-4 bg-light-subtle template-guide">
+  <div v-if="!isDetail" class="card p-3 mb-4 bg-light-subtle template-guide">
     <div class="d-flex justify-content-between align-items-center">
       <strong>AI 템플릿이란?</strong>
       <button class="btn btn-outline-secondary btn-sm" @click="insertExample">입력 예시 불러오기</button>
@@ -187,7 +289,7 @@ function insertExample() {
   </div>
 
   <!-- 변수 목록 및 추가 -->
-  <div class="card p-3 mb-4 ">
+  <div v-if="!isDetail" class="card p-3 mb-4 ">
     <div class="d-flex justify-content-between mb-2">
       <span class="form-label fw-bold">사용된 변수</span>
       <button class="btn btn-sm btn-outline-primary" @click="showModal = true">+ 변수 추가</button>
@@ -210,7 +312,7 @@ function insertExample() {
 
           <!-- 입력보조 버튼 -->
           <div
-              v-if="showAiPopover"
+              v-if="!isDetail && showAiPopover"
               class="ai-helper-popover position-absolute bg-white border rounded shadow-sm p-2"
               :style="{ top: `${popoverY}px`, left: `${popoverX}px` }"
           >
@@ -289,10 +391,10 @@ function insertExample() {
                 <i class="bi bi-stars"></i> AI교정
               </button>
               <ul class="dropdown-menu p-1">
-                <li><button class="dropdown-item" style="font-size: 0.75rem" @click="fixTone('맞춤법')">맞춤법 교정</button></li>
-                <li><button class="dropdown-item" style="font-size: 0.75rem" @click="fixTone('전문')">전문적인 말투</button></li>
-                <li><button class="dropdown-item" style="font-size: 0.75rem" @click="fixTone('정중')">정중한 말투</button></li>
-                <li><button class="dropdown-item" style="font-size: 0.75rem" @click="fixTone('다정')">다정한 말투</button></li>
+                <li><button class="dropdown-item" style="font-size: 0.75rem" @click="fixTone('SPELL')">맞춤법 교정</button></li>
+                <li><button class="dropdown-item" style="font-size: 0.75rem" @click="fixTone('PROFESSIONAL')">전문적인 말투</button></li>
+                <li><button class="dropdown-item" style="font-size: 0.75rem" @click="fixTone('TRUSTWORTHY')">신뢰감 있는 말투</button></li>
+                <li><button class="dropdown-item" style="font-size: 0.75rem" @click="fixTone('WARM')">다정한 말투</button></li>
               </ul>
             </div>
           </div>
@@ -318,11 +420,12 @@ function insertExample() {
       <h5 class="fw-bold">변수 추가</h5>
       <div class="mb-2">
         <label class="form-label">변수명 (예: name)</label>
-        <input v-model="newVariable" class="form-control" />
+        <input v-model="newVariable" class="form-control" ref="inputRef" />
       </div>
       <div class="mb-3">
         <label class="form-label">예시값 또는 설명 (예: 당사자)</label>
-        <textarea v-model="newDescription" class="form-control" rows="3" />
+        <textarea v-model="newDescription" class="form-control" rows="3"
+                  ref="descRef" @keydown.enter.prevent="addVariable"/>
       </div>
       <div class="text-end">
         <button class="btn btn-secondary me-2" @click="showModal = false">취소</button>

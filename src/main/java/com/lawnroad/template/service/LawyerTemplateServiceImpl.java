@@ -1,16 +1,12 @@
 package com.lawnroad.template.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lawnroad.common.util.FileStorageUtil;
-import com.lawnroad.template.dto.LawyerTemplateRegisterDto;
-import com.lawnroad.template.dto.TemplateDto;
-import com.lawnroad.template.dto.TemplateListResponse;
-import com.lawnroad.template.dto.TemplateSearchCondition;
+import com.lawnroad.template.dto.*;
 import com.lawnroad.template.mapper.LawyerTemplateMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -18,8 +14,6 @@ import java.util.List;
 public class LawyerTemplateServiceImpl implements LawyerTemplateService {
   
   private final LawyerTemplateMapper templateMapper;
-  private final FileStorageUtil fileStorageUtil;
-  private final ObjectMapper objectMapper;
   
   // 템플릿 등록
   @Override
@@ -58,7 +52,7 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
   // 템플릿 조회
   @Override
   @Transactional(readOnly = true)
-  public TemplateListResponse findTemplatesByLawyerNo(Long lawyerNo, TemplateSearchCondition condition) {
+  public TemplateListResponseDto findTemplatesByLawyerNo(Long lawyerNo, TemplateSearchConditionDto condition) {
     
     // 1. offset 계산
     int offset = (condition.getPage() - 1) * condition.getLimit();
@@ -86,11 +80,102 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
     int totalPages = (int) Math.ceil((double) totalCount / condition.getLimit());
     
     // 5. 응답 DTO 구성
-    TemplateListResponse response = new TemplateListResponse();
+    TemplateListResponseDto response = new TemplateListResponseDto();
     response.setTemplates(templates);
     response.setTotalCount(totalCount);
     response.setTotalPages(totalPages);
     
     return response;
   }
+  
+  // 템플릿 삭제
+  @Override
+  @Transactional
+  public void deleteTemplate(Long templateNo) {
+    int updated = templateMapper.markTemplateAsDeleted(templateNo);
+    
+    if (updated == 0) {
+      throw new IllegalArgumentException("존재하지 않거나 이미 삭제된 템플릿입니다.");
+    }
+  }
+  
+  // 에디터 기반 템플릿 상세 조회
+  @Override
+  @Transactional(readOnly = true)
+  public EditorTemplateDetailDto getEditorTemplateDetail(Long templateNo) {
+    return templateMapper.findEditorTemplateDetail(templateNo);
+  }
+  
+  // 파일 기반 템플릿 상세 조회
+  @Override
+  @Transactional(readOnly = true)
+  public FileTemplateDetailDto getFileTemplateDetail(Long templateNo) {
+    return templateMapper.findFileTemplateDetail(templateNo);
+  }
+  
+  // 템플릿 수정하기 (메타 데이터만)
+  @Override
+  @Transactional
+  public void updateTemplateMeta(TemplateDto dto, String thumbnailPath) {
+    // 썸네일이 교체/제거된 경우만 경로 세팅
+    if (thumbnailPath != null && !thumbnailPath.isBlank()) {
+      dto.setThumbnailPath(thumbnailPath);
+    }
+    // 나머지 메타필드(dto) 세팅해서 쿼리
+    templateMapper.updateTemplateMeta(dto);
+  }
+  
+  // 템플릿 수정하기 (복제 방식)
+  @Override
+  public void updateTemplateByClone(LawyerTemplateUpdateDto dto, String thumbnailPath) {
+    String type = dto.getType();
+    Long originalNo = dto.getNo();
+    
+    // 1) 원본 생성일 및 메타 조회
+    LocalDateTime createdAt;
+    String originThumb;
+    String originJson;
+    if ("EDITOR".equalsIgnoreCase(type)) {
+      EditorTemplateDetailDto o = templateMapper.findEditorTemplateDetail(originalNo);
+      createdAt    = o.getCreatedAt();
+      originThumb  = o.getThumbnailPath();
+      originJson   = null;
+    } else {
+      FileTemplateDetailDto o = templateMapper.findFileTemplateDetail(originalNo);
+      createdAt    = o.getCreatedAt();
+      originThumb  = o.getThumbnailPath();
+      originJson   = o.getPathJson();
+    }
+    
+    // 2) 썸네일 및 파일 JSON 처리
+    String finalJson  = (dto.getPathJson() != null) ? dto.getPathJson() : originJson;
+    
+    // 3) 기본 정보 insert
+    TemplateDto base = new TemplateDto();
+    base.setUserNo(dto.getUserNo());
+    base.setCategoryNo(dto.getCategoryNo());
+    base.setName(dto.getName());
+    base.setDescription(dto.getDescription());
+    base.setPrice(dto.getPrice());
+    base.setDiscountRate(dto.getDiscountRate());
+    base.setThumbnailPath(thumbnailPath);
+    base.setType(type);
+    base.setSalesCount(0);
+    base.setCreatedAt(createdAt);
+    base.setIsDeleted(false);
+    templateMapper.insertTemplate(base);
+    
+    // 4) 상세 insert
+    if ("EDITOR".equalsIgnoreCase(type)) {
+      templateMapper.insertEditorBasedTemplate(
+          base.getNo(), dto.getContent(), dto.getVarJson(), dto.getAiEnabled()
+      );
+    } else {
+      templateMapper.insertFileBasedTemplate(base.getNo(), finalJson);
+    }
+    
+    // 5) 기존 soft delete
+    templateMapper.markTemplateAsDeleted(originalNo);
+  }
+  
 }

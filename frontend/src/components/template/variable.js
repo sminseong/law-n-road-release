@@ -29,6 +29,23 @@ export const VariableNode = Node.create({
         ]
     },
 
+    addInputRules() {
+        const type = this.name
+        return [
+            {
+                find: /#\{([\uAC00-\uD7A3\w\s]{1,30})\}$/,
+                handler({ state, range, match, chain }) {
+                    const name = match[1]
+                    if (!name) return
+                    chain()
+                        .deleteRange(range)
+                        .insertContent({ type, attrs: { name, description: name } })
+                        .run()
+                }
+            }
+        ]
+    },
+
     addCommands() {
         return {
             setVariable:
