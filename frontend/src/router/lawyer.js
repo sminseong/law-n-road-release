@@ -46,6 +46,11 @@ export default [
         name: 'LawyerBroadcastSetting',
         component: () => import('@/views/lawyer/LawyerBroadcastSettingView.vue')
     },
+    {
+        path: '/lawyer/broadcasts/schedule/:scheduleNo',
+        name: 'LawyerBroadcastsScheduleDetail',
+        component: () => import('@/views/lawyer/LawyerScheduleDetailView.vue')
+    },
 
 
     // ---------- 템플릿 ----------
