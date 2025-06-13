@@ -85,4 +85,9 @@ public class ScheduleServiceImpl implements ScheduleService {
             }
         }
     }
+
+    @Override
+    public int deleteScheduleByNo(Long scheduleNo) {
+        return scheduleMapper.deleteScheduleByNo(scheduleNo);
+    }
 }

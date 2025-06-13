@@ -91,7 +91,6 @@
         JOIN category c ON bs.category_no = c.no
         WHERE bs.no = #{scheduleNo}
     </select>
-
     <!-- 키워드 리스트를 별도로 조회하는 select -->
     <select id="findKeywordsByScheduleNo" resultType="String">
         SELECT keyword FROM keyword WHERE schedule_no = #{schedule_no}
@@ -106,5 +105,11 @@
         thumbnail_path = #{thumbnailPath}
         WHERE no = #{scheduleNo}
     </update>
+
+    <!-- 방송 스케줄 삭제 -->
+    <delete id="deleteScheduleByNo" parameterType="long">
+        DELETE FROM broadcast_schedule
+        WHERE no = #{scheduleNo}
+    </delete>
 
 </mapper>

@@ -11,6 +11,8 @@ const router = useRouter()
 const calendarRef = ref(null)
 const events = ref([])
 
+const colors = ['#ebfde8', '#fff9d6', '#d6eeff', '#ffdfdf', '#eee4ff', '#fdead6']
+
 const calendarOptions = ref({
   plugins: [dayGridPlugin, interactionPlugin],
   initialView: 'dayGridMonth',
@@ -41,20 +43,16 @@ const calendarOptions = ref({
     const startTime = new Date(original.startTime)
     const endTime = original.endTime ? new Date(original.endTime) : null
 
-    const startDate = startTime.toISOString().slice(0, 10)
     const startHour = String(startTime.getHours()).padStart(2, '0')
     const startMin = String(startTime.getMinutes()).padStart(2, '0')
     const startStr = `${startHour}:${startMin}`
 
     let timeRange = `[${startStr}`
     if (endTime) {
-      const endDate = endTime.toISOString().slice(0, 10)
-      if (startDate === endDate) {
-        const endHour = String(endTime.getHours()).padStart(2, '0')
-        const endMin = String(endTime.getMinutes()).padStart(2, '0')
-        const endStr = `${endHour}:${endMin}`
-        timeRange += ` ~ ${endStr}`
-      }
+      const endHour = String(endTime.getHours()).padStart(2, '0')
+      const endMin = String(endTime.getMinutes()).padStart(2, '0')
+      const endStr = `${endHour}:${endMin}`
+      timeRange += ` ~ ${endStr}`
     }
     timeRange += `]`
 
@@ -77,11 +75,14 @@ const fetchMonthlySchedule = async () => {
     const now = new Date()
     const month = now.toISOString().slice(0, 7)
     const res = await axios.get(`/api/schedule/month?month=${month}`)
-    events.value = res.data.map(ev => {
+    events.value = res.data.map((ev, index) => {
       const startDateOnly = ev.startTime.slice(0, 10)
       return {
         title: ev.title,
         start: startDateOnly,
+        backgroundColor: colors[index % colors.length],
+        borderColor: '#dee2e6',
+        textColor: '#212529',
         extendedProps: {
           lawyerName: ev.lawyerName,
           original: ev
@@ -144,11 +145,8 @@ onMounted(fetchMonthlySchedule)
 }
 ::v-deep(.fc-event) {
   max-width: 100% !important;
-  overflow: hidden;
   border-radius: 0.25rem;
   padding: 2px 4px;
-  background-color: #ffffff;
-  border: 1px solid #dee2e6;
   transition: background-color 0.15s;
 }
 ::v-deep(.fc-event:hover) {
@@ -172,5 +170,12 @@ onMounted(fetchMonthlySchedule)
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+::v-deep(.fc-day-past) {
+  background-color: #ebedef;
+  opacity: 0.6;
+}
+::v-deep(.fc-day-past .fc-event) {
+  opacity: 0.5;
 }
 </style>
