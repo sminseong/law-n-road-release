@@ -49,6 +49,13 @@ public interface LawyerTemplateService {
   FileTemplateDetailDto getFileTemplateDetail(Long templateNo);
   
   /**
+   * 기존 템플릿 수정 (메타 데이터만)
+   * @param dto 수정 요청 DTO
+   * @param thumbnailPath 썸네일 경로 (파일 저장 후 전달)
+   */
+  void updateTemplateMeta(TemplateDto dto, String thumbnailPath);
+  
+  /**
    * 기존 템플릿 수정 (복제 후 삭제 방식)
    * 1. 기존 템플릿 정보를 조회
    * 2. 새로운 템플릿으로 복제 (생성일 유지, 판매수 초기화)
