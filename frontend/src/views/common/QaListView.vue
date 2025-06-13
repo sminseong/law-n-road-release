@@ -19,6 +19,7 @@ const error = ref(null)        // 오류 상태
 const pagesInGroup = 10
 const startPage = computed(() => Math.floor((page.value - 1) / pagesInGroup) * pagesInGroup + 1)
 const pageNumbers = computed(() => {
+  if (totalPages.value == null) return []
   const endPage = Math.min(startPage.value + pagesInGroup - 1, totalPages.value)
   const pages = []
   for (let i = startPage.value; i <= endPage; i++) {
@@ -41,31 +42,26 @@ async function loadList() {
   isLoading.value = true
   error.value = null
   try {
-    // API 호출: fetchBoardList가 { content: [...], page, size, totalElements, totalPages } 형태로 반환한다고 가정
-    const data = await fetchBoardList(page.value, size.value)
-    // list에 할당: content 프로퍼티 확인
+    const res  = await fetchBoardList(page.value, size.value) // ← API 호출
+    const data = res.data
+    console.log('🟢 게시글 목록 응답:', data)
+
     if (data.content && Array.isArray(data.content)) {
-      list.value = data.content
+      list.value = data.content // ← ✅ 바로 여기!
     } else if (Array.isArray(data)) {
-      // 만약 백엔드가 단순 배열만 반환할 경우
       list.value = data
     } else {
-      // 예상치 못한 구조
       list.value = []
     }
 
-    // ✅ 임시 하드코딩
-    //totalPages.value = 20
-
-    // totalElements, totalPages 처리
+    // 페이지 수 계산
     if (data.totalPages != null) {
       totalPages.value = data.totalPages
     } else if (data.totalElements != null) {
       totalElements.value = data.totalElements
       totalPages.value = Math.ceil(totalElements.value / size.value)
-    } else {
-      totalPages.value = null
     }
+
   } catch (err) {
     console.error('목록 조회 실패', err)
     error.value = err
@@ -78,7 +74,7 @@ async function loadList() {
 }
 
 // 페이지 최초 로딩시 -> 데이터 로드
-onMounted(() => {
+onMounted(async () => {
   loadList()
 })
 
@@ -99,12 +95,18 @@ watch(page, () => {
         </router-link>
       </div>
 
-      <div class="qa-list">
+      <!-- 게시글 없을 때 UI 표시 -->
+      <div v-if="!isLoading && list.length === 0" class="text-center text-muted py-5">
+        아직 등록된 상담글이 없습니다.
+      </div>
+
+      <!-- 게시글 리스트 -->
+      <div v-else class="qa-list">
         <div
             v-for="qa in list"
             :key="qa.no"
             class="qa-card bg-white rounded shadow-sm p-4 mb-3"
-            @click="router.push(`/qna/${qa.no}`)"
+            @click="router.push({ name: 'QaDetail', params: { id: qa.no } })"
             style="cursor: pointer;"
         >
           <small class="text-muted">{{ qa.categoryName || '' }}</small>
