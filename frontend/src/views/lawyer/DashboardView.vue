@@ -5,6 +5,7 @@ import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 <template>
   <LawyerFrame>
     <a href="/">메인 화면 이동하기</a>
+    <a href="/lawyer/broadcasts/live/1">라이브 방송하기</a>
     <br>
     <br>
     <h2 class="mb-3">📊 변호사 대시보드</h2>
