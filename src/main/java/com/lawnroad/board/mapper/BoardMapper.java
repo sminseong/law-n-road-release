@@ -3,6 +3,7 @@ package com.lawnroad.board.mapper;
 import com.lawnroad.board.dto.BoardCreateDto;
 import com.lawnroad.board.dto.BoardDetailDto;
 import com.lawnroad.board.dto.BoardListDto;
+import com.lawnroad.board.dto.BoardUpdateDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -18,4 +19,6 @@ public interface BoardMapper {
     void insertBoard(BoardCreateDto dto);
 
     BoardDetailDto selectBoardById(Long id);
+
+    int updateBoard(BoardUpdateDto dto);
 }

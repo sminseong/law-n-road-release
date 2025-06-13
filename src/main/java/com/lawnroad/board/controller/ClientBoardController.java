@@ -3,9 +3,10 @@ package com.lawnroad.board.controller;
 import com.lawnroad.board.dto.BoardCreateDto;
 import com.lawnroad.board.dto.BoardDetailDto;
 import com.lawnroad.board.dto.BoardListDto;
+import com.lawnroad.board.dto.BoardUpdateDto;
 import com.lawnroad.board.service.BoardService;
-import kotlinx.serialization.Required;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/client/qna") // 이 컨트롤러의 모든 API는 /api/client/qna로 시작함
@@ -65,6 +67,18 @@ public class ClientBoardController {
         //System.out.println(id);
         BoardDetailDto dto = boardService.getBoardDetail(id);
         return ResponseEntity.ok(dto);
+    }
+
+    //게시글 수정하기
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateBoard(
+            @PathVariable("id") Long id,
+            @RequestBody BoardUpdateDto dto
+    ) {
+        log.info("수정 요청 수신: {}", dto);
+        dto.setNo(id); // ID 직접 주입
+        boardService.updateBoard(dto);
+        return ResponseEntity.ok().build();
     }
 
 }

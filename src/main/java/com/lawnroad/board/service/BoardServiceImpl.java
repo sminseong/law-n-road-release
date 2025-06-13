@@ -3,6 +3,7 @@ package com.lawnroad.board.service;
 import com.lawnroad.board.dto.BoardCreateDto;
 import com.lawnroad.board.dto.BoardDetailDto;
 import com.lawnroad.board.dto.BoardListDto;
+import com.lawnroad.board.dto.BoardUpdateDto;
 import com.lawnroad.board.mapper.BoardMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -44,5 +45,10 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public BoardDetailDto getBoardDetail(Long id) {
         return boardMapper.selectBoardById(id);
+    }
+
+    @Override
+    public void updateBoard(BoardUpdateDto dto) {
+        boardMapper.updateBoard(dto);
     }
 }

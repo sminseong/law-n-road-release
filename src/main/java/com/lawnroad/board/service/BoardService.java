@@ -3,6 +3,7 @@ package com.lawnroad.board.service;
 import com.lawnroad.board.dto.BoardCreateDto;
 import com.lawnroad.board.dto.BoardDetailDto;
 import com.lawnroad.board.dto.BoardListDto;
+import com.lawnroad.board.dto.BoardUpdateDto;
 
 import java.util.List;
 
@@ -32,5 +33,7 @@ public interface BoardService {
      * @return 게시글 상세 정보 DTO
      */
     BoardDetailDto getBoardDetail(Long id);
+
+    void updateBoard(BoardUpdateDto dto);
 
 }

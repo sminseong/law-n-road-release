@@ -69,18 +69,16 @@
         LEFT JOIN user u ON b.user_no = u.no
         WHERE b.no = #{id}
     </select>
-    
-<!--    &lt;!&ndash; 게시글 수정 &ndash;&gt;-->
-<!--    <update id="updateBoard" parameterType="BoardUpdateDto">-->
-<!--        UPDATE board-->
-<!--        SET-->
-<!--        category_no   = #{categoryNo},-->
-<!--        title         = #{title},-->
-<!--        content       = #{content},-->
-<!--        incident_date = #{incidentDate},-->
-<!--        updated_at    = NOW()-->
-<!--        WHERE no = #{no}-->
-<!--    </update>-->
+
+    <update id="updateBoard" parameterType="com.lawnroad.board.dto.BoardUpdateDto">
+        UPDATE board
+        SET
+        category_no   = #{categoryNo},
+        title         = #{title},
+        content       = #{content},
+        incident_date = #{incidentDate}
+        WHERE no = #{no}
+    </update>
 
 <!--    &lt;!&ndash; 게시글 삭제 &ndash;&gt;-->
 <!--    <delete id="deleteBoard" parameterType="long">-->

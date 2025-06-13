@@ -51,6 +51,14 @@ const isFormValid      = computed(() => isTitleValid.value && isContentValid.val
 
 // 제출
 async function onSubmit() {
+  console.log("🔧 수정 요청 시작");
+  console.log('payload:', {
+    title: title.value,
+    content: content.value,
+    incidentDate: incidentDate.value,
+    categoryNo: categoryNo.value
+  });
+
   if (!isFormValid.value) return
 
   try {
@@ -59,13 +67,11 @@ async function onSubmit() {
       content: content.value,
       incidentDate: incidentDate.value,
       categoryNo: categoryNo.value
-    })
-
-    alert('수정 완료!')
-    router.push('/client/qna/list')
+    });
+    alert('수정 완료');
+    router.push('/qna');
   } catch (err) {
-    console.error('❌ Q&A 수정 실패:', err)
-    alert('수정에 실패했습니다.')
+    console.error('❌ 수정 실패:', err);
   }
 }
 </script>

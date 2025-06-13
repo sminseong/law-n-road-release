@@ -25,9 +25,9 @@ export async function createQna(payload) {
 
 //Q&A 상세 조회
 export const fetchBoardDetail = async (id) => {
-    return await axios.get(`/api/client/qna/${id}`)
+    return await httpRequester.get(`/api/client/qna/${id}`)
 }
 //Q&A 수정
 export async function updateQna(id, payload) {
-    return  await httpRequester.put(`/api/qna/${id}`, payload)
+    return  await httpRequester.put(`/api/client/qna/${id}`, payload)
 }
