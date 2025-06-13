@@ -92,7 +92,6 @@ public class ScheduleController {
     @GetMapping("/my/{scheduleNo}")
     public ResponseEntity<ScheduleDetailDto> getScheduleDetail(@PathVariable Long scheduleNo) {
         ScheduleDetailDto detail = scheduleService.findDetailByScheduleNo(scheduleNo);
-        System.out.println("📦 [GET /api/schedule/my/" + scheduleNo + "] 조회 결과: " + detail);
 
         if (detail == null) {
             return ResponseEntity.notFound().build();

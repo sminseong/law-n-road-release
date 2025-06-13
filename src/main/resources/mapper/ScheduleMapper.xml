@@ -18,7 +18,7 @@
         <result property="categoryName" column="category_name"/>
 
         <!-- 키워드 리스트 매핑 -->
-        <collection property="keywords" ofType="string" column="keyword"/>
+        <collection property="keywords" ofType="String" column="keyword"/>
     </resultMap>
 
     <insert id="insertSchedule" parameterType="com.lawnroad.broadcast.live.model.ScheduleVo" useGeneratedKeys="true" keyProperty="no">

@@ -66,7 +66,6 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     public ScheduleDetailDto findDetailByScheduleNo(Long scheduleNo) {
         return scheduleMapper.findByScheduleNo(scheduleNo);
-
     }
 
     @Override
