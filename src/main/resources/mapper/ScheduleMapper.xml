@@ -17,8 +17,10 @@
         <result property="endTime" column="end_time"/>
         <result property="categoryName" column="category_name"/>
 
-        <!-- 키워드 리스트 매핑 -->
-        <collection property="keywords" ofType="String" column="keyword"/>
+        <!-- 키워드 리스트 매핑 (서브쿼리 사용) -->
+        <collection property="keywords" ofType="String"
+                    column="schedule_no"
+                    select="findKeywordsByScheduleNo"/>
     </resultMap>
 
     <insert id="insertSchedule" parameterType="com.lawnroad.broadcast.live.model.ScheduleVo" useGeneratedKeys="true" keyProperty="no">
@@ -75,8 +77,7 @@
     </select>
 
     <select id="findByScheduleNo" resultMap="ScheduleDetailMap">
-        SELECT
-        bs.no AS schedule_no,
+        SELECT bs.no AS schedule_no,
         bs.user_no,
         bs.category_no,
         bs.name,
@@ -85,12 +86,14 @@
         bs.date,
         bs.start_time,
         bs.end_time,
-        c.name AS category_name,
-        k.keyword AS keyword
+        c.name AS category_name
         FROM broadcast_schedule bs
         JOIN category c ON bs.category_no = c.no
-        LEFT JOIN keyword k ON k.schedule_no = bs.no
         WHERE bs.no = #{scheduleNo}
+    </select>
+    <!-- 키워드 리스트를 별도로 조회하는 select -->
+    <select id="findKeywordsByScheduleNo" resultType="String">
+        SELECT keyword FROM keyword WHERE schedule_no = #{schedule_no}
     </select>
 
     <update id="updateSchedule" parameterType="com.lawnroad.broadcast.live.dto.ScheduleUpdateDto">
@@ -102,5 +105,11 @@
         thumbnail_path = #{thumbnailPath}
         WHERE no = #{scheduleNo}
     </update>
+
+    <!-- 방송 스케줄 삭제 -->
+    <delete id="deleteScheduleByNo" parameterType="long">
+        DELETE FROM broadcast_schedule
+        WHERE no = #{scheduleNo}
+    </delete>
 
 </mapper>

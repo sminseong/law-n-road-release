@@ -76,7 +76,28 @@ const handleFileChange = (e) => {
   }
 }
 
+const goBack = () => {
+  router.push('/lawyer/broadcasts/schedule')
+}
+
+const deleteSchedule = async () => {
+  const confirmDelete = confirm('❗ 정말 이 방송 스케줄을 삭제하시겠습니까?')
+  if (!confirmDelete) return
+
+  try {
+    await axios.delete(`/api/schedule/delete/${scheduleNo}`)
+    alert('🗑️ 방송 스케줄이 삭제되었습니다.')
+    router.push('/lawyer/broadcasts/schedule')
+  } catch (err) {
+    alert('⚠️ 삭제 실패')
+    console.error(err)
+  }
+}
+
 const updateSchedule = async () => {
+  const confirmUpdate = confirm('✏️ 방송 스케줄을 수정하시겠습니까?')
+  if (!confirmUpdate) return
+
   try {
     const form = new FormData()
     form.append('scheduleNo', scheduleNo)
@@ -175,8 +196,14 @@ const updateSchedule = async () => {
             </div>
           </div>
         </div>
-        <div class="d-flex justify-content-end">
-          <button class="btn btn-primary" @click="updateSchedule">수정</button>
+
+        <!-- 버튼 영역 -->
+        <div class="d-flex justify-content-between mt-4">
+          <button class="btn btn-secondary" @click="goBack">← 목록으로</button>
+          <div class="d-flex gap-2">
+            <button class="btn btn-danger" @click="deleteSchedule">삭제</button>
+            <button class="btn btn-primary" @click="updateSchedule">수정</button>
+          </div>
         </div>
       </div>
     </div>

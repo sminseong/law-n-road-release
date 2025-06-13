@@ -132,6 +132,10 @@ const submitSchedule = async () => {
     alert('⚠️ 등록 중 오류 발생')
   }
 }
+
+const goBack = () => {
+  router.push('/lawyer/broadcasts/schedule')
+}
 </script>
 
 <template>
@@ -216,7 +220,8 @@ const submitSchedule = async () => {
           </div>
         </div>
 
-        <div class="d-flex justify-content-end">
+        <div class="d-flex justify-content-between mt-4">
+          <button class="btn btn-outline-secondary" @click="goBack">← 목록으로</button>
           <button class="btn btn-primary" @click="submitSchedule">등록</button>
         </div>
       </div>

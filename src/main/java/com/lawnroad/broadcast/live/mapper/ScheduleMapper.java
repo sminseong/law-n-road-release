@@ -18,4 +18,5 @@ public interface ScheduleMapper {
     ScheduleDetailDto findByScheduleNo(@Param("scheduleNo") Long scheduleNo);
 
     void updateSchedule(ScheduleUpdateDto scheduleUpdateDto);
+    int deleteScheduleByNo(Long scheduleNo);
 }

@@ -13,7 +13,8 @@ const hourHeight = 60
 const timeLabelWidth = 80
 const colors = [
   '#69a8ff', '#20c997', '#ffc107', '#e07777',
-  '#9b7bcc', '#fca344', '#a3a7ff','#8fd565']
+  '#9b7bcc', '#fca344', '#a3a7ff','#8fd565'
+]
 
 onMounted(async () => {
   try {
@@ -45,12 +46,19 @@ function arrangeSchedulePositions(scheduleList) {
 const goToSchedule = (scheduleNo) => {
   router.push(`/client/broadcasts/schedule/${scheduleNo}/preQuestion`)
 }
+
+const goBackToCalendar = () => {
+  router.push('/client/broadcasts/schedule')
+}
 </script>
 
 <template>
   <ClientFrame>
     <div class="w-100 min-vh-100 px-4 py-4">
-      <h2 class="fs-3 fw-bold text-primary mb-4">📅 {{ dateStr }} 방송 스케줄</h2>
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fs-3 fw-bold text-primary mb-0">📅 {{ dateStr }} 방송 스케줄</h2>
+        <button class="btn btn-outline-secondary" @click="goBackToCalendar">← 달력으로 돌아가기</button>
+      </div>
 
       <div class="timeline-wrapper border rounded overflow-auto position-relative">
         <div class="timeline-inner" style="min-width: 1200px;">
@@ -75,7 +83,7 @@ const goToSchedule = (scheduleNo) => {
                   :style="{ backgroundColor: schedule.color }"
                   @click="goToSchedule(schedule.no)"
               >
-                <div class="fw-semibold text-truncate">▶ {{ schedule.name }}</div>
+                <div class="fw-semibold text-truncate">📺 {{ schedule.name }}</div>
                 <div class="small text-black-50">{{ schedule.lawyerName }} 변호사</div>
                 <div class="small">🕒 {{ schedule.startTime.slice(11, 16) }} ~ {{ schedule.endTime.slice(11, 16) }}</div>
                 <div class="small schedule-content">{{ schedule.content }}</div>
@@ -109,7 +117,7 @@ const goToSchedule = (scheduleNo) => {
   cursor: pointer;
   width: 250px;
   min-height: 60px;
-  margin-top: 4px; /* 살짝 위아래 간격 추가 */
+  margin-top: 4px;
   margin-bottom: 4px;
   transition: transform 0.1s ease, box-shadow 0.1s ease;
   overflow: hidden;
