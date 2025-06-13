@@ -112,6 +112,22 @@
           AND is_deleted = 0
     </update>
 
+    <!-- 템플릿 수정 -->
+    <update id="updateTemplateMeta" parameterType="com.lawnroad.template.dto.TemplateDto">
+        UPDATE template
+        SET
+        name = #{name},
+        description = #{description},
+        price = #{price},
+        discount_rate = #{discountRate},
+        category_no = #{categoryNo},
+        <if test="thumbnailPath != null and thumbnailPath != ''">
+            thumbnail_path = #{thumbnailPath},
+        </if>
+        updated_at = NOW()
+        WHERE no = #{no}
+    </update>
+
     <!-- 템플릿 수정 (복제 후 원본 삭제) -->
 
     <!-- Editor 기반 템플릿 상세 조회 -->

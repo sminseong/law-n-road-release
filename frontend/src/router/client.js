@@ -13,6 +13,11 @@ export default [
         component: () => import('@/views/client/ClientQaRegisterView.vue'),
         meta: {requiresAuth: true, role: 'client'}
     },
+    {
+        path: '/client/qna/edit/:id',
+        name: 'ClientQaEditView',
+        component: () => import('@/views/client/ClientQaEditView.vue')
+    },
 
     // ---------- 예약 ----------
     {
