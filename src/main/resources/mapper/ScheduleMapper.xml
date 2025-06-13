@@ -96,6 +96,7 @@
         SELECT keyword FROM keyword WHERE schedule_no = #{schedule_no}
     </select>
 
+
     <update id="updateSchedule" parameterType="com.lawnroad.broadcast.live.dto.ScheduleUpdateDto">
         UPDATE broadcast_schedule
         SET

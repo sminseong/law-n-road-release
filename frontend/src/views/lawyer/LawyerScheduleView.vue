@@ -50,6 +50,9 @@ onMounted(fetchSchedules)
 
 <template>
   <LawyerFrame>
+    <a href="/">메인 화면 이동하기</a><br/>
+    <a href="/lawyer/broadcasts/setting/3">방송 설정</a>
+    <br><br>
     <div class="container py-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fs-3 fw-bold text-primary mb-0">등록한 방송 스케줄</h2>

@@ -47,4 +47,7 @@ public interface LawyerTemplateMapper {
   
   // 파일 기반 템플릿 상세 조회
   FileTemplateDetailDto findFileTemplateDetail(@Param("templateNo") Long templateNo);
+  
+  // 메타데이터만 UPDATE (썸네일 포함)
+  int updateTemplateMeta(TemplateDto base);
 }

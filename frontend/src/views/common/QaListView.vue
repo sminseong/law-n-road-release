@@ -1,61 +1,88 @@
 <script setup>
+import { fetchBoardList } from '@/service/boardService.js'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
-import { ref, computed } from 'vue'
+import { ref ,watch ,onMounted, computed} from 'vue'
 import { useRouter } from 'vue-router'
 
-// 데모용 더미 데이터 300개
-const dummyTrafficList = []
-for (let i = 1; i <= 300; i++) {
-  dummyTrafficList.push({
-    no: i,
-    category: '교통사고 · 보상',
-    title: `교통사고 상담 사례 #${i}`,
-    content: `교통사고 내용 예시입니다. (${i}번째 글)`,
-    date: `2025.05.${String(i % 30 + 1).padStart(2, '0')}`,
-  })
-}
+const router = useRouter()
 
-// 전체 Q&A 목록 (실제 사용 시 API 호출 후 할당)
-const allQaList = ref(dummyTrafficList)
+// 페이징 및 데이터 상태
+const page = ref(1)            // 현재 페이지. 기본 1
+const size = ref(10)           // 페이지당 항목 수. 기본 10
+const list = ref([])           // API로 받아온 게시글 목록
+const totalElements = ref(null) // 전체 개수 (백엔드가 제공하면 사용)
+const totalPages = ref(null)   // 전체 페이지 수 (백엔드가 제공하거나 계산)
+const isLoading = ref(false)   // 로딩 상태
+const error = ref(null)        // 오류 상태
 
-//  “교통사고” 카테고리 필터
-const filteredList = computed(() =>
-    allQaList.value.filter(qa => qa.category.startsWith('교통사고'))
-)
-
-// 페이징을 위한 상태 값들
-const itemsPerPage = ref(10) // 한 페이지에 보여줄 아이템 수
-const pagesInGroup = ref(10) // 한 그룹에 표시할 페이지 버튼 수
-const curPage = ref(1) // 현재 페이지 번호
-
-// 전체 아이템 수 계산
-const totalItems = computed(() => filteredList.value.length)
-// 전체 페이지 수 계산
-const pages = computed(() => Math.ceil(totalItems.value / itemsPerPage.value))
-// 현재 페이지 그룹의 시작 인덱스 계산(0-based)
-const startPage = computed(() =>
-    Math.floor((curPage.value - 1) / pagesInGroup.value) * pagesInGroup.value
-)
-// 화면에 보여줄 페이지 분량 데이터 (slice)
-const paginatedList = computed(() => {
-  const start = (curPage.value - 1) * itemsPerPage.value
-  return filteredList.value.slice(start, start + itemsPerPage.value)
-})
-// 현재 그룹 내 페이지 번호 배열 생성
+// 페이지네이션 그룹 계산 (예: 10개씩 묶음)
+const pagesInGroup = 10
+const startPage = computed(() => Math.floor((page.value - 1) / pagesInGroup) * pagesInGroup + 1)
 const pageNumbers = computed(() => {
-  const nums = []
-  const end = Math.min(startPage.value + pagesInGroup.value, pages.value)
-  for (let i = startPage.value + 1; i <= end; i++) nums.push(i)
-  return nums
+  if (totalPages.value == null) return []
+  const endPage = Math.min(startPage.value + pagesInGroup - 1, totalPages.value)
+  const pages = []
+  for (let i = startPage.value; i <= endPage; i++) {
+    pages.push(i)
+  }
+  return pages
 })
+
 // 페이지 이동 함수
 function gotoPage(p) {
-  if (p < 1 || p > pages.value) return
-  curPage.value = p
+  if (p < 1) return
+  if (totalPages.value != null && p > totalPages.value) return
+  page.value = p
   window.scrollTo({ top: 0, behavior: 'smooth' })
+  // page ref가 바뀌면 watch에서 loadList() 호출되도록 설정했으면 호출됨
 }
 
-const router = useRouter()
+// 데이터 로드 함수
+async function loadList() {
+  isLoading.value = true
+  error.value = null
+  try {
+    const res  = await fetchBoardList(page.value, size.value) // ← API 호출
+    const data = res.data
+    console.log('🟢 게시글 목록 응답:', data)
+
+    if (data.content && Array.isArray(data.content)) {
+      list.value = data.content // ← ✅ 바로 여기!
+    } else if (Array.isArray(data)) {
+      list.value = data
+    } else {
+      list.value = []
+    }
+
+    // 페이지 수 계산
+    if (data.totalPages != null) {
+      totalPages.value = data.totalPages
+    } else if (data.totalElements != null) {
+      totalElements.value = data.totalElements
+      totalPages.value = Math.ceil(totalElements.value / size.value)
+    }
+
+  } catch (err) {
+    console.error('목록 조회 실패', err)
+    error.value = err
+    list.value = []
+    totalElements.value = null
+    totalPages.value = null
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// 페이지 최초 로딩시 -> 데이터 로드
+onMounted(async () => {
+  loadList()
+})
+
+// 페이지 변경 될 때마다 -> 데이터 로드
+watch(page, () => {
+  loadList()
+})
+
 </script>
 
 <template>
@@ -68,41 +95,50 @@ const router = useRouter()
         </router-link>
       </div>
 
-      <div class="qa-list">
+      <!-- 게시글 없을 때 UI 표시 -->
+      <div v-if="!isLoading && list.length === 0" class="text-center text-muted py-5">
+        아직 등록된 상담글이 없습니다.
+      </div>
+
+      <!-- 게시글 리스트 -->
+      <div v-else class="qa-list">
         <div
-            v-for="qa in paginatedList"
+            v-for="qa in list"
             :key="qa.no"
             class="qa-card bg-white rounded shadow-sm p-4 mb-3"
-            @click="router.push(`/qna/${qa.no}`)"
+            @click="router.push({ name: 'QaDetail', params: { id: qa.no } })"
             style="cursor: pointer;"
         >
-          <small class="text-muted">{{ qa.category }}</small>
+          <small class="text-muted">{{ qa.categoryName || '' }}</small>
           <h5 class="fw-semibold mt-1">{{ qa.title }}</h5>
-          <p class="text-muted mb-2">{{ qa.content }}</p>
-          <small class="text-secondary">{{ qa.date }}</small>
+          <p class="text-muted mb-2">{{ qa.summary || qa.content }}</p>
+          <small class="text-secondary">{{ qa.createdAt ? new Date(qa.createdAt).toLocaleString() : '' }}</small>
         </div>
       </div>
 
-      <nav class="pagination-wrapper mt-4 d-flex justify-content-center align-items-center">
-        <button
-            v-if="startPage > 0"
-            class="btn btn-link p-0 me-3"
-            @click="gotoPage(startPage)"
-        >
+      <nav v-if="totalPages > 1" class="pagination-wrapper mt-4 d-flex justify-content-center align-items-center">
+        <button v-if="startPage > 1" class="btn btn-link p-0 me-3" @click="gotoPage(startPage - pagesInGroup)">
           <i class="lc lc-chevron-left"></i>
           <span class="lt-desktop">이전 {{ pagesInGroup }}페이지</span>
         </button>
 
         <div class="pagination-button-wrap">
-          <button v-for="num in pageNumbers" :key="num"
+          <button
+              v-for="num in pageNumbers"
+              :key="num"
               class="pagination-button mx-1 px-2 py-1 border rounded"
-              :class="{ on: curPage === num }" @click="gotoPage(num)">
+              :class="{ on: page === num }"
+              @click="gotoPage(num)"
+          >
             {{ num }}
           </button>
         </div>
 
-        <button v-if="pages > startPage + pagesInGroup" class="btn btn-link p-0 ms-3"
-            @click="gotoPage(startPage + pagesInGroup + 1)">
+        <button
+            v-if="startPage + pagesInGroup <= totalPages"
+            class="btn btn-link p-0 ms-3"
+            @click="gotoPage(startPage + pagesInGroup)"
+        >
           <span class="lt-desktop">다음 {{ pagesInGroup }}페이지</span>
           <i class="lc lc-chevron-right"></i>
         </button>

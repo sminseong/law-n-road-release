@@ -11,14 +11,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
-class ScheduleMapperIntegrationTest {
+class ScheduleMapperTest {
 
     @Autowired
     private ScheduleMapper scheduleMapper;
 
     @Test
     void findByScheduleNo() {
-        Long scheduleNo = 17L;
+        Long scheduleNo = 8L;
         ScheduleDetailDto dto = scheduleMapper.findByScheduleNo(scheduleNo);
         assertThat(dto).isNotNull();
         assertThat(dto.getKeywords()).isNotEmpty();

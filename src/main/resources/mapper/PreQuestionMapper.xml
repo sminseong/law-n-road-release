@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lawnroad.broadcast.chat.mapper.PreQuestionMapper">
+
+    <resultMap id="PreQuestionResultMap" type="com.lawnroad.broadcast.chat.dto.PreQuestionDTO">
+        <id property="categoryNo" column="category_no"/>
+        <result property="name" column="name"/>
+        <result property="scheduleContent" column="schedule_content"/>
+        <result property="thumbnailPath" column="thumbnail_path"/>
+        <result property="date" column="date"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="lawyerName" column="lawyer_name"/>
+
+        <collection property="keywords" ofType="string">
+            <result column="keyword"/>
+        </collection>
+
+        <!-- ✅ nickname + pre_question_content을 묶은 객체 리스트 -->
+        <collection property="preQuestions" ofType="com.lawnroad.broadcast.chat.dto.PreQuestionItem">
+            <result property="nickname" column="nickname"/>
+            <result property="preQuestionContent" column="pre_question_content"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="PreQuestionLawyerResultMap" type="com.lawnroad.broadcast.chat.dto.LawyerPreQuestion">
+        <result property="no" column="no"/>
+        <result property="nickname" column="nickname"/>
+        <result property="content" column="content"/>
+    </resultMap>
+
+
+    <select id="findByPreQuestion" resultMap="PreQuestionResultMap">
+        SELECT
+        bs.category_no,
+        bs.name,
+        bs.content AS schedule_content,
+        pq.content AS pre_question_content,
+        bs.thumbnail_path,
+        bs.date,
+        bs.start_time,
+        bs.end_time,
+        l.name AS lawyer_name,
+        pq.nickname,
+        k.keyword
+        FROM broadcast_schedule bs
+        JOIN `user` u ON bs.user_no = u.no
+        JOIN lawyer l ON l.no = u.no
+        LEFT JOIN keyword k ON k.schedule_no = bs.no
+        LEFT JOIN pre_question pq ON pq.schedule_no = bs.no
+        WHERE bs.no = #{scheduleNo}
+    </select>
+
+    <select id="findByPreQuestionLawyer" resultMap="PreQuestionLawyerResultMap">
+        SELECT no, nickname, content
+        FROM pre_question
+        WHERE schedule_no = #{scheduleNo}
+    </select>
+
+
+    <!--  선택된 no를 제외하고 나머지 삭제 -->
+    <delete id="deletePreQuestion" parameterType="list">
+        DELETE FROM pre_question
+        WHERE no NOT IN
+        <foreach collection="list" item="no" open="(" separator="," close=")">
+            #{no}
+        </foreach>
+    </delete>
+
+</mapper>

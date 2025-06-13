@@ -25,7 +25,7 @@ public interface LawyerTemplateService {
    * @param condition  검색 조건 (페이지, 카테고리, 키워드, 정렬 등)
    * @return           템플릿 목록 + 전체 개수 + 전체 페이지 수
    */
-  TemplateListResponse findTemplatesByLawyerNo(Long lawyerNo, TemplateSearchCondition condition);
+  TemplateListResponseDto findTemplatesByLawyerNo(Long lawyerNo, TemplateSearchConditionDto condition);
   
   /**
    * 템플릿 삭제 (PK 기준)
@@ -47,6 +47,13 @@ public interface LawyerTemplateService {
    * @return 상세 정보 DTO
    */
   FileTemplateDetailDto getFileTemplateDetail(Long templateNo);
+  
+  /**
+   * 기존 템플릿 수정 (메타 데이터만)
+   * @param dto 수정 요청 DTO
+   * @param thumbnailPath 썸네일 경로 (파일 저장 후 전달)
+   */
+  void updateTemplateMeta(TemplateDto dto, String thumbnailPath);
   
   /**
    * 기존 템플릿 수정 (복제 후 삭제 방식)
