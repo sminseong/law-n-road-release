@@ -9,7 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @EnableScheduling
 @SpringBootApplication
-@MapperScan({"com.lawnroad.template.mapper", "com.lawnroad.account.mapper", "com.lawnroad.board.mapper"})
+@MapperScan({"com.lawnroad.broadcast.live.mapper","com.lawnroad.broadcast.chat.mapper","com.lawnroad.template.mapper", "com.lawnroad.account.mapper", "com.lawnroad.board.mapper"})
 public class LawNRoadApplication {
     public static void main(String[] args) {
 

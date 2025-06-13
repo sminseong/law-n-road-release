@@ -96,10 +96,6 @@
         SELECT keyword FROM keyword WHERE schedule_no = #{schedule_no}
     </select>
 
-    <!-- 키워드 리스트를 별도로 조회하는 select -->
-    <select id="findKeywordsByScheduleNo" resultType="String">
-        SELECT keyword FROM keyword WHERE schedule_no = #{schedule_no}
-    </select>
 
     <update id="updateSchedule" parameterType="com.lawnroad.broadcast.live.dto.ScheduleUpdateDto">
         UPDATE broadcast_schedule
