@@ -1,5 +1,6 @@
 package com.lawnroad.reservation.controller;
 
+import com.lawnroad.reservation.dto.ReservationCountDTO;
 import com.lawnroad.reservation.dto.ReservationsCreateDTO;
 import com.lawnroad.reservation.dto.ReservationsResponseDTO;
 import com.lawnroad.reservation.service.ReservationsService;
@@ -34,5 +35,10 @@ public class ReservationsController {
             @PathVariable Long userNo
     ) {
         return service.getReservationsByUser(userNo);
+    }
+
+    @GetMapping("/counts")
+    public ReservationCountDTO getCounts(@PathVariable Long userNo) {
+        return service.countByStatus(userNo);
     }
 }

@@ -13,4 +13,8 @@ public interface ReservationsMapper {
     List<ReservationsResponseDTO> selectReservationsByUser(@Param("userNo") Long userNo);
     void updateReservationStatus(@Param("reservationNo") Long reservationNo,
                            @Param("status") String status);
+    int countByUserNoAndStatus(
+            @Param("userNo") Long userNo,
+            @Param("status") String status
+    );
 }

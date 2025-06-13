@@ -29,7 +29,7 @@
                  JOIN client u      ON r.user_no  = u.no
                  JOIN weekly_time_slots w ON r.slot_no  = w.no
         WHERE r.user_no = #{userNo}
-        ORDER BY r.created_at DESC
+        ORDER BY w.slot_date DESC
     </select>
 
     <update id="updateReservationStatus" parameterType="map">
@@ -37,5 +37,12 @@
         SET status = #{status}
         WHERE no = #{reservationNo}
     </update>
+
+    <select id="countByUserNoAndStatus" resultType="int" parameterType="map">
+        SELECT COUNT(*)
+        FROM reservations
+        WHERE user_no = #{userNo}
+          AND status  = #{status}
+    </select>
 
 </mapper>

@@ -1,5 +1,5 @@
 <script setup>
-import { ref,onMounted } from 'vue'
+import {ref, onMounted} from 'vue'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import {
   sendBroadcastStartAlimtalk,
@@ -10,28 +10,44 @@ import {
   sendLawyerReservationCreatedAlimtalk,
   sendLawyerReservationCanceledAlimtalk
 } from "@/service/notification.js";
+// 여기에서 HttpRequester 를 가져옵니다.
+import HttpRequester from '@/libs/HttpRequester'
 
-
-
+// 테스트용 임시 하드 코딩
+const userNo = 6
+// 알림 토글 상태
 const notifyKeywordEnabled = ref(true)
 const notifyConsultEnabled = ref(true)
 
-const nickname = ref('회원') // 🔧 기본값 설정
+// 사용자 닉네임
+const nickname = ref('회원')
 
-onMounted(() => {
+// 1:1 상담내역 뱃지용 카운트
+const requestedCount = ref(0)
+const doneCount = ref(0)
+
+onMounted(async () => {
+  // 닉네임 로컬스토리지에서 불러오기
   const storedNickname = localStorage.getItem('nickname')
   if (storedNickname && storedNickname !== 'null') {
     nickname.value = storedNickname
   }
+
+  // 상담내역 카운트 API 호출
+  try {
+    const userNo = 6
+    const res = await HttpRequester.get(`/api/client/${userNo}/reservations/counts`)
+    requestedCount.value = res.data.requestedCount
+    doneCount.value = res.data.doneCount
+  } catch (e) {
+    console.error('예약 건수 조회 실패', e)
+  }
 })
-
-
-
-
 
 function toggleKeyword() {
   console.log('방송 키워드 알림 수신 여부:', notifyKeywordEnabled.value ? '수신함' : '수신 안 함')
 }
+
 function toggleConsultation() {
   console.log('상담 관련 알림 수신 여부:', notifyConsultEnabled.value ? '수신함' : '수신 안 함')
 }
@@ -141,11 +157,10 @@ async function testLawyerReservationCanceled() {
   <ClientFrame>
     <div class="mypage-home p-4">
       <h3 class="mb-3 text-muted">마이페이지 홈</h3>
-      <p class="text-muted">환영합니다! {{nickname}}님 마이페이지 홈입니다.</p>
+      <p class="text-muted">환영합니다! {{ nickname }}님 마이페이지 홈입니다.</p>
 
       <!-- 1:1 상담내역 카드 -->
       <div class="card mb-4 border-light">
-        <!-- .title-bg-primary 클래스를 붙이면 파란 배경이 적용됩니다 -->
         <div class="card-header title-bg-primary text-white">
           1:1 상담내역
         </div>
@@ -153,14 +168,23 @@ async function testLawyerReservationCanceled() {
           <ul class="list-group list-group-flush">
             <li class="list-group-item d-flex justify-content-between align-items-center">
               상담 대기
-              <span class="badge bg-warning text-dark">1건</span>
+              <span class="badge bg-warning text-dark">
+                {{ requestedCount }}건
+              </span>
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center">
               상담 완료
-              <span class="badge bg-success text-white">5건</span>
+              <span class="badge bg-success text-white">
+                {{ doneCount }}건
+              </span>
             </li>
             <li class="list-group-item text-center bg-white">
-              <a href="/client/reservation" class="text-decoration-none btn small">자세히 보기</a>
+              <router-link
+                  :to="{ name: 'ClientReservationsList', params: { clientNo: userNo } }"
+                  class="text-decoration-none btn small"
+              >
+                자세히 보기
+              </router-link>
             </li>
           </ul>
         </div>
@@ -229,7 +253,7 @@ async function testLawyerReservationCanceled() {
               />
             </div>
           </div>
-          <hr />
+          <hr/>
           <p><a href="#" @click.prevent="testBroadcastStart">🟡 방송 시작 알림톡 테스트</a></p>
           <p><a href="#" @click.prevent="testVerificationCode">🔵 인증번호 발송 테스트</a></p>
           <p><a href="#" @click.prevent="testClientReservationStarted">🟢 상담 임박 (의뢰인)</a></p>
@@ -244,87 +268,48 @@ async function testLawyerReservationCanceled() {
 </template>
 
 <style scoped>
-/* ------------------------------------------------ */
-/* 1. 전체 마이페이지 기본 폰트 크기 조정             */
-/* ------------------------------------------------ */
 .mypage-home {
   background-color: #f8f9fa;
   min-height: 100%;
-  /* 페이지 전체의 기본 폰트 크기를 1.1rem로 설정 */
   font-size: 1.1rem;
   line-height: 1.6;
 }
 
-/* ------------------------------------------------ */
-/* 2. 제목(Heading) 폰트 사이즈                      */
-/* ------------------------------------------------ */
-.mypage-title {
-  font-size: 1.5rem;  /* h3보다 조금 더 키움 */
-  font-weight: 600;
-}
-
-.card-title-text {
-  font-size: 1.25rem; /* 카드 헤더 내부 텍스트 크기 */
-  font-weight: 600;
-}
-
-/* ------------------------------------------------ */
-/* 3. 본문 텍스트, 리스트 항목 폰트 크기               */
-/* ------------------------------------------------ */
-.mypage-text {
-  font-size: 1.1rem;
-}
-
-.list-item-text {
-  font-size: 1.05rem;
-}
-
-/* ------------------------------------------------ */
-/* 4. 배지 텍스트 크기                              */
-/* ------------------------------------------------ */
-.badge-text {
-  font-size: 0.9rem;
-}
-
-/* 카드 헤더에 일괄로 클래스만 붙이면 색상을 지정할 수 있도록 정의 */
 .title-bg-primary {
-  background-color: #435879; /* Bootstrap Primary */
+  background-color: #435879;
 }
 
-/* 카드 기본 텍스트/테두리 */
 .card {
   background-color: #ffffff;
 }
+
 .card-header {
   font-size: 1rem;
   font-weight: 600;
 }
+
 .border-light {
   border-color: #e9ecef !important;
 }
 
-/* 배지 색상 */
-.badge.bg-light {
-  background-color: #f1f3f5 !important;
-}
-
-/* 링크, 텍스트 색상 */
 .text-muted {
   color: #6c757d !important;
 }
+
 .small {
   font-size: 0.85rem;
 }
 
-/* form-switch 기본 스타일, 토글은 오른쪽에 위치 */
 .form-check-input {
   width: 2rem;
   height: 1rem;
 }
 
-/* 버튼은 글로벌 CSS에 이미 정의된 기본 스타일 사용 */
 .btn {
-  /* 여기서는 별도 추가 스타일 없이, 전역에서 설정된 기본 버튼 스타일을 그대로 상속받습니다 */
+  /* 전역 버튼 스타일 사용 */
+}
+
+.badge {
+  font-size: 0.9rem;
 }
 </style>
-

@@ -11,7 +11,7 @@ export default [
         path: '/client/qna/register',
         name: 'ClientQaRegister',
         component: () => import('@/views/client/ClientQaRegisterView.vue'),
-        meta: { requiresAuth: true, role: 'client' }
+        meta: {requiresAuth: true, role: 'client'}
     },
 
     // ---------- 예약 ----------
@@ -19,6 +19,11 @@ export default [
         path: '/client/reservations/:lawyerNo/:lawyerName',
         name: 'ClientReservations',
         component: () => import('@/views/client/ClientReservationsView.vue')
+    },
+    {
+        path: '/client/reservations/:clientNo',
+        name: 'ClientReservationsList',
+        component: () => import('@/views/client/ClientReservationsList.vue')
     },
 
     // ---------- 방송 ----------

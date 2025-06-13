@@ -3,6 +3,7 @@ package com.lawnroad.reservation.service;
 import com.lawnroad.payment.dto.OrdersCreateDTO;
 import com.lawnroad.payment.dto.OrdersStatusUpdateDTO;
 import com.lawnroad.payment.service.OrdersService;
+import com.lawnroad.reservation.dto.ReservationCountDTO;
 import com.lawnroad.reservation.dto.ReservationsCreateDTO;
 import com.lawnroad.reservation.dto.ReservationsResponseDTO;
 import com.lawnroad.reservation.dto.ReservationsUpdateDTO;
@@ -71,5 +72,12 @@ public class ReservationsService {
     @Transactional
     public void changeStatus(ReservationsUpdateDTO dto) {
         reservationsMapper.updateReservationStatus(dto.getReservationNo(), dto.getStatus());
+    }
+
+    @Transactional(readOnly = true)
+    public ReservationCountDTO countByStatus(Long userNo) {
+        int requested = reservationsMapper.countByUserNoAndStatus(userNo, "REQUESTED");
+        int done      = reservationsMapper.countByUserNoAndStatus(userNo, "DONE");
+        return new ReservationCountDTO(requested, done);
     }
 }
