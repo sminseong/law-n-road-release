@@ -1,0 +1,18 @@
+.tooltip-inner {
+    background-color: #f7f8fb !important;
+    border: 1px solid #d6dbe8;
+    color: #000000;
+    font-size: 0.75rem;
+    padding: 8px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    max-width: none !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* 오른쪽 화살표 색상 */
+.my-tooltip-style.bs-tooltip-end .tooltip-arrow::before {
+    border-left-color: #f7f8fb; !important;
+    background-color: #f7f8fb; !important;
+}
+

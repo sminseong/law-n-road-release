@@ -9,8 +9,8 @@ import lombok.Setter;
 public class ClientEntity {
 
     private Long no;
-    private String client_id;
-    private String pw_hash;
+    private String clientId;
+    private String pwHash;
     private String email;
     private String name;
     private String nickname;

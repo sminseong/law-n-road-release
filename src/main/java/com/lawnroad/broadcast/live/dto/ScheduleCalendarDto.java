@@ -17,6 +17,7 @@ public class ScheduleCalendarDto {
     private String title;
     private LocalDate date;
     private LocalDateTime startTime;
+    private LocalDateTime endTime;
 
     private String lawyerName;
 }

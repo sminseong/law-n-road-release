@@ -41,6 +41,11 @@ export default [
         name: 'LawyerBroadcastsScheduleRegister',
         component: () => import('@/views/lawyer/LawyerScheduleRegisterView.vue')
     },
+    {
+        path: '/lawyer/broadcasts/schedule/:scheduleNo',
+        name: 'LawyerBroadcastsScheduleDetail',
+        component: () => import('@/views/lawyer/LawyerScheduleDetailView.vue')
+    },
 
 
     // ---------- 템플릿 ----------
@@ -51,8 +56,8 @@ export default [
     },
     {
         path: '/lawyer/templates/register',
-        name: 'TemplateRegister',
-        component: () => import('@/views/lawyer/template/TemplateFormView.vue')
+        name: 'TemplateEditor',
+        component: () => import('@/views/lawyer/template/TemplateRegisterView.vue')
     },
     {
         path: '/lawyer/templates/:no',
@@ -62,7 +67,7 @@ export default [
     {
         path: '/lawyer/templates/edit/:no',
         name: 'TemplateEdit',
-        component: () => import('@/views/lawyer/template/TemplateFormView.vue'),
+        component: () => import('@/views/lawyer/template/TemplateEditView.vue'),
         props: true
     },
 
