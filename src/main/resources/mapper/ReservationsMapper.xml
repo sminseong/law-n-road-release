@@ -44,5 +44,24 @@
         WHERE user_no = #{userNo}
           AND status  = #{status}
     </select>
-
+    <select id="selectByLawyerNo"
+            resultType="com.lawnroad.reservation.dto.ReservationsResponseDTO"
+            parameterType="long">
+        SELECT
+            r.no,
+            r.order_no      AS orderNo,
+            r.user_no       AS userNo,
+            u.name          AS userName,
+            r.slot_no       AS slotNo,
+            w.slot_date     AS slotDate,
+            w.slot_time     AS slotTime,
+            r.status        AS status,
+            r.content       AS content,
+            w.amount        AS amount
+        FROM reservations r
+                 JOIN client u         ON r.user_no = u.no
+                 JOIN weekly_time_slots w ON r.slot_no = w.no
+        WHERE w.user_no = #{lawyerNo}
+        ORDER BY w.slot_date DESC
+    </select>
 </mapper>

@@ -68,16 +68,20 @@ public class ReservationsService {
     public List<ReservationsResponseDTO> getReservationsByUser(Long userNo) {
         return reservationsMapper.selectReservationsByUser(userNo);
     }
-    // 주문 상태 변경
-    @Transactional
-    public void changeStatus(ReservationsUpdateDTO dto) {
-        reservationsMapper.updateReservationStatus(dto.getReservationNo(), dto.getStatus());
-    }
 
     @Transactional(readOnly = true)
     public ReservationCountDTO countByStatus(Long userNo) {
         int requested = reservationsMapper.countByUserNoAndStatus(userNo, "REQUESTED");
         int done      = reservationsMapper.countByUserNoAndStatus(userNo, "DONE");
         return new ReservationCountDTO(requested, done);
+    }
+    @Transactional(readOnly = true)
+    public List<ReservationsResponseDTO> getReservationsByLawyer(Long lawyerNo) {
+        return reservationsMapper.selectByLawyerNo(lawyerNo);
+    }
+
+    @Transactional
+    public void changeToClosed(Long reservationNo) {
+        reservationsMapper.updateReservationStatus(reservationNo, "DONE");
     }
 }

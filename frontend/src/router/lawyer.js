@@ -20,9 +20,10 @@ export default [
 
     // ---------- 예약 ----------
     {
-        path: '/lawyer/reservation',
+        path: '/lawyer/:lawyerNo/reservation',
         name: 'LawyerReservation',
-        component: () => import('@/views/lawyer/LawyerReservationView.vue')
+        component: () => import('@/views/lawyer/LawyerReservationView.vue'),
+        props: true
     },
     {
         path: '/lawyer/:lawyerNo/slots',

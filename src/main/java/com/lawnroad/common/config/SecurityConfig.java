@@ -31,7 +31,8 @@ public class SecurityConfig {
                                 "/api/**",
                                 "/mail/**",
                                 "/uploads/**",
-                                "/api/client/*/reservations/counts"
+                                "/api/client/*/reservations/counts",
+                                "/api/client/**/reservations"
                         ).permitAll()
                         .anyRequest().authenticated()
                 );
