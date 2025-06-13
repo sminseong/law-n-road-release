@@ -4,14 +4,14 @@ import { onMounted, ref } from "vue";
 import axios from "axios";
 import { useRoute } from "vue-router";
 
-const preQuestions = ref([]);
+const preQuestion = ref({}); // 배열 → 객체로 변경
 const route = useRoute();
 
 // 방송 정보 + 사전 질문 불러오기
 onMounted(async () => {
   const scheduleNo = route.params.scheduleNo;
   const preQRes = await axios.get(`/api/broadcasts/schedule/${scheduleNo}/preQuestion`);
-  preQuestions.value = preQRes.data;
+  preQuestion.value = preQRes.data;
   console.log("응답 전체:", preQRes.data);
 });
 
@@ -37,7 +37,7 @@ function getTextColorClass(index) {
           <div class="col-md-7 d-flex flex-column justify-content-center align-items-center" style="min-height: 70vh;">
             <!-- 상단 이미지 -->
             <div class="w-100 d-flex justify-content-center" style="margin-top: 45px; margin-bottom: 48px;">
-              <img :src="preQuestions[0]?.thumbnailPath || '/img/ads/slider-image-1.jpg'" alt="방송 이미지"
+              <img :src="preQuestion.thumbnailPath || '/img/ads/slider-image-1.jpg'" alt="방송 이미지"
                    style="max-width: 100%; height: auto; border-radius: 18px;">
             </div>
 
@@ -48,17 +48,18 @@ function getTextColorClass(index) {
                 <img src="/img/profiles/kim.png" alt="프로필" class="rounded-circle border border-2"
                      style="width: 96px; height: 96px;" />
               </div>
+
               <!-- 방송 정보 텍스트 -->
               <div class="text-start flex-grow-1">
-                <div class="fw-semibold mb-1 fs-2">{{ preQuestions[0]?.name }}</div>
-                <div class="fw-bold fs-5 mb-1">{{ preQuestions[0]?.scheduleContent }}</div>
+                <div class="fw-semibold mb-1 fs-2">{{ preQuestion.name }}</div>
+                <div class="fw-bold fs-5 mb-1">{{ preQuestion.scheduleContent }}</div>
                 <div class="fw-bold fs-5 mb-1">
-                  {{ preQuestions[0]?.date }}　　
-                  {{ preQuestions[0]?.startTime?.slice(11, 16) }} ~ {{ preQuestions[0]?.endTime?.slice(11, 16) }}
+                  {{ preQuestion.date }}　　
+                  {{ preQuestion.startTime?.slice(11, 16) }} ~ {{ preQuestion.endTime?.slice(11, 16) }}
                 </div>
-                <div class="text-secondary mb-2">- {{ preQuestions[0]?.lawyerName }} 변호사 -</div>
+                <div class="text-secondary mb-2">- {{ preQuestion.lawyerName }} 변호사 -</div>
                 <div class="mt-2">
-                  <span class="badge bg-primary me-1" v-for="(kw, idx) in preQuestions[0]?.keywords" :key="idx">
+                  <span class="badge bg-primary me-1" v-for="(kw, idx) in preQuestion.keywords" :key="idx">
                     # {{ kw }}
                   </span>
                 </div>
@@ -74,9 +75,8 @@ function getTextColorClass(index) {
 
             <!-- 사전 질문 목록 -->
             <div class="flex-grow-1 overflow-auto" style="min-height: 0;">
-              <!-- 사전 질문 목록 -->
               <div
-                  v-for="(q, index) in preQuestions[0]?.preQuestions"
+                  v-for="(q, index) in preQuestion.preQuestions"
                   :key="index"
                   class="rounded-3 p-3 mb-2"
                   :class="getQuestionStyle(index)">

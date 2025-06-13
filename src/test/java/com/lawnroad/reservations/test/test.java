@@ -17,10 +17,9 @@ public class test {
 
     @Test
     void preQuestionMapperTest() {
-        List<PreQuestionDTO> list = mapper.findByPreQuestion(3);
-        for (PreQuestionDTO preQuestionDTO : list) {
-            System.out.println(preQuestionDTO);
-        }
+        PreQuestionDTO dto = mapper.findByPreQuestion(3);
+            System.out.println(dto);
+
 
     }
 

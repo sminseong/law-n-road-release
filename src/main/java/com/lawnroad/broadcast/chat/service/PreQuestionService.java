@@ -6,5 +6,5 @@ import com.lawnroad.broadcast.chat.dto.PreQuestionDTO;
 import java.util.List;
 
 public interface PreQuestionService {
-    List<PreQuestionDTO> findByPreQuestion(int scheduleNo);
+    PreQuestionDTO findByPreQuestion(int scheduleNo);
 }

@@ -55,7 +55,8 @@ const handleBadgeMouseLeave = () => {
 
 <template>
   <LawyerFrame>
-    <a href="/">메인 화면 이동하기</a>
+    <a href="/">메인 화면 이동하기</a><br/>
+    <a href="/lawyer/broadcasts/setting/3">방송 설정</a>
     <br><br>
     <div class="container py-4">
 

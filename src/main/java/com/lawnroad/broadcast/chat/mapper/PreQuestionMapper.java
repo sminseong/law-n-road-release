@@ -8,7 +8,7 @@ import java.util.List;
 
 @Mapper
 public interface PreQuestionMapper {
-    List<PreQuestionDTO> findByPreQuestion(@Param("scheduleNo") int scheduleNo);
+    PreQuestionDTO findByPreQuestion(@Param("scheduleNo") int scheduleNo);
 
 
 }

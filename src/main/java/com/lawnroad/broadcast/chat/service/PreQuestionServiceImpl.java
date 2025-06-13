@@ -14,7 +14,7 @@ public class PreQuestionServiceImpl implements PreQuestionService {
 
 
     @Override
-    public List<PreQuestionDTO> findByPreQuestion(int scheduleNo) {
+    public PreQuestionDTO findByPreQuestion(int scheduleNo) {
         return preQuestionMapper.findByPreQuestion(scheduleNo);
     }
 
