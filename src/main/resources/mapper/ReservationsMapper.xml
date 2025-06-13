@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lawnroad.reservation.mapper.ReservationsMapper">
+    <insert id="insertReservation" parameterType="com.lawnroad.reservation.dto.ReservationsCreateDTO">
+        INSERT INTO reservations
+            (order_no, slot_no, user_no, content, status, created_at, updated_at)
+        VALUES
+            (#{orderNo}, #{slotNo}, #{userNo}, #{content}, 'REQUESTED', NOW(), NOW())
+    </insert>
+
+    <select id="selectReservationsByUser"
+            resultType="com.lawnroad.reservation.dto.ReservationsResponseDTO"
+            parameterType="long">
+        SELECT
+            r.no,
+            r.order_no      AS orderNo,
+            r.user_no       AS userNo,
+            u.name          AS userName,
+            r.slot_no       AS slotNo,
+            w.slot_date     AS slotDate,
+            w.slot_time     AS slotTime,
+            r.status        AS status,
+            r.content       AS content,
+            w.amount        AS amount
+        FROM reservations r
+                 JOIN client u      ON r.user_no  = u.no
+                 JOIN weekly_time_slots w ON r.slot_no  = w.no
+        WHERE r.user_no = #{userNo}
+        ORDER BY w.slot_date DESC
+    </select>
+
+    <update id="updateReservationStatus" parameterType="map">
+        UPDATE reservations
+        SET status = #{status}
+        WHERE no = #{reservationNo}
+    </update>
+
+    <select id="countByUserNoAndStatus" resultType="int" parameterType="map">
+        SELECT COUNT(*)
+        FROM reservations
+        WHERE user_no = #{userNo}
+          AND status  = #{status}
+    </select>
+
+</mapper>

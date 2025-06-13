@@ -81,4 +81,10 @@ public class ClientBoardController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBoard(@PathVariable Long id) {
+        System.out.println(id);
+        boardService.deleteBoard(id); // 내부적으로 boardMapper.deleteBoard(id) 호출
+        return ResponseEntity.noContent().build(); // HTTP 204
+    }
 }
