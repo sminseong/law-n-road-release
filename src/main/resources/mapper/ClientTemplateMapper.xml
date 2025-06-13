@@ -59,4 +59,38 @@
         </if>
     </select>
 
+    <!-- 제품 상세조회 -->
+    <select id="selectTemplateDetailByNo"
+            parameterType="long"
+            resultType="com.lawnroad.template.dto.ClientTemplateDetailResponseDto">
+        SELECT
+            t.no,
+            t.name,
+            t.price,
+            t.discount_rate,
+            t.category_no,
+            c.name           AS category_name,
+            t.type,
+            t.thumbnail_path,
+            t.sales_count,
+            t.description,
+
+            l.no             AS lawyer_no,
+            l.name           AS lawyer_name,
+            l.profile        AS lawyer_profile_image,
+            CONCAT(
+                    '(', IFNULL(l.zipcode, ''), ') ',
+                    IFNULL(l.road_address, l.land_address), ' ',
+                    IFNULL(l.detail_address, '')
+            )                AS lawyer_address,
+            l.office_number  AS lawyer_office_phone,
+
+            ''               AS short_intro,
+            ''               AS long_intro
+        FROM template t
+                 LEFT JOIN category  c ON t.category_no = c.no
+                 LEFT JOIN lawyer    l ON t.user_no     = l.no
+        WHERE t.no = #{templateNo}
+    </select>
+
 </mapper>

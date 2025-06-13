@@ -1,10 +1,13 @@
 package com.lawnroad.template.controller;
 
+import com.lawnroad.template.dto.ClientTemplateDetailResponseDto;
 import com.lawnroad.template.dto.TemplateListResponseDto;
 import com.lawnroad.template.dto.TemplateSearchConditionDto;
 import com.lawnroad.template.service.ClientTemplateService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,5 +25,18 @@ public class ClientTemplateController {
   @GetMapping
   public TemplateListResponseDto getAllTemplates(TemplateSearchConditionDto condition) {
     return clientTemplateService.findAllTemplates(condition);
+  }
+  
+  /**
+   * 템플릿 상세 정보 조회 (클라이언트용)
+   * @param no 템플릿 번호
+   * @return 템플릿 + 등록한 변호사 정보
+   */
+  @GetMapping("/{no}")
+  public ResponseEntity<ClientTemplateDetailResponseDto> getTemplateByNo(@PathVariable Long no) {
+    System.out.println( "ClientTemplateController.getTemplateByNo()" + no);
+    ClientTemplateDetailResponseDto dto = clientTemplateService.findTemplateDetailByNo(no);
+    System.out.println(dto);
+    return ResponseEntity.ok(dto);
   }
 }

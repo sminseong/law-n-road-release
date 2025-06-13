@@ -1,5 +1,6 @@
 package com.lawnroad.template.mapper;
 
+import com.lawnroad.template.dto.ClientTemplateDetailResponseDto;
 import com.lawnroad.template.dto.TemplateDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -28,5 +29,14 @@ public interface ClientTemplateMapper {
       @Param("categoryNo") Long categoryNo,
       @Param("keyword") String keyword,
       @Param("tag") String tag
+  );
+  
+  /**
+   * 제품 상세조회
+   * @param templateNo 템플릿 고유번호
+   * @return 상세 DTO
+   */
+  ClientTemplateDetailResponseDto selectTemplateDetailByNo(
+      @Param("templateNo") Long templateNo
   );
 }

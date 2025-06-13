@@ -44,16 +44,6 @@ export default [
         name: 'ClientTemplates',
         component: () => import('@/views/client/TemplateView.vue')
     },
-    {
-        path: '/templates',
-        name: 'ClientTemplateList',
-        component: () => import('@/views/client/template/TemplateListView.vue')
-    },
-    {
-        path: '/templates/:no',
-        name: 'ClientTemplateDetail',
-        component: () => import('@/views/client/template/TemplateDetailView.vue')
-    },
 
     // ---------- 광고 ----------
 ]

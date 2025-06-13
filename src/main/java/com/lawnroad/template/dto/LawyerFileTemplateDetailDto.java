@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class EditorTemplateDetailDto {
+public class LawyerFileTemplateDetailDto {
   
   // 템플릿 고유번호 (PK)
   private Long no;
@@ -28,14 +28,8 @@ public class EditorTemplateDetailDto {
   // 썸네일 이미지 경로
   private String thumbnailPath;
   
-  // 템플릿 본문 내용 (에디터 작성)
-  private String content;
-  
-  // 사용된 변수 목록(JSON 문자열: [{"name": "...", "description": "..."}])
-  private String varJson;
-  
-  // AI 활용 동의 여부 (1: 동의, 0: 미동의)
-  private Integer aiEnabled;
+  // 템플릿 파일 경로 + 원본명 목록 (JSON 형태 문자열)
+  private String pathJson;
   
   // 생성 일시
   private LocalDateTime createdAt;

@@ -1,5 +1,9 @@
 <script setup>
-defineProps({
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const props = defineProps({
   no: Number,
   imageUrl: String,
   title: String,
@@ -7,42 +11,61 @@ defineProps({
   discountPercent: [String, Number],
   discountedPrice: [String, Number],
 })
+
+function goToDetail() {
+  router.push(`/templates/${props.no}`)
+}
 </script>
 
 <template>
-  <div class="card card-product rounded-3 position-relative overflow-hidden">
-    <a :href="`/templates/${no}`" class="stretched-link"></a>
-
-    <div class="text-center">
+  <div
+      class="card card-product rounded-3 position-relative overflow-hidden"
+      @click="goToDetail"
+      style="cursor: pointer;"
+  >
+    <!-- 이미지 -->
+    <div class="text-center" style="cursor: default;">
       <img
-          :src="imageUrl"
+          :src="props.imageUrl"
           class="img-fluid"
           style="height: 160px; object-fit: cover;"
           alt="상품 이미지"
       />
     </div>
 
-    <div class="card-body px-2 py-3">
-      <p class="lh-sm mb-2 fs-5-1" style="height: 38px; overflow: hidden; text-overflow: ellipsis;
-               display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
-        <a :href="`/templates/${no}`" class="text-muted text-decoration-none title-link position-relative">
-          {{ title }}
-        </a>
+    <!-- 텍스트 내용 -->
+    <div class="card-body px-2 py-3" style="cursor: default; position: relative;">
+      <p
+          class="lh-sm mb-2 fs-5-1"
+          style="height: 38px; overflow: hidden; text-overflow: ellipsis;
+               display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;"
+      >
+        {{ props.title }}
       </p>
 
       <p class="text-gray-400 lh-sm text-decoration-line-through fs-6 mb-1">
-        {{ originalPrice }}
+        {{ props.originalPrice }}
       </p>
 
       <div class="d-flex align-items-center justify-content-between">
         <p class="fw-bold mb-0 d-flex align-items-center" style="font-size: 18px;">
-          <span class="text-danger me-2">{{ discountPercent }}%</span>
-          <span class="text-dark">{{ discountedPrice }}</span>
+          <span class="text-danger me-2">{{ props.discountPercent }}%</span>
+          <span class="text-dark">{{ props.discountedPrice }}</span>
         </p>
-        <a href="/client/cart" class="btn btn-outline-primary btn-sm ms-2 cart-btn">
+
+        <!-- 장바구니 버튼: z-index로 링크보다 위에 올림 -->
+        <a
+            href="/client/cart"
+            @click.stop
+            class="btn btn-outline-primary btn-sm ms-2 cart-btn"
+            style="cursor: pointer; position: relative; z-index: 2;"
+        >
           장바구니
         </a>
       </div>
+
+      <!-- 카드 전체 클릭용 링크 (뒤에 위치) -->
+      <span class="stretched-link" style="z-index: 1;"></span>
     </div>
   </div>
 </template>

@@ -30,5 +30,18 @@ export default [
         path: '/qna/:id',
         name: 'QaDetail',
         component: () => import('@/views/common/QaDetailView.vue')
-    }
+    },
+
+    // ---------- 템플릿 ----------
+    {
+        path: '/templates',
+        name: 'ClientTemplateList',
+        component: () => import('@/views/client/template/TemplateListView.vue')
+    },
+    {
+        path: '/templates/:no',
+        name: 'ClientTemplateDetail',
+        component: () => import('@/views/client/template/TemplateDetailView.vue')
+    },
+
 ]
