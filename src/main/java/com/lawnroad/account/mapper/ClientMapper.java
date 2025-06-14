@@ -8,7 +8,9 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface ClientMapper {
 
-    int countByClientId(@Param("clientId") String clientId);
+    int countByClientId1(@Param("clientId") String clientId);
+
+    int countByClientId2(@Param("clientId") String clientId);
 
     int countByClientNickName(@Param("nickname") String nickname);
 

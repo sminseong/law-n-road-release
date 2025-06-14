@@ -2,12 +2,14 @@ package com.lawnroad.account.controller;
 
 
 import com.lawnroad.account.dto.ClientSignupRequest;
+import com.lawnroad.account.dto.LawyerSignupRequest;
 import com.lawnroad.account.dto.LoginRequest;
 import com.lawnroad.account.dto.LoginResponseDto;
 import com.lawnroad.account.entity.ClientEntity;
 import com.lawnroad.account.entity.UserEntity;
 import com.lawnroad.account.mapper.UserMapper;
 import com.lawnroad.account.service.ClientService;
+import com.lawnroad.account.service.LawyerService;
 import com.lawnroad.common.util.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import org.mybatis.logging.Logger;
@@ -26,12 +28,13 @@ import java.util.Map;
 public class AuthController {
 
     @Autowired
-    private ClientService clientService;
+    private LawyerService lawyerService;
     private final JwtTokenUtil jwtTokenUtil;
     private final UserMapper userMapper;
+    private final ClientService clientService;
 
     @GetMapping("/check-id")
-    public ResponseEntity<Map<String, Object>> checkIdDuplicate(@RequestParam String clientId) {
+    public ResponseEntity<Map<String, Object>> checkIdDuplicate(@RequestParam String clientId) {  // 여기는 클라이언트 아이디를 중복 확인 하는 함수
         boolean available = clientService.isClientIdAvailable(clientId);
 
         Map<String, Object> response = new HashMap<>();
@@ -39,6 +42,20 @@ public class AuthController {
 
         return ResponseEntity.ok(response); // 요청 성공했고, 이 데이터 줄게!  200일 때만 적용됨
     }
+
+    @GetMapping("/lawyer_check-id")
+    public ResponseEntity<Map<String, Object>> checkLawyerIdDuplicate(@RequestParam String lawyerId) { // 여기는 변호사 아이디를 중복 확인 하는 함수
+        boolean available = lawyerService.isLawyerAvailable(lawyerId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("available", available);
+
+        return ResponseEntity.ok(response); // 요청 성공했고, 이 데이터 줄게!  200일 때만 적용됨
+    }
+
+
+
+
 
     @GetMapping("/check-nickname")
     public ResponseEntity<Map<String, Object>> checkNickNameDuplicate(@RequestParam String nickname) {
@@ -55,6 +72,12 @@ public class AuthController {
     public ResponseEntity<?> signup(@RequestBody ClientSignupRequest request) {
         clientService.registerClient(request);
         return ResponseEntity.ok().body("회원가입 완료");
+    }
+
+    @PostMapping("/lawyer_signup")
+    public ResponseEntity<?> lawyer_signup(@RequestBody LawyerSignupRequest request) {
+        lawyerService.registerLawyer(request);
+        return ResponseEntity.ok().body("변호사 회원가입 완료");
     }
 
 

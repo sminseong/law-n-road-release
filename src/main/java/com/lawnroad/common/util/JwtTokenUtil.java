@@ -21,6 +21,7 @@ public class JwtTokenUtil {
     private final Map<String, String> refreshTokenStore = new ConcurrentHashMap<>();
 
     public String generateAccessToken(String clientId,Long no,String role,String nickname) {
+        System.out.println("Access Token 발급!");
         return Jwts.builder()
                 .setSubject(clientId)
                 .claim("no", no)
@@ -28,12 +29,14 @@ public class JwtTokenUtil {
                 .claim("role",role)
                 .claim("nickname", nickname)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 1))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+
     }
 
     public String generateRefreshToken(String clientId) {
+        System.out.println("refresh 토큰 Token 발급!");
         return Jwts.builder()
                 .setSubject(clientId)
                 .setIssuedAt(new Date())

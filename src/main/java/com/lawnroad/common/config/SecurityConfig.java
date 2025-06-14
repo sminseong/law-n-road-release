@@ -29,10 +29,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/**", "/mail/**", "/uploads/**").permitAll()
                         .anyRequest().authenticated()
-                );
+
+                ).addFilterBefore(new JwtAuthenticationFilter(jwtTokenUtil),UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
+
 
 
 

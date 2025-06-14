@@ -31,8 +31,9 @@ public class ClientService {
 
 
     public boolean isClientIdAvailable(String clientId) {
-        int count = clientMapper.countByClientId(clientId);
-        return count == 0; // 0 이면 사용 가능, true 반환
+        int count1 = clientMapper.countByClientId1(clientId);
+        int count2 = clientMapper.countByClientId2(clientId);
+        return count1+count2 == 0; // 0 이면 사용 가능, true 반환
     }
 
     public boolean isClientNickNameAvailable(String nickname) {
