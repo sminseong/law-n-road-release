@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lawnroad.payment.mapper.OrdersMapper">
+
+    <insert id="insertOrder" parameterType="com.lawnroad.payment.dto.OrdersCreateDTO" useGeneratedKeys="true" keyProperty="no">
+        INSERT INTO orders
+            (user_no, total_amount, status, order_type)
+        VALUES
+            (#{userNo}, #{totalAmount}, #{status}, #{orderType})
+    </insert>
+
+    <update id="updateOrderStatus" parameterType="map">
+        UPDATE orders
+        SET status = #{status}
+        WHERE no = #{orderNo}
+    </update>
+
+    <select id="selectOrder" resultType="com.lawnroad.payment.model.OrdersVO" parameterType="long">
+        SELECT no, user_no AS userNo, total_amount AS totalAmount,
+            status, order_type AS orderType,
+            created_at AS createdAt, updated_at AS updatedAt
+        FROM orders
+        WHERE no = #{orderNo}
+    </select>
+</mapper>

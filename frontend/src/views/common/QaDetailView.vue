@@ -3,18 +3,19 @@
 import {ref, computed, onMounted} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
+import { fetchBoardDetail, deleteQna } from '@/service/boardService.js'
 
 const route = useRoute()
 const router = useRouter()
-const qaNo = route.params.no // /qna/:no 에서 넘어온 글 NO
+const id = route.params.id
 
-// Q&A 상세 데이터
+// 게시글 상세 데이터
 const qa = ref({
-  category: '',
+  categoryName: '',
   title: '',
   content: '',
-  date: '',
-  writer: '',
+  incidentDate: '',
+  createdAt: ''
 })
 
 // 변호사 답변 더미 데이터
@@ -24,14 +25,23 @@ const answers = ref([
   {no: 3, avatar: '/img/profiles/park.png', author: '이재용 변호사', content: '세 번째 답변 예시입니다.', isSelected: false}
 ])
 
+function goEditPage() {
+  router.push(`/client/qna/edit/${id}`)
+}
+
 // 모달 표시 여부
 const showDeleteModal = ref(false)
 
 // 삭제 진행 함수
-function confirmDelete() {
-  // TODO: 실제 API 호출
-  // await api.delete(`/qna/${qaNo}`)
-  router.push('/qna')
+async function confirmDelete() {
+  try {
+    await deleteQna(id) // 🟢 삭제 API 호출
+    alert('삭제되었습니다.')
+    router.push('/qna') // 목록으로 이동
+  } catch (err) {
+    console.error('❌ 삭제 실패:', err)
+    alert('삭제 중 오류가 발생했습니다.')
+  }
 }
 
 // 버튼 핸들러: 모달 띄우기
@@ -54,17 +64,24 @@ function selectAnswer(answerNo) {
 }
 
 onMounted(async () => {
-  // TODO: 실제 API 호출
-  // const { data } = await api.get(`/qna/${qaNo}`)
-  // qa.value = data
-  // 현재는 더미 데이터
-  qa.value = {
-    category: '교통사고 · 보상',
-    title: `상담 사례 #${qaNo}`,
-    content: `여기에 상담 내용이 들어갑니다. (no: ${qaNo})`,
-    date: '2025-06-01',
-    writer: '닉네임',
-    tags: ['#교통사고', '#보상', '#과실비율']
+  console.log('🧩 현재 경로 ID:', route.params.id)
+
+  try {
+    const data = await fetchBoardDetail(route.params.id)
+    console.log('✅ 게시글 상세:', data.data)
+
+    //정확한 필드명으로 수정
+    qa.value = {
+      categoryName: data.data.categoryName,
+      title: data.data.title,
+      content: data.data.content,
+      incidentDate: data.data.incidentDate,
+      createdAt: data.data.createdAt
+    }
+
+  } catch (err) {
+    console.error('🚨 게시글 상세 조회 실패:', err.response?.status, err.response?.data)
+    alert('게시글을 불러오지 못했습니다.')
   }
 })
 </script>
@@ -72,23 +89,33 @@ onMounted(async () => {
   <ClientFrame>
     <div class="qa-detail py-5 px-3 px-lg-5">
 
-      <!-- 카테고리·제목·정보 -->
-      <div class="mb-4">
-        <small class="text-muted">{{ qa.category }}</small>
-        <h2 class="fw-bold mt-1">{{ qa.title }}</h2>
-        <div class="text-secondary">
-          {{ qa.date }} · 작성자: {{ qa.writer }}
-        </div>
+      <!-- 카테고리 -->
+      <div class="text-sm text-muted mb-2">
+        {{ qa.categoryName }}
       </div>
 
-      <!-- 질문 본문 -->
-      <div class="p-4 mb-5">
-        <p class="mb-0" style="white-space: pre-wrap">{{ qa.content }}</p>
+      <div class="mb-4 small text-muted">
+        사건 발생일: {{ qa.incidentDate }}
+      </div>
+
+      <!-- 제목 -->
+      <h1 class="qa-title mb-4">
+        {{ qa.title }}
+      </h1>
+
+      <!-- 본문 -->
+      <p class="qa-content text-dark">
+        {{ qa.content }}
+      </p>
+
+      <!-- 날짜 정보 -->
+      <div class="mb-4 small text-muted">
+         작성일: {{ qa.createdAt }}
       </div>
 
       <!-- 수정/삭제 버튼 -->
       <div class="d-flex justify-content-end mb-4">
-        <button @click="onEdit" class="btn btn-link text-secondary p-0 me-2 edit-btn">
+        <button @click="goEditPage" class="btn btn-link text-secondary p-0 me-2 edit-btn" >
           <i class="fas fa-pencil-alt"></i> 수정하기
         </button>
         <button @click="onDeleteClick" class="btn btn-link text-secondary p-0 delete-btn">
@@ -193,4 +220,18 @@ onMounted(async () => {
 .btn-link {
   text-decoration: none !important;
 }
+
+.qa-title {
+  font-size: 1.75rem;
+  line-height: 1.4;
+}
+
+.qa-content {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  white-space: pre-line;
+  padding-right: 0.5rem;
+}
+
 </style>
+

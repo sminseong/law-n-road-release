@@ -103,7 +103,7 @@ public class AuthController {
 
             // 🔍 여기에서 확인
             System.out.println("✅ Access Token: " + accessToken);
-            jwtTokenUtil.printPayload(accessToken); // 👈 payload 출력
+            //jwtTokenUtil.printPayload(accessToken); // 👈 payload 출력
             Long no = jwtTokenUtil.getUserNoFromToken(accessToken);
             String nickname = jwtTokenUtil.getNicknameFromToken(accessToken);
             String role = jwtTokenUtil.getRoleFromToken(accessToken);

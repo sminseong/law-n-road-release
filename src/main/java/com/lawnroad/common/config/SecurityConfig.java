@@ -27,13 +27,19 @@ public class SecurityConfig {
         http
                 .csrf().disable()
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/**", "/mail/**", "/uploads/**").permitAll()
+                        .requestMatchers(
+                                "/api/**",
+                                "/mail/**",
+                                "/uploads/**",
+                                "/api/client/*/reservations/counts"
+                        ).permitAll()
                         .anyRequest().authenticated()
 
                 ).addFilterBefore(new JwtAuthenticationFilter(jwtTokenUtil),UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
 
 
 
