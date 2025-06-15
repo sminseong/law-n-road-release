@@ -23,8 +23,8 @@ public class CartServiceImpl implements CartService {
   }
   
   @Override
-  public void removeFromCart(Long userNo, Long tmplNo) {
-    cartMapper.deleteByUserAndTemplate(userNo, tmplNo);
+  public void removeFromCart(Long cartNo) {
+    cartMapper.deleteByCartNo(cartNo);
   }
   
   @Override

@@ -8,7 +8,7 @@ public interface CartService {
   
   boolean addToCart(Long userNo, Long tmplNo);
   
-  void removeFromCart(Long userNo, Long tmplNo);
+  void removeFromCart(Long cartNo);
   
   List<CartItemResponseDto> findCartItems(Long userNo);
 }

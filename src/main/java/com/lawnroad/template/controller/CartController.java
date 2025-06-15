@@ -19,7 +19,6 @@ public class CartController {
   // 1. 장바구니 추가
   @PostMapping
   public ResponseEntity<Void> addToCart(@RequestBody CartAddRequestDto dto) {
-    System.out.println("addToCart 호출 : " + dto);
     Long userNo = 1L; // TODO: @AuthenticationPrincipal 로 교체 예정
     
     boolean added = cartService.addToCart(userNo, dto.getTmplNo());
@@ -30,20 +29,16 @@ public class CartController {
     }
   }
   
-  // 2. 장바구니 삭제
-  @DeleteMapping("/{tmplNo}")
-  public ResponseEntity<Void> removeFromCart(@PathVariable Long tmplNo) {
-    System.out.println("removeFromCart 호출 : " + tmplNo);
-    Long userNo = 1L; // TODO: @AuthenticationPrincipal 로 교체 예정
-    
-    cartService.removeFromCart(userNo, tmplNo);
-    return ResponseEntity.noContent().build(); // 204
+  // 2. 장바구니 삭제 (cart row PK 기준)
+  @DeleteMapping("/{no}")
+  public ResponseEntity<Void> removeFromCart(@PathVariable("no") Long cartNo) {
+    cartService.removeFromCart(cartNo);
+    return ResponseEntity.noContent().build();
   }
   
   // 3. 장바구니 목록 조회
   @GetMapping
   public ResponseEntity<List<CartItemResponseDto>> getCartList() {
-    System.out.println("getCartList 호출");
     Long userNo = 1L; // TODO: @AuthenticationPrincipal 로 교체 예정
     
     List<CartItemResponseDto> cartItems = cartService.findCartItems(userNo);

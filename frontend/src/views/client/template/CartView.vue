@@ -14,6 +14,28 @@ onMounted(async () => {
   isLoading.value = false
 })
 
+const removeItem = async (cartNo) => {
+  // 1) 삭제 확인
+  const ok = confirm('정말 삭제하시겠습니까?')
+  if (!ok) return;
+
+  // 2) 삭제 요청 및 UI 업데이트
+  try {
+    await http.delete(`/api/cart/${cartNo}`)
+    cartItems.value = cartItems.value.filter(item => item.no !== cartNo)
+  } catch (err) {
+    console.error('장바구니 삭제 실패:', err)
+    alert('장바구니 삭제 중 오류가 발생했습니다.')
+  }
+}
+
+const updateCart = async () => {
+  isLoading.value = true
+  const res = await http.get('/api/cart')
+  cartItems.value = res.data
+  isLoading.value = false
+}
+
 const totalPrice = computed(() =>
     cartItems.value.reduce((sum, item) => {
       const discounted = item.price * (1 - item.discountRate / 100)
@@ -41,7 +63,7 @@ const totalPrice = computed(() =>
                   v-for="item in cartItems"
                   :key="item.no"
                   :item="item"
-                  @remove="removeItem(item.no)"
+                  @remove="removeItem"
               />
             </ul>
 
@@ -49,7 +71,13 @@ const totalPrice = computed(() =>
               <router-link to="/templates" class="btn btn-outline-primary">
                 계속 쇼핑하기
               </router-link>
-              <button class="btn btn-dark" @click="updateCart">
+              <button
+                  class="btn btn-dark"
+                  @click="updateCart"
+                  :disabled="isLoading"
+              >
+                <!-- 버튼 내 스피너 -->
+                <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
                 장바구니 업데이트
               </button>
             </div>

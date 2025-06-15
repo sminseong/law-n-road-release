@@ -17,7 +17,7 @@ public interface CartMapper {
   void insertCart(@Param("userNo") Long userNo, @Param("tmplNo") Long tmplNo);
   
   // 3. 장바구니 템플릿 삭제
-  void deleteByUserAndTemplate(@Param("userNo") Long userNo, @Param("tmplNo") Long tmplNo);
+  void deleteByCartNo(@Param("cartNo") Long cartNo);
   
   // 4. 장바구니 목록 조회
   List<CartItemResponseDto> selectCartListByUser(@Param("userNo") Long userNo);
