@@ -44,4 +44,16 @@
         ORDER BY ca.created_at DESC
     </select>
 
+    <!-- 5. 장바구니 전체 삭제 -->
+    <delete id="deleteByUserNo" parameterType="long">
+        DELETE FROM cart
+        WHERE user_no = #{userNo}
+    </delete>
+
+    <!-- 6. 주문 상세 추가하기 (장바구니 복사) -->
+    <insert id="insertHistory" parameterType="map">
+        INSERT INTO tmpl_orders_history (tmpl_no, order_no, price)
+        VALUES (#{tmplNo}, #{orderNo}, #{price})
+    </insert>
+
 </mapper>

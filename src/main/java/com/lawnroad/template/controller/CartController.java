@@ -2,6 +2,8 @@ package com.lawnroad.template.controller;
 
 import com.lawnroad.template.dto.CartAddRequestDto;
 import com.lawnroad.template.dto.CartItemResponseDto;
+import com.lawnroad.template.dto.CheckoutRequestDto;
+import com.lawnroad.template.dto.CheckoutResponseDto;
 import com.lawnroad.template.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -43,5 +45,17 @@ public class CartController {
     
     List<CartItemResponseDto> cartItems = cartService.findCartItems(userNo);
     return ResponseEntity.ok(cartItems);
+  }
+  
+  @PostMapping("/aa")
+  public ResponseEntity<CheckoutResponseDto> checkout(
+      @RequestBody CheckoutRequestDto req
+  ) {
+    System.out.println("checkout"+ req);
+    // TODO: 나중에 @AuthenticationPrincipal 로 대체
+    req.setUserNo(1L);
+    Long orderNo = cartService.checkout(req);
+    System.out.println("orderNo: " + orderNo);
+    return ResponseEntity.ok(new CheckoutResponseDto(orderNo));
   }
 }

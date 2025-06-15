@@ -49,6 +49,11 @@ export default [
         name: 'ClientCart',
         component: () => import('@/views/client/template/CartView.vue')
     },
+    {
+        path: '/client/template/payment',
+        name: 'TemplatePaymentView',
+        component: () => import('@/views/client/template/TemplatePaymentView.vue')
+    },
 
     // ---------- 광고 ----------
 ]

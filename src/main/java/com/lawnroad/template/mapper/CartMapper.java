@@ -21,4 +21,14 @@ public interface CartMapper {
   
   // 4. 장바구니 목록 조회
   List<CartItemResponseDto> selectCartListByUser(@Param("userNo") Long userNo);
+  
+  // 5. 장바구니 전체 삭제
+  void deleteByUserNo(@Param("userNo") Long userNo);
+  
+  // 6. 주문상세에 추가하기
+  void insertHistory(
+      @Param("tmplNo") Long tmplNo,
+      @Param("orderNo") Long orderNo,
+      @Param("price") Integer price
+  );
 }

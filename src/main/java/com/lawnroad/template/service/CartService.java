@@ -1,6 +1,7 @@
 package com.lawnroad.template.service;
 
 import com.lawnroad.template.dto.CartItemResponseDto;
+import com.lawnroad.template.dto.CheckoutRequestDto;
 
 import java.util.List;
 
@@ -11,4 +12,6 @@ public interface CartService {
   void removeFromCart(Long cartNo);
   
   List<CartItemResponseDto> findCartItems(Long userNo);
+  
+  Long checkout(CheckoutRequestDto dto);
 }

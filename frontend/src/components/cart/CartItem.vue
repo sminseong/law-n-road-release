@@ -1,7 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { computed } from 'vue'
-import http from '@/libs/HttpRequester'
 
 const props = defineProps({ item: Object })
 const emit = defineEmits(['remove'])
@@ -56,10 +55,7 @@ const typeLabel = computed(() =>
         <div class="fw-bold text-danger">
           {{ (item.price * (1 - item.discountRate / 100)).toLocaleString() }}원
         </div>
-        <div
-            v-if="item.discountRate > 0"
-            class="text-muted text-decoration-line-through small"
-        >
+        <div class="text-muted text-decoration-line-through small" >
           {{ item.price.toLocaleString() }}원
         </div>
       </div>
