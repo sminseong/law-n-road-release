@@ -39,7 +39,13 @@ const updateCart = async () => {
 const totalPrice = computed(() =>
     cartItems.value.reduce((sum, item) => {
       const discounted = item.price * (1 - item.discountRate / 100)
-      return sum + discounted * item.quantity
+      return sum + discounted
+    }, 0)
+)
+
+const originalTotal = computed(() =>
+    cartItems.value.reduce((sum, item) => {
+      return sum + item.price * (item.quantity ?? 1)
     }, 0)
 )
 </script>
@@ -86,7 +92,9 @@ const totalPrice = computed(() =>
 
         <!-- 요약 카드 -->
         <div class="col-lg-4 col-md-5">
-          <CartSummary :totalPrice="totalPrice" />
+          <CartSummary
+              :originalTotal="originalTotal"
+              :totalPrice="totalPrice" />
         </div>
       </div>
     </div>
