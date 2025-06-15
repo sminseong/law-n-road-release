@@ -92,7 +92,8 @@ async function fetchItems(page = 1, query = {}) {
       params
   )
   // merged API returns { items, totalPages }
-  rows.value       = res.data.items
+
+  rows.value       = res.data.templates
   totalPages.value = res.data.totalPages
   currentPage.value= page
 }
@@ -123,7 +124,7 @@ onMounted(() => fetchItems())
       <CustomTable
           :rows="rows"
           :columns="[
-          // 썸네일은 image-config 로 처리
+          { label: '썸네일',      key: 'thumbnailPath' },
           { label: '템플릿명',       key: 'templateName' },
           { label: '템플릿 유형',     key: 'templateType' },
           { label: '카테고리',       key: 'categoryName' },
@@ -138,7 +139,7 @@ onMounted(() => fetchItems())
             formatter: v => (v ? '다운로드 완료' : '미다운로드')
           }
         ]"
-          :image-config="{ enabled: true, key: 'thumbnailPath', targetKey: 'templateName' }"
+          :image-config="{ enabled: true, key: 'thumbnailPath', targetKey: 'thumbnailPath' }"
           :filters="filters"
           :current-page="currentPage"
           :total-pages="totalPages"
