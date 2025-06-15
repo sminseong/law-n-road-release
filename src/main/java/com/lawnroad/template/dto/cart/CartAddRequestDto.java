@@ -1,4 +1,4 @@
-package com.lawnroad.template.dto;
+package com.lawnroad.template.dto.cart;
 
 import lombok.Data;
 

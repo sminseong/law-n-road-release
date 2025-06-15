@@ -3,13 +3,16 @@ package com.lawnroad.template.controller;
 import com.lawnroad.template.dto.ClientTemplateDetailResponseDto;
 import com.lawnroad.template.dto.TemplateListResponseDto;
 import com.lawnroad.template.dto.TemplateSearchConditionDto;
+import com.lawnroad.template.dto.order.ClientOrderListDto;
+import com.lawnroad.template.dto.order.ClientOrderListResponseDto;
+import com.lawnroad.template.dto.order.ClientOrderTemplateDto;
+import com.lawnroad.template.dto.order.ClientOrderTemplateListResponseDto;
 import com.lawnroad.template.service.ClientTemplateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,6 +38,72 @@ public class ClientTemplateController {
   @GetMapping("/{no}")
   public ResponseEntity<ClientTemplateDetailResponseDto> getTemplateByNo(@PathVariable Long no) {
     ClientTemplateDetailResponseDto dto = clientTemplateService.findTemplateDetailByNo(no);
+    return ResponseEntity.ok(dto);
+  }
+  
+  
+  /**
+   * 전체 주문 목록 조회 (필터 및 페이징 포함)
+   */
+  @GetMapping("/orders")
+  public ResponseEntity<ClientOrderListResponseDto> getOrders(
+      @RequestParam(required = false) String status,
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "10") int limit
+  ) {
+    // 유저 번호는 하드코딩
+    Long userNo = 1L;
+    
+    // 목록 + 총 개수 조회
+    List<ClientOrderListDto> list = clientTemplateService.findOrders(userNo, status, page, limit);
+    int totalCount = clientTemplateService.countOrders(userNo, status);
+    
+    // 총 페이지 계산
+    int totalPages = (int) Math.ceil((double) totalCount / limit);
+    
+    // 응답 객체 구성
+    ClientOrderListResponseDto response = new ClientOrderListResponseDto();
+    response.setOrders(list);
+    response.setTotalPages(totalPages);
+    
+    return ResponseEntity.ok(response);
+  }
+  
+  /**
+   * 특정 주문의 템플릿 상세 목록 조회 (필터 포함)
+   */
+  @GetMapping("/orders/{orderNo}/items")
+  public ResponseEntity<ClientOrderTemplateListResponseDto> getTemplatesByOrder(
+      @PathVariable Long orderNo,
+      @RequestParam(required = false) String type,
+      @RequestParam(required = false) Long categoryNo,
+      @RequestParam(required = false) Integer isDownloaded,
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "10") int limit
+  ) {
+    // 목록 조회
+    List<ClientOrderTemplateDto> list =
+        clientTemplateService.findTemplatesByOrder(orderNo, type, categoryNo, isDownloaded);
+    
+    System.out.println(list);
+    
+    // 개수 조회
+    int totalCount =
+        clientTemplateService.countTemplatesByOrder(orderNo, type, categoryNo, isDownloaded);
+    
+    // 페이지 수 계산
+    int totalPages = (int) Math.ceil((double) totalCount / limit);
+    
+    // 페이징 잘라서 자르기
+    int fromIndex = Math.min((page - 1) * limit, list.size());
+    int toIndex = Math.min(fromIndex + limit, list.size());
+    List<ClientOrderTemplateDto> paginated = list.subList(fromIndex, toIndex);
+    
+    // 응답 구성
+    ClientOrderTemplateListResponseDto dto = new ClientOrderTemplateListResponseDto();
+    dto.setTemplates(paginated);
+    dto.setTotalPages(totalPages);
+    
     return ResponseEntity.ok(dto);
   }
 }

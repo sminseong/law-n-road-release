@@ -4,6 +4,8 @@ import com.lawnroad.template.dto.ClientTemplateDetailResponseDto;
 import com.lawnroad.template.dto.TemplateDto;
 import com.lawnroad.template.dto.TemplateListResponseDto;
 import com.lawnroad.template.dto.TemplateSearchConditionDto;
+import com.lawnroad.template.dto.order.ClientOrderListDto;
+import com.lawnroad.template.dto.order.ClientOrderTemplateDto;
 import com.lawnroad.template.mapper.ClientTemplateMapper;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -57,5 +59,61 @@ public class ClientTemplateServiceImpl implements ClientTemplateService {
   @Override
   public ClientTemplateDetailResponseDto findTemplateDetailByNo(Long templateNo) {
     return clientTemplateMapper.selectTemplateDetailByNo(templateNo);
+  }
+  
+  
+  /**
+   * 주문 목록을 조회합니다.
+   *
+   * @param userNo 유저 번호
+   * @param status 주문 상태 (ORDERED, PAID, CANCELED) - 선택
+   * @param page 페이지 번호 (1부터 시작)
+   * @param limit 페이지당 항목 수
+   * @return 주문 목록 DTO 리스트
+   */
+  @Override
+  public List<ClientOrderListDto> findOrders(Long userNo, String status, int page, int limit) {
+    int offset = (page - 1) * limit;
+    return clientTemplateMapper.selectOrdersByUserNo(userNo, status, limit, offset);
+  }
+  
+  /**
+   * 주문 목록의 총 개수를 조회합니다.
+   *
+   * @param userNo 유저 번호
+   * @param status 주문 상태 (선택)
+   * @return 주문 개수
+   */
+  @Override
+  public int countOrders(Long userNo, String status) {
+    return clientTemplateMapper.countOrdersByUserNo(userNo, status);
+  }
+  
+  /**
+   * 특정 주문의 템플릿 목록을 조회합니다.
+   *
+   * @param orderNo 주문 번호
+   * @param type 템플릿 타입 (EDITOR, FILE) - 선택
+   * @param categoryNo 카테고리 번호 - 선택
+   * @param isDownloaded 다운로드 여부 (0, 1) - 선택
+   * @return 템플릿 상세 DTO 리스트
+   */
+  @Override
+  public List<ClientOrderTemplateDto> findTemplatesByOrder(Long orderNo, String type, Long categoryNo, Integer isDownloaded) {
+    return clientTemplateMapper.selectTemplatesByOrderNo(orderNo, type, categoryNo, isDownloaded);
+  }
+  
+  /**
+   * 특정 주문의 템플릿 개수를 조회합니다. (페이징용)
+   *
+   * @param orderNo 주문 번호
+   * @param type 템플릿 타입 - 선택
+   * @param categoryNo 카테고리 번호 - 선택
+   * @param isDownloaded 다운로드 여부 - 선택
+   * @return 템플릿 개수
+   */
+  @Override
+  public int countTemplatesByOrder(Long orderNo, String type, Long categoryNo, Integer isDownloaded) {
+    return clientTemplateMapper.countTemplatesByOrderNo(orderNo, type, categoryNo, isDownloaded);
   }
 }

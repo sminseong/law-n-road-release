@@ -1,7 +1,7 @@
 package com.lawnroad.template.service;
 
-import com.lawnroad.template.dto.CartItemResponseDto;
-import com.lawnroad.template.dto.CheckoutRequestDto;
+import com.lawnroad.template.dto.cart.CartItemResponseDto;
+import com.lawnroad.template.dto.cart.CheckoutRequestDto;
 
 import java.util.List;
 

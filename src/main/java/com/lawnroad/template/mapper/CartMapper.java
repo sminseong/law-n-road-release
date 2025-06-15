@@ -1,7 +1,7 @@
 package com.lawnroad.template.mapper;
 
 
-import com.lawnroad.template.dto.CartItemResponseDto;
+import com.lawnroad.template.dto.cart.CartItemResponseDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -31,4 +31,8 @@ public interface CartMapper {
       @Param("orderNo") Long orderNo,
       @Param("price") Integer price
   );
+  
+  // 구매횟수 증가시키기
+  void incrementSalesCount(@Param("tmplNo") Long tmplNo);
+  
 }

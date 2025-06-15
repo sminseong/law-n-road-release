@@ -2,9 +2,8 @@ package com.lawnroad.template.service;
 
 import com.lawnroad.payment.dto.OrdersCreateDTO;
 import com.lawnroad.payment.service.OrdersService;
-import com.lawnroad.template.dto.CartItemResponseDto;
-import com.lawnroad.template.dto.CheckoutRequestDto;
-import com.lawnroad.template.dto.TmplOrdersHistoryCreateDto;
+import com.lawnroad.template.dto.cart.CartItemResponseDto;
+import com.lawnroad.template.dto.cart.CheckoutRequestDto;
 import com.lawnroad.template.mapper.CartMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -76,7 +75,11 @@ public class CartServiceImpl implements CartService {
     // ⑤ tmpl_orders_history에 복사
     for (CartItemResponseDto item : cartItems) {
       int paidPrice = (int)(item.getPrice() * (1 - item.getDiscountRate() / 100.0));
+      // 1) 히스토리 테이블에 복사
       cartMapper.insertHistory(item.getTmplNo(), orderNo, paidPrice);
+      
+      // 2) 템플릿 판매량 증가
+      cartMapper.incrementSalesCount(item.getTmplNo());
     }
     
     // ⑥ 장바구니 비우기

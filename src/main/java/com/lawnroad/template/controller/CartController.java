@@ -1,9 +1,9 @@
 package com.lawnroad.template.controller;
 
-import com.lawnroad.template.dto.CartAddRequestDto;
-import com.lawnroad.template.dto.CartItemResponseDto;
-import com.lawnroad.template.dto.CheckoutRequestDto;
-import com.lawnroad.template.dto.CheckoutResponseDto;
+import com.lawnroad.template.dto.cart.CartAddRequestDto;
+import com.lawnroad.template.dto.cart.CartItemResponseDto;
+import com.lawnroad.template.dto.cart.CheckoutRequestDto;
+import com.lawnroad.template.dto.cart.CheckoutResponseDto;
 import com.lawnroad.template.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

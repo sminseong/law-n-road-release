@@ -25,7 +25,7 @@
     </delete>
 
     <!-- 4. 장바구니 목록 조회 -->
-    <select id="selectCartListByUser" resultType="com.lawnroad.template.dto.CartItemResponseDto">
+    <select id="selectCartListByUser" resultType="com.lawnroad.template.dto.cart.CartItemResponseDto">
         SELECT
             ca.no                  AS no,           <!-- ← 여기 추가 -->
             t.no                   AS tmpl_no,
@@ -55,5 +55,12 @@
         INSERT INTO tmpl_orders_history (tmpl_no, order_no, price)
         VALUES (#{tmplNo}, #{orderNo}, #{price})
     </insert>
+
+    <!-- 구매내역 증가 -->
+    <update id="incrementSalesCount">
+        UPDATE template
+        SET sales_count = sales_count + 1
+        WHERE no = #{tmplNo}
+    </update>
 
 </mapper>

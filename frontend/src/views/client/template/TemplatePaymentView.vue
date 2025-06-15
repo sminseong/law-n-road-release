@@ -51,7 +51,7 @@ async function goToCheckout() {
     alert('결제가 완료되었습니다! 주문내역으로 이동합니다.')
 
     // ✅ 4) 주문내역 페이지로 이동
-    router.push(`/client/mypage/orders/${orderNo}`)
+    router.push(`/client/templates`)
 
   } catch (err) {
     console.error('❌ 결제 실패:', err)
