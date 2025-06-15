@@ -1,10 +1,5 @@
 package com.lawnroad.account.controller;
-
-
-import com.lawnroad.account.dto.ClientSignupRequest;
-import com.lawnroad.account.dto.LawyerSignupRequest;
-import com.lawnroad.account.dto.LoginRequest;
-import com.lawnroad.account.dto.LoginResponseDto;
+import com.lawnroad.account.dto.*;
 import com.lawnroad.account.entity.ClientEntity;
 import com.lawnroad.account.entity.UserEntity;
 import com.lawnroad.account.mapper.UserMapper;
@@ -53,10 +48,6 @@ public class AuthController {
         return ResponseEntity.ok(response); // 요청 성공했고, 이 데이터 줄게!  200일 때만 적용됨
     }
 
-
-
-
-
     @GetMapping("/check-nickname")
     public ResponseEntity<Map<String, Object>> checkNickNameDuplicate(@RequestParam String nickname) {
         boolean available = clientService.isClientNickNameAvailable(nickname);
@@ -104,12 +95,7 @@ public class AuthController {
             // 🔍 여기에서 확인
             System.out.println("✅ Access Token: " + accessToken);
             //jwtTokenUtil.printPayload(accessToken); // 👈 payload 출력
-            Long no = jwtTokenUtil.getUserNoFromToken(accessToken);
-            String nickname = jwtTokenUtil.getNicknameFromToken(accessToken);
-            String role = jwtTokenUtil.getRoleFromToken(accessToken);
-            System.out.println("test 진행 중 : " + no);
-            System.out.println("test 진행 중 : " + nickname);
-            System.out.println("test 진행 중 : " + role);
+
 
             jwtTokenUtil.storeRefreshToken(client.getClientId(), refreshToken);
 
@@ -127,8 +113,28 @@ public class AuthController {
         }
     }
 
+//아이디 찾기
+    @PostMapping("/find-id")
+    public ResponseEntity<?> findClientId(@RequestBody FindIdRequest request) {
+        String clientId = clientService.findClientId(request.getFullName(), request.getEmail());
 
+        if (clientId == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("일치하는 아이디를 찾을 수 없습니다.");
+        }
 
+        return ResponseEntity.ok(Map.of("clientId", clientId));
+    }
+//비번찾기
+@PostMapping("/reset-password")
+public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+    boolean success = clientService.resetPassword(request.getEmail(), request.getNewPassword());
+
+    if (!success) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 이메일로 등록된 계정이 없습니다.");
+    }
+
+    return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
+}
 
 
 }

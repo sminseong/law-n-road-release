@@ -30,5 +30,13 @@ export default [
         path: '/qna/:id',
         name: 'QaDetail',
         component: () => import('@/views/common/QaDetailView.vue')
+    },
+
+    {
+        path: '/forgot-password',
+        component: () => import('@/views/common/ForgotPasswordView.vue')
     }
+
+
+
 ]

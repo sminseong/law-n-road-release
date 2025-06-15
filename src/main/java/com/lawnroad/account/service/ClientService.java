@@ -91,4 +91,14 @@ public class ClientService {
         return client;
     }
 
+    public String findClientId(String fullName, String email) {
+        return clientMapper.findClientId(fullName, email);
+    }
+
+    public boolean resetPassword(String email, String newPassword) {
+        String hashed = passwordEncoder.encode(newPassword);
+        int result = clientMapper.updatePasswordByEmail(email, hashed);
+        return result > 0;
+    }
+
 }

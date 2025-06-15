@@ -4,9 +4,18 @@ package com.lawnroad.account.mapper;
 import com.lawnroad.account.entity.ClientEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface ClientMapper {
+
+    @Select("SELECT client_id FROM client WHERE name = #{fullName} AND email = #{email}")
+    String findClientId(@Param("fullName") String fullName, @Param("email") String email);
+
+    @Update("UPDATE client SET pw_hash = #{pwHash} WHERE email = #{email}")
+    int updatePasswordByEmail(@Param("email") String email, @Param("pwHash") String pwHash);
+
 
     int countByClientId1(@Param("clientId") String clientId);
 
