@@ -84,4 +84,9 @@ public class CartServiceImpl implements CartService {
     
     return orderNo;
   }
+  
+  @Override
+  public void deleteAllByUser(Long userNo) {
+    cartMapper.deleteByUserNo(userNo);
+  }
 }

@@ -48,6 +48,21 @@ const originalTotal = computed(() =>
       return sum + item.price * (item.quantity ?? 1)
     }, 0)
 )
+
+// 장바구니 전체 삭제
+const clearCart = async () => {
+  const ok = confirm('장바구니를 모두 비우시겠습니까?')
+  if (!ok) return
+
+  try {
+    await http.delete('/api/cart/all')
+    cartItems.value = []
+  } catch (err) {
+    console.error('전체 삭제 실패:', err)
+    alert('전체 삭제 중 오류가 발생했습니다.')
+  }
+}
+
 </script>
 
 <template>
@@ -74,19 +89,32 @@ const originalTotal = computed(() =>
             </ul>
 
             <div class="d-flex justify-content-between mt-4">
+              <!-- 왼쪽: 계속 쇼핑하기 -->
               <router-link to="/templates" class="btn btn-outline-primary">
                 계속 쇼핑하기
               </router-link>
-              <button
-                  class="btn btn-dark"
-                  @click="updateCart"
-                  :disabled="isLoading"
-              >
-                <!-- 버튼 내 스피너 -->
-                <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-                장바구니 업데이트
-              </button>
+
+              <!-- 오른쪽: 버튼 2개 나란히 정렬 -->
+              <div class="btn-group">
+                <button
+                    class="btn btn-outline-dark"
+                    @click="clearCart"
+                    :disabled="isLoading || cartItems.length === 0"
+                >
+                  장바구니 전체 삭제
+                </button>
+
+                <button
+                    class="btn btn-dark"
+                    @click="updateCart"
+                    :disabled="isLoading || cartItems.length === 0"
+                >
+                  <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                  장바구니 업데이트
+                </button>
+              </div>
             </div>
+
           </div>
         </div>
 
@@ -94,7 +122,8 @@ const originalTotal = computed(() =>
         <div class="col-lg-4 col-md-5">
           <CartSummary
               :originalTotal="originalTotal"
-              :totalPrice="totalPrice" />
+              :totalPrice="totalPrice"
+              :isCartEmpty="cartItems.length === 0" />
         </div>
       </div>
     </div>

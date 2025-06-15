@@ -7,6 +7,7 @@ const router = useRouter()
 const props = defineProps({
   originalTotal: Number,
   totalPrice: Number,
+  isCartEmpty: Boolean,
 })
 
 // 할인액 계산
@@ -16,8 +17,13 @@ const discountAmount = computed(() =>
 
 // 버튼 클릭 시 호출
 function goToPayment() {
+  if (props.isCartEmpty) {
+    alert('장바구니가 비어 있습니다.')
+    return
+  }
   router.push('/client/template/payment')
 }
+
 </script>
 
 <template>
@@ -43,7 +49,10 @@ function goToPayment() {
         <strong>{{ props.totalPrice.toLocaleString() }}원</strong>
       </li>
     </ul>
-    <button class="btn btn-primary w-100" @click="goToPayment">
+    <button
+        :disabled="props.isCartEmpty"
+        class="btn btn-primary w-100"
+        @click="goToPayment">
       결제하기
     </button>
   </div>

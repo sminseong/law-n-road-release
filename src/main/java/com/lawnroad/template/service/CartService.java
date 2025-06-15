@@ -14,4 +14,6 @@ public interface CartService {
   List<CartItemResponseDto> findCartItems(Long userNo);
   
   Long checkout(CheckoutRequestDto dto);
+  
+  void deleteAllByUser(Long userNo);
 }

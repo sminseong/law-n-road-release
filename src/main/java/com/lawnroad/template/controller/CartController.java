@@ -51,11 +51,19 @@ public class CartController {
   public ResponseEntity<CheckoutResponseDto> checkout(
       @RequestBody CheckoutRequestDto req
   ) {
-    System.out.println("checkout"+ req);
     // TODO: 나중에 @AuthenticationPrincipal 로 대체
     req.setUserNo(1L);
     Long orderNo = cartService.checkout(req);
-    System.out.println("orderNo: " + orderNo);
     return ResponseEntity.ok(new CheckoutResponseDto(orderNo));
+  }
+  
+  // 장바구니 전체 삭제
+  @DeleteMapping("/all")
+  public ResponseEntity<Void> clearCart() {
+    System.out.println( "clearCart()");
+    // TODO: 나중에 @AuthenticationPrincipal 로 대체
+    Long userNo = 1L;
+    cartService.deleteAllByUser(userNo);
+    return ResponseEntity.noContent().build();
   }
 }
