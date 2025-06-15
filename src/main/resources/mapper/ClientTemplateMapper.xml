@@ -75,9 +75,7 @@
             t.description,
             l.name              AS lawyer_name,
             l.profile           AS profile,
-            l.road_address      AS road_address,
-            l.land_address      AS land_address,
-            l.detail_address    AS detail_address,
+            CONCAT_WS(' ', l.road_address, l.land_address, l.detail_address) AS full_address,
             l.office_number     AS office_number,
 
             ''                  AS short_intro,

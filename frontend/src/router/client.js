@@ -40,7 +40,12 @@ export default [
 
     // ---------- 템플릿 ----------
     {
-        path: '/client/templates',
+        path: '/templates',
+        name: 'ClientTemplates',
+        component: () => import('@/views/client/TemplateView.vue')
+    },
+    {
+        path: '/cart',
         name: 'ClientTemplates',
         component: () => import('@/views/client/TemplateView.vue')
     },

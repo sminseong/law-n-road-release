@@ -22,9 +22,7 @@ public class ClientTemplateDetailResponseDto {
   
   private String lawyerName;          // 변호사 이름
   private String profile;             // 프로필 이미지 경로
-  private String roadAddress;         // 도로명 주소
-  private String landAddress;         // 지번 주소
-  private String detailAddress;       // 상세 주소
+  private String fullAddress;         // 도로명 주소
   private String officeNumber;        // 사무실 전화번호
   
   // --- 아직 DB에 없는 소개 (placeholder) ---

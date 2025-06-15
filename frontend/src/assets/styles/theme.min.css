@@ -2733,6 +2733,14 @@
   font-family: var(--fc-font-monospace) !important;
 }
 
+.fs-02 {
+  font-size: calc(1.34375rem + 1.125vw) !important;
+}
+
+.fs-01 {
+  font-size: calc(1.6796875rem + 1.40625vw) !important;
+}
+
 .fs-1 {
   font-size: calc(1.34375rem + 1.125vw) !important;
 }

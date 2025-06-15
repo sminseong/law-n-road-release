@@ -34,9 +34,7 @@ public class ClientTemplateController {
    */
   @GetMapping("/{no}")
   public ResponseEntity<ClientTemplateDetailResponseDto> getTemplateByNo(@PathVariable Long no) {
-    System.out.println( "ClientTemplateController.getTemplateByNo()" + no);
     ClientTemplateDetailResponseDto dto = clientTemplateService.findTemplateDetailByNo(no);
-    System.out.println(dto);
     return ResponseEntity.ok(dto);
   }
 }

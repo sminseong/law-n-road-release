@@ -21,6 +21,28 @@ onMounted(async () => {
     console.error('템플릿 조회 실패:', err)
   }
 })
+
+// 장바구니 함수
+const handleAddToCart = async () => {
+  const accountType = localStorage.getItem('accountType')  // 또는 Pinia에서 가져올 수도 있음
+
+  if (!accountType) {
+    alert('로그인이 필요합니다.')
+    router.push('/login')
+    return
+  }
+
+  try {
+    await http.post('/api/cart/templates', {
+      templateNo: template.value.no
+    })
+    alert('장바구니에 추가되었습니다.')
+  } catch (err) {
+    console.error('장바구니 추가 실패:', err)
+    alert('이미 장바구니에 있는 상품입니다.')
+  }
+}
+
 </script>
 <template>
   <ClientFrame>
@@ -34,45 +56,69 @@ onMounted(async () => {
           </div>
         </div>
 
-        <!-- 템플릿 정보 -->
+        <!-- 오른쪽 카드 -->
         <div class="col-md-7">
-          <div class="card shadow-sm h-100 p-4 d-flex flex-column justify-content-between">
+          <div class="card shadow-sm h-100 p-4 d-flex flex-column">
 
-            <!-- 프로필 & 카테고리 -->
-            <div class="d-flex justify-content-between align-items-start mb-2">
+            <!-- 🔹 누적 판매수 (상단 작게) -->
+            <div class="text-muted text-end small mb-2">
+
+            </div>
+
+            <!-- 🔹 변호사 정보 -->
+            <div class="d-flex align-items-start mb-3 position-relative" style="min-height: 55px;">
+              <!-- 프로필 이미지 -->
+              <img
+                  v-if="template.profile"
+                  :src="template.profile"
+                  alt="프로필"
+                  class="rounded-circle me-3"
+                  style="width: 50px; height: 50px; object-fit: cover;"
+              />
+
+              <!-- 변호사 이름 + 설명 -->
               <div>
-                <p class="text-muted mb-1">{{ template.categoryName }} / 누적 판매 {{ template.salesCount }}건</p>
+                <strong class="fw-semibold">
+                  {{ template.lawyerName }} 변호사 | 교통사고 1위, 36년 경력을 바탕으로 신뢰를 드립니다
+                </strong><br />
+                <small class="text-muted">
+                  {{ template.type === 'EDITOR' ? 'AI 생성형 템플릿' : '문서 기반 템플릿' }} /
+                  {{ template.categoryName }}
+                </small>
+              </div>
+
+              <!-- 👉 오른쪽 하단에 고정된 링크 -->
+              <a
+                  :href="`/lawyers/${template.userNo}`"
+                  class="text-muted small text-decoration-underline me-2"
+                  style="position: absolute; bottom: 0; right: 0;"
+              >
+                프로필 보러가기
+              </a>
+            </div>
+
+            <!-- 🔹 상품명 -->
+            <h1 class="fw-bold mb-2 mt-6">{{ template.name }}</h1>
+
+            <!-- 🔹 가격 -->
+            <div class="d-flex align-items-baseline mb-0 mt-auto">
+              <span class="text-danger fw-bold fs-1">{{ template.discountRate }}%</span>
+              <div class="d-flex align-items-baseline ms-auto">
+                <del class="text-muted me-2 fs-5">
+                  {{ template.price.toLocaleString() }}원
+                </del>
+                <span class="text-danger fw-bold fs-1">
+                  {{ (template.price * (1 - template.discountRate / 100)).toLocaleString() }}원
+                </span>
               </div>
             </div>
 
-            <!-- 제목 -->
-            <h2 class="fw-bold fs-1 mb-3">{{ template.name }}</h2>
-
-            <!-- 가격 정보 -->
-            <div class="my-2">
-              <span class="text-danger h5">{{ template.discountRate }}%</span>
-              <span class="text-muted text-decoration-line-through ms-2">{{ template.price.toLocaleString() }}원</span>
-              <div class="h4 fw-bold mt-1">
-                {{ (template.price * (1 - template.discountRate / 100)).toLocaleString() }}원
-              </div>
-            </div>
-
-            <!-- 변호사 정보 -->
-            <div class="mb-3">
-              <div v-if="template.lawyerProfileImage" class="ms-3">
-                <img :src="template.lawyerProfileImage" alt="변호사 프로필" class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
-              </div>
-              <strong>판매자:</strong> {{ template.lawyerName }}<br />
-              <small class="text-muted">{{ template.lawyerIntro }}</small><br />
-              <a :href="`/lawyer/profile/${template.lawyerNo}`">프로필 보기</a>
-              <span v-if="template.hasLive" class="badge bg-success ms-2">LIVE 가능</span>
-            </div>
-
-            <!-- 버튼 -->
-            <div class="d-flex gap-2 mt-auto">
+            <!-- 🔹 CTA -->
+            <div class="mt-5 d-flex gap-2">
               <button class="btn btn-primary flex-fill">구매하기</button>
-              <button class="btn btn-outline-secondary flex-fill">장바구니</button>
+              <button class="btn btn-outline-secondary flex-fill" @click="handleAddToCart">장바구니</button>
             </div>
+
           </div>
         </div>
       </div>
@@ -86,7 +132,8 @@ onMounted(async () => {
       <!-- 변호사 상세 설명 -->
       <div class="card shadow-sm p-4">
         <h5 class="fw-bold">변호사 경력 등 상세 설명</h5>
-        <p class="mb-0">{{ template.lawyerDetail }}</p>
+        <p class="mb-0"><strong>사무실 주소 :</strong> {{ template.fullAddress }}</p>
+        <p class="mb-0"><strong>사무실 번호 :</strong> {{ template.officeNumber }}</p>
       </div>
     </div>
   </ClientFrame>
