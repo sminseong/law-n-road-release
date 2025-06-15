@@ -3,6 +3,9 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import http from '@/libs/HttpRequester'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 // 상태
 const route = useRoute()
@@ -24,22 +27,29 @@ onMounted(async () => {
 
 // 장바구니 함수
 const handleAddToCart = async () => {
-  const accountType = localStorage.getItem('accountType')  // 또는 Pinia에서 가져올 수도 있음
+  const accountType = localStorage.getItem('accountType')
 
   if (!accountType) {
     alert('로그인이 필요합니다.')
-    router.push('/login')
-    return
+    return router.push(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
   }
 
   try {
-    await http.post('/api/cart/templates', {
-      templateNo: template.value.no
+    await http.post('/api/cart', {
+      tmplNo: template.value.no
     })
-    alert('장바구니에 추가되었습니다.')
+
+    const goToCart = confirm('장바구니에 상품이 추가되었습니다.\n장바구니로 이동하시겠습니까?')
+    if (goToCart) {
+      await router.push('/client/cart')
+    }
   } catch (err) {
-    console.error('장바구니 추가 실패:', err)
-    alert('이미 장바구니에 있는 상품입니다.')
+    if (err.response?.status === 409) {
+      alert('이미 장바구니에 담긴 상품입니다.')
+    } else {
+      console.error('장바구니 추가 실패:', err)
+      alert('장바구니 추가 중 오류가 발생했습니다.')
+    }
   }
 }
 
@@ -96,6 +106,8 @@ const handleAddToCart = async () => {
                 프로필 보러가기
               </a>
             </div>
+
+            <hr>
 
             <!-- 🔹 상품명 -->
             <h1 class="fw-bold mb-2 mt-6">{{ template.name }}</h1>

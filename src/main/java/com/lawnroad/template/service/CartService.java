@@ -1,0 +1,14 @@
+package com.lawnroad.template.service;
+
+import com.lawnroad.template.dto.CartItemResponseDto;
+
+import java.util.List;
+
+public interface CartService {
+  
+  boolean addToCart(Long userNo, Long tmplNo);
+  
+  void removeFromCart(Long userNo, Long tmplNo);
+  
+  List<CartItemResponseDto> findCartItems(Long userNo);
+}

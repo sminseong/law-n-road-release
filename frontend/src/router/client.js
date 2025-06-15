@@ -40,14 +40,14 @@ export default [
 
     // ---------- 템플릿 ----------
     {
-        path: '/templates',
+        path: '/client/templates',
         name: 'ClientTemplates',
         component: () => import('@/views/client/TemplateView.vue')
     },
     {
-        path: '/cart',
-        name: 'ClientTemplates',
-        component: () => import('@/views/client/TemplateView.vue')
+        path: '/client/cart',
+        name: 'ClientCart',
+        component: () => import('@/views/client/template/CartView.vue')
     },
 
     // ---------- 광고 ----------

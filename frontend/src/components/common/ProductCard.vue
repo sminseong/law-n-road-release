@@ -1,5 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import http from "@/libs/HttpRequester.js";
 
 const router = useRouter()
 
@@ -14,6 +15,36 @@ const props = defineProps({
 
 function goToDetail() {
   router.push(`/templates/${props.no}`)
+}
+
+// 장바구니 함수
+const handleAddToCart = async (e) => {
+  e.stopPropagation()  // 카드 클릭 이벤트와 중첩되지 않도록 방지
+
+  const accountType = localStorage.getItem('accountType')
+
+  if (!accountType) {
+    alert('로그인이 필요합니다.')
+    return router.push(`/login?redirect=${encodeURIComponent(router.currentRoute.value.fullPath)}`)
+  }
+
+  try {
+    await http.post('/api/cart', {
+      tmplNo: props.no
+    })
+
+    const goToCart = confirm('장바구니에 상품이 추가되었습니다.\n장바구니로 이동하시겠습니까?')
+    if (goToCart) {
+      await router.push('/client/cart')
+    }
+  } catch (err) {
+    if (err.response?.status === 409) {
+      alert('이미 장바구니에 담긴 상품입니다.')
+    } else {
+      console.error('장바구니 추가 실패:', err)
+      alert('장바구니 추가 중 오류가 발생했습니다.')
+    }
+  }
 }
 </script>
 
@@ -55,8 +86,7 @@ function goToDetail() {
 
         <!-- 장바구니 버튼: z-index로 링크보다 위에 올림 -->
         <a
-            href="/client/cart"
-            @click.stop
+            @click="handleAddToCart"
             class="btn btn-outline-primary btn-sm ms-2 cart-btn"
             style="cursor: pointer; position: relative; z-index: 2;"
         >

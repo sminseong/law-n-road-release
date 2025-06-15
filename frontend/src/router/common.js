@@ -35,12 +35,12 @@ export default [
     // ---------- 템플릿 ----------
     {
         path: '/templates',
-        name: 'ClientTemplateList',
+        name: 'TemplateList',
         component: () => import('@/views/client/template/TemplateListView.vue')
     },
     {
         path: '/templates/:no',
-        name: 'ClientTemplateDetail',
+        name: 'TemplateDetail',
         component: () => import('@/views/client/template/TemplateDetailView.vue')
     },
 
