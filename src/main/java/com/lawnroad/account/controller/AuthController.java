@@ -1,6 +1,7 @@
 package com.lawnroad.account.controller;
 import com.lawnroad.account.dto.*;
 import com.lawnroad.account.entity.ClientEntity;
+import com.lawnroad.account.entity.LawyerEntity;
 import com.lawnroad.account.entity.UserEntity;
 import com.lawnroad.account.mapper.UserMapper;
 import com.lawnroad.account.service.ClientService;
@@ -82,38 +83,102 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+//    @PostMapping("/login")
+//    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+//        try {
+//            ClientEntity client = clientService.login(request.getClientId(), request.getPassword());
+//
+//            //ClientEntity client = clientMapper.findByClientId(clientId);
+//            UserEntity user = userMapper.findByNo(client.getNo());
+//            String accessToken = jwtTokenUtil.generateAccessToken(client.getClientId(),client.getNo(),user.getType(),client.getNickname());
+//            String refreshToken = jwtTokenUtil.generateRefreshToken(client.getClientId());
+//
+//            // 🔍 여기에서 확인
+//            System.out.println("✅ Access Token: " + accessToken);
+//            //jwtTokenUtil.printPayload(accessToken); // 👈 payload 출력
+//
+//
+//            jwtTokenUtil.storeRefreshToken(client.getClientId(), refreshToken);
+//
+//            Map<String, Object> result = new HashMap<>();
+//            result.put("accessToken", accessToken);
+//            result.put("refreshToken", refreshToken);
+//            result.put("name", client.getName());
+//            result.put("nickname", client.getNickname());
+//            result.put("role", user.getType());
+//
+//            return ResponseEntity.ok(result);
+//
+//        } catch (IllegalArgumentException e) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패");
+//        }
+//    }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
-            ClientEntity client = clientService.login(request.getClientId(), request.getPassword());
+            System.out.println("💡 [전체 로그인 요청 도착] clientId: " + request.getClientId());
+            System.out.println("💡 [전체 로그인 요청 도착] type: " + request.getType());
 
-            //ClientEntity client = clientMapper.findByClientId(clientId);
-            UserEntity user = userMapper.findByNo(client.getNo());
-            String accessToken = jwtTokenUtil.generateAccessToken(client.getClientId(),client.getNo(),user.getType(),client.getNickname());
-            String refreshToken = jwtTokenUtil.generateRefreshToken(client.getClientId());
+            String type = request.getType();
+            if (type == null) {
+                return ResponseEntity.badRequest().body("사용자 유형이 지정되지 않았습니다.");
+            }
 
-            // 🔍 여기에서 확인
-            System.out.println("✅ Access Token: " + accessToken);
-            //jwtTokenUtil.printPayload(accessToken); // 👈 payload 출력
+            if (type.equalsIgnoreCase("CLIENT")) {
+                ClientEntity client = clientService.login(request.getClientId(), request.getPassword());
+                UserEntity user = userMapper.findByNo(client.getNo());
 
+                String accessToken = jwtTokenUtil.generateAccessToken(client.getClientId(), client.getNo(), user.getType(), client.getNickname());
+                String refreshToken = jwtTokenUtil.generateRefreshToken(client.getClientId());
+                jwtTokenUtil.storeRefreshToken(client.getClientId(), refreshToken);
 
-            jwtTokenUtil.storeRefreshToken(client.getClientId(), refreshToken);
+                System.out.println("accessToken : " + accessToken);
+                System.out.println("refreshToken : " + refreshToken);
+                Map<String, Object> result = new HashMap<>();
+                result.put("accessToken", accessToken);
+                result.put("refreshToken", refreshToken);
+                result.put("name", client.getName());
+                result.put("nickname", client.getNickname());
+                result.put("role", user.getType());
 
-            Map<String, Object> result = new HashMap<>();
-            result.put("accessToken", accessToken);
-            result.put("refreshToken", refreshToken);
-            result.put("name", client.getName());
-            result.put("nickname", client.getNickname());
-            result.put("role", user.getType());
+                return ResponseEntity.ok(result);
+            }
 
-            return ResponseEntity.ok(result);
+            else if (type.equalsIgnoreCase("lawyer")) {
+                // 🔽 LawyerService 에 login 함수 구현 필요
+                LawyerEntity lawyer = lawyerService.login(request.getClientId(), request.getPassword());
+                UserEntity user = userMapper.findByNo(lawyer.getNo());
+
+                System.out.println("로그인 요청: " + request.getClientId() + ", " + request.getType());
+                System.out.println("lawyer.getNo(): " + lawyer.getNo());
+
+                String accessToken = jwtTokenUtil.generateAccessToken(lawyer.getLawyerId(), lawyer.getNo(), user.getType(), lawyer.getName());
+                String refreshToken = jwtTokenUtil.generateRefreshToken(lawyer.getLawyerId());
+                jwtTokenUtil.storeRefreshToken(lawyer.getLawyerId(), refreshToken);
+                jwtTokenUtil.printPayload(accessToken);
+
+                Map<String, Object> result = new HashMap<>();
+                result.put("accessToken", accessToken);
+                result.put("refreshToken", refreshToken);
+                result.put("name", lawyer.getName());
+                result.put("nickname", lawyer.getName()); // nickname 필드 없으면 name 대체
+                result.put("role", user.getType());
+
+                return ResponseEntity.ok(result);
+            }
+
+            return ResponseEntity.badRequest().body("알 수 없는 사용자 유형입니다.");
 
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패");
         }
     }
 
-//아이디 찾기
+
+
+
+    //아이디 찾기
     @PostMapping("/find-id")
     public ResponseEntity<?> findClientId(@RequestBody FindIdRequest request) {
         String clientId = clientService.findClientId(request.getFullName(), request.getEmail());

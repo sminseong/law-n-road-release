@@ -12,7 +12,7 @@
     <select id="countByClientId2" resultType="int">
         SELECT COUNT(*)
         FROM lawyer
-        WHERE lawyer_id = #{lawyerId}
+        WHERE lawyer_id = #{clientId}
     </select>
 
 

@@ -17,16 +17,7 @@
 
 
 
-    <insert id="insertLawyer">
-        INSERT INTO lawyer (
-            no, lawyer_id, pw_hash, profile , email, name,office_number ,phone,
-            ,zipcode,road_address,land_adress,detail_adress,point,content,status ,consult_price,office_name,
-        ) VALUES (
-                     #{no}, #{lawyerId}, #{pw_hash}, #{profile}, #{email},#{name},
-                     #{office_number},#{phone},#{zip_code},#{land_address},#{detail_address},
-                     #{point},#{content},#{status},#{consult_price},#{office_name}
-                 )
-    </insert>
+
 
     <!--    <select id="findByEmail" resultType="com.lawnroad.account.entity.ClientEntity">-->
     <!--        SELECT * FROM client WHERE email = #{email}-->
@@ -44,5 +35,18 @@
     <!--    <select id="countByEmail" resultType="int">-->
     <!--        SELECT COUNT(*) FROM client WHERE email = #{email}-->
     <!--    </select>-->
+
+
+    <insert id="insertLawyer">
+        INSERT INTO lawyer (
+            no, lawyer_id, pw_hash, profile, email, name, office_number, phone,
+            zipcode, road_address, land_address, detail_address, point, consent,
+            status, consult_price, card_front, card_back, office_name
+        ) VALUES (
+                     #{no}, #{lawyerId}, #{pwHash}, #{profile}, #{email}, #{name}, #{officeNumber}, #{phone},
+                     #{zipcode}, #{roadAddress}, #{landAddress}, #{detailAddress}, #{point}, #{consent},
+                     #{status}, #{consultPrice}, #{cardFront}, #{cardBack}, #{officeName}
+                 )
+    </insert>
 
 </mapper>

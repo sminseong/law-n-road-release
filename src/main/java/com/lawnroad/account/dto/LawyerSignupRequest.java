@@ -14,9 +14,12 @@ public class LawyerSignupRequest {
     private String password;
     private String phone;
     private String officeName;
-    private String zipCode;
-    private String landCode;
-    private String detailCode;
-    private String type; // 'Lawyer' 이 들어감
+    private String officeNumber;
+    private String zipcode;
+    private String roadAddress;
+    private String landAddress;
+    private String detailAddress;
+    private int consent; // 0 or 1
+    private String type; // "LAWYER"
 
 }

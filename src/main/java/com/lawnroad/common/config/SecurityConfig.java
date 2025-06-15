@@ -30,43 +30,15 @@ public class SecurityConfig {
 
 
 
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http
-//                .csrf().disable()
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers(
-//                                "/api/**",
-//                                "/mail/**",
-//                                "/uploads/**",
-//                                "/api/client/*/reservations/counts"
-//                        ).permitAll()
-//                        .anyRequest().authenticated()
-//
-//                ).addFilterBefore(new JwtAuthenticationFilter(jwtTokenUtil),UsernamePasswordAuthenticationFilter.class);
-//
-//        return http.build();
-//    }
 
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http.csrf().disable()
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/api/auth/**","/mail/**","/uploads/**").permitAll()
-//                        .requestMatchers("/api/client/**").hasRole("CLIENT")
-//                        .anyRequest().authenticated()
-//                )
-//                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenUtil), UsernamePasswordAuthenticationFilter.class); // ✅ 필터 추가
-//
-//        return http.build();
-//    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+
+        http.cors().and().csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/mail/**", "/uploads/**").permitAll()
-                        .requestMatchers("/api/client/**").hasRole("CLIEN")
+                        .requestMatchers("/api/auth/**", "/mail/**","/api/auth/lawyer_signup" ,"/uploads/**").permitAll()
+                        .requestMatchers("/api/client/**").hasRole("CLIENT")
                         .requestMatchers("/api/lawyer/**").hasRole("LAWYER")
                         .anyRequest().authenticated()
                 )
@@ -75,16 +47,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        return http.csrf().disable()
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/api/auth/**").permitAll()
-//                        .anyRequest().authenticated()
-//                )
-//                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenUtil), UsernamePasswordAuthenticationFilter.class)
-//                .build();
-//    }
+
 
     // ✅ AuthenticationManager Bean (필요한 경우 로그인 처리용)
     @Bean

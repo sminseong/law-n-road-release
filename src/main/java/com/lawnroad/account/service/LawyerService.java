@@ -43,26 +43,30 @@ public class LawyerService {
         // 1. user 테이블 삽입
         UserEntity user = new UserEntity();
         user.setType("LAWYER");
-        userMapper.insertUser(user); // user.no가 자동 생성됨
+        userMapper.insertUser(user);
 
         // 2. lawyer 테이블 삽입
         LawyerEntity lawyer = new LawyerEntity();
         lawyer.setNo(user.getNo());
         lawyer.setLawyerId(request.getLawyerId());
-        lawyer.setPw_hash(passwordEncoder.encode(request.getPassword()));
-        lawyer.setProfile("테스트 중");
+        lawyer.setPwHash(passwordEncoder.encode(request.getPassword()));
         lawyer.setEmail(request.getEmail());
         lawyer.setName(request.getFullName());
-        lawyer.setOffice_number(request.getOfficeName());
         lawyer.setPhone(request.getPhone());
-        lawyer.setZip_code(request.getZipCode());
-        lawyer.setLand_address(request.getLandCode());
-        lawyer.setDetail_address(request.getDetailCode());
+        lawyer.setOfficeName(request.getOfficeName());
+        lawyer.setOfficeNumber(request.getOfficeNumber());
+        lawyer.setZipcode(request.getZipcode());
+        lawyer.setRoadAddress(request.getRoadAddress());
+        lawyer.setLandAddress(request.getLandAddress());
+        lawyer.setDetailAddress(request.getDetailAddress());
+        lawyer.setConsent(request.getConsent());
         lawyer.setPoint(0);
-        lawyer.setContent(1);
-        lawyer.setStatus("관리자 미승인");
-        lawyer.setConsult_price(40000);
-        lawyer.setOffice_name(request.getOfficeName());
+        lawyer.setConsultPrice(30000);
+        lawyer.setStatus("REJECTED_JOIN");
+        lawyer.setProfile("테스트 중");
+        lawyer.setCardFront(null);
+        lawyer.setCardBack(null);
+
         lawyerMapper.insertLawyer(lawyer);
     }
 
@@ -94,6 +98,21 @@ public class LawyerService {
 //
 //        return client;
 //    }
+
+    public LawyerEntity login(String lawyerId, String rawPassword) {
+        LawyerEntity lawyer = lawyerMapper.findByLawyerId(lawyerId);
+        System.out.println("🟡 lawyerService.login() 진입, ID: " + lawyerId);
+        if (lawyer == null) {
+            throw new IllegalArgumentException("아이디 존재하지 않음");
+        }
+
+        if (!passwordEncoder.matches(rawPassword, lawyer.getPwHash())) {
+            throw new IllegalArgumentException("비밀번호 불일치");
+        }
+
+        return lawyer;
+    }
+
 
 
 

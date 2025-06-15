@@ -18,4 +18,6 @@ public interface LawyerMapper {
     LawyerEntity findByClientId(String lawyerId);
 
     int countByEmail(@Param("email") String email);
+
+    LawyerEntity findByLawyerId(String lawyerId);
 }
