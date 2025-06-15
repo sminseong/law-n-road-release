@@ -58,6 +58,11 @@ export default [
         path: '/client/template/orders/:orderNo', // 마이페에지 -> 주문상세내역
         name: 'TmpHistoryDetailListView',
         component: () => import('@/views/client/template/TmplHistoryDetailListView.vue')
+    },
+    {
+        path: '/client/template/orders/detail/:tmplNo', // 마이페에지 -> 주문상세내역 -> 단일 상품 조회
+        name: 'TmplHistoryDetailOneView',
+        component: () => import('@/views/client/template/TmplHistoryDetailOneView.vue')
     }
 
     // ---------- 광고 ----------

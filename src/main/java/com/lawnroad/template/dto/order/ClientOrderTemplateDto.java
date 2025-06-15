@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class ClientOrderTemplateDto {
+  private Long tmplNo;
   private String templateName;
   private String templateType;     // FILE or EDITOR
   private String categoryName;

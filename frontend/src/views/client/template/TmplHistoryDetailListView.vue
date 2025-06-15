@@ -2,10 +2,11 @@
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import CustomTable from '@/components/table/CustomTable.vue'
 import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import http from '@/libs/HttpRequester'
-import { useRoute } from 'vue-router'
 
 // 1) params 에서 orderNo 꺼내기
+const router = useRouter()
 const route = useRoute()
 const orderNo = Number(route.params.orderNo)
 
@@ -49,10 +50,10 @@ const typeLabelToCode = {
   'AI 생성형 템플릿': 'EDITOR'
 }
 const typeCodeToLabel = Object.fromEntries(
-    Object.entries(typeLabelToCode).map(([l, c]) => [c, l])
+    Object.entries(typeLabelToCode).map(([label, code]) => [code, label])
 )
-function mapTypeLabelToCode(label) {
-  return typeLabelToCode[label] || null
+function mapTypeCodeToLabel(code) {
+  return typeCodeToLabel[code] ?? '전체'
 }
 
 // 4.2) 카테고리
@@ -113,8 +114,23 @@ function handleFilterChange(newFilters) {
   fetchItems(1, mapped)
 }
 
+// 7) 행 클릭 시 단일 상세 페이지로 이동
+function handleRowClick(row) {
+  if (!row) return
+  router.push({
+    // detail 라우트 설정에 맞춘 path
+    path: `/client/template/orders/detail/${row.tmplNo}`,
+    query: {
+      orderNo,               // 기존 주문 번호
+      type: row.templateType // 'EDITOR' 혹은 'FILE'
+    }
+  })
+}
+
 // 7) 초기 로딩
 onMounted(() => fetchItems())
+
+
 </script>
 
 <template>
@@ -126,7 +142,7 @@ onMounted(() => fetchItems())
           :columns="[
           { label: '썸네일',      key: 'thumbnailPath' },
           { label: '템플릿명',       key: 'templateName' },
-          { label: '템플릿 유형',     key: 'templateType' },
+          { label: '템플릿 유형',     key: 'templateType', formatter: v => mapTypeCodeToLabel(v) },
           { label: '카테고리',       key: 'categoryName' },
           {
             label: '구매당시 가격',
@@ -145,6 +161,7 @@ onMounted(() => fetchItems())
           :total-pages="totalPages"
           @update:filters="handleFilterChange"
           @page-change="handlePageChange"
+          @row-click="handleRowClick"
       />
     </div>
   </ClientFrame>

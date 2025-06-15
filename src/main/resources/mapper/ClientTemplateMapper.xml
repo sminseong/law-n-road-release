@@ -143,6 +143,7 @@
     -->
     <select id="selectTemplatesByOrderNo" resultType="com.lawnroad.template.dto.order.ClientOrderTemplateDto">
         SELECT
+        t.no               AS tmpl_no,
         t.name            AS template_name,
         t.type            AS template_type,
         c.name            AS category_name,
@@ -173,5 +174,48 @@
         <if test="isDownloaded != null">AND toh.is_downloaded = #{isDownloaded}</if>
     </select>
 
+    <!-- Editor 기반 템플릿 상세 조회 -->
+    <select id="findEditorTemplateDetail" resultType="com.lawnroad.template.dto.ClientEditorTemplateDetailDto">
+        SELECT
+            t.no,
+            t.name,
+            t.price,
+            t.discount_rate,
+            t.category_no,
+            t.description,
+            t.thumbnail_path,
+            e.content,
+            e.var_json,
+            e.ai_enabled,
+            t.created_at
+        FROM template t
+                 JOIN tmpl_editor_based e ON t.no = e.no
+        WHERE t.no = #{templateNo}
+          AND t.is_deleted = 0
+    </select>
 
+    <!-- File 기반 템플릿 상세 조회 -->
+    <select id="findFileTemplateDetail" resultType="com.lawnroad.template.dto.ClientFileTemplateDetailDto">
+        SELECT
+            t.no,
+            t.name,
+            t.price,
+            t.discount_rate,
+            t.category_no,
+            t.description,
+            t.thumbnail_path,
+            f.path_json,
+            t.created_at
+        FROM template t
+                 JOIN tmpl_file_based f ON t.no = f.no
+        WHERE t.no = #{templateNo}
+          AND t.is_deleted = 0
+    </select>
+
+    <!-- 다운로드 상태로 변경 -->
+    <update id="updateOrderDownloaded">
+        UPDATE tmpl_orders_history
+        SET is_downloaded = 1
+        WHERE order_no = #{orderNo}
+    </update>
 </mapper>

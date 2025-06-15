@@ -18,7 +18,7 @@ const totalPages = ref(1)
 const columns = [
   { label: '썸네일', key: 'thumbnailPath' },
   { label: '템플릿명', key: 'name' },
-  { label: '유형', key: 'type' },
+  { label: '템플릿 유형', key: 'type' },
   { label: '카테고리', key: 'categoryName' },
   { label: '가격', key: 'price' },
   { label: '할인율', key: 'discountRate' },

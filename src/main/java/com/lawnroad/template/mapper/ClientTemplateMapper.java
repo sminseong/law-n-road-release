@@ -1,7 +1,6 @@
 package com.lawnroad.template.mapper;
 
-import com.lawnroad.template.dto.ClientTemplateDetailResponseDto;
-import com.lawnroad.template.dto.TemplateDto;
+import com.lawnroad.template.dto.*;
 import com.lawnroad.template.dto.order.ClientOrderListDto;
 import com.lawnroad.template.dto.order.ClientOrderTemplateDto;
 import org.apache.ibatis.annotations.Mapper;
@@ -63,4 +62,12 @@ public interface ClientTemplateMapper {
                               @Param("type") String type,
                               @Param("categoryNo") Long categoryNo,
                               @Param("isDownloaded") Integer isDownloaded);
+  
+  // 에디터 기반 템플릿 상세 조회
+  ClientEditorTemplateDetailDto findEditorTemplateDetail(@Param("templateNo") Long templateNo);
+  
+  // 파일 기반 템플릿 상세 조회
+  ClientFileTemplateDetailDto findFileTemplateDetail(@Param("templateNo") Long templateNo);
+  
+  void updateOrderDownloaded(Long orderNo);
 }

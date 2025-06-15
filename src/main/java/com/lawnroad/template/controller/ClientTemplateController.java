@@ -1,8 +1,7 @@
 package com.lawnroad.template.controller;
 
-import com.lawnroad.template.dto.ClientTemplateDetailResponseDto;
-import com.lawnroad.template.dto.TemplateListResponseDto;
-import com.lawnroad.template.dto.TemplateSearchConditionDto;
+import com.lawnroad.template.dto.*;
+import com.lawnroad.template.dto.cart.CheckoutResponseDto;
 import com.lawnroad.template.dto.order.ClientOrderListDto;
 import com.lawnroad.template.dto.order.ClientOrderListResponseDto;
 import com.lawnroad.template.dto.order.ClientOrderTemplateDto;
@@ -85,8 +84,6 @@ public class ClientTemplateController {
     List<ClientOrderTemplateDto> list =
         clientTemplateService.findTemplatesByOrder(orderNo, type, categoryNo, isDownloaded);
     
-    System.out.println(list);
-    
     // 개수 조회
     int totalCount =
         clientTemplateService.countTemplatesByOrder(orderNo, type, categoryNo, isDownloaded);
@@ -106,4 +103,34 @@ public class ClientTemplateController {
     
     return ResponseEntity.ok(dto);
   }
+  
+  /**
+   * 템플릿 상세 조회
+   * @param templateNo 템플릿 PK
+   * @param type 템플릿 유형 (EDITOR 또는 FILE)
+   */
+  @GetMapping("/orders/{templateNo}")
+  public ResponseEntity<?> getTemplateDetail(
+      @PathVariable Long templateNo,
+      @RequestParam String type
+  ) {
+    if ("EDITOR".equalsIgnoreCase(type)) {
+      ClientEditorTemplateDetailDto dto = clientTemplateService.getEditorTemplateDetail(templateNo);
+      return ResponseEntity.ok(dto);
+    } else if ("FILE".equalsIgnoreCase(type)) {
+      ClientFileTemplateDetailDto dto = clientTemplateService.getFileTemplateDetail(templateNo);
+      return ResponseEntity.ok(dto);
+    } else {
+      return ResponseEntity.badRequest().body("잘못된 템플릿 유형입니다: " + type);
+    }
+  }
+  
+  // 다운로드 상태로 변경
+  @PostMapping("/orders/download")
+  public ResponseEntity<Void> markOrderDownloaded(@RequestBody CheckoutResponseDto dto) {
+    clientTemplateService.markOrderAsDownloaded(dto.getOrderNo());
+    System.out.println(dto);
+    return ResponseEntity.ok().build();
+  }
+  
 }

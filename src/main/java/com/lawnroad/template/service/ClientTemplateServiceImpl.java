@@ -1,15 +1,13 @@
 package com.lawnroad.template.service;
 
-import com.lawnroad.template.dto.ClientTemplateDetailResponseDto;
-import com.lawnroad.template.dto.TemplateDto;
-import com.lawnroad.template.dto.TemplateListResponseDto;
-import com.lawnroad.template.dto.TemplateSearchConditionDto;
+import com.lawnroad.template.dto.*;
 import com.lawnroad.template.dto.order.ClientOrderListDto;
 import com.lawnroad.template.dto.order.ClientOrderTemplateDto;
 import com.lawnroad.template.mapper.ClientTemplateMapper;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -115,5 +113,25 @@ public class ClientTemplateServiceImpl implements ClientTemplateService {
   @Override
   public int countTemplatesByOrder(Long orderNo, String type, Long categoryNo, Integer isDownloaded) {
     return clientTemplateMapper.countTemplatesByOrderNo(orderNo, type, categoryNo, isDownloaded);
+  }
+  
+  // 에디터 기반 템플릿 상세 조회
+  @Override
+  @Transactional(readOnly = true)
+  public ClientEditorTemplateDetailDto getEditorTemplateDetail(Long templateNo) {
+    return clientTemplateMapper.findEditorTemplateDetail(templateNo);
+  }
+  
+  // 파일 기반 템플릿 상세 조회
+  @Override
+  @Transactional(readOnly = true)
+  public ClientFileTemplateDetailDto getFileTemplateDetail(Long templateNo) {
+    return clientTemplateMapper.findFileTemplateDetail(templateNo);
+  }
+  
+  // 다운로드 상태로 변경
+  @Override
+  public void markOrderAsDownloaded(Long orderNo) {
+    clientTemplateMapper.updateOrderDownloaded(orderNo);
   }
 }

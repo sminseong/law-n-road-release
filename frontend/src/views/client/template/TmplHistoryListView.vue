@@ -14,7 +14,7 @@ const filters = ref([
   {
     label: '주문상태',
     key: 'status',
-    options: ['전체', '결제완료', '취소', '환불']
+    options: ['전체', 'ORDERED', 'CANCELED', 'REFUNDED']
   }
 ])
 const currentFilters = ref({})
@@ -48,7 +48,6 @@ function handleRowClick(row) {
 
 // 초기 로딩
 onMounted(() => fetchOrders())
-
 </script>
 
 <template>

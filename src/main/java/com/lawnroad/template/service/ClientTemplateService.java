@@ -1,8 +1,6 @@
 package com.lawnroad.template.service;
 
-import com.lawnroad.template.dto.ClientTemplateDetailResponseDto;
-import com.lawnroad.template.dto.TemplateListResponseDto;
-import com.lawnroad.template.dto.TemplateSearchConditionDto;
+import com.lawnroad.template.dto.*;
 import com.lawnroad.template.dto.order.ClientOrderListDto;
 import com.lawnroad.template.dto.order.ClientOrderTemplateDto;
 
@@ -64,4 +62,20 @@ public interface ClientTemplateService {
    * @return 템플릿 개수
    */
   int countTemplatesByOrder(Long orderNo, String type, Long categoryNo, Integer isDownloaded);
+  
+  /**
+   * 에디터 기반 템플릿 상세 조회
+   * @param templateNo 조회할 템플릿 번호
+   * @return 상세 정보 DTO
+   */
+  ClientEditorTemplateDetailDto getEditorTemplateDetail(Long templateNo);
+  
+  /**
+   * 파일 기반 템플릿 상세 조회
+   * @param templateNo 조회할 템플릿 번호
+   * @return 상세 정보 DTO
+   */
+  ClientFileTemplateDetailDto getFileTemplateDetail(Long templateNo);
+  
+  void markOrderAsDownloaded(Long orderNo);
 }
