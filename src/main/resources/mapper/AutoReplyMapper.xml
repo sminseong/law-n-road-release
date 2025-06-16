@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lawnroad.broadcast.chat.mapper.AutoReplyMapper">
+
+    <insert id="insertAutoReply" parameterType="com.lawnroad.broadcast.chat.dto.AutoReplyDTO">
+        INSERT INTO auto_reply (
+            schedule_no, keyword, message,created_at
+        )
+        VALUES (
+                   #{scheduleNo}, #{keyword}, #{message}, NOW()
+               )
+
+    </insert>
+
+
+<select id="findByAutoReply" parameterType="list">
+
+SELECT schedule_no, keyword, message
+FROM auto_reply
+WHERE schedule_no = #{schedule_no}
+
+
+</select>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</mapper>

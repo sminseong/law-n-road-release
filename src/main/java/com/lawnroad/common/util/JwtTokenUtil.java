@@ -113,4 +113,14 @@ public class JwtTokenUtil {
         return claims.get("nickname", String.class);
     }
 
+    public Claims parseToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+
+
 }

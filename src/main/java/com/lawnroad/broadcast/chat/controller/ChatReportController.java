@@ -14,7 +14,7 @@ public class ChatReportController {
     private ChatReportService chatReportService;
 
 
-    @PostMapping("/api/chat/report")
+    @PostMapping("/api/client/chat/report")
     public void reportChat(@RequestBody ChatReportDTO req) {
         chatReportService.saveChatReport(req);
     }
