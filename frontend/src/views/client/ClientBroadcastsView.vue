@@ -18,8 +18,8 @@ export default defineComponent({
     // OpenVidu
     const connectOpenVidu = async () => {
       try {
-        const { data } = await axios.get(`/api/client/broadcast/${broadcastNo}/token`)
-        const { sessionId, token } = data
+        const {data} = await axios.get(`/api/client/broadcast/${broadcastNo}/token`)
+        const {sessionId, token} = data
 
         console.log("👁️ 시청자 sessionId:", sessionId)
         console.log("🔑 시청자 token:", token)
@@ -27,7 +27,7 @@ export default defineComponent({
         const OV = new OpenVidu();
         const session = OV.initSession();
 
-        session.on("streamCreated", ({ stream }) => {
+        session.on("streamCreated", ({stream}) => {
           console.log("📡 시청자: streamCreated 발생");
 
           const subscriber = session.subscribe(stream, undefined);
@@ -62,6 +62,17 @@ export default defineComponent({
     };
 
 
+    onMounted(() => {
+      connect();
+      connectOpenVidu();
+    });
+
+    onBeforeUnmount(() => {
+      stompClient.value?.deactivate();
+      closeDropdown();
+    });
+
+
 
 
     /** 채팅 */
@@ -78,9 +89,11 @@ export default defineComponent({
       "#837225", "#876124", "#004aff", "#ff6400",
       "#ec8d85", "#c0392b", "#246667", "#e4de0d"
     ];
+
     function getRandomColor() {
       return colorPalette[Math.floor(Math.random() * colorPalette.length)];
     }
+
     function getNicknameColor(nick) {
       if (!nicknameColors.value[nick]) {
         nicknameColors.value[nick] = getRandomColor();
@@ -121,7 +134,7 @@ export default defineComponent({
           // 입장 시 type: "ENTER"만 전달
           stompClient.value.publish({
             destination: "/app/chat.addUser",
-            body: JSON.stringify({ broadcastNo }),
+            body: JSON.stringify({broadcastNo}),
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -151,7 +164,7 @@ export default defineComponent({
       }
       stompClient.value.publish({
         destination: "/app/chat.sendMessage",
-        body: JSON.stringify({ broadcastNo, message: trimmed }),
+        body: JSON.stringify({broadcastNo, message: trimmed}),
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -203,28 +216,18 @@ export default defineComponent({
               message: selectedMessage.value,
             },
             {
-              headers: { Authorization: `Bearer ${token}` }
+              headers: {Authorization: `Bearer ${token}`}
             },
         );
 
-      } catch (e) {}
+      } catch (e) {
+      }
       isConfirmModal.value = false;
       isCompleteModal.value = true;
     };
     const closeCompleteModal = () => {
       isCompleteModal.value = false;
     };
-
-    onMounted(() => {
-      connect();
-      connectOpenVidu();
-    });
-
-    onBeforeUnmount(() => {
-      stompClient.value?.deactivate();
-      closeDropdown();
-    });
-
     return {
       videoContainer,
       connectOpenVidu,
