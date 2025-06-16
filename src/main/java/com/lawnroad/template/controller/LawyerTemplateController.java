@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -248,22 +249,26 @@ public class LawyerTemplateController {
   }
   
   /**
-   * 2) 본문/첨부파일까지 바뀌는 경우 (복제)
-   * 1. 기존 썸네일·파일 메타 조회
-   * 2. 썸네일 교체 시 새로 저장, 아니면 기존 유지
-   * 3. 프론트에서 전달된 pathJson(삭제된 항목 제외) 파싱 + 신규 파일 메타 추가
-   * 4. 서비스로 복제·수정 위임
+   * 1. 기존 템플릿 조회
+   * 2. FILE인 경우 pathJson 병합 + 신규 파일 저장
+   * 3. 본문 추출
+   *    * FILE → OCR
+   *    * EDITOR → content 직접 사용
+   * 4. Gemini 검증 수행
+   * 5. 검증 통과 시 썸네일 처리
+   * 6. 최종 DB 업데이트 (복제/수정 위임)
+   * 7. 중간 오류 시 롤백 (업로드된 파일 삭제)
    */
   @PostMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<String> updateTemplate(@ModelAttribute LawyerTemplateUpdateDto dto) {
-    Long lawyerNo = 1L;  // TODO: Authentication 적용 후 변경
+    Long lawyerNo = 1L; // TODO: 인증 연동 후 교체
     dto.setUserNo(lawyerNo);
     String type = dto.getType();
-    String thumbnailPath = "/uploads/defaults/template-thumbnail.png";
+    String thumbnailPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
     List<String> uploadedPaths = new ArrayList<>();
     
     try {
-      // 1) 기존 메타 조회 (무조건 조회)
+      // 1. 기존 템플릿 조회
       LawyerEditorTemplateDetailDto editorOrigin = null;
       LawyerFileTemplateDetailDto fileOrigin = null;
       if ("EDITOR".equalsIgnoreCase(type)) {
@@ -272,7 +277,55 @@ public class LawyerTemplateController {
         fileOrigin = templateService.getFileTemplateDetail(dto.getNo());
       }
       
-      // 2) 썸네일 처리
+      // 2. pathJson 처리 + 신규 파일 메타 추가
+      List<Map<String, String>> resultList = new ArrayList<>();
+      if (dto.getPathJson() != null) {
+        resultList = objectMapper.readValue(dto.getPathJson(), new TypeReference<>() {});
+      }
+      
+      if (dto.getTemplateFiles() != null) {
+        for (MultipartFile f : dto.getTemplateFiles()) {
+          if (!f.isEmpty()) {
+            String saved = ncpObjectStorageUtil.save(
+                f,
+                "uploads/lawyers/" + lawyerNo + "/templates",
+                null
+            );
+            uploadedPaths.add(saved);
+            Map<String, String> meta = new HashMap<>();
+            meta.put("originalName", f.getOriginalFilename());
+            meta.put("savedPath", saved);
+            resultList.add(meta);
+          }
+        }
+      }
+      String finalPathJson = objectMapper.writeValueAsString(resultList);
+      dto.setPathJson(finalPathJson);
+      
+      // 3. OCR 수행 또는 content 직접 사용
+      String contentText = "";
+      if ("FILE".equalsIgnoreCase(type)) {
+        List<String> filePaths = resultList.stream()
+            .map(m -> m.get("savedPath"))
+            .collect(Collectors.toList());
+        contentText = ocrService.extractTextFromUrls(filePaths);
+      } else if ("EDITOR".equalsIgnoreCase(type)) {
+        contentText = dto.getContent();
+      }
+      
+      // 4. Gemini 검증
+      ValidationResultDto result = aiService.validateTemplateContent(
+          contentText,
+          dto.getName(),
+          dto.getDescription()
+      );
+      
+      if (!result.isPassed()) {
+        String reasonText = String.join("\n", result.getReasons());
+        return ResponseEntity.badRequest().body("❌ 다음 사유로 문서 검증에 실패했습니다.\n\n" + reasonText);
+      }
+      
+      // 5. 썸네일 처리
       MultipartFile thumbFile = dto.getFile();
       boolean shouldRemoveThumbnail = dto.getRemoveThumbnail() != null && dto.getRemoveThumbnail() == 1;
       
@@ -295,58 +348,121 @@ public class LawyerTemplateController {
         thumbnailPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
       }
       
-      // 3) 파일 메타 처리
-      List<Map<String,String>> resultList = new ArrayList<>();
-      
-      // 3-1) 프론트에서 삭제된 항목을 제외한 pathJson이 넘어온 경우
-      if (dto.getPathJson() != null) {
-        resultList = objectMapper.readValue(
-            dto.getPathJson(),
-            new TypeReference<List<Map<String,String>>>() {}
-        );
-      }
-      // 3-2) 프론트에서 pathJson이 없고, origin이 있는 경우 origin 메타 사용
-      else if ("FILE".equalsIgnoreCase(type) && fileOrigin != null) {
-        resultList = objectMapper.readValue(
-            fileOrigin.getPathJson(),
-            new TypeReference<List<Map<String,String>>>() {}
-        );
-      }
-      
-      // 3-3) 신규 업로드 파일이 있으면 저장 후 메타 추가
-      if (dto.getTemplateFiles() != null) {
-        for (MultipartFile f : dto.getTemplateFiles()) {
-          if (!f.isEmpty()) {
-            String saved = ncpObjectStorageUtil.save(
-                f,
-                "uploads/lawyers/" + lawyerNo + "/templates",
-                null
-            );
-            uploadedPaths.add(saved);
-            Map<String,String> meta = new HashMap<>();
-            meta.put("originalName", f.getOriginalFilename());
-            meta.put("savedPath", saved);
-            resultList.add(meta);
-          }
-        }
-      }
-      
-      // 3-4) 최종 JSON 세팅
-      String finalPathJson = objectMapper.writeValueAsString(resultList);
-      dto.setPathJson(finalPathJson);
-      
-      // 4) 서비스 호출
+      // 6. 서비스 호출 (복제 수정 위임)
       templateService.updateTemplateByClone(dto, thumbnailPath);
       return ResponseEntity.ok("수정 완료");
       
     } catch (Exception e) {
-      // 예외 시 업로드된 파일 삭제
       for (String path : uploadedPaths) {
-        try { ncpObjectStorageUtil.delete(path); } catch (Exception ex) {}
+        try { ncpObjectStorageUtil.delete(path); } catch (Exception ignored) {}
       }
-      return ResponseEntity
-          .status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body("수정 실패: " + e.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body("❌ 수정 실패: " + e.getMessage());
     }
   }
+
+
+//
+//  /**
+//   * 2) 본문/첨부파일까지 바뀌는 경우 (복제)
+//   * 1. 기존 썸네일·파일 메타 조회
+//   * 2. 썸네일 교체 시 새로 저장, 아니면 기존 유지
+//   * 3. 프론트에서 전달된 pathJson(삭제된 항목 제외) 파싱 + 신규 파일 메타 추가
+//   * 4. 서비스로 복제·수정 위임
+//   */
+//  @PostMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//  public ResponseEntity<String> updateTemplate(@ModelAttribute LawyerTemplateUpdateDto dto) {
+//    Long lawyerNo = 1L;  // TODO: Authentication 적용 후 변경
+//    dto.setUserNo(lawyerNo);
+//    String type = dto.getType();
+//    String thumbnailPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
+//    List<String> uploadedPaths = new ArrayList<>();
+//
+//    try {
+//      // 1) 기존 메타 조회 (무조건 조회)
+//      LawyerEditorTemplateDetailDto editorOrigin = null;
+//      LawyerFileTemplateDetailDto fileOrigin = null;
+//      if ("EDITOR".equalsIgnoreCase(type)) {
+//        editorOrigin = templateService.getEditorTemplateDetail(dto.getNo());
+//      } else {
+//        fileOrigin = templateService.getFileTemplateDetail(dto.getNo());
+//      }
+//
+//      // 2) 썸네일 처리
+//      MultipartFile thumbFile = dto.getFile();
+//      boolean shouldRemoveThumbnail = dto.getRemoveThumbnail() != null && dto.getRemoveThumbnail() == 1;
+//
+//      if (shouldRemoveThumbnail) {
+//        // 삭제 요청이면 기본 썸네일
+//        thumbnailPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
+//      } else if (thumbFile != null && !thumbFile.isEmpty()) {
+//        // 새 파일 업로드
+//        thumbnailPath = ncpObjectStorageUtil.save(
+//            thumbFile,
+//            "uploads/lawyers/" + lawyerNo + "/thumbnails",
+//            null
+//        );
+//        uploadedPaths.add(thumbnailPath);
+//      } else if ("EDITOR".equalsIgnoreCase(type) && editorOrigin != null) {
+//        thumbnailPath = editorOrigin.getThumbnailPath();
+//      } else if ("FILE".equalsIgnoreCase(type) && fileOrigin != null) {
+//        thumbnailPath = fileOrigin.getThumbnailPath();
+//      } else {
+//        thumbnailPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
+//      }
+//
+//      // 3) 파일 메타 처리
+//      List<Map<String,String>> resultList = new ArrayList<>();
+//
+//      // 3-1) 프론트에서 삭제된 항목을 제외한 pathJson이 넘어온 경우
+//      if (dto.getPathJson() != null) {
+//        resultList = objectMapper.readValue(
+//            dto.getPathJson(),
+//            new TypeReference<List<Map<String,String>>>() {}
+//        );
+//      }
+//      // 3-2) 프론트에서 pathJson이 없고, origin이 있는 경우 origin 메타 사용
+//      else if ("FILE".equalsIgnoreCase(type) && fileOrigin != null) {
+//        resultList = objectMapper.readValue(
+//            fileOrigin.getPathJson(),
+//            new TypeReference<List<Map<String,String>>>() {}
+//        );
+//      }
+//
+//      // 3-3) 신규 업로드 파일이 있으면 저장 후 메타 추가
+//      if (dto.getTemplateFiles() != null) {
+//        for (MultipartFile f : dto.getTemplateFiles()) {
+//          if (!f.isEmpty()) {
+//            String saved = ncpObjectStorageUtil.save(
+//                f,
+//                "uploads/lawyers/" + lawyerNo + "/templates",
+//                null
+//            );
+//            uploadedPaths.add(saved);
+//            Map<String,String> meta = new HashMap<>();
+//            meta.put("originalName", f.getOriginalFilename());
+//            meta.put("savedPath", saved);
+//            resultList.add(meta);
+//          }
+//        }
+//      }
+//
+//      // 3-4) 최종 JSON 세팅
+//      String finalPathJson = objectMapper.writeValueAsString(resultList);
+//      dto.setPathJson(finalPathJson);
+//
+//      // 4) 서비스 호출
+//      templateService.updateTemplateByClone(dto, thumbnailPath);
+//      return ResponseEntity.ok("수정 완료");
+//
+//    } catch (Exception e) {
+//      // 예외 시 업로드된 파일 삭제
+//      for (String path : uploadedPaths) {
+//        try { ncpObjectStorageUtil.delete(path); } catch (Exception ex) {}
+//      }
+//      return ResponseEntity
+//          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+//          .body("수정 실패: " + e.getMessage());
+//    }
+//  }
 }
