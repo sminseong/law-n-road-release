@@ -116,11 +116,30 @@ function onThumbnailChange(e) {
 }
 
 async function handleUpdate() {
+  if (name.value.length > 50) {
+    return alert('❌ 템플릿명은 50자 이내로 입력해 주세요.');
+  }
+  if (price.value < 0 || price.value > 2147483647) {
+    return alert('❌ 가격은 0원 이상 2,147,483,647원 이하만 입력 가능합니다.');
+  }
+  if (discountRate.value < 0 || discountRate.value > 100) {
+    return alert('❌ 할인율은 0% 이상 100% 이하로만 입력 가능합니다.');
+  }
+  if (!name.value.trim()) {
+    return alert('❌ 템플릿명을 입력해 주세요.');
+  }
+  if (!categoryNo.value) {
+    return alert('❌ 카테고리를 선택해 주세요.');
+  }
+
   // 1) 변경 여부 비교
   let isContentChanged = false
   let isFileChanged = false
 
   if (selectedTab.value === 'ai') {
+    if (!editorContent.value.trim()) {
+      return alert('❌ 본문 내용을 입력해 주세요.');
+    }
     isContentChanged =
         editorContent.value !== originEditorContent.value ||
         JSON.stringify(editorVariables.value) !== JSON.stringify(originEditorVariables.value)
