@@ -1,10 +1,18 @@
 package com.lawnroad.ai.service;
 
+import com.lawnroad.ai.dto.InterviewChatRequestDto;
+import com.lawnroad.ai.dto.InterviewChatResponseDto;
+import com.lawnroad.ai.dto.MessageDto;
+import com.lawnroad.ai.dto.VariableDto;
 import com.lawnroad.common.config.GeminiConfig;
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentResponse;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class TextToneFixServiceImpl implements TextToneFixService {
@@ -12,12 +20,14 @@ public class TextToneFixServiceImpl implements TextToneFixService {
   @Getter
   private final GeminiConfig geminiConfig;
   private final Client client;
+  private final DocumentGenerator documentGenerator;
   
-  public TextToneFixServiceImpl(GeminiConfig geminiConfig) {
+  public TextToneFixServiceImpl(GeminiConfig geminiConfig, DocumentGenerator documentGenerator) {
     this.client = Client.builder()
         .apiKey(geminiConfig.getApiKey())
         .build();
     this.geminiConfig = geminiConfig;
+    this.documentGenerator = documentGenerator;
   }
   
   @Override
@@ -102,6 +112,129 @@ public class TextToneFixServiceImpl implements TextToneFixService {
     [문장]
     """ + text;
     };
+  }
+  
+  
+  @Override
+  public String generateReply(InterviewChatRequestDto dto) {
+    String prompt = buildPrompt(dto);
+    GenerateContentResponse response = client.models.generateContent("gemini-2.0-flash", prompt, null);
+    return response.text();
+  }
+  
+  @Override
+  public InterviewChatResponseDto generateResponse(InterviewChatRequestDto dto) {
+    String prompt = buildPrompt(dto);
+    GenerateContentResponse response = client.models.generateContent("gemini-2.0-flash", prompt, null);
+    String reply = response.text();
+    
+    boolean allFilled = reply.contains("[문서 생성 완료]");
+    String finalHtml = null;
+    
+    if (allFilled) {
+      if (reply.contains("<html>")) {
+        String rawHtml = extractHtmlPart(reply);
+        finalHtml = documentGenerator.wrapAsHtml(rawHtml);  // PDF 변환 가능
+      } else {
+        // GPT가 HTML을 안 줬으면 우리가 buildFinalHtml로 생성
+        String filledHtml = buildFinalHtml(dto);
+        finalHtml = documentGenerator.wrapAsHtml(filledHtml);
+      }
+    }
+    
+    return new InterviewChatResponseDto(reply, allFilled, finalHtml);
+  }
+  
+  
+  
+  private String extractHtmlPart(String text) {
+    int start = text.indexOf("<html>");
+    int end = text.indexOf("</html>") + "</html>".length();
+    return (start >= 0 && end > start) ? text.substring(start, end) : text;
+  }
+  
+  private String buildFinalHtml(InterviewChatRequestDto dto) {
+    String filled = dto.getContent();
+    
+    // 대화 히스토리 순회하면서 AI → 사용자 흐름 분석
+    Map<String, String> variableAnswerMap = new HashMap<>();
+    
+    List<MessageDto> history = dto.getHistory();
+    for (int i = 0; i < history.size() - 1; i++) {
+      MessageDto current = history.get(i);
+      MessageDto next = history.get(i + 1);
+      
+      // AI가 질문하고, 그 다음 user가 응답한 경우
+      if ("assistant".equals(current.getRole()) && "user".equals(next.getRole())) {
+        // AI 질문에서 변수 이름 추출 시도
+        for (VariableDto var : dto.getVariables()) {
+          if (current.getContent().contains(var.getName()) && !variableAnswerMap.containsKey(var.getName())) {
+            variableAnswerMap.put(var.getName(), next.getContent());
+          }
+        }
+      }
+    }
+    
+    // #{변수} 치환
+    for (VariableDto var : dto.getVariables()) {
+      String value = variableAnswerMap.getOrDefault(var.getName(), "___");
+      filled = filled.replace("#{" + var.getName() + "}", value);
+    }
+    
+    return filled;
+  }
+  
+  private String buildPrompt(InterviewChatRequestDto dto) {
+    StringBuilder sb = new StringBuilder();
+    
+    sb.append("""
+        너는 한국어 문서 템플릿을 작성하는 변호사를 도와주는 AI 인터뷰 챗봇이야.
+        사용자가 문서를 완성할 수 있도록 하나씩 질문하고, 답이 이상하면 다시 물어보거나 보정해야 해.
+
+        아래는 문서 초안이야:
+        [본문]
+        """).append(dto.getContent()).append("\n\n");
+    
+    sb.append("[문서에 들어가야 할 항목과 예시값]\n");
+    for (VariableDto var : dto.getVariables()) {
+      sb.append("- ").append(var.getName())
+          .append(": 예시값 → ").append(var.getDescription()).append("\n");
+    }
+    
+    sb.append("\n[지금까지의 대화]\n");
+    for (MessageDto msg : dto.getHistory()) {
+      String speaker = msg.getRole().equals("user") ? "사용자" : "AI";
+      sb.append(speaker).append(": ").append(msg.getContent()).append("\n");
+    }
+    
+    sb.append("""
+        
+        You are an AI chatbot that helps collect necessary information for drafting Korean legal documents through a structured interview.
+        
+        Based on the list of variables and their example values provided below, identify what information is needed and continue the conversation in a natural and context-aware manner.
+        
+        Instructions:
+        - If the user input is vague, incorrect, or incomplete, briefly explain and ask again.
+        - If the answer is sufficient, move on to the next item without repeating the same question too many times.
+        - Ignore emotional or aggressive language from the user and respond in a calm and neutral manner.
+        - Do not interpret or comment on the user's emotional state. Phrases like "It seems you're upset" or "Are you okay?" are strictly prohibited.
+        - Never use narrative cues or stage directions such as "(pause)", "(*sigh*)", or anything within parentheses.
+        
+        - Once the document is complete, end with the phrase:
+          [문서 생성 완료]
+        
+          After that, generate the final document in complete HTML format.
+          Do not include explanations or extra comments — only the HTML.
+          
+        - At the beginning, confirm the user's identity clearly and fix their role (e.g., victim or counterparty) without changing it later under any circumstances.
+        - Never proceed to the next question without an explicit response from the user. Do not guess or assume what the user would have said.
+        - All replies must be written in fluent, natural Korean and must reflect appropriate tone, politeness, and cultural norms specific to Korean language and society.
+        - Do not expose internal variable names (e.g., 'name', 'incidentDate') to the user; always rephrase them in natural language.
+        
+          \s
+        """);
+    
+    return sb.toString();
   }
   
 }

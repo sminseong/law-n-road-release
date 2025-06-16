@@ -5,7 +5,6 @@ import { useRoute, useRouter } from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import http from '@/libs/HttpRequester'
 import ChatBox from "@/components/template/ChatBox.vue";
-import AiTemplateEditor from "@/components/template/AiTemplateEditor.vue";
 
 const route  = useRoute()
 const router = useRouter()
@@ -190,7 +189,11 @@ const handleDownload = async (file) => {
         </div>
 
         <!-- 에디터 타입일 때 -->
-        <ChatBox v-if="templateType === 'EDITOR'" />
+        <ChatBox
+            v-if="templateType === 'EDITOR'"
+           :content="detail.content"
+           :variables="JSON.parse(detail.varJson)"
+        />
 
         <!-- 파일 타입일 때 -->
         <div v-else>

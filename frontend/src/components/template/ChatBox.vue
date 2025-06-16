@@ -1,6 +1,72 @@
+<script setup>
+import { ref } from 'vue'
+import http from '@/libs/HttpRequester'
+import html2pdf from 'html2pdf.js'
+
+const props = defineProps({
+  content: String,
+  variables: {
+    type: Array,
+    required: true
+  }
+})
+
+// 채팅 상태
+const messages = ref([
+  { role: 'assistant', content: '안녕하세요! 문서 작성을 도와드릴게요. 필요한 정보를 하나씩 물어볼게요.' }
+])
+
+const input = ref('')
+const finalHtml = ref('') // 완성된 문서 HTML
+
+// 메시지 전송 → Gemini 호출
+async function send() {
+  const text = input.value.trim()
+  if (!text) return
+
+  messages.value.push({ role: 'user', content: text })
+  input.value = ''
+
+  try {
+    const res = await http.post('/api/gemini/interview', {
+      content: props.content,
+      variables: props.variables,
+      history: messages.value
+    })
+
+    messages.value.push({ role: 'assistant', content: res.data.reply })
+
+    if (res.data.allVariablesFilled) {
+      finalHtml.value = res.data.finalHtml
+    }
+
+  } catch (err) {
+    console.error(err)
+    messages.value.push({
+      role: 'assistant',
+      content: 'AI 서버와의 통신 중 오류가 발생했습니다.'
+    })
+  }
+}
+
+// PDF 저장
+function downloadPdf() {
+  const element = document.querySelector('.preview-content')
+  html2pdf().set({
+    margin: 10,
+    filename: 'document.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(element).save()
+}
+</script>
+
 <template>
   <div class="card p-3 mt-4 chat-box">
     <h5 class="mb-3">AI 채팅</h5>
+
+    <!-- 채팅 영역 -->
     <div class="chat-messages mb-3">
       <div
           v-for="(msg, i) in messages"
@@ -11,7 +77,9 @@
         <span>{{ msg.content }}</span>
       </div>
     </div>
-    <div class="input-group">
+
+    <!-- 입력창 -->
+    <div class="input-group mb-3">
       <input
           v-model="input"
           @keyup.enter="send"
@@ -21,43 +89,15 @@
       />
       <button class="btn btn-primary" @click="send">전송</button>
     </div>
+
+    <!-- 문서 미리보기 -->
+    <div v-if="finalHtml" class="preview-box">
+      <h6 class="mb-2">문서 미리보기</h6>
+      <div class="preview-content border p-3 mb-2" v-html="finalHtml" />
+      <button class="btn btn-danger w-100" @click="downloadPdf">PDF로 저장</button>
+    </div>
   </div>
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import http from '@/libs/HttpRequester'
-
-// 부모로부터 주문번호, tmplNo를 props로 받도록 해도 되고
-// const props = defineProps({ orderNo: Number, tmplNo: Number })
-
-const messages = ref([])
-const input = ref('')
-
-async function send() {
-  const text = input.value.trim()
-  if (!text) return
-  // 1) 사용자가 입력한 메시지 추가
-  messages.value.push({ role: 'user', content: text })
-  input.value = ''
-  try {
-    // 2) AI 서버 호출 (예: /api/ai/chat 에 orderNo, tmplNo, message 전송)
-    const res = await http.post('/api/ai/chat', {
-      // orderNo: props.orderNo,
-      // tmplNo:  props.tmplNo,
-      message: text
-    })
-    // 3) AI 응답 추가
-    messages.value.push({ role: 'assistant', content: res.data.reply })
-  } catch (err) {
-    console.error(err)
-    messages.value.push({
-      role: 'assistant',
-      content: '죄송합니다. 응답을 가져오는 중 오류가 발생했습니다.'
-    })
-  }
-}
-</script>
 
 <style scoped>
 .chat-box {
@@ -75,5 +115,16 @@ async function send() {
 }
 .message.assistant {
   text-align: left;
+}
+.preview-box {
+  background: #fff;
+  border-top: 1px solid #ddd;
+  padding-top: 1rem;
+}
+.preview-content {
+  background: #fcfcfc;
+  white-space: pre-wrap;
+  max-height: 300px;
+  overflow-y: auto;
 }
 </style>
