@@ -292,6 +292,64 @@ async function callUpdateMetaAPI() {
         />
       </div>
 
+      <div v-if="!isDetail" class="card p-3 mb-4 bg-light-subtle template-guide">
+        <h6 style="text-align: center">모든 템플릿은 등록 전에 AI 기반의 문서 검증을 거쳐야 합니다. 정확하고 신중하게 작성해 주세요.</h6> <br>
+        <div class="d-flex justify-content-between align-items-center">
+          <strong>AI 문서 검증이란?</strong>
+        </div>
+        <p class="mt-2 mb-1 text-muted small">
+          AI가 작성한 문서가 법률 문서로서 적절한지 <b>5가지 항목</b>을 기준으로 자동 점검합니다.
+          <br>문서 등록 및 수정 시 <u><b>반드시 통과</b></u>해야 최종적으로 템플릿이 등록됩니다.
+        </p>
+
+        <table class="table table-bordered table-sm mt-3 mb-2 small text-center align-middle">
+          <thead class="table-light">
+          <tr>
+            <th style="width: 5%">코드</th>
+            <th style="width: 25%">메시지</th>
+            <th style="width: 35%">의미</th>
+            <th style="width: 35%">회피 방법</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>①</td>
+            <td>부적절한 내용 포함</td>
+            <td class="text-start">비속어, 혐오, 공격적 표현 포함</td>
+            <td class="text-start">중립적 표현으로 수정</td>
+          </tr>
+          <tr>
+            <td>②</td>
+            <td>주제와의 불일치</td>
+            <td class="text-start">제목/설명과 본문이 맞지 않음</td>
+            <td class="text-start">문서 내용을 주제에 맞게 작성</td>
+          </tr>
+          <tr>
+            <td>③</td>
+            <td>사실성 부족</td>
+            <td class="text-start">“그때 봐서” 같은 모호한 문장 포함</td>
+            <td class="text-start">수치·조건·역할 등 구체화</td>
+          </tr>
+          <tr>
+            <td>④</td>
+            <td>과도한 홍보성</td>
+            <td class="text-start">“믿고 사세요” 같은 광고 문구</td>
+            <td class="text-start">감정 표현 제거, 객관적으로 작성</td>
+          </tr>
+          <tr>
+            <td>⑤</td>
+            <td>문맥/구조적 완성도 미달</td>
+            <td class="text-start">조항 없음, 흐름 없음</td>
+            <td class="text-start">제1조 등 형식적 구조로 작성</td>
+          </tr>
+          </tbody>
+        </table>
+
+        <p class="mt-2 mb-0 text-muted small">
+          <strong>팁:</strong> 과장된 표현보다 <u>중립적이고 정보 중심의 문장</u>일수록 검증 성공률이 높습니다.
+        </p>
+      </div>
+
       <!-- 버튼 -->
       <div class="text-end">
         <button class="btn btn-secondary me-2" @click="router.back()">취소</button>
