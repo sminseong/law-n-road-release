@@ -154,57 +154,57 @@ async function handleUpdate() {
   // 2) 분기: 복제 방식 또는 메타 업데이트
   try {
     if (isContentChanged || isFileChanged) {
-      if (!confirm('템플릿을 수정하면 판매기록이 초기화 됩니다. 정말 수정하시겠습니까?')) return
-      await callUpdateCloneAPI()
+      if (!confirm('템플릿을 수정하면 판매기록이 초기화 됩니다. 정말 수정하시겠습니까?')) return;
+      await callUpdateCloneAPI();
     } else {
-      await callUpdateMetaAPI()
+      await callUpdateMetaAPI();
     }
-    alert('수정 완료되었습니다.')
-    router.push('/lawyer/templates')
+    alert('수정 완료되었습니다.');
+    router.push('/lawyer/templates');
   } catch (e) {
-    console.error(e)
-    alert('수정 실패')
+    // 400 Bad Request: 백엔드가 보낸 상세 메시지 출력
+    if (e.response && e.response.status === 400) {
+      alert(e.response.data);
+    } else {
+      console.error(e);
+      alert('❌ 알 수 없는 오류가 발생했습니다.');
+    }
   }
 }
 
 async function callUpdateCloneAPI() {
-  try {
-    const formData = new FormData()
-    formData.append('no', templateNo)
-    formData.append('name', name.value)
-    formData.append('price', price.value)
-    formData.append('discountRate', discountRate.value)
-    formData.append('categoryNo', categoryNo.value)
-    formData.append('description', description.value)
-    formData.append('type', selectedTab.value === 'ai' ? 'EDITOR' : 'FILE')
-    formData.append('removeThumbnail', removeExistingThumbnail.value ? 1 : 0)
+  const formData = new FormData()
+  formData.append('no', templateNo)
+  formData.append('name', name.value)
+  formData.append('price', price.value)
+  formData.append('discountRate', discountRate.value)
+  formData.append('categoryNo', categoryNo.value)
+  formData.append('description', description.value)
+  formData.append('type', selectedTab.value === 'ai' ? 'EDITOR' : 'FILE')
+  formData.append('removeThumbnail', removeExistingThumbnail.value ? 1 : 0)
 
-    if (thumbnailFile.value) {
-      formData.append('file', thumbnailFile.value)
-    }
-
-    if (selectedTab.value === 'ai') {
-      formData.append('content', editorContent.value)
-      formData.append('varJson', JSON.stringify(editorVariables.value))
-      formData.append('aiEnabled', 1)
-    } else {
-      const existingMeta = uploadedFiles.value.filter(
-          item => item.originalName && item.savedPath
-      )
-      formData.append('pathJson', JSON.stringify(existingMeta))
-      uploadedFiles.value
-          .filter(item => item instanceof File)
-          .forEach(file => {
-            formData.append('templateFiles', file)
-          })
-    }
-
-    await http.post('/api/lawyer/templates/update', formData)
-    router.push('/lawyer/templates')
-  } catch (e) {
-    console.error(e)
-    alert('수정 실패')
+  if (thumbnailFile.value) {
+    formData.append('file', thumbnailFile.value)
   }
+
+  if (selectedTab.value === 'ai') {
+    formData.append('content', editorContent.value)
+    formData.append('varJson', JSON.stringify(editorVariables.value))
+    formData.append('aiEnabled', 1)
+  } else {
+    const existingMeta = uploadedFiles.value.filter(
+        item => item.originalName && item.savedPath
+    )
+    formData.append('pathJson', JSON.stringify(existingMeta))
+    uploadedFiles.value
+        .filter(item => item instanceof File)
+        .forEach(file => {
+          formData.append('templateFiles', file)
+        })
+  }
+
+  // 에러는 handleUpdate()에서 처리됩니다.
+  await http.post('/api/lawyer/templates/update', formData)
 }
 
 async function callUpdateMetaAPI() {
