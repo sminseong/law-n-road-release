@@ -1,10 +1,11 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import http from '@/libs/HttpRequester'
 import html2pdf from 'html2pdf.js'
 
 const props = defineProps({
   content: String,
+  description: String,
   variables: {
     type: Array,
     required: true
@@ -29,6 +30,7 @@ async function send() {
 
   try {
     const res = await http.post('/api/gemini/interview', {
+      description: props.description,
       content: props.content,
       variables: props.variables,
       history: messages.value
@@ -60,6 +62,17 @@ function downloadPdf() {
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
   }).from(element).save()
 }
+
+const chatContainer = ref(null)
+
+// 메시지가 추가될 때마다 스크롤 내리기
+watch(messages, async () => {
+  await nextTick()
+  const el = chatContainer.value
+  if (el) {
+    el.scrollTop = el.scrollHeight
+  }
+})
 </script>
 
 <template>
@@ -67,7 +80,7 @@ function downloadPdf() {
     <h5 class="mb-3">AI 채팅</h5>
 
     <!-- 채팅 영역 -->
-    <div class="chat-messages mb-3">
+    <div class="chat-messages mb-3" ref="chatContainer">
       <div
           v-for="(msg, i) in messages"
           :key="i"
