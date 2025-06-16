@@ -3,7 +3,7 @@
 import {ref, computed, onMounted} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
-import { fetchBoardDetail } from '@/service/boardService.js'
+import { fetchBoardDetail, deleteQna } from '@/service/boardService.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -33,10 +33,15 @@ function goEditPage() {
 const showDeleteModal = ref(false)
 
 // 삭제 진행 함수
-function confirmDelete() {
-  // TODO: 실제 API 호출
-  // await api.delete(`/qna/${id}`)
-  router.push('/client/qna/list')
+async function confirmDelete() {
+  try {
+    await deleteQna(id) // 🟢 삭제 API 호출
+    alert('삭제되었습니다.')
+    router.push('/qna') // 목록으로 이동
+  } catch (err) {
+    console.error('❌ 삭제 실패:', err)
+    alert('삭제 중 오류가 발생했습니다.')
+  }
 }
 
 // 버튼 핸들러: 모달 띄우기
