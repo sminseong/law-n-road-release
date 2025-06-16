@@ -213,20 +213,32 @@
     </select>
 
     <!-- 다운로드 상태로 변경 -->
-    <update id="updateOrderDownloaded">
+    <update id="updateTemplateDownloaded">
         UPDATE tmpl_orders_history
         SET is_downloaded = 1
         WHERE order_no = #{orderNo}
+          AND tmpl_no = #{tmplNo}
     </update>
 
-    <!-- 다운로드 상태 확인 -->
+    <!-- 주문 기준: 하나라도 다운로드 -->
     <select id="selectIsDownloadedByOrderNo" resultType="boolean">
         SELECT EXISTS (
             SELECT 1
             FROM tmpl_orders_history
             WHERE order_no = #{orderNo}
               AND is_downloaded = 1
-        ) AS is_downloaded
+        )
+    </select>
+
+    <!-- 개별 템플릿 기준 -->
+    <select id="selectIsDownloadedByOrderNoAndTmplNo" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM tmpl_orders_history
+            WHERE order_no = #{orderNo}
+              AND tmpl_no = #{tmplNo}
+              AND is_downloaded = 1
+        )
     </select>
 
 </mapper>

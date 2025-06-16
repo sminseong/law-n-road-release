@@ -78,8 +78,12 @@ public interface ClientTemplateService {
   ClientFileTemplateDetailDto getFileTemplateDetail(Long templateNo);
   
   // 다운로드 상태 변경
-  void markOrderAsDownloaded(Long orderNo);
+  void markTemplateAsDownloaded(Long orderNo, Long tmplNo);
   
+  // 전체 주문 기준
   // 주문 번호 기준으로 다운로드 여부 확인
   boolean checkIsDownloaded(Long orderNo);
+  
+  // 개별 템플릿 기준
+  boolean checkIsDownloaded(Long orderNo, Long tmplNo);
 }

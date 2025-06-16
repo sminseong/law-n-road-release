@@ -43,7 +43,10 @@ onMounted(async () => {
         { type: templateType }
     )
 
-    const res = await http.get(`/api/client/templates/orders/isDownloaded?orderNo=${orderNo}`);
+    const res = await http.post('/api/client/templates/orders/isDownloaded', {
+      orderNo: orderNo,
+      tmplNo: tmplNo
+    });
     isDownloaded.value = res.data.isDownloaded
 
     detail.value = data
@@ -101,6 +104,7 @@ const handleDownload = async (file) => {
     // 1. 다운로드 기록 API 호출 (서버에 다운로드 표시)
     await http.post('/api/client/templates/orders/download', {
       orderNo: orderNo,
+      tmplNo: tmplNo,
     })
 
     // 2. 다운로드 강제 트리거

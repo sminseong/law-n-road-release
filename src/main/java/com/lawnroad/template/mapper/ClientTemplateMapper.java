@@ -70,8 +70,14 @@ public interface ClientTemplateMapper {
   ClientFileTemplateDetailDto findFileTemplateDetail(@Param("templateNo") Long templateNo);
   
   // 다운로드 상태 변경
-  void updateOrderDownloaded(Long orderNo);
+  void updateTemplateDownloaded(@Param("orderNo") Long orderNo, @Param("tmplNo") Long tmplNo);
   
-  // 다운로드 상태 조회
+  // 다운로드 상태 조회 (전체 기준)
   Boolean selectIsDownloadedByOrderNo(@Param("orderNo") Long orderNo);
+  
+  // 다운로드 상태 조회 (개별 기준)
+  Boolean selectIsDownloadedByOrderNoAndTmplNo(
+      @Param("orderNo") Long orderNo,
+      @Param("tmplNo") Long tmplNo
+  );
 }

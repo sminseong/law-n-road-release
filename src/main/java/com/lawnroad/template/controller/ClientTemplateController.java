@@ -66,6 +66,7 @@ public class ClientTemplateController {
     response.setOrders(list);
     response.setTotalPages(totalPages);
     
+    // 다운로드 상태 조회 (order 로만 - 하나라도 다운로드 햇으면 전체 다운로드 인걸로 취급)
     for (ClientOrderListDto order : response.getOrders()) {
       boolean isDownloaded = clientTemplateService.checkIsDownloaded(order.getOrderNo());
       order.setIsDownloaded(isDownloaded ? 1 : 0);
@@ -134,16 +135,16 @@ public class ClientTemplateController {
   // 다운로드 상태로 변경
   @PostMapping("/orders/download")
   public ResponseEntity<Void> markOrderDownloaded(@RequestBody CheckoutResponseDto dto) {
-    clientTemplateService.markOrderAsDownloaded(dto.getOrderNo());
-    System.out.println(dto);
+    clientTemplateService.markTemplateAsDownloaded(dto.getOrderNo(), dto.getTmplNo());
     return ResponseEntity.ok().build();
   }
   
-  // 다운로드 상태 조회
-  @GetMapping("/orders/isDownloaded")
-  public ResponseEntity<?> checkDownloaded(@RequestParam Long orderNo) {
-    boolean isDownloaded = clientTemplateService.checkIsDownloaded(orderNo);
+  // 다운로드 상태 조회 (개별 조회)
+  @PostMapping("/orders/isDownloaded")
+  public ResponseEntity<?> checkDownloaded(@RequestBody CheckoutResponseDto dto) {
+    boolean isDownloaded = clientTemplateService.checkIsDownloaded(dto.getOrderNo(), dto.getTmplNo());
     return ResponseEntity.ok(Map.of("isDownloaded", isDownloaded));
   }
+  
   
 }
