@@ -27,6 +27,7 @@ const categoryNo   = ref(null)
 const description  = ref('')
 const thumbnailUrl = ref('')
 const createdAt    = ref('')
+const isDownloaded = ref(false)
 
 // AI 전용
 const editorContent   = ref('')
@@ -42,7 +43,8 @@ onMounted(async () => {
         { type: templateType }
     )
 
-    console.log('data:', data)
+    const res = await http.get(`/api/client/templates/orders/isDownloaded?orderNo=${orderNo}`);
+    isDownloaded.value = res.data.isDownloaded
 
     detail.value = data
 
@@ -170,7 +172,7 @@ const handleDownload = async (file) => {
 
             <label class="form-label">다운로드 여부</label>
             <input
-                :value="detail.isDownloaded ? '완료' : '미다운로드'"
+                :value="isDownloaded ? '다운로드 완료' : '미다운로드'"
                 disabled
                 class="form-control mb-2"
             />

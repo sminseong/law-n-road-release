@@ -69,5 +69,9 @@ public interface ClientTemplateMapper {
   // 파일 기반 템플릿 상세 조회
   ClientFileTemplateDetailDto findFileTemplateDetail(@Param("templateNo") Long templateNo);
   
+  // 다운로드 상태 변경
   void updateOrderDownloaded(Long orderNo);
+  
+  // 다운로드 상태 조회
+  Boolean selectIsDownloadedByOrderNo(@Param("orderNo") Long orderNo);
 }

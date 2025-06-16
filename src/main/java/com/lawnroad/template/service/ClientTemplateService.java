@@ -77,5 +77,9 @@ public interface ClientTemplateService {
    */
   ClientFileTemplateDetailDto getFileTemplateDetail(Long templateNo);
   
+  // 다운로드 상태 변경
   void markOrderAsDownloaded(Long orderNo);
+  
+  // 주문 번호 기준으로 다운로드 여부 확인
+  boolean checkIsDownloaded(Long orderNo);
 }

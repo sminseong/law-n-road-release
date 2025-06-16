@@ -134,4 +134,10 @@ public class ClientTemplateServiceImpl implements ClientTemplateService {
   public void markOrderAsDownloaded(Long orderNo) {
     clientTemplateMapper.updateOrderDownloaded(orderNo);
   }
+  
+  // 다운로드 상태 조회
+  @Override
+  public boolean checkIsDownloaded(Long orderNo) {
+    return clientTemplateMapper.selectIsDownloadedByOrderNo(orderNo);
+  }
 }

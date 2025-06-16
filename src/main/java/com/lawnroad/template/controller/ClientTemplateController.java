@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -131,6 +132,13 @@ public class ClientTemplateController {
     clientTemplateService.markOrderAsDownloaded(dto.getOrderNo());
     System.out.println(dto);
     return ResponseEntity.ok().build();
+  }
+  
+  // 다운로드 상태 조회
+  @GetMapping("/orders/isDownloaded")
+  public ResponseEntity<?> checkDownloaded(@RequestParam Long orderNo) {
+    boolean isDownloaded = clientTemplateService.checkIsDownloaded(orderNo);
+    return ResponseEntity.ok(Map.of("isDownloaded", isDownloaded));
   }
   
 }

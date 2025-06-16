@@ -218,4 +218,15 @@
         SET is_downloaded = 1
         WHERE order_no = #{orderNo}
     </update>
+
+    <!-- 다운로드 상태 확인 -->
+    <select id="selectIsDownloadedByOrderNo" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM tmpl_orders_history
+            WHERE order_no = #{orderNo}
+              AND is_downloaded = 1
+        ) AS is_downloaded
+    </select>
+
 </mapper>
