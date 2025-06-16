@@ -16,5 +16,5 @@ public class PaymentSaveDTO {
     private Integer installmentMonth;
     private LocalDateTime purchasedAt;
     private String pg;
-    private Map<String, Object> metadata;
+    private String metadata;
 }

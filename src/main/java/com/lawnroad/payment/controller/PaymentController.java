@@ -1,20 +1,25 @@
 package com.lawnroad.payment.controller;
 
-import com.lawnroad.payment.dto.OrdersStatusUpdateDTO;
-import com.lawnroad.payment.dto.PaymentConfirmRequestDTO;
-import com.lawnroad.payment.dto.PaymentResponseDTO;
-import com.lawnroad.payment.mapper.PaymentMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lawnroad.payment.dto.*;
 import com.lawnroad.payment.model.OrdersVO;
-import com.lawnroad.payment.model.PaymentVO;
 import com.lawnroad.payment.service.OrdersService;
+import com.lawnroad.payment.service.PaymentService;
+import com.lawnroad.payment.service.RefundService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.Base64;
 import java.util.Map;
 
@@ -26,19 +31,22 @@ public class PaymentController {
     private OrdersService ordersService;
 
     @Autowired
-    private PaymentMapper paymentMapper;
+    private PaymentService paymentService;
+
+    @Autowired
+    private RefundService refundService;
 
     private final String SECRET_KEY = "test_sk_4yKeq5bgrpoROnDY0L4XVGX0lzW6";
     private final String TOSS_URL = "https://api.tosspayments.com/v1/payments/confirm";
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @PostMapping("/payment")
     public ResponseEntity<?> confirmPayment(@RequestBody PaymentConfirmRequestDTO request) {
         try {
-            // 1. Toss API 호출
+            // Toss API 호출
             RestTemplate restTemplate = new RestTemplate();
-
-            String encodedKey = Base64.getEncoder()
-                    .encodeToString((SECRET_KEY + ":").getBytes(StandardCharsets.UTF_8));
+            String encodedKey = Base64.getEncoder().encodeToString((SECRET_KEY + ":").getBytes(StandardCharsets.UTF_8));
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -61,7 +69,6 @@ public class PaymentController {
                         .body(Map.of("message", "Toss 응답이 비어 있습니다."));
             }
 
-            // 2. 주문 조회
             OrdersVO order = ordersService.getOrderByCode(response.getOrderId());
             if (order == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -69,37 +76,47 @@ public class PaymentController {
             }
 
             Long orderNo = order.getNo();
+            JsonNode tossResponseJson = objectMapper.convertValue(response, JsonNode.class);
+            paymentService.savePaymentFromToss(tossResponseJson, orderNo);
 
-            // 3. 결제 정보 저장
-            PaymentVO payment = new PaymentVO();
-            payment.setOrderNo(orderNo);
-            payment.setPaymentKey(response.getPaymentKey());
-            payment.setOrderCode(response.getOrderId());
-            payment.setAmount(response.getTotalAmount().longValue());
-            payment.setStatus(response.getStatus());
-            payment.setCardCompany(response.getCard() != null ? response.getCard().getCompany() : null);
-            payment.setInstallmentMonth(response.getCard() != null ? response.getCard().getInstallmentPlanMonths() : null);
+            OrdersStatusUpdateDTO dto = new OrdersStatusUpdateDTO();
+            dto.setOrderNo(orderNo);
 
-            try {
-                payment.setPurchasedAt(LocalDateTime.parse(response.getApprovedAt()));
-            } catch (DateTimeParseException e) {
-                payment.setPurchasedAt(null); // 또는 현재 시간 등 fallback
+            switch (response.getStatus()) {
+                case "DONE" -> dto.setStatus("PAID");
+                case "CANCELED" -> {
+                    refundService.saveRefundFromToss(tossResponseJson);
+                    dto.setStatus("FAILED");
+                }
+                default -> dto.setStatus("FAILED");
             }
 
-            payment.setPg("TOSS");
-
-            paymentMapper.insertPayment(payment);
-
-            // 4. 주문 상태 업데이트
-            if ("DONE".equalsIgnoreCase(response.getStatus())) {
-                OrdersStatusUpdateDTO dto = new OrdersStatusUpdateDTO();
-                dto.setOrderNo(orderNo);
-                dto.setStatus("PAID");
-                ordersService.changeStatus(dto);
-            }
-
+            ordersService.changeStatus(dto);
             return ResponseEntity.status(tossResponse.getStatusCode()).body(response);
 
+        } catch (HttpClientErrorException | HttpServerErrorException ex) {
+            // Toss 자체에서 실패 응답 (예: 결제 만료, 카드 오류)
+            try {
+                JsonNode errorJson = objectMapper.readTree(ex.getResponseBodyAsString());
+                String orderId = request.getOrderId();
+                OrdersVO order = ordersService.getOrderByCode(orderId);
+                if (order != null) {
+                    OrdersStatusUpdateDTO dto = new OrdersStatusUpdateDTO();
+                    dto.setOrderNo(order.getNo());
+                    dto.setStatus("FAILED");
+                    ordersService.changeStatus(dto);
+                }
+
+                return ResponseEntity.status(ex.getStatusCode()).body(Map.of(
+                        "message", "결제 승인 실패",
+                        "error", errorJson.get("message").asText()
+                ));
+            } catch (Exception parseEx) {
+                return ResponseEntity.status(500).body(Map.of(
+                        "message", "결제 승인 실패 및 오류 응답 처리 실패",
+                        "error", parseEx.getMessage()
+                ));
+            }
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of(
                     "message", "결제 승인 실패",
@@ -107,4 +124,49 @@ public class PaymentController {
             ));
         }
     }
+
+
+    @PostMapping("/cancel")
+    public ResponseEntity<?> cancelPayment(@RequestParam String paymentKey,
+                                           @RequestParam String reason) {
+        try {
+            // 1. Toss 요청
+            String encodedKey = Base64.getEncoder()
+                    .encodeToString((SECRET_KEY + ":").getBytes(StandardCharsets.UTF_8));
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.tosspayments.com/v1/payments/" + paymentKey + "/cancel"))
+                    .header("Authorization", "Basic " + encodedKey)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString("{\"cancelReason\":\"" + reason + "\"}"))
+                    .build();
+
+            HttpResponse<String> response = HttpClient.newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+
+            JsonNode responseJson = objectMapper.readTree(response.body());
+
+            // 2. 환불 저장
+            refundService.saveRefundFromToss(responseJson);
+
+            // 🔥 3. 주문 상태도 업데이트 필요
+            String orderId = responseJson.get("orderId").asText();
+            OrdersVO order = ordersService.getOrderByCode(orderId);
+            if (order != null) {
+                OrdersStatusUpdateDTO dto = new OrdersStatusUpdateDTO();
+                dto.setOrderNo(order.getNo());
+                dto.setStatus("CANCELED");
+                ordersService.changeStatus(dto);
+            }
+
+            return ResponseEntity.ok(responseJson);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                    "message", "결제 취소 실패",
+                    "error", e.getMessage()
+            ));
+        }
+    }
+
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lawnroad.payment.dto.PaymentSaveDTO;
+import com.lawnroad.payment.dto.RefundSaveDTO;
 import com.lawnroad.payment.mapper.PaymentMapper;
 import org.springframework.stereotype.Service;
 
@@ -41,13 +42,21 @@ public class PaymentService {
         }
 
         if (tossResponseJson.has("metadata")) {
-            Map<String, Object> metadata = objectMapper.convertValue(
+            Map<String, Object> metadataMap = objectMapper.convertValue(
                     tossResponseJson.get("metadata"),
                     new TypeReference<>() {}
             );
-            dto.setMetadata(metadata);
+
+            try {
+                String metadataJson = objectMapper.writeValueAsString(metadataMap);
+                dto.setMetadata(metadataJson);
+            } catch (Exception e) {
+                throw new RuntimeException("metadata 직렬화 실패", e);
+            }
         }
 
         paymentMapper.insertPayment(dto);
     }
+
+
 }

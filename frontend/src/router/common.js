@@ -30,5 +30,16 @@ export default [
         path: '/qna/:id',
         name: 'QaDetail',
         component: () => import('@/views/common/QaDetailView.vue')
+    },
+    // ---------- 결제 ----------
+    {
+        path: '/payment/success',
+        name: 'PaymentSuccess',
+        component: () => import('@/views/common/PaymentSuccess.vue')
+    },
+    {
+        path: '/fail',
+        name: 'PaymentFail',
+        component: () => import('@/views/common/PaymentFail.vue')
     }
 ]
