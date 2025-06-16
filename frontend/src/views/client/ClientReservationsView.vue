@@ -157,17 +157,33 @@ function select(slot) {
 // 예약 신청
 async function apply() {
   try {
-    await axios.post(
+    const res = await axios.post(
         `/api/client/${userNo}/reservations`,
         { slotNo: selectedNo.value, userNo, content: '' }
     )
-    alert('예약이 완료되었습니다.')
-    router.push({ name: 'ClientMypage' })
+
+    const reservation = res.data
+    console.log(userNo)
+    alert('예약이 완료되었습니다. 결제 페이지로 이동합니다.')
+
+    // ✅ slotDate도 같이 전달
+    router.push({
+      path: '/client/reservations/payment',
+      query: {
+        reservationNo: reservation.no,
+        slotDate: reservation.slotDate,
+        slotTime: reservation.slotTime,
+        amount: reservation.amount,
+        lawyerName: lawyerName
+      }
+    })
+
   } catch (err) {
     console.error(err)
     alert('예약 신청에 실패했습니다.')
   }
 }
+
 </script>
 
 <style scoped>

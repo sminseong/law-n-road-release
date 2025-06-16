@@ -35,36 +35,38 @@ public class ReservationsService {
 
     // 예약 신청
     @Transactional
-    public void createReservation(ReservationsCreateDTO dto) {
-        // 1) slotNo 기반으로 금액 조회
+    public Long createReservation(ReservationsCreateDTO dto) {
+        // 1) 금액 조회 + 주문 생성
         Long amount = timeSlotMapper.getAmountBySlotNo(dto.getSlotNo());
 
         OrdersCreateDTO orderDto = new OrdersCreateDTO();
         orderDto.setUserNo(dto.getUserNo());
-        orderDto.setTotalAmount(amount);
+        orderDto.setAmount(amount);
         orderDto.setOrderType("RESERVATION");
         orderDto.setStatus("ORDERED");
         orderDto.setOrderCode("ORD-" + UUID.randomUUID().toString().replace("-", "").substring(0, 16));
         Long orderNo = ordersService.createOrder(orderDto);
         dto.setOrderNo(orderNo);
 
-        // 2) reservations 삽입
+        // 2) 예약 저장
         reservationsMapper.insertReservation(dto);
 
-        // 3) 슬롯 상태 업데이트(0: 예약됨)
+        // 3) 슬롯 상태 변경
         TimeSlotVO slot = timeSlotMapper.selectBySlotNo(dto.getSlotNo());
 
         TimeSlotVO updatedSlot = new TimeSlotVO(
-                slot.getNo(),
-                slot.getUserNo(),
-                slot.getSlotDate(),
-                slot.getSlotTime(),
-                0,
-                slot.getAmount()
+                slot.getNo(), slot.getUserNo(), slot.getSlotDate(),
+                slot.getSlotTime(), 0, slot.getAmount()
         );
         timeSlotMapper.updateStatus(updatedSlot);
+
+        // ⭐️ 슬롯의 시간/금액 값을 dto 에 주입 (컨트롤러 응답용)
+        dto.setSlotTime(slot.getSlotTime());
+        dto.setAmount(slot.getAmount());
+
+        return dto.getNo(); // 예약 번호
     }
-    
+
     // 사용자별 예약 조회
     @Transactional(readOnly = true)
     public List<ReservationsResponseDTO> getReservationsByUser(Long userNo) {
@@ -86,4 +88,10 @@ public class ReservationsService {
     public void changeToClosed(Long reservationNo) {
         reservationsMapper.updateReservationStatus(reservationNo, "DONE");
     }
+
+    @Transactional(readOnly = true)
+    public ReservationsResponseDTO getReservationByNo(Long reservationNo) {
+        return reservationsMapper.selectReservationByNo(reservationNo);
+    }
+
 }

@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/client/{userNo}/reservations")
@@ -21,13 +22,16 @@ public class ClientReservationsController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> createReservation(
+    public ResponseEntity<ReservationsResponseDTO> createReservation(
             @PathVariable Long userNo,
             @RequestBody ReservationsCreateDTO dto
     ) {
         dto.setUserNo(userNo);
-        service.createReservation(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        Long reservationNo = service.createReservation(dto);
+
+        // 👉 예약 상세 조회 후 반환
+        ReservationsResponseDTO response = service.getReservationByNo(reservationNo);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping

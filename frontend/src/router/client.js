@@ -30,6 +30,11 @@ export default [
         name: 'ClientReservationsList',
         component: () => import('@/views/client/ClientReservationsList.vue')
     },
+    {
+        path: '/client/reservations/payment',
+        name: 'ClientReservationsPayment',
+        component: () => import('@/views/client/ClientReservationsPayment.vue')
+    },
 
     // ---------- 방송 ----------
     {

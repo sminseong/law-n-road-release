@@ -19,5 +19,7 @@ public class ReservationsResponseDTO {
     private Status status;
     private String content;
     private Long amount; // 화면에 보여줄 금액 (JOIN)
+    private Long lawyerNo;
+    private String lawyerName;
 }
 
