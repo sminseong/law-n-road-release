@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class BroadcastStartResponseDto {
     private String sessionId;
     private String token;
+    private Long broadcastNo;
 }

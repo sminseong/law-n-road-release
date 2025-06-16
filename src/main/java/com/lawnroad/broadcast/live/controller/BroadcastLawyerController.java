@@ -2,6 +2,7 @@ package com.lawnroad.broadcast.live.controller;
 
 import com.lawnroad.broadcast.live.dto.BroadcastStartDto;
 import com.lawnroad.broadcast.live.dto.BroadcastStartResponseDto;
+import com.lawnroad.broadcast.live.dto.BroadcastViewDetailDto;
 import com.lawnroad.broadcast.live.dto.ScheduleDetailDto;
 import com.lawnroad.broadcast.live.service.BroadcastService;
 import com.lawnroad.broadcast.live.service.ScheduleService;
@@ -42,5 +43,16 @@ public class BroadcastLawyerController {
     public ResponseEntity<ScheduleDetailDto> getScheduleDetail(@PathVariable Long scheduleNo) {
         ScheduleDetailDto dto = scheduleService.findDetailByScheduleNo(scheduleNo);
         return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/view-detail/{scheduleNo}")
+    public ResponseEntity<BroadcastViewDetailDto> getDetailByScheduleNo(@PathVariable Long scheduleNo) {
+        return ResponseEntity.ok(broadcastService.getDetailByScheduleNo(scheduleNo));
+    }
+
+    @PostMapping("/end/{broadcastNo}")
+    public ResponseEntity<?> endBroadcast(@PathVariable Long broadcastNo) {
+        broadcastService.endBroadcast(broadcastNo);
+        return ResponseEntity.ok("방송 종료 완료");
     }
 }

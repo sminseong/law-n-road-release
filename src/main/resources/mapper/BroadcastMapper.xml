@@ -5,7 +5,14 @@
 
 <mapper namespace="com.lawnroad.broadcast.live.mapper.BroadcastMapper">
 
-    <insert id="insertBroadcast" parameterType="com.lawnroad.broadcast.live.model.BroadcastVo">
+    <resultMap id="BroadcastViewDetailMap" type="com.lawnroad.broadcast.live.dto.BroadcastViewDetailDto">
+        <result property="title" column="title"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="lawyerName" column="lawyer_name"/>
+        <result property="lawyerProfilePath" column="lawyer_profile"/>
+    </resultMap>
+
+    <insert id="insertBroadcast" parameterType="com.lawnroad.broadcast.live.model.BroadcastVo" useGeneratedKeys="true" keyProperty="no">
         INSERT INTO broadcast
         (user_no, schedule_no, session_id, start_time, status)
         VALUES
@@ -35,5 +42,55 @@
         WHERE session_id = #{sessionId}
         LIMIT 1
     </select>
+
+    <!-- 변호사용: schedule_no 기반 -->
+    <select id="findDetailByScheduleNo" resultMap="BroadcastViewDetailMap">
+        SELECT
+        bs.name AS title,
+        c.name AS category_name,
+        l.name AS lawyer_name,
+        l.profile AS lawyer_profile
+        FROM broadcast_schedule bs
+        JOIN category c ON bs.category_no = c.no
+        JOIN user u ON bs.user_no = u.no
+        JOIN lawyer l ON u.no = l.no
+        WHERE bs.no = #{scheduleNo}
+    </select>
+
+    <!-- 시청자용: broadcast_no 기반 -->
+    <select id="findDetailByBroadcastNo" resultMap="BroadcastViewDetailMap">
+        SELECT
+        bs.name AS title,
+        c.name AS category_name,
+        l.name AS lawyer_name,
+        l.profile AS lawyer_profile
+        FROM broadcast b
+        JOIN broadcast_schedule bs ON b.schedule_no = bs.no
+        JOIN category c ON bs.category_no = c.no
+        JOIN user u ON bs.user_no = u.no
+        JOIN lawyer l ON u.no = l.no
+        WHERE b.no = #{broadcastNo}
+    </select>
+
+    <!-- 키워드 리스트 -->
+    <select id="findKeywordsByScheduleNo" resultType="String">
+        SELECT keyword FROM keyword WHERE schedule_no = #{scheduleNo}
+    </select>
+
+    <!-- 방송no로 스케줄no 조회   -->
+    <select id="findScheduleNoByBroadcastNo" resultType="long">
+        SELECT schedule_no
+        FROM broadcast
+        WHERE no = #{broadcastNo}
+    </select>
+
+    <!-- 방송 종료 -->
+    <update id="endBroadcast" parameterType="long">
+        UPDATE broadcast
+        SET
+        end_time = NOW(),
+        status = 'DONE'
+        WHERE no = #{broadcastNo}
+    </update>
 
 </mapper>

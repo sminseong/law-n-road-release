@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lawnroad.broadcast.live.dto.*;
 import com.lawnroad.broadcast.live.service.ScheduleService;
 import com.lawnroad.common.util.FileStorageUtil;
+import com.lawnroad.common.util.JwtTokenUtil;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,6 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ScheduleController {
 
+    private final JwtTokenUtil jwtTokenUtil;
     private final ScheduleService scheduleService;
     private final FileStorageUtil fileStorageUtil;
 
@@ -84,8 +87,11 @@ public class ScheduleController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<List<ScheduleResponseDto>> getLawyerSchedules() {
-        long userNo = 1L;
+    public ResponseEntity<List<ScheduleResponseDto>> getLawyerSchedules(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtTokenUtil.parseToken(token);
+
+        Long userNo = claims.get("no", Long.class);
         List<ScheduleResponseDto> list = scheduleService.getSchedulesByLawyer(userNo);
         return ResponseEntity.ok(list);
     }
