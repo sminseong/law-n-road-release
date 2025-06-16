@@ -200,6 +200,8 @@ const handleDownload = async (file) => {
             :description="detail.description"
             :content="detail.content"
            :variables="JSON.parse(detail.varJson)"
+            :orderNo="orderNo"
+            :tmplNo="tmplNo"
         />
 
         <!-- 파일 타입일 때 -->

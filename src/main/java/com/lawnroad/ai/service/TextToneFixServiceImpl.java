@@ -7,6 +7,7 @@ import com.lawnroad.ai.dto.VariableDto;
 import com.lawnroad.common.config.GeminiConfig;
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentResponse;
+import com.lawnroad.template.service.ClientTemplateService;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
 
@@ -23,13 +24,15 @@ public class TextToneFixServiceImpl implements TextToneFixService {
   private final GeminiConfig geminiConfig;
   private final Client client;
   private final DocumentGenerator documentGenerator;
+  private final ClientTemplateService clientTemplateService;
   
-  public TextToneFixServiceImpl(GeminiConfig geminiConfig, DocumentGenerator documentGenerator) {
+  public TextToneFixServiceImpl(GeminiConfig geminiConfig, DocumentGenerator documentGenerator, ClientTemplateService clientTemplateService) {
     this.client = Client.builder()
         .apiKey(geminiConfig.getApiKey())
         .build();
     this.geminiConfig = geminiConfig;
     this.documentGenerator = documentGenerator;
+    this.clientTemplateService = clientTemplateService;
   }
   
   @Override
@@ -141,6 +144,13 @@ public class TextToneFixServiceImpl implements TextToneFixService {
         // AI가 작성한 HTML이 있으면 무조건 그걸 사용
         rawHtml = rawHtml.replace("\n", "<br>"); // 줄바꿈 보정
         finalHtml = documentGenerator.wrapAsHtml(rawHtml);
+      }
+      
+      System.out.println("\n" + dto + "\n");
+      
+      // ✅ 다운로드 상태로 서버에서 처리
+      if (dto.getOrderNo() != null && dto.getTmplNo() != null) {
+        clientTemplateService.markTemplateAsDownloaded(dto.getOrderNo(), dto.getTmplNo());
       }
     }
     
@@ -255,7 +265,7 @@ public class TextToneFixServiceImpl implements TextToneFixService {
 그게 '예', '그래', '응', '출력해', '좋아' 등의 긍정적인 표현이라면 다음 단계로 진행하세요.
 반복적으로 동일 질문을 하지 마세요. 예외는 없습니다.
 
-문서를 마칠 때는 반드시 [문서 생성 완료! 문서를 다운로드 받으세요!] 를 넣으세요
+문서를 마칠 때는 반드시 [문서 생성 완료! 문서를 다운로드 받으세요!] 를 넣고, 그 다음 완성된 문서를 보여주세요.
      """, today));
     
     return sb.toString();

@@ -9,7 +9,9 @@ const props = defineProps({
   variables: {
     type: Array,
     required: true
-  }
+  },
+  orderNo: Number,
+  tmplNo: Number,
 })
 
 // 채팅 상태
@@ -55,7 +57,6 @@ async function send() {
 async function downloadPdf() {
   await nextTick()
   const element = document.querySelector('.preview-content')
-  console.log("11111111111111111 : " + element)
   if (!element) {
     alert("PDF로 저장할 내용이 없습니다.")
     return
