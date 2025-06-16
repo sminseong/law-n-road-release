@@ -28,21 +28,39 @@
 
   // 로그아웃 처리
   const logout = () => {
+    // ✅ 1. 로컬스토리지 항목 삭제
     localStorage.removeItem('token')
     localStorage.removeItem('refreshToken')
     localStorage.removeItem('accountType')
     localStorage.removeItem('name')
     localStorage.removeItem('nickname')
 
-    //axios.defaults.headers.common["Authorization"] = null
+    // ✅ 2. Axios 인증 헤더 제거
     delete axios.defaults.headers.common['Authorization']
 
+    // ✅ 3. 프론트 상태 초기화
     isLoggedIn.value = false
     nickname.value = '회원'
 
+    // ✅ 4. 콘솔 로그 출력: 삭제 여부 확인
+    console.log('[로그아웃 완료] localStorage 상태 확인:')
+    console.log('token:', localStorage.getItem('token'))
+    console.log('refreshToken:', localStorage.getItem('refreshToken'))
+    console.log('accountType:', localStorage.getItem('accountType'))
+    console.log('name:', localStorage.getItem('name'))
+    console.log('nickname:', localStorage.getItem('nickname'))
+
+    // ✅ 5. 로그인 페이지로 이동 + 새로고침
     router.push('/login')
-    setTimeout(() => location.reload(), 300) // 선택적 새로고침
+    setTimeout(() => location.reload(), 300) // 새로고침으로 컴포넌트 초기화
+    console.log('[로그아웃 완료] localStorage 상태 확인:')
+    console.log('token:', localStorage.getItem('token'))
+    console.log('refreshToken:', localStorage.getItem('refreshToken'))
+    console.log('accountType:', localStorage.getItem('accountType'))
+    console.log('name:', localStorage.getItem('name'))
+    console.log('nickname:', localStorage.getItem('nickname'))
   }
+
 
 
   // 메인 베너

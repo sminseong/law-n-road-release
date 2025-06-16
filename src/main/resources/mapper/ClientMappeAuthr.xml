@@ -3,17 +3,24 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.lawnroad.account.mapper.ClientMapper">
-    <select id="countByClientId" resultType="int">
+    <select id="countByClientId1" resultType="int">
         SELECT COUNT(*)
         FROM client
         WHERE client_id = #{clientId}
     </select>
 
+    <select id="countByClientId2" resultType="int">
+        SELECT COUNT(*)
+        FROM lawyer
+        WHERE lawyer_id = #{clientId}
+    </select>
+
+
+
 
     <select id="countByClientNickName" resultType="int">
         SELECT COUNT(*) FROM client WHERE nickname = #{nickname}
     </select>
-
 
     <insert id="insertClient">
         INSERT INTO client (
@@ -23,8 +30,6 @@
                  )
     </insert>
 
-
-
 <!--    <select id="findByEmail" resultType="com.lawnroad.account.entity.ClientEntity">-->
 <!--        SELECT * FROM client WHERE email = #{email}-->
 <!--    </select>-->
@@ -33,15 +38,8 @@
         SELECT * FROM client WHERE client_id = #{clientId}
     </select>
 
-
     <select id="countByEmail" resultType="int">
         SELECT COUNT(*) FROM client WHERE email = #{email}
     </select>
-
-
-
-
-
-
 
 </mapper>
