@@ -38,6 +38,22 @@ const editorVariables = ref([])
 
 // 제출 핸들러
 async function handleSubmit() {
+  if (name.value.length > 50) {
+    return alert('❌ 템플릿명은 50자 이내로 입력해 주세요.');
+  }
+  if (price.value < 0 || price.value > 2147483647) {
+    return alert('❌ 가격은 0원 이상 2,147,483,647원 이하만 입력 가능합니다.');
+  }
+  if (discountRate.value < 0 || discountRate.value > 100) {
+    return alert('❌ 할인율은 0% 이상 100% 이하로만 입력 가능합니다.');
+  }
+  if (!name.value.trim()) {
+    return alert('❌ 템플릿명을 입력해 주세요.');
+  }
+  if (!categoryNo.value) {
+    return alert('❌ 카테고리를 선택해 주세요.');
+  }
+
   const formData = new FormData()
 
   formData.append('name', name.value)
@@ -52,6 +68,9 @@ async function handleSubmit() {
   }
 
   if (selectedTab.value === 'ai') {
+    if (!editorContent.value.trim()) {
+      return alert('❌ 본문 내용을 입력해 주세요.');
+    }
     formData.append('content', editorContent.value)
     formData.append('varJson', JSON.stringify(editorVariables.value))
     formData.append('aiEnabled', 1)
@@ -66,8 +85,12 @@ async function handleSubmit() {
     alert('템플릿이 등록되었습니다.')
     router.push('/lawyer/templates')
   } catch (e) {
-    console.error(e)
-    alert('등록 실패')
+    if (e.response && e.response.status === 400) {
+      alert(e.response.data)  // 백엔드에서 보낸 메시지 출력
+    } else {
+      console.error(e)
+      alert('알 수 없는 오류가 발생했습니다.')
+    }
   }
 }
 

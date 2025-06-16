@@ -60,7 +60,7 @@ public class LawyerTemplateController {
         
         // 필수 파일 누락 시 종료
         if (files == null || files.isEmpty()) {
-          return ResponseEntity.badRequest().body("템플릿 파일이 누락되었습니다.");
+          return ResponseEntity.badRequest().body("❌ 템플릿 파일이 누락되었습니다.");
         }
         
         List<Map<String, String>> metadataList = new ArrayList<>();
@@ -151,10 +151,10 @@ public class LawyerTemplateController {
             ncpObjectStorageUtil.delete(path);
           }
         } catch (Exception ex) {
-          System.err.println("파일 삭제 실패: " + path);
+          System.err.println("❌ 파일 삭제 실패: " + path);
         }
       }
-      return ResponseEntity.internalServerError().body("등록 실패: " + e.getMessage());
+      return ResponseEntity.internalServerError().body("❌ 등록 실패: " + e.getMessage());
     }
   }
   
