@@ -134,10 +134,10 @@ public class LawyerTemplateController {
       @RequestParam String type
   ) {
     if ("EDITOR".equalsIgnoreCase(type)) {
-      EditorTemplateDetailDto dto = templateService.getEditorTemplateDetail(templateNo);
+      LawyerEditorTemplateDetailDto dto = templateService.getEditorTemplateDetail(templateNo);
       return ResponseEntity.ok(dto);
     } else if ("FILE".equalsIgnoreCase(type)) {
-      FileTemplateDetailDto dto = templateService.getFileTemplateDetail(templateNo);
+      LawyerFileTemplateDetailDto dto = templateService.getFileTemplateDetail(templateNo);
       return ResponseEntity.ok(dto);
     } else {
       return ResponseEntity.badRequest().body("잘못된 템플릿 유형입니다: " + type);
@@ -198,8 +198,8 @@ public class LawyerTemplateController {
     
     try {
       // 1) 기존 메타 조회 (무조건 조회)
-      EditorTemplateDetailDto editorOrigin = null;
-      FileTemplateDetailDto fileOrigin = null;
+      LawyerEditorTemplateDetailDto editorOrigin = null;
+      LawyerFileTemplateDetailDto fileOrigin = null;
       if ("EDITOR".equalsIgnoreCase(type)) {
         editorOrigin = templateService.getEditorTemplateDetail(dto.getNo());
       } else {

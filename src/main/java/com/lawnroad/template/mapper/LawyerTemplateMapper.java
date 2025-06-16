@@ -1,13 +1,12 @@
 package com.lawnroad.template.mapper;
 
-import com.lawnroad.template.dto.EditorTemplateDetailDto;
-import com.lawnroad.template.dto.FileTemplateDetailDto;
+import com.lawnroad.template.dto.LawyerEditorTemplateDetailDto;
+import com.lawnroad.template.dto.LawyerFileTemplateDetailDto;
 import com.lawnroad.template.dto.TemplateDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface LawyerTemplateMapper {
@@ -43,10 +42,10 @@ public interface LawyerTemplateMapper {
   int markTemplateAsDeleted(@Param("templateNo") Long templateNo);
   
   // 에디터 기반 템플릿 상세 조회
-  EditorTemplateDetailDto findEditorTemplateDetail(@Param("templateNo") Long templateNo);
+  LawyerEditorTemplateDetailDto findEditorTemplateDetail(@Param("templateNo") Long templateNo);
   
   // 파일 기반 템플릿 상세 조회
-  FileTemplateDetailDto findFileTemplateDetail(@Param("templateNo") Long templateNo);
+  LawyerFileTemplateDetailDto findFileTemplateDetail(@Param("templateNo") Long templateNo);
   
   // 메타데이터만 UPDATE (썸네일 포함)
   int updateTemplateMeta(TemplateDto base);
