@@ -63,7 +63,11 @@ const submitLogin = async () => {
 
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`
 
-    router.push(tab.value === 'lawyer' ? '/lawyer' : '/')
+    // ✅ 리다이렉트 처리 추가
+    const redirect = route.query.redirect || (tab.value === 'lawyer' ? '/lawyer' : '/')
+    router.push(redirect)
+    // router.push(tab.value === 'lawyer' ? '/lawyer' : '/')
+
   } catch (err) {
     console.error('❌ 로그인 실패:', err)
 

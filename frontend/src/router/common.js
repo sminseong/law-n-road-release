@@ -47,4 +47,18 @@ export default [
 
 
 
+    },
+
+    // ---------- 템플릿 ----------
+    {
+        path: '/templates',
+        name: 'TemplateList',
+        component: () => import('@/views/client/template/TemplateListView.vue')
+    },
+    {
+        path: '/templates/:no',
+        name: 'TemplateDetail',
+        component: () => import('@/views/client/template/TemplateDetailView.vue')
+    },
+
 ]

@@ -32,6 +32,27 @@ public class SecurityConfig {
 
 
 
+
+
+//  private final JwtAuthenticationFilter jwtAuthenticationFilter;
+//  @Bean
+//  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//    http
+//        .csrf().disable()
+//        .authorizeHttpRequests(auth -> auth
+//            // 비회원도 접근 허용
+//            .requestMatchers("/api/public/**").permitAll()
+//            // /api/client/** 경로는 ROLE_CLIENT 권한을 가진 사용자만 접근 가능
+//            .requestMatchers("/api/client/**").hasRole("CLIENT")
+//            // /api/lawyer/** 경로는 ROLE_LAWYER 권한을 가진 사용자만 접근 가능
+//            .requestMatchers("/api/lawyer/**").hasRole("LAWYER")
+//            .anyRequest().permitAll()
+//        )
+//        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+//
+//    return http.build();
+//  }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
