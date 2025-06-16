@@ -12,34 +12,48 @@ export default defineComponent({
   setup() {
     /** 방송 */
     const videoContainer = ref(null);
-    const sessionId = "ses_FBdN3DN4gu";
+    const route = useRoute();
+    const broadcastNo = route.params.broadcastNo;
 
-    // OpenVidu (생략: 기존 코드와 동일)
+    // OpenVidu
     const connectOpenVidu = async () => {
       try {
-        const { data: token } = await axios.post(
-            "/api/broadcast/token",
-            { sessionId, role: "SUBSCRIBER" },
-            { headers: { "Content-Type": "application/json" } }
-        );
+        const { data } = await axios.get(`/api/client/broadcast/${broadcastNo}/token`)
+        const { sessionId, token } = data
+
+        console.log("👁️ 시청자 sessionId:", sessionId)
+        console.log("🔑 시청자 token:", token)
+
         const OV = new OpenVidu();
         const session = OV.initSession();
+
         session.on("streamCreated", ({ stream }) => {
+          console.log("📡 시청자: streamCreated 발생");
+
           const subscriber = session.subscribe(stream, undefined);
-          subscriber.on("videoElementCreated", (event) => {
-            const video = event.element;
+          console.log("Subscribing to", stream.connection.connectionId);
+
+          nextTick(() => {
+            const video = document.createElement("video");
+            video.autoplay = true;
+            video.playsInline = true;
+            video.muted = true; // 시청자도 autoplay 보장 위해 mute
             video.style.width = "100%";
             video.style.height = "100%";
             video.style.objectFit = "cover";
-            video.style.borderRadius = "1rem";
-            nextTick(() => {
-              if (videoContainer.value) {
-                videoContainer.value.innerHTML = "";
-                videoContainer.value.appendChild(video);
-              }
-            });
+
+            subscriber.addVideoElement(video); // ✅ 여기 수정됨
+
+            if (videoContainer.value) {
+              videoContainer.value.innerHTML = "";
+              videoContainer.value.appendChild(video);
+              console.log("✅ [시청자] 수동 video element append 완료");
+            } else {
+              console.warn("❌ videoContainer is null");
+            }
           });
         });
+
         await session.connect(token);
         console.log("✅ [시청자] 방송 연결 완료");
       } catch (err) {
@@ -49,11 +63,8 @@ export default defineComponent({
 
 
 
-
     /** 채팅 */
     const stompClient = ref(null);
-    const route = useRoute();
-    const broadcastNo = route.params.broadcastNo;
     const message = ref("");
     const messages = ref([]);
     const messageContainer = ref(null);
@@ -198,11 +209,13 @@ export default defineComponent({
     });
 
     return {
+      videoContainer,
+      connectOpenVidu,
+      broadcastNo,
       message,
       messages,
       sendMessage,
       messageContainer,
-      videoContainer,
       nickname,
       dropdownIdx,
       openDropdown,

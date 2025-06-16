@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lawnroad.broadcast.live.mapper.BroadcastMapper">
+
+    <insert id="insertBroadcast" parameterType="com.lawnroad.broadcast.live.model.BroadcastVo">
+        INSERT INTO broadcast
+        (user_no, schedule_no, session_id, start_time, status)
+        VALUES
+        (#{userNo}, #{scheduleNo}, #{sessionId}, #{startTime}, #{status})
+    </insert>
+
+    <select id="findByScheduleNo" resultType="com.lawnroad.broadcast.live.model.BroadcastVo">
+        SELECT *
+        FROM broadcast
+        WHERE schedule_no = #{scheduleNo}
+        LIMIT 1
+    </select>
+
+    <!-- 방송 번호로 세션 ID, 상태 등 조회 -->
+    <select id="findByNo" resultType="com.lawnroad.broadcast.live.dto.BroadcastSessionDto">
+        SELECT
+        b.no AS broadcast_no,
+        b.session_id,
+        b.status
+        FROM broadcast b
+        WHERE b.no = #{broadcastNo}
+    </select>
+
+    <select id="findBySessionId" resultType="com.lawnroad.broadcast.live.model.BroadcastVo">
+        SELECT *
+        FROM broadcast
+        WHERE session_id = #{sessionId}
+        LIMIT 1
+    </select>
+
+</mapper>
