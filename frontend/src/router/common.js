@@ -32,6 +32,23 @@ export default [
         component: () => import('@/views/common/QaDetailView.vue')
     },
 
+    {
+        path: '/forgot-password',
+        component: () => import('@/views/common/ForgotPasswordView.vue')
+    },
+    {
+        path: '/user/mypage',
+        name: 'UserMypage',
+        component: () => import('@/views/common/UserMypageHome.vue')
+    },
+
+
+
+
+
+
+    },
+
     // ---------- 템플릿 ----------
     {
         path: '/templates',
