@@ -23,6 +23,7 @@ const clientId = ref('')
 const nameForPw = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
+const userType = ref('client') // 👈 사용자 유형 추가
 
 // 인증번호 요청
 const requestEmailCode = async () => {
@@ -59,15 +60,25 @@ const verifyEmailCode = async () => {
 const findId = async () => {
   if (!nameForId.value || !email.value) return alert('이름과 이메일을 입력하세요.')
   if (!isEmailVerified.value) return alert('이메일 인증을 먼저 완료하세요.')
+
   try {
     const res = await axios.post('/api/auth/find-id', {
       fullName: nameForId.value,
       email: email.value
     })
-    foundId.value = res.data.clientId
+
+    const { clientId, lawyerId } = res.data
+    if (clientId) {
+      foundId.value = `의뢰인 아이디: ${clientId}`
+    } else if (lawyerId) {
+      foundId.value = `변호사 아이디: ${lawyerId}`
+    } else {
+      foundId.value = null
+      alert('❌ 일치하는 계정을 찾을 수 없습니다.')
+    }
   } catch (err) {
     console.error(err)
-    alert('일치하는 계정이 없습니다.')
+    alert('일치하는 계정을 찾을 수 없습니다.')
     foundId.value = null
   }
 }
@@ -84,8 +95,11 @@ const resetPassword = async () => {
 
   try {
     await axios.post('/api/auth/reset-password', {
+      userId: clientId.value,
+      fullName: nameForPw.value,
       email: email.value,
-      newPassword: newPassword.value
+      newPassword: newPassword.value,
+      userType: userType.value // 👈 사용자 유형 전송
     })
     alert('✅ 비밀번호가 변경되었습니다. 로그인해주세요.')
     router.push('/login?type=client')
@@ -99,13 +113,12 @@ const resetPassword = async () => {
 <template>
   <AccountFrame title="아이디 / 비밀번호 찾기">
     <section class="w-100" style="max-width: 420px;">
-      <!-- 탭 전환 버튼 -->
       <div class="btn-group mb-4 w-100">
         <button :class="tab === 'id' ? 'btn btn-primary' : 'btn btn-outline-secondary'" @click="tab = 'id'">아이디 찾기</button>
         <button :class="tab === 'pw' ? 'btn btn-primary' : 'btn btn-outline-secondary'" @click="tab = 'pw'">비밀번호 찾기</button>
       </div>
 
-      <!-- 아이디 찾기 폼 -->
+      <!-- 아이디 찾기 -->
       <form v-if="tab === 'id'" @submit.prevent="findId">
         <div class="mb-3">
           <input type="text" v-model="nameForId" class="form-control" placeholder="이름(실명)" required />
@@ -132,7 +145,7 @@ const resetPassword = async () => {
         </div>
       </form>
 
-      <!-- 비밀번호 재설정 폼 -->
+      <!-- 비밀번호 재설정 -->
       <form v-if="tab === 'pw'" @submit.prevent="resetPassword">
         <div class="mb-3">
           <input type="text" v-model="clientId" class="form-control" placeholder="아이디" required />
@@ -152,6 +165,18 @@ const resetPassword = async () => {
             <button type="button" class="btn btn-outline-secondary" @click="verifyEmailCode" :disabled="isEmailVerified">
               {{ isEmailVerified ? '✅ 인증 완료' : '인증 승인' }}
             </button>
+          </div>
+        </div>
+        <!-- 👇 사용자 유형 선택 -->
+        <div class="mb-3">
+          <label class="form-label">사용자 유형</label>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" id="client" value="client" v-model="userType">
+            <label class="form-check-label" for="client">의뢰인</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" id="lawyer" value="lawyer" v-model="userType">
+            <label class="form-check-label" for="lawyer">변호사</label>
           </div>
         </div>
         <div class="mb-3">

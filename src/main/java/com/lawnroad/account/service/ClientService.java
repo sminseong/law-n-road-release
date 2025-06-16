@@ -95,10 +95,47 @@ public class ClientService {
         return clientMapper.findClientId(fullName, email);
     }
 
-    public boolean resetPassword(String email, String newPassword) {
+//    public boolean resetPassword(String email, String newPassword) {
+//        String hashed = passwordEncoder.encode(newPassword);
+//        int result = clientMapper.updatePasswordByEmail(email, hashed);
+//        return result > 0;
+//    }
+
+//    @Override
+//    public boolean resetPassword(String clientId, String email, String newPassword) {
+//        ClientEntity client = clientMapper.findByClientId(clientId);
+//        if (client == null || !client.getEmail().equals(email)) {
+//            return false;
+//        }
+//
+//        String hashed = passwordEncoder.encode(newPassword);
+//        clientMapper.updatePassword(clientId, hashed);
+//        return true;
+//    }
+
+
+    public boolean resetPassword(String clientId, String email, String fullName, String newPassword) {
+        ClientEntity client = clientMapper.findByClientId(clientId);
+        if (client == null || !client.getEmail().equals(email) || !client.getName().equals(fullName)) {
+            return false;
+        }
+
         String hashed = passwordEncoder.encode(newPassword);
-        int result = clientMapper.updatePasswordByEmail(email, hashed);
-        return result > 0;
+        clientMapper.updatePassword(clientId, hashed);
+        return true;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }

@@ -13,8 +13,11 @@ public interface ClientMapper {
     @Select("SELECT client_id FROM client WHERE name = #{fullName} AND email = #{email}")
     String findClientId(@Param("fullName") String fullName, @Param("email") String email);
 
-    @Update("UPDATE client SET pw_hash = #{pwHash} WHERE email = #{email}")
-    int updatePasswordByEmail(@Param("email") String email, @Param("pwHash") String pwHash);
+//    @Update("UPDATE client SET pw_hash = #{pwHash} WHERE email = #{email}")
+//    int updatePasswordByEmail(@Param("email") String email, @Param("pwHash") String pwHash);
+
+    @Update("UPDATE client SET pw_hash = #{newHashedPassword} WHERE client_id = #{clientId}")
+    void updatePassword(@Param("clientId") String clientId, @Param("newHashedPassword") String newHashedPassword);
 
 
     int countByClientId1(@Param("clientId") String clientId);

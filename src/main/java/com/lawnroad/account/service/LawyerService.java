@@ -103,18 +103,34 @@ public class LawyerService {
         LawyerEntity lawyer = lawyerMapper.findByLawyerId(lawyerId);
         System.out.println("🟡 lawyerService.login() 진입, ID: " + lawyerId);
         if (lawyer == null) {
+            System.out.println("아이디 존재 X");
             throw new IllegalArgumentException("아이디 존재하지 않음");
         }
 
         if (!passwordEncoder.matches(rawPassword, lawyer.getPwHash())) {
+            System.out.println("비번 불일치");
             throw new IllegalArgumentException("비밀번호 불일치");
+
         }
 
         return lawyer;
     }
 
+    public String findLawyerId(String fullName, String email) {
+        return lawyerMapper.findLawyerId(fullName, email);
+    }
 
 
 
+    public boolean resetPassword(String lawyerId, String email, String fullName, String newPassword) {
+        LawyerEntity lawyer = lawyerMapper.findByLawyerId(lawyerId);
 
+        if (lawyer == null || !lawyer.getEmail().equals(email) || !lawyer.getName().equals(fullName)) {
+            return false;
+        }
+
+        String hashed = passwordEncoder.encode(newPassword);
+        lawyerMapper.updatePassword(lawyerId, hashed);
+        return true;
+    }
 }

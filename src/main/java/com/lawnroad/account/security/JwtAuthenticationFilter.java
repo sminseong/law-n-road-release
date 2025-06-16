@@ -116,17 +116,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                System.out.println(SecurityContextHolder.getContext().getAuthentication());
                 System.out.println("여기까지 옴");
+
+
             }
         }
 
         filterChain.doFilter(request, response);
     }
-
-
-
-
-
-
 
 }
