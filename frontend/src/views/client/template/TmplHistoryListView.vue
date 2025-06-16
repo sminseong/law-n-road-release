@@ -18,17 +18,17 @@ const filters = ref([
   }
 ])
 const currentFilters = ref({})
+const isDownloaded = ref(false)
 
 // 템플릿 목록 불러오기
 async function fetchOrders(page = 1, query = {}) {
   const params = { page, limit: 10, ...query }
   const res = await http.get('/api/client/templates/orders', params)
 
-  console.log(res.data.orders)
-
   rows.value = res.data.orders
   totalPages.value = res.data.totalPages
   currentPage.value = page
+  isDownloaded.value = res.data.isDownloaded
 }
 
 function handlePageChange(page) {

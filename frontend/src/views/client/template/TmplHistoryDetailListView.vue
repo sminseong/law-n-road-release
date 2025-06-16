@@ -9,6 +9,7 @@ import http from '@/libs/HttpRequester'
 const router = useRouter()
 const route = useRoute()
 const orderNo = Number(route.params.orderNo)
+const isDownloaded = ref(false)
 
 // 2) 리액티브 상태 정의
 const rows = ref([])
@@ -94,9 +95,12 @@ async function fetchItems(page = 1, query = {}) {
   )
   // merged API returns { items, totalPages }
 
+  console.log('res:', res.data)
+
   rows.value       = res.data.templates
   totalPages.value = res.data.totalPages
   currentPage.value= page
+  isDownloaded.value = rows.value.some(item => item.isDownloaded === true)
 }
 
 // 6) 핸들러들
@@ -130,13 +134,33 @@ function handleRowClick(row) {
 // 7) 초기 로딩
 onMounted(() => fetchItems())
 
+// 환불 버튼
+const handleRefund = async () => {
+  const ok = confirm('정말 환불하시겠습니까?')
+  if (!ok) return
+
+  try {
+    // await http.post(`/api/client/orders/${orderNo}/refund`)
+    // 예: 라우터 이동 또는 상태 갱신
+  } catch (err) {
+    alert('환불 중 오류가 발생했습니다.')
+    console.error(err)
+  }
+}
 
 </script>
 
 <template>
   <ClientFrame>
     <div class="container py-5">
-      <h4 class="mb-4 fw-bold">주문 번호 {{ orderNo }}</h4>
+      <!-- 주문 번호 + 환불 버튼 -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-4 fw-bold">주문 번호 {{ orderNo }}</h4>
+        <button class="btn btn-outline-danger btn-sm" :disabled="isDownloaded" @click="handleRefund">
+          환불하기
+        </button>
+      </div>
+
       <CustomTable
           :rows="rows"
           :columns="[

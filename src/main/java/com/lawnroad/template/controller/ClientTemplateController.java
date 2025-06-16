@@ -66,6 +66,11 @@ public class ClientTemplateController {
     response.setOrders(list);
     response.setTotalPages(totalPages);
     
+    for (ClientOrderListDto order : response.getOrders()) {
+      boolean isDownloaded = clientTemplateService.checkIsDownloaded(order.getOrderNo());
+      order.setIsDownloaded(isDownloaded ? 1 : 0);
+    }
+    
     return ResponseEntity.ok(response);
   }
   

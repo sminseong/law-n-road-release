@@ -11,4 +11,5 @@ public class ClientOrderListDto {
   
   private String firstTemplateName;  // 대표 템플릿명
   private int templateCount;         // 전체 상품 수
+  private int isDownloaded;
 }
