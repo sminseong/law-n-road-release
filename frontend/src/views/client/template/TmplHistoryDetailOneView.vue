@@ -196,7 +196,7 @@ const handleDownload = async (file) => {
 
         <!-- 에디터 타입일 때 -->
         <ChatBox
-            v-if="templateType === 'EDITOR'"
+            v-if="templateType === 'EDITOR' && orderNo && tmplNo"
             :description="detail.description"
             :content="detail.content"
            :variables="JSON.parse(detail.varJson)"

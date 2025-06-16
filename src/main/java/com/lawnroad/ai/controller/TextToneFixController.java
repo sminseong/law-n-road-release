@@ -5,6 +5,7 @@ import com.lawnroad.ai.dto.InterviewChatResponseDto;
 import com.lawnroad.ai.dto.TextToneFixRequestDto;
 import com.lawnroad.ai.dto.TextToneFixResponseDto;
 import com.lawnroad.ai.service.TextToneFixService;
+import com.sun.source.doctree.DocCommentTree;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +37,7 @@ public class TextToneFixController {
   }
   @PostMapping("/interview")
   public ResponseEntity<InterviewChatResponseDto> chat(@RequestBody InterviewChatRequestDto dto) {
+    
     InterviewChatResponseDto response = textToneFixService.generateResponse(dto);
     
     // AI: 제거
@@ -43,7 +45,6 @@ public class TextToneFixController {
         response.getReply().replaceAll("(?m)^AI:\\s*", "").trim()
     );
     
-    System.out.println(response);
     return ResponseEntity.ok(response);
   }
   

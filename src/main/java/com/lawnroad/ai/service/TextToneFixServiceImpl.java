@@ -146,9 +146,7 @@ public class TextToneFixServiceImpl implements TextToneFixService {
         finalHtml = documentGenerator.wrapAsHtml(rawHtml);
       }
       
-      System.out.println("\n" + dto + "\n");
-      
-      // ✅ 다운로드 상태로 서버에서 처리
+      // 다운로드 상태로 서버에서 처리
       if (dto.getOrderNo() != null && dto.getTmplNo() != null) {
         clientTemplateService.markTemplateAsDownloaded(dto.getOrderNo(), dto.getTmplNo());
       }
