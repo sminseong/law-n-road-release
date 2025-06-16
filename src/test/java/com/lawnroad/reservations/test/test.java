@@ -1,7 +1,9 @@
 package com.lawnroad.reservations.test;
 
+import com.lawnroad.broadcast.chat.dto.AutoReplyDTO;
 import com.lawnroad.broadcast.chat.dto.LawyerPreQuestion;
 import com.lawnroad.broadcast.chat.dto.PreQuestionDTO;
+import com.lawnroad.broadcast.chat.mapper.AutoReplyMapper;
 import com.lawnroad.broadcast.chat.mapper.PreQuestionMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,8 @@ public class test {
 
     @Autowired
     private PreQuestionMapper mapper;
+    @Autowired
+    private AutoReplyMapper autoReplyMapper;
 
     @Test
     void preQuestionMapperTest() {
@@ -27,7 +31,27 @@ public class test {
         for (LawyerPreQuestion lawyerPreQuestion : list) {
             System.out.println(lawyerPreQuestion);
 
-        }    }
+        }
+    }
+
+    @Test
+    void insertAutoReplyLawyerTest() {
+        AutoReplyDTO dto = new AutoReplyDTO();
+        dto.setScheduleNo(3L);
+        dto.setKeyword("hello2");
+        dto.setMessage("자동응답 메시지2");
+        autoReplyMapper.insertAutoReply(dto);
+    }
+
+    @Test
+    void findByAutoReplyLawyerTest() {
+        List<AutoReplyDTO> list = autoReplyMapper.findByAutoReply(3);
+        for (AutoReplyDTO autoReplyDTO : list) {
+            System.out.println(autoReplyDTO);
+
+        }
+    }
+
 
 
 }

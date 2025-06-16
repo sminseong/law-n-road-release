@@ -63,14 +63,14 @@ export default defineComponent({
 
 
 
+
     /** 채팅 */
     const stompClient = ref(null);
     const message = ref("");
     const messages = ref([]);
     const messageContainer = ref(null);
-    const nickname = ref('회원')
 
-    // --- 닉네임별 고정 랜덤 색상 ---
+    // 닉네임별 랜덤 색상
     const nicknameColors = ref({});
     const colorPalette = [
       "#1abc9c", "#034335", "#84ddaa", "#450978",
@@ -88,18 +88,27 @@ export default defineComponent({
       return nicknameColors.value[nick];
     }
 
-    // --- 신고/드롭다운 상태 ---
-    const dropdownIdx = ref(null); // 드롭다운이 열린 메시지 index
+    // 드롭다운/신고 모달 상태
+    const dropdownIdx = ref(null);
     const selectedUser = ref(null);
     const selectedMessage = ref(null);
     const isConfirmModal = ref(false);
     const isCompleteModal = ref(false);
+    const selectedUserNo = ref(null);
 
-    // STOMP 연결
+    // STOMP 연결 및 입장 메시지 전송
     const connect = () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert("로그인이 필요합니다!");
+        return;
+      }
       stompClient.value = new Client({
         webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
         reconnectDelay: 5000,
+        connectHeaders: {
+          Authorization: `Bearer ${token}`,
+        },
         onConnect: () => {
           stompClient.value.subscribe(
               `/topic/${broadcastNo}`,
@@ -109,33 +118,49 @@ export default defineComponent({
                 scrollToBottom();
               }
           );
+          // 입장 시 type: "ENTER"만 전달
           stompClient.value.publish({
             destination: "/app/chat.addUser",
-            body: JSON.stringify({ broadcastNo, nickname: nickname.value
-            }),
+            body: JSON.stringify({ broadcastNo }),
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           });
         },
         onStompError: (frame) => {
-          console.error("STOMP error:", frame);
+          if (frame.body && frame.body.includes("expired")) {
+            alert("로그인이 만료되었습니다. 다시 로그인 해주세요.");
+            localStorage.removeItem('token');
+            location.href = "/login";
+          } else {
+            console.error("STOMP error:", frame);
+          }
         },
       });
       stompClient.value.activate();
     };
 
-    // 메시지 전송
+    // 채팅 메시지 전송 (type: "CHAT"만 전달)
     const sendMessage = () => {
       const trimmed = message.value.trim();
+      const token = localStorage.getItem('token');
       if (!trimmed || !stompClient.value?.connected) return;
+      if (!token) {
+        alert("로그인이 필요합니다!");
+        return;
+      }
       stompClient.value.publish({
         destination: "/app/chat.sendMessage",
-        body: JSON.stringify({ broadcastNo, nickname: nickname.value,
-             message: trimmed }),
+        body: JSON.stringify({ broadcastNo, message: trimmed }),
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       message.value = "";
       scrollToBottom();
     };
 
-    // 자동 스크롤 하단 이동
+    // 스크롤 자동 하단 이동
     const scrollToBottom = () => {
       nextTick(() => {
         if (messageContainer.value) {
@@ -144,13 +169,12 @@ export default defineComponent({
       });
     };
 
-    // --- 닉네임 클릭시 드롭다운 오픈 ---
+    // 닉네임 드롭다운
     const openDropdown = (idx, msg) => {
-      if (msg.nickname === nickname) return;
       dropdownIdx.value = idx;
       selectedUser.value = msg.nickname;
       selectedMessage.value = msg.message;
-      // 외부 클릭 시 닫기 이벤트 추가
+      selectedUserNo.value = msg.no;
       setTimeout(() => {
         window.addEventListener("mousedown", onWindowClick);
       }, 0);
@@ -163,44 +187,37 @@ export default defineComponent({
       if (!e.target.closest(".nickname-dropdown")) closeDropdown();
     };
 
-    // --- 신고 드롭다운에서 클릭 시 확인 모달 오픈 ---
+    // 신고 모달
     const onReportClick = () => {
       isConfirmModal.value = true;
       closeDropdown();
     };
-    // 확인 모달 → 신고 완료 처리
     const confirmReport = async () => {
       try {
-        await axios.post("/api/chat/report", {
-          userNo: 1,   // 신고 대상 유저 no
-          nickname: selectedUser.value, // 신고 대상 닉네임
-          message: selectedMessage.value, // 신고 메시지 내용
-        });
+        const token = localStorage.getItem('token');
+        await axios.post(
+            "/api/client/chat/report",
+            {
+              userNo: selectedUserNo.value,
+              nickname: selectedUser.value,
+              message: selectedMessage.value,
+            },
+            {
+              headers: { Authorization: `Bearer ${token}` }
+            },
+        );
+
       } catch (e) {}
       isConfirmModal.value = false;
       isCompleteModal.value = true;
     };
-    // 완료 모달 닫기
     const closeCompleteModal = () => {
       isCompleteModal.value = false;
     };
 
-    onMounted(async () => {
-      const clientId = localStorage.getItem('clientId');
-      const password = localStorage.getItem('password');
-
-      if (clientId && password) {
-        await axios.post("/chat/test", {
-          clientId,
-          password
-        });
-      }
+    onMounted(() => {
       connect();
       connectOpenVidu();
-      const nick = localStorage.getItem('nickname')
-      if (nick && nick !== 'null') {
-        nickname.value = nick
-      }
     });
 
     onBeforeUnmount(() => {
@@ -216,7 +233,6 @@ export default defineComponent({
       messages,
       sendMessage,
       messageContainer,
-      nickname,
       dropdownIdx,
       openDropdown,
       closeDropdown,
@@ -243,8 +259,15 @@ export default defineComponent({
       </div>
 
       <!-- 채팅 영역 -->
-      <div class="position-absolute border rounded shadow p-4 d-flex flex-column"
+      <div class="position-absolute border rounded shadow p-4 d-flex flex-column bg-white"
            style="width: 400px; height: 700px; top: 2rem; right: 2rem;">
+
+        <!-- 채팅 상단 제목 및 아이콘 -->
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+          <div class="fw-bold fs-5">채팅</div>
+
+        </div>
+
         <!-- 메시지 출력 -->
         <div ref="messageContainer"
              class="flex-grow-1 overflow-auto mb-3 scroll-hidden"
@@ -258,29 +281,25 @@ export default defineComponent({
             <div v-else style="font-size: 1.0rem; font-weight: bold; display:flex; align-items:center;">
               <!-- 닉네임 드롭다운 & 랜덤 색상 -->
               <span
-                  @click.stop="msg.nickname !== nickname && openDropdown(index, msg)"
+                  @click.stop="openDropdown(index, msg)"
                   :style="{
                     color: getNicknameColor(msg.nickname),
-                    cursor: msg.nickname !== nickname ? 'pointer' : 'default',
+                    cursor: 'pointer',
                     userSelect: 'text',
                     position: 'relative',
                     fontWeight: 'bold'
                   }"
-                              >
-                  {{ msg.nickname }}
-                                <!-- 드롭다운 메뉴: 본인 닉네임이 아닐 때만 표시 -->
-                  <span
-                      v-if="dropdownIdx === index && msg.nickname !== nickname"
-                      class="nickname-dropdown"
-                      style="position:absolute;top:120%;left:0;z-index:10000;"
-                  >
-                    <ul class="dropdown-custom-menu">
-                      <li class="menu-report" @click.stop="onReportClick">
-                        🚨 메시지 신고 🚨
-                      </li>
-                    </ul>
-                  </span>
+              >
+                {{ msg.nickname }}
+                <span
+                    v-if="dropdownIdx === index"
+                    class="nickname-dropdown"
+                    style="position:absolute;top:120%;left:0;z-index:10000;">
+                  <ul class="dropdown-custom-menu">
+                    <li class="menu-report" @click.stop="onReportClick">🚨 메시지 신고 🚨</li>
+                  </ul>
                 </span>
+              </span>
               <span style="margin-left:0.6em;">: {{ msg.message }}</span>
             </div>
           </div>
@@ -290,8 +309,8 @@ export default defineComponent({
         <div class="d-flex">
           <input v-model="message"
                  type="text"
-                 class="form-control me-2"
-                 placeholder="메시지를 입력하세요"
+                 class="form-control bg-body-secondary text-dark border-0 rounded-pill px-3 py-2"
+                 placeholder="채팅을 입력해 주세요."
                  @keyup.enter="sendMessage" />
         </div>
       </div>
@@ -337,25 +356,20 @@ export default defineComponent({
 </template>
 
 <style scoped>
-.scroll-hidden::-webkit-scrollbar {
-  display: none;
+.scroll-hidden::-webkit-scrollbar { display: none; }
+.scroll-hidden { -ms-overflow-style: none; }
+.dropdown-custom-menu {
+  background: #232428;
+  color: #dedede;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.24);
+  min-width: 190px;
+  padding: 8px 0;
+  margin: 0;
+  list-style: none;
+  border: 1px solid #282a30;
+  font-size: 1.07rem;
 }
-.scroll-hidden {
-  -ms-overflow-style: none;
-}
-   /* 드롭다운 메뉴 스타일 */
- .dropdown-custom-menu {
-   background: #232428;
-   color: #dedede;
-   border-radius: 10px;
-   box-shadow: 0 4px 16px rgba(0,0,0,0.24);
-   min-width: 190px;
-   padding: 8px 0;
-   margin: 0;
-   list-style: none;
-   border: 1px solid #282a30;
-   font-size: 1.07rem;
- }
 .dropdown-custom-menu li {
   display: flex;
   align-items: center;
@@ -365,22 +379,16 @@ export default defineComponent({
   gap: 10px;
   font-weight: 500;
 }
-.dropdown-custom-menu li:hover {
-  background: #2d2f34;
-}
-.dropdown-custom-menu .menu-report {
-  color: #fd6262;
-  background: #26272b;
-}
-.dropdown-custom-menu .menu-report:hover {
-  background: #33292c;
-}
+.dropdown-custom-menu li:hover { background: #2d2f34; }
+.dropdown-custom-menu .menu-report { color: #fd6262; background: #26272b; }
+.dropdown-custom-menu .menu-report:hover { background: #33292c; }
 
-/* 모달 오버레이, 박스, 버튼 스타일 */
 .modal-overlay-dark {
   position: fixed; top:0; left:0; width:100vw; height:100vh;
   background: rgba(18, 19, 21, 0.85);
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 9999;
 }
 .modal-custom-box {
@@ -395,8 +403,6 @@ export default defineComponent({
 .modal-custom-content { padding: 36px 36px 24px 36px; }
 .modal-custom-msg { margin-bottom: 34px; }
 .modal-custom-text { font-size: 1.14rem; line-height: 1.7; font-weight: 600; }
-
-/* 버튼 행 중앙정렬 */
 .modal-custom-btns {
   display: flex;
   justify-content: center;
@@ -415,16 +421,8 @@ export default defineComponent({
   cursor: pointer;
   transition: background 0.13s, color 0.12s;
 }
-.modal-btn-cancel {
-  background: #f47e4a;
-  color: #ffffff;
-}
+.modal-btn-cancel { background: #f47e4a; color: #ffffff; }
 .modal-btn-cancel:hover { background: #efb485; }
-.modal-btn-ok {
-  background: #435879;
-  color: #ffffff;
-}
-.modal-btn-ok:hover {
-  background: #7d8bbd;
-}
+.modal-btn-ok { background: #435879; color: #ffffff; }
+.modal-btn-ok:hover { background: #7d8bbd; }
 </style>
