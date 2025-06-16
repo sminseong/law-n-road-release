@@ -6,14 +6,15 @@
 
     <insert id="insertOrder" parameterType="com.lawnroad.payment.dto.OrdersCreateDTO" useGeneratedKeys="true" keyProperty="no">
         INSERT INTO orders
-            (user_no, total_amount, status, order_type)
+            (user_no, total_amount, status, order_type, order_code)
         VALUES
-            (#{userNo}, #{totalAmount}, #{status}, #{orderType})
+            (#{userNo}, #{totalAmount}, #{status}, #{orderType}, #{orderCode})
     </insert>
 
     <update id="updateOrderStatus" parameterType="map">
         UPDATE orders
-        SET status = #{status}
+        SET status = #{status},
+            updated_at = NOW()
         WHERE no = #{orderNo}
     </update>
 
@@ -23,5 +24,10 @@
             created_at AS createdAt, updated_at AS updatedAt
         FROM orders
         WHERE no = #{orderNo}
+    </select>
+    <select id="selectByOrderCode" resultType="com.lawnroad.payment.model.OrdersVO">
+        SELECT *
+        FROM orders
+        WHERE order_code = #{orderCode}
     </select>
 </mapper>

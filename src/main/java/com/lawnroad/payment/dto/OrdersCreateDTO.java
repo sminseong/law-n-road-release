@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class OrdersCreateDTO {
     private Long no;
+    private String orderCode;
     private Long userNo;
     private Long totalAmount;
     private String status;

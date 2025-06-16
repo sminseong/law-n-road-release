@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lawnroad.payment.mapper.PaymentMapper">
+
+    <insert id="insertPayment" parameterType="com.lawnroad.payment.model.PaymentVO">
+        INSERT INTO payments (
+            order_no, payment_key, order_code, amount, status,
+            card_company, installment_month, purchased_at, pg, metadata
+        )
+        VALUES (
+                   #{orderNo}, #{paymentKey}, #{orderCode}, #{amount}, #{status},
+                   #{cardCompany}, #{installmentMonth}, #{purchasedAt}, #{pg}, #{metadata, jdbcType=OTHER}
+               )
+    </insert>
+
+</mapper>

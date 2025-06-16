@@ -35,4 +35,9 @@ public class OrdersService {
     public OrdersVO getOrder(Long orderNo) {
         return ordersMapper.selectOrder(orderNo);
     }
+
+    @Transactional(readOnly = true)
+    public OrdersVO getOrderByCode(String orderCode) {
+        return ordersMapper.selectByOrderCode(orderCode);
+    }
 }

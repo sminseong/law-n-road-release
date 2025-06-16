@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ReservationsService {
@@ -40,9 +41,10 @@ public class ReservationsService {
 
         OrdersCreateDTO orderDto = new OrdersCreateDTO();
         orderDto.setUserNo(dto.getUserNo());
-        orderDto.setTotalAmount(amount);           // front 에서 채워서 보냄
+        orderDto.setTotalAmount(amount);
         orderDto.setOrderType("RESERVATION");
         orderDto.setStatus("ORDERED");
+        orderDto.setOrderCode("ORD-" + UUID.randomUUID().toString().replace("-", "").substring(0, 16));
         Long orderNo = ordersService.createOrder(orderDto);
         dto.setOrderNo(orderNo);
 
