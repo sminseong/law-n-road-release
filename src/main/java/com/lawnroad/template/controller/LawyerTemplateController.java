@@ -260,12 +260,17 @@ public class LawyerTemplateController {
    * 7. 중간 오류 시 롤백 (업로드된 파일 삭제)
    */
   @PostMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<String> updateTemplate(@ModelAttribute LawyerTemplateUpdateDto dto) {
+  public ResponseEntity<String> updateTemplate(
+      @ModelAttribute LawyerTemplateUpdateDto dto,
+      @RequestParam(value = "file", required = false) MultipartFile thumbFile,
+      @RequestParam(value = "removeThumbnail", required = false) Integer removeThumbnail
+  ) {
     Long lawyerNo = 1L; // TODO: 인증 연동 후 교체
     dto.setUserNo(lawyerNo);
     String type = dto.getType();
     String thumbnailPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
     List<String> uploadedPaths = new ArrayList<>();
+    String finalThumbPath = null;
     
     try {
       // 1. 기존 템플릿 조회
@@ -326,30 +331,27 @@ public class LawyerTemplateController {
       }
       
       // 5. 썸네일 처리
-      MultipartFile thumbFile = dto.getFile();
-      boolean shouldRemoveThumbnail = dto.getRemoveThumbnail() != null && dto.getRemoveThumbnail() == 1;
-      
-      if (shouldRemoveThumbnail) {
-        // 삭제 요청이면 기본 썸네일
-        thumbnailPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
+      if (removeThumbnail != null && removeThumbnail == 1) {
+        finalThumbPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
       } else if (thumbFile != null && !thumbFile.isEmpty()) {
-        // 새 파일 업로드
-        thumbnailPath = ncpObjectStorageUtil.save(
+        finalThumbPath = ncpObjectStorageUtil.save(
             thumbFile,
             "uploads/lawyers/" + lawyerNo + "/thumbnails",
             null
         );
-        uploadedPaths.add(thumbnailPath);
-      } else if ("EDITOR".equalsIgnoreCase(type) && editorOrigin != null) {
-        thumbnailPath = editorOrigin.getThumbnailPath();
-      } else if ("FILE".equalsIgnoreCase(type) && fileOrigin != null) {
-        thumbnailPath = fileOrigin.getThumbnailPath();
+        uploadedPaths.add(finalThumbPath);
       } else {
-        thumbnailPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
+        if ("EDITOR".equalsIgnoreCase(type) && editorOrigin != null) {
+          finalThumbPath = editorOrigin.getThumbnailPath();
+        } else if ("FILE".equalsIgnoreCase(type) && fileOrigin != null) {
+          finalThumbPath = fileOrigin.getThumbnailPath();
+        } else {
+          finalThumbPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
+        }
       }
       
       // 6. 서비스 호출 (복제 수정 위임)
-      templateService.updateTemplateByClone(dto, thumbnailPath);
+      templateService.updateTemplateByClone(dto, finalThumbPath);
       return ResponseEntity.ok("수정 완료");
       
     } catch (Exception e) {
