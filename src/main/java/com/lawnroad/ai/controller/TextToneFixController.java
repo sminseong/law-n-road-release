@@ -1,5 +1,7 @@
 package com.lawnroad.ai.controller;
 
+import com.lawnroad.ai.dto.InterviewChatRequestDto;
+import com.lawnroad.ai.dto.InterviewChatResponseDto;
 import com.lawnroad.ai.dto.TextToneFixRequestDto;
 import com.lawnroad.ai.dto.TextToneFixResponseDto;
 import com.lawnroad.ai.service.TextToneFixService;
@@ -32,4 +34,17 @@ public class TextToneFixController {
     String fixed = textToneFixService.fixTextTone(dto.getText(), dto.getTone());
     return ResponseEntity.ok(new TextToneFixResponseDto(fixed));
   }
+  @PostMapping("/interview")
+  public ResponseEntity<InterviewChatResponseDto> chat(@RequestBody InterviewChatRequestDto dto) {
+    InterviewChatResponseDto response = textToneFixService.generateResponse(dto);
+    
+    // AI: 제거
+    response.setReply(
+        response.getReply().replaceAll("(?m)^AI:\\s*", "").trim()
+    );
+    
+    System.out.println(response);
+    return ResponseEntity.ok(response);
+  }
+  
 }
