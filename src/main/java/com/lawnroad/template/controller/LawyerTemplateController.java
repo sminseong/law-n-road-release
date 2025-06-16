@@ -3,6 +3,8 @@ package com.lawnroad.template.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lawnroad.ai.dto.ValidationResultDto;
+import com.lawnroad.ai.service.AiService;
 import com.lawnroad.common.util.NcpObjectStorageUtil;
 import com.lawnroad.template.dto.*;
 import com.lawnroad.template.service.LawyerTemplateService;
@@ -27,19 +29,21 @@ public class LawyerTemplateController {
   private final NcpObjectStorageUtil ncpObjectStorageUtil;
   private final OcrService ocrService;
   private final ObjectMapper objectMapper;
+  private final AiService aiService;
   
   /**
    * 템플릿 등록 API
-   *
-   * 1. 파일 기반 템플릿일 경우:
-   *    - 템플릿 파일 업로드 → OCR 수행 → Gemini 검증
-   *
-   * 2. 에디터 기반 템플릿일 경우:
-   *    - 입력된 content 그대로 → Gemini 검증
-   *
-   * 3. Gemini 검증 통과 시에만 썸네일 업로드 → DB 등록
-   *
-   * 4. 검증 실패 또는 등록 실패 시에는 모든 업로드 파일 삭제 (롤백)
+   * 1. 입력 타입 분기: FILE 또는 EDITOR
+   *    * FILE인 경우:
+   *        - PDF 저장
+   *        - OCR 수행
+   *        - pathJson 저장
+   *    * EDITOR인 경우:
+   *        - 입력된 content 그대로 사용
+   * 2. Gemini 검증:
+   *    * 실패 시 이유 출력 + 응답 반환
+   * 3. 썸네일 업로드 (검증 통과 시)
+   * 4. 최종 등록
    */
   @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<String> registerTemplate(@ModelAttribute LawyerTemplateRegisterDto dto) {
@@ -111,19 +115,23 @@ public class LawyerTemplateController {
       // -----------------------------------
       // [3] Gemini AI 검증
       // -----------------------------------
-//      boolean isValid = geminiService.validateTemplateContent(
-//          contentText,
-//          dto.getName(),
-//          dto.getDescription()
-//      ); // TODO: 내용 정제 필요
-//
-//      if (!isValid) {
-//        // 검증 실패 → 등록 거부 + 파일 삭제
-//        for (String path : uploadedPaths) {
-//          ncpObjectStorageUtil.delete(path);
-//        }
-//        return ResponseEntity.badRequest().body("상품 설명이 실제 내용과 일치하지 않습니다.");
-//      }
+      ValidationResultDto result = aiService.validateTemplateContent(
+          contentText,
+          dto.getName(),
+          dto.getDescription()
+      );
+      
+      boolean isValid = result.isPassed();
+      
+      if (!isValid) {
+        String reasonText = String.join("\n", result.getReasons());
+        System.out.println("❌ 다음 사유로 문서 검증에 실패했습니다.\n" + reasonText);
+        String responseText = "❌ 다음 사유로 문서 검증에 실패했습니다.\n\n" + reasonText;
+        
+        return ResponseEntity
+            .badRequest()
+            .body(responseText);  // 문자열로 실패 사유 전송
+      }
       
       // -----------------------------------
       // [4] 썸네일 저장 (검증 통과 후)
@@ -157,82 +165,6 @@ public class LawyerTemplateController {
       return ResponseEntity.internalServerError().body("❌ 등록 실패: " + e.getMessage());
     }
   }
-  
-//  /**
-//   * 템플릿 등록 API
-//   * 1. 썸네일 저장
-//   * 2. 템플릿 타입 확인해서 분기 처리
-//   * 3. 등록 서비스 호출
-//   */
-//  @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//  public ResponseEntity<String> registerTemplate(@ModelAttribute LawyerTemplateRegisterDto dto) {
-//    Long lawyerNo = 1L;  // 로그인 미적용 상태 → 임시 고정
-//    String type = dto.getType();
-//    String thumbnailPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
-//
-//    // 저장된 파일 경로들 (실패 시 삭제용)
-//    List<String> uploadedPaths = new ArrayList<>();
-//
-//    try {
-//      // 1. 썸네일 저장 (없으면 기본 이미지 유지)
-//      if (dto.getFile() != null && !dto.getFile().isEmpty()) {
-//        thumbnailPath = ncpObjectStorageUtil.save(
-//            dto.getFile(),
-//            "uploads/lawyers/" + lawyerNo + "/thumbnails",
-//            null
-//        );
-//        uploadedPaths.add(thumbnailPath);
-//      }
-//
-//      // 2. 파일 기반 템플릿 파일 저장
-//      if ("FILE".equalsIgnoreCase(type)) {
-//        List<MultipartFile> files = dto.getTemplateFiles();
-//
-//        if (files == null || files.isEmpty()) {
-//          return ResponseEntity.badRequest().body("템플릿 파일이 누락되었습니다.");
-//        }
-//
-//        List<Map<String, String>> metadataList = new ArrayList<>();
-//
-//        for (MultipartFile file : files) {
-//          if (!file.isEmpty()) {
-//            String savedPath = ncpObjectStorageUtil.save(
-//                file,
-//                "uploads/lawyers/" + lawyerNo + "/templates",
-//                null
-//            );
-//            uploadedPaths.add(savedPath);
-//
-//            Map<String, String> meta = new HashMap<>();
-//            meta.put("originalName", file.getOriginalFilename());
-//            meta.put("savedPath", savedPath);
-//            metadataList.add(meta);
-//          }
-//        }
-//
-//        String pathJson = objectMapper.writeValueAsString(metadataList);
-//        dto.setPathJson(pathJson);
-//      }
-//
-//      // 3. 등록 처리
-//      templateService.registerTemplate(dto, thumbnailPath);
-//      return ResponseEntity.ok("등록 완료");
-//
-//    } catch (Exception e) {
-//      // 실패 시 업로드된 파일 모두 삭제
-//      for (String path : uploadedPaths) {
-//        try {
-//          if (!"https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png".equals(path)) {
-//            ncpObjectStorageUtil.delete(path);
-//          }
-//        } catch (Exception ex) {
-//          // 로그 정도만 출력하고 무시
-//          System.err.println("파일 삭제 실패: " + path);
-//        }
-//      }
-//      return ResponseEntity.internalServerError().body("등록 실패: " + e.getMessage());
-//    }
-//  }
   
   /**
    * 변호사 본인 템플릿 목록 조회 API

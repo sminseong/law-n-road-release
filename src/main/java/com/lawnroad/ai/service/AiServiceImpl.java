@@ -1,9 +1,6 @@
 package com.lawnroad.ai.service;
 
-import com.lawnroad.ai.dto.InterviewChatRequestDto;
-import com.lawnroad.ai.dto.InterviewChatResponseDto;
-import com.lawnroad.ai.dto.MessageDto;
-import com.lawnroad.ai.dto.VariableDto;
+import com.lawnroad.ai.dto.*;
 import com.lawnroad.common.config.GeminiConfig;
 import com.google.genai.Client;
 import com.google.genai.types.GenerateContentResponse;
@@ -13,12 +10,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
-public class TextToneFixServiceImpl implements TextToneFixService {
+public class AiServiceImpl implements AiService {
   
   @Getter
   private final GeminiConfig geminiConfig;
@@ -26,7 +22,7 @@ public class TextToneFixServiceImpl implements TextToneFixService {
   private final DocumentGenerator documentGenerator;
   private final ClientTemplateService clientTemplateService;
   
-  public TextToneFixServiceImpl(GeminiConfig geminiConfig, DocumentGenerator documentGenerator, ClientTemplateService clientTemplateService) {
+  public AiServiceImpl(GeminiConfig geminiConfig, DocumentGenerator documentGenerator, ClientTemplateService clientTemplateService) {
     this.client = Client.builder()
         .apiKey(geminiConfig.getApiKey())
         .build();
@@ -117,14 +113,6 @@ public class TextToneFixServiceImpl implements TextToneFixService {
     [문장]
     """ + text;
     };
-  }
-  
-  
-  @Override
-  public String generateReply(InterviewChatRequestDto dto) {
-    String prompt = buildPrompt(dto);
-    GenerateContentResponse response = client.models.generateContent("gemini-2.0-flash", prompt, null);
-    return response.text();
   }
   
   @Override
@@ -269,4 +257,70 @@ public class TextToneFixServiceImpl implements TextToneFixService {
     return sb.toString();
   }
   
+  @Override
+  public ValidationResultDto validateTemplateContent(String content, String name, String description) {
+    // Gemini에 전달할 프롬프트 생성: 6가지 기준에 대해 Yes/No로 답하게 지시
+    String prompt = """
+You are an evaluator. Please assess the following document according to the 6 criteria listed below.
+
+Answer each question with only "Yes" or "No" — nothing else.
+
+Return exactly 6 lines in this order, each line containing only "Yes" or "No" (no extra comments or numbering).
+
+1. Does the document contain inappropriate, harmful, or offensive content?
+2. Is the document actually relevant to the topic: "%s"?
+3. Is the grammar and clarity of the document acceptable?
+4. Does the document include accurate and factual information?
+5. Is the document well-structured and readable?
+6. Does the document contain excessive marketing or promotional content?
+
+[Document Description]
+%s
+
+[Document Content]
+%s
+""".formatted(name, description, content);
+    
+    try {
+      GenerateContentResponse response = client.models.generateContent("gemini-2.0-flash", prompt, null);
+      String[] lines = response.text().trim().split("\r?\n");
+      int[] scores = new int[] {
+          parseYesNo(lines[0], false), // 1. 부적절한 내용: "No"여야 통과
+          parseYesNo(lines[1], true),  // 2. 주제 관련성: "Yes"여야 통과
+          parseYesNo(lines[2], true),  // 3. 문법과 명확성: "Yes"여야 통과
+          parseYesNo(lines[3], true),  // 4. 사실성: "Yes"여야 통과
+          parseYesNo(lines[4], true),  // 5. 구조/가독성: "Yes"여야 통과
+          parseYesNo(lines[5], false)  // 6. 과도한 홍보성: "No"여야 통과
+      };
+      
+      // 판정 조건
+      // coreFail: 반드시 통과해야 하는 항목 중 하나라도 실패 시 불합격
+      // softFail: 문법/구조 항목 둘 다 실패 시 불합격
+      // 최종 통과 여부는 위 두 조건 모두 미충족해야 true
+      boolean coreFail = scores[0] == 0 || scores[1] == 0 || scores[3] == 0 || scores[5] == 0;
+      boolean softFail = scores[2] == 0 && scores[4] == 0;
+      boolean passed = !coreFail && !softFail;
+      
+      // 불합격 사유 수집
+      List<String> reasons = new ArrayList<>();
+      if (scores[0] == 0) reasons.add("① 부적절한 내용 포함");
+      if (scores[1] == 0) reasons.add("② 주제와의 불일치");
+      if (scores[3] == 0) reasons.add("③ 사실성 부족");
+      if (scores[5] == 0) reasons.add("④ 과도한 홍보성");
+      if (scores[2] == 0 && scores[4] == 0) reasons.add("⑤ 문맥/구조적 완성도 미달");
+      
+      // 결과 전송
+      return new ValidationResultDto(passed, reasons);
+    } catch (Exception e) {
+      // 예외 처리 및 응답 생성
+      return new ValidationResultDto(false, List.of("Gemini 호출 실패: " + e.getMessage()));
+    }
+  }
+  
+  private int parseYesNo(String line, boolean yesMeansPass) {
+    line = line.toLowerCase();
+    if (line.contains("yes")) return yesMeansPass ? 1 : 0;
+    if (line.contains("no")) return yesMeansPass ? 0 : 1;
+    return -1;
+  }
 }
