@@ -191,7 +191,6 @@
         FROM template t
                  JOIN tmpl_editor_based e ON t.no = e.no
         WHERE t.no = #{templateNo}
-          AND t.is_deleted = 0
     </select>
 
     <!-- File 기반 템플릿 상세 조회 -->
@@ -209,7 +208,6 @@
         FROM template t
                  JOIN tmpl_file_based f ON t.no = f.no
         WHERE t.no = #{templateNo}
-          AND t.is_deleted = 0
     </select>
 
     <!-- 다운로드 상태로 변경 -->

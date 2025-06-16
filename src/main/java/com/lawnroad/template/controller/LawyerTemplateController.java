@@ -3,7 +3,7 @@ package com.lawnroad.template.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lawnroad.common.util.FileStorageUtil;
+import com.lawnroad.common.util.NcpObjectStorageUtil;
 import com.lawnroad.template.dto.*;
 import com.lawnroad.template.service.LawyerTemplateService;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,8 @@ import java.util.*;
 public class LawyerTemplateController {
   
   private final LawyerTemplateService templateService;
-  private final FileStorageUtil fileStorageUtil;
+//  private final FileStorageUtil fileStorageUtil;
+  private final NcpObjectStorageUtil ncpObjectStorageUtil;
   private final ObjectMapper objectMapper;
   
   /**
@@ -34,7 +35,7 @@ public class LawyerTemplateController {
   public ResponseEntity<String> registerTemplate(@ModelAttribute LawyerTemplateRegisterDto dto) {
     Long lawyerNo = 1L;  // 로그인 미적용 상태 → 임시 고정
     String type = dto.getType();
-    String thumbnailPath = "/uploads/defaults/template-thumbnail.png";
+    String thumbnailPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
     
     // 저장된 파일 경로들 (실패 시 삭제용)
     List<String> uploadedPaths = new ArrayList<>();
@@ -42,7 +43,7 @@ public class LawyerTemplateController {
     try {
       // 1. 썸네일 저장 (없으면 기본 이미지 유지)
       if (dto.getFile() != null && !dto.getFile().isEmpty()) {
-        thumbnailPath = fileStorageUtil.save(
+        thumbnailPath = ncpObjectStorageUtil.save(
             dto.getFile(),
             "uploads/lawyers/" + lawyerNo + "/thumbnails",
             null
@@ -62,7 +63,7 @@ public class LawyerTemplateController {
         
         for (MultipartFile file : files) {
           if (!file.isEmpty()) {
-            String savedPath = fileStorageUtil.save(
+            String savedPath = ncpObjectStorageUtil.save(
                 file,
                 "uploads/lawyers/" + lawyerNo + "/templates",
                 null
@@ -88,8 +89,8 @@ public class LawyerTemplateController {
       // 실패 시 업로드된 파일 모두 삭제
       for (String path : uploadedPaths) {
         try {
-          if (!"uploads/defaults/template-thumbnail.png".equals(path)) {
-            fileStorageUtil.delete(path);
+          if (!"https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png".equals(path)) {
+            ncpObjectStorageUtil.delete(path);
           }
         } catch (Exception ex) {
           // 로그 정도만 출력하고 무시
@@ -160,10 +161,10 @@ public class LawyerTemplateController {
       // 1. 썸네일 분기
       if (removeThumbnail != null && removeThumbnail == 1) {
         // 썸네일 제거
-        thumbnailPath = "/uploads/defaults/template-thumbnail.png";
+        thumbnailPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
       } else if (thumbFile != null && !thumbFile.isEmpty()) {
         // 썸네일 교체
-        thumbnailPath = fileStorageUtil.save(
+        thumbnailPath = ncpObjectStorageUtil.save(
             thumbFile,
             "uploads/lawyers/" + lawyerNo + "/thumbnails",
             null
@@ -212,10 +213,10 @@ public class LawyerTemplateController {
       
       if (shouldRemoveThumbnail) {
         // 삭제 요청이면 기본 썸네일
-        thumbnailPath = "/uploads/defaults/template-thumbnail.png";
+        thumbnailPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
       } else if (thumbFile != null && !thumbFile.isEmpty()) {
         // 새 파일 업로드
-        thumbnailPath = fileStorageUtil.save(
+        thumbnailPath = ncpObjectStorageUtil.save(
             thumbFile,
             "uploads/lawyers/" + lawyerNo + "/thumbnails",
             null
@@ -226,7 +227,7 @@ public class LawyerTemplateController {
       } else if ("FILE".equalsIgnoreCase(type) && fileOrigin != null) {
         thumbnailPath = fileOrigin.getThumbnailPath();
       } else {
-        thumbnailPath = "/uploads/defaults/template-thumbnail.png";
+        thumbnailPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
       }
       
       // 3) 파일 메타 처리
@@ -251,7 +252,7 @@ public class LawyerTemplateController {
       if (dto.getTemplateFiles() != null) {
         for (MultipartFile f : dto.getTemplateFiles()) {
           if (!f.isEmpty()) {
-            String saved = fileStorageUtil.save(
+            String saved = ncpObjectStorageUtil.save(
                 f,
                 "uploads/lawyers/" + lawyerNo + "/templates",
                 null
@@ -276,7 +277,7 @@ public class LawyerTemplateController {
     } catch (Exception e) {
       // 예외 시 업로드된 파일 삭제
       for (String path : uploadedPaths) {
-        try { fileStorageUtil.delete(path); } catch (Exception ex) {}
+        try { ncpObjectStorageUtil.delete(path); } catch (Exception ex) {}
       }
       return ResponseEntity
           .status(HttpStatus.INTERNAL_SERVER_ERROR)
