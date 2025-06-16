@@ -39,14 +39,14 @@ public interface LawyerTemplateService {
    * @param templateNo 조회할 템플릿 번호
    * @return 상세 정보 DTO
    */
-  EditorTemplateDetailDto getEditorTemplateDetail(Long templateNo);
+  LawyerEditorTemplateDetailDto getEditorTemplateDetail(Long templateNo);
   
   /**
    * 파일 기반 템플릿 상세 조회
    * @param templateNo 조회할 템플릿 번호
    * @return 상세 정보 DTO
    */
-  FileTemplateDetailDto getFileTemplateDetail(Long templateNo);
+  LawyerFileTemplateDetailDto getFileTemplateDetail(Long templateNo);
   
   /**
    * 기존 템플릿 수정 (메타 데이터만)

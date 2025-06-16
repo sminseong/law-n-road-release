@@ -153,15 +153,20 @@ function changePage(page) {
                 <span
                     class="badge"
                     :class="{
-                    'bg-primary': row[col.key] === '완료',
-                    'bg-warning': row[col.key] === '진행 중',
-                    'bg-danger': row[col.key] === '취소'
+                      'bg-primary': ['완료', 'PAID', '결제완료'].includes(row[col.key]),
+                      'bg-warning': ['진행 중', 'ORDERED', '결제대기'].includes(row[col.key]),
+                      'bg-danger': ['환불', 'REFUNDED', '환불'].includes(row[col.key])
                   }"
                 >{{ row[col.key] }}</span>
             </template>
             <!-- Default -->
             <template v-else>
-              <span>{{ row[col.key] }}</span>
+              <span>
+                {{ col.formatter
+                  ? col.formatter(row[col.key], row)
+                  : row[col.key]
+                }}
+              </span>
             </template>
           </td>
         </tr>

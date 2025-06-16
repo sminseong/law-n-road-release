@@ -197,7 +197,7 @@ async function testLawyerReservationCanceled() {
         </div>
         <div class="card-body">
           <p class="mb-2 text-muted small">최근 구매한 템플릿이 없습니다.</p>
-          <a href="/client/templates" class="btn small">구매 내역 보기</a>
+          <a href="/client/template/orders" class="btn small">구매 내역 보기</a>
         </div>
       </div>
 
