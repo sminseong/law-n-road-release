@@ -42,6 +42,13 @@ export default [
         component: () => import('@/views/common/UserMypageHome.vue')
     },
 
+
+
+
+
+
+
+
     // ---------- 템플릿 ----------
     {
         path: '/templates',
