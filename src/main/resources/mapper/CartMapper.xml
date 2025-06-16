@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lawnroad.template.mapper.CartMapper">
+
+    <!-- 1. 존재 여부 확인 -->
+    <select id="existsByUserAndTemplate" resultType="int">
+        SELECT COUNT(*)
+        FROM cart
+        WHERE user_no = #{userNo} AND tmpl_no = #{tmplNo}
+    </select>
+
+    <!-- 2. 장바구니 추가 -->
+    <insert id="insertCart">
+        INSERT INTO cart (user_no, tmpl_no)
+        VALUES (#{userNo}, #{tmplNo})
+    </insert>
+
+    <!-- 3. 장바구니 템플릿 삭제 -->
+    <delete id="deleteByCartNo" parameterType="long">
+        DELETE FROM cart
+        WHERE no = #{cartNo}
+    </delete>
+
+    <!-- 4. 장바구니 목록 조회 -->
+    <select id="selectCartListByUser" resultType="com.lawnroad.template.dto.cart.CartItemResponseDto">
+        SELECT
+            ca.no                  AS no,           <!-- ← 여기 추가 -->
+            t.no                   AS tmpl_no,
+            t.name                 AS name,
+            t.thumbnail_path       AS thumbnail_path,
+            t.price                AS price,
+            t.discount_rate        AS discount_rate,
+            t.type                 AS type,
+            c.name                 AS category_name,
+            l.name                 AS lawyer_name
+        FROM cart ca
+                 JOIN template t ON ca.tmpl_no = t.no
+                 LEFT JOIN category c ON t.category_no = c.no
+                 LEFT JOIN lawyer   l ON t.user_no = l.no
+        WHERE ca.user_no = #{userNo}
+        ORDER BY ca.created_at DESC
+    </select>
+
+    <!-- 5. 장바구니 전체 삭제 -->
+    <delete id="deleteByUserNo" parameterType="long">
+        DELETE FROM cart
+        WHERE user_no = #{userNo}
+    </delete>
+
+    <!-- 6. 주문 상세 추가하기 (장바구니 복사) -->
+    <insert id="insertHistory" parameterType="map">
+        INSERT INTO tmpl_orders_history (tmpl_no, order_no, price)
+        VALUES (#{tmplNo}, #{orderNo}, #{price})
+    </insert>
+
+    <!-- 구매내역 증가 -->
+    <update id="incrementSalesCount">
+        UPDATE template
+        SET sales_count = sales_count + 1
+        WHERE no = #{tmplNo}
+    </update>
+
+</mapper>

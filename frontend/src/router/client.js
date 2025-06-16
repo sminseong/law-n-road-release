@@ -61,20 +61,30 @@ export default [
 
     // ---------- 템플릿 ----------
     {
-        path: '/client/templates',
-        name: 'ClientTemplates',
-        component: () => import('@/views/client/TemplateView.vue')
+        path: '/client/cart', // 장바구니
+        name: 'ClientCart',
+        component: () => import('@/views/client/template/CartView.vue')
     },
     {
-        path: '/templates',
-        name: 'ClientTemplateList',
-        component: () => import('@/views/client/template/TemplateListView.vue')
+        path: '/client/template/payment', // 결제 페이지
+        name: 'TemplatePaymentView',
+        component: () => import('@/views/client/template/TemplatePaymentView.vue')
     },
     {
-        path: '/templates/:no',
-        name: 'ClientTemplateDetail',
-        component: () => import('@/views/client/template/TemplateDetailView.vue')
+        path: '/client/template/orders', // 마이페이지 -> 주문내역
+        name: 'TmplHistoryListView',
+        component: () => import('@/views/client/template/TmplHistoryListView.vue')
     },
+    {
+        path: '/client/template/orders/:orderNo', // 마이페에지 -> 주문상세내역
+        name: 'TmpHistoryDetailListView',
+        component: () => import('@/views/client/template/TmplHistoryDetailListView.vue')
+    },
+    {
+        path: '/client/template/orders/detail/:tmplNo', // 마이페에지 -> 주문상세내역 -> 단일 상품 조회
+        name: 'TmplHistoryDetailOneView',
+        component: () => import('@/views/client/template/TmplHistoryDetailOneView.vue')
+    }
 
     // ---------- 광고 ----------
 ]

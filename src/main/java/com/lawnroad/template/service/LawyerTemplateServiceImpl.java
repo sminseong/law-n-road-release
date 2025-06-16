@@ -102,14 +102,14 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
   // 에디터 기반 템플릿 상세 조회
   @Override
   @Transactional(readOnly = true)
-  public EditorTemplateDetailDto getEditorTemplateDetail(Long templateNo) {
+  public LawyerEditorTemplateDetailDto getEditorTemplateDetail(Long templateNo) {
     return templateMapper.findEditorTemplateDetail(templateNo);
   }
   
   // 파일 기반 템플릿 상세 조회
   @Override
   @Transactional(readOnly = true)
-  public FileTemplateDetailDto getFileTemplateDetail(Long templateNo) {
+  public LawyerFileTemplateDetailDto getFileTemplateDetail(Long templateNo) {
     return templateMapper.findFileTemplateDetail(templateNo);
   }
   
@@ -136,12 +136,12 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
     String originThumb;
     String originJson;
     if ("EDITOR".equalsIgnoreCase(type)) {
-      EditorTemplateDetailDto o = templateMapper.findEditorTemplateDetail(originalNo);
+      LawyerEditorTemplateDetailDto o = templateMapper.findEditorTemplateDetail(originalNo);
       createdAt    = o.getCreatedAt();
       originThumb  = o.getThumbnailPath();
       originJson   = null;
     } else {
-      FileTemplateDetailDto o = templateMapper.findFileTemplateDetail(originalNo);
+      LawyerFileTemplateDetailDto o = templateMapper.findFileTemplateDetail(originalNo);
       createdAt    = o.getCreatedAt();
       originThumb  = o.getThumbnailPath();
       originJson   = o.getPathJson();
