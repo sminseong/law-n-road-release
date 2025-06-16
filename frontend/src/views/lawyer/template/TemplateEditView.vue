@@ -42,6 +42,9 @@ const uploadedFiles = ref([])
 // 썸네일 제거 플래그
 const removeExistingThumbnail = ref(false)
 
+// 로딩 용
+const isSubmitting = ref(false)
+
 onMounted(async () => {
   try {
     const res = await http.get(`/api/lawyer/templates/${templateNo}`, { type: templateType })
@@ -155,8 +158,10 @@ async function handleUpdate() {
   try {
     if (isContentChanged || isFileChanged) {
       if (!confirm('템플릿을 수정하면 판매기록이 초기화 됩니다. 정말 수정하시겠습니까?')) return;
+      isSubmitting.value = true
       await callUpdateCloneAPI();
     } else {
+      isSubmitting.value = true
       await callUpdateMetaAPI();
     }
     alert('수정 완료되었습니다.');
@@ -169,6 +174,8 @@ async function handleUpdate() {
       console.error(e);
       alert('❌ 알 수 없는 오류가 발생했습니다.');
     }
+  } finally {
+    isSubmitting.value = false
   }
 }
 
@@ -229,6 +236,13 @@ async function callUpdateMetaAPI() {
 
 <template>
   <LawyerFrame>
+    <!-- 전체 화면 로딩 오버레이 -->
+    <div v-if="isSubmitting" class="loading-overlay">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading…</span>
+      </div>
+    </div>
+
     <div class="container py-4">
       <h3 class="mb-4 fw-bold">템플릿 수정</h3>
 
@@ -292,7 +306,7 @@ async function callUpdateMetaAPI() {
         />
       </div>
 
-      <div v-if="!isDetail" class="card p-3 mb-4 bg-light-subtle template-guide">
+      <div class="card p-3 mb-4 bg-light-subtle template-guide">
         <h6 style="text-align: center">모든 템플릿은 등록 전에 AI 기반의 문서 검증을 거쳐야 합니다. 정확하고 신중하게 작성해 주세요.</h6> <br>
         <div class="d-flex justify-content-between align-items-center">
           <strong>AI 문서 검증이란?</strong>
@@ -351,10 +365,18 @@ async function callUpdateMetaAPI() {
       </div>
 
       <!-- 버튼 -->
-      <div class="text-end">
-        <button class="btn btn-secondary me-2" @click="router.back()">취소</button>
-        <button class="btn btn-primary" @click="handleUpdate">수정 완료</button>
-      </div>
+      <button
+          class="btn btn-primary"
+          :disabled="isSubmitting"
+          @click="handleUpdate"
+      >
+      <span
+          v-if="isSubmitting"
+          class="spinner-border spinner-border-sm me-2"
+          role="status"
+      ></span>
+        {{ isSubmitting ? '수정 중…' : 'AI 검증 후 수정' }}
+      </button>
     </div>
   </LawyerFrame>
 </template>
@@ -374,5 +396,16 @@ async function callUpdateMetaAPI() {
   border-radius: 0.5rem;
   padding: 1.5rem;
   margin-bottom: 2rem;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(255, 255, 255, 0.4); /* 좀 더 투명 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
 }
 </style>

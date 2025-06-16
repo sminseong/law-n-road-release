@@ -36,6 +36,9 @@ const selectedTab = ref('ai') // 'ai' or 'upload'
 const editorContent = ref('')
 const editorVariables = ref([])
 
+// 로딩 용
+const isSubmitting = ref(false)
+
 // 제출 핸들러
 async function handleSubmit() {
   if (name.value.length > 50) {
@@ -81,6 +84,7 @@ async function handleSubmit() {
   }
 
   try {
+    isSubmitting.value = true
     await http.post('/api/lawyer/templates/register', formData)
     alert('템플릿이 등록되었습니다.')
     router.push('/lawyer/templates')
@@ -91,6 +95,8 @@ async function handleSubmit() {
       console.error(e)
       alert('알 수 없는 오류가 발생했습니다.')
     }
+  } finally {
+    isSubmitting.value = false
   }
 }
 
@@ -127,6 +133,13 @@ function onThumbnailChange(e) {
 
 <template>
   <LawyerFrame>
+    <!-- 전체 화면 로딩 오버레이 -->
+    <div v-if="isSubmitting" class="loading-overlay">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading…</span>
+      </div>
+    </div>
+
     <div class="container py-4">
       <h3 class="mb-4 fw-bold">템플릿 등록</h3>
 
@@ -215,7 +228,7 @@ function onThumbnailChange(e) {
         />
       </div>
 
-      <div v-if="!isDetail" class="card p-3 mb-4 bg-light-subtle template-guide">
+      <div class="card p-3 mb-4 bg-light-subtle template-guide">
         <h6 style="text-align: center">모든 템플릿은 등록 전에 AI 기반의 문서 검증을 거쳐야 합니다. 정확하고 신중하게 작성해 주세요.</h6> <br>
         <div class="d-flex justify-content-between align-items-center">
           <strong>AI 문서 검증이란?</strong>
@@ -275,7 +288,18 @@ function onThumbnailChange(e) {
 
       <!-- 제출 버튼 -->
       <div class="text-end">
-        <button class="btn btn-success" @click="handleSubmit">AI 검증 후 등록</button>
+        <button
+            class="btn btn-success"
+            :disabled="isSubmitting"
+            @click="handleSubmit"
+        >
+          <span
+              v-if="isSubmitting"
+              class="spinner-border spinner-border-sm me-2"
+              role="status"
+          ></span>
+          {{ isSubmitting ? '등록 중…' : 'AI 검증 후 등록' }}
+        </button>
       </div>
     </div>
   </LawyerFrame>
@@ -320,5 +344,18 @@ function onThumbnailChange(e) {
   border-radius: 0.5rem;
   padding: 1.5rem;
   margin-bottom: 2rem;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
 }
 </style>
