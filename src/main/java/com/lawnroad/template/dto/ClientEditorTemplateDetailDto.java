@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class EditorTemplateDetailDto {
+public class ClientEditorTemplateDetailDto {
   
   // 템플릿 고유번호 (PK)
   private Long no;

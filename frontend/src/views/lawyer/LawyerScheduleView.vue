@@ -10,7 +10,12 @@ const router = useRouter()
 
 const fetchSchedules = async () => {
   try {
-    const res = await axios.get('/api/schedule/my')
+    const token = localStorage.getItem('token')
+    const res = await axios.get('/api/schedule/my', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
     const futureSchedules = filterFutureSchedules(res.data)
     schedules.value = futureSchedules
     groupedSchedules.value = groupByDate(futureSchedules)
