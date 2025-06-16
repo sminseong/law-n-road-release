@@ -135,58 +135,49 @@ public class TextToneFixServiceImpl implements TextToneFixService {
     
     if (allFilled) {
       // 먼저 AI가 직접 생성한 HTML이 있는지 확인
-      String rawHtml = extractHtmlPart(reply); // 이 함수는 "<html>" ~ "</html>" 구간 추출
+      String rawHtml = extractFinalDocument(reply);
       
       if (rawHtml != null && !rawHtml.isBlank()) {
         // AI가 작성한 HTML이 있으면 무조건 그걸 사용
+        rawHtml = rawHtml.replace("\n", "<br>"); // 줄바꿈 보정
         finalHtml = documentGenerator.wrapAsHtml(rawHtml);
       }
     }
     
-    return new InterviewChatResponseDto(reply, allFilled, finalHtml);
+    String prettyReply = reply.replace("\n", "<br>");
+    return new InterviewChatResponseDto(prettyReply, allFilled, finalHtml);
+  }
+  private String extractFinalDocument(String aiReply) {
+    String signal = "[문서 생성 완료! 문서를 다운로드 받으세요!]";
+    int start = aiReply.indexOf(signal);
+    
+    if (start == -1) return null;
+    
+    // 신호 뒤부터 끝까지 잘라서 문서로 사용
+    String after = aiReply.substring(start + signal.length()).trim();
+    
+    // 불필요한 코드블럭 표시 제거 (예: ```html ... ```)
+    if (after.startsWith("```html")) {
+      int htmlStart = after.indexOf("```html") + 7;
+      int htmlEnd = after.indexOf("```", htmlStart);
+      if (htmlEnd > htmlStart) {
+        return after.substring(htmlStart, htmlEnd).trim();
+      }
+    }
+    
+    // 그렇지 않다면 그냥 신호 이후 전체 리턴
+    return after;
   }
   
-  
   private String extractHtmlPart(String response) {
-    int start = response.indexOf("<html>");
-    int end = response.indexOf("</html>") + "</html>".length();
+    int bodyStart = response.indexOf("<body>");
+    int bodyEnd = response.indexOf("</body>");
     
-    if (start >= 0 && end > start) {
-      return response.substring(start, end);
+    if (bodyStart >= 0 && bodyEnd > bodyStart) {
+      return response.substring(bodyStart + 6, bodyEnd).trim(); // <body> 생략한 순수 내용만
     }
     return null;
   }
-  
-//  private String buildFinalHtml(InterviewChatRequestDto dto) {
-//    String filled = dto.getContent();
-//
-//    // 대화 히스토리 순회하면서 AI → 사용자 흐름 분석
-//    Map<String, String> variableAnswerMap = new HashMap<>();
-//
-//    List<MessageDto> history = dto.getHistory();
-//    for (int i = 0; i < history.size() - 1; i++) {
-//      MessageDto current = history.get(i);
-//      MessageDto next = history.get(i + 1);
-//
-//      // AI가 질문하고, 그 다음 user가 응답한 경우
-//      if ("assistant".equals(current.getRole()) && "user".equals(next.getRole())) {
-//        // AI 질문에서 변수 이름 추출 시도
-//        for (VariableDto var : dto.getVariables()) {
-//          if (current.getContent().contains(var.getName()) && !variableAnswerMap.containsKey(var.getName())) {
-//            variableAnswerMap.put(var.getName(), next.getContent());
-//          }
-//        }
-//      }
-//    }
-//
-//    // #{변수} 치환
-//    for (VariableDto var : dto.getVariables()) {
-//      String value = variableAnswerMap.getOrDefault(var.getName(), "___");
-//      filled = filled.replace("#{" + var.getName() + "}", value);
-//    }
-//
-//    return filled;
-//  }
   
   private String buildPrompt(InterviewChatRequestDto dto) {
     StringBuilder sb = new StringBuilder();
@@ -210,23 +201,61 @@ public class TextToneFixServiceImpl implements TextToneFixService {
           .append(": 예시값 → ").append(var.getDescription()).append("\n");
     }
     
-    sb.append("\n[지금까지의 대화]\n");
+    sb.append("[지금까지의 대화]\n");
     for (MessageDto msg : dto.getHistory()) {
       String speaker = msg.getRole().equals("user") ? "사용자" : "AI";
-      sb.append(speaker).append(": ").append(msg.getContent()).append("\n");
+      sb.append(speaker).append(": ").append(msg.getContent().trim())
+          .append("\n");
     }
+    sb.append("\n위의 대화를 참고해서 다음 질문 또는 문서 생성을 진행하세요.\n");
     
     String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일"));
     sb.append(String.format("""
 
-오늘 날짜는 %s입니다. 날짜 관련 질문이 있을 경우 이 날짜를 기준으로 질문하세요.
-규칙:
-1. 사용자 응답 없이 다음 질문으로 넘어가지 마세요. 절대 자문자답하지 마세요.
-2. 인사말이나 이전 응답을 반복하지 말고, 현재 질문에만 집중하세요.
-3. 내부 변수명(예: #{이름})은 사용자에게 보여주지 말고 자연스러운 표현으로 바꾸세요.
-4. 모든 정보가 수집되면 “[문서 생성 완료! 문서를 다운로드 받으세요!]” 문구와 함께 HTML만 출력하세요. 설명이나 마크다운은 금지입니다.
+오늘 날짜는 %s입니다. 날짜 관련 질문이 필요한 경우 이 날짜를 기준으로 하세요.
 
-모든 응답은 정중하고 자연스러운 한국어로 작성하세요.
+규칙:
+
+사용자 응답 없이 다음 질문으로 넘어가지 마세요. 절대 자문자답하지 마세요.
+
+같은 인삿말이나 이전 응답을 반복하지 말고, 현재 질문에만 집중하세요.
+
+내부 변수명(예: #{이름})은 사용자에게 보여주지 말고 자연스러운 표현으로 바꾸세요.
+
+모든 정보가 수집되면 “[문서 생성 완료! 문서를 다운로드 받으세요!]” 문구와 함께 HTML만 출력하세요. 설명, 마크다운, 추가 멘트는 금지입니다.
+
+추가 지침:
+
+입력이 부정확하거나 애매해도 대략 의미가 명확하면 그대로 받아들이고 진행하세요.
+
+단, 중요한 정보가 빠졌을 경우에만 1회에 한해 간단히 보완 질문을 하세요.
+(예: “시간이 빠졌네요. 대략 몇 시쯤인가요?”)
+
+같은 질문을 반복하지 마세요.
+
+이전 입력을 요약하거나 다시 언급하지 말고 바로 다음 항목으로 넘어가세요.
+
+확실하지 않은 답변이라도 문서 작성에 지장이 없다면 진행을 중단하지 말고 이어가세요.
+
+스스로를 변호사나 조력자라고 말하지 마세요.
+
+특수 상황:
+
+문서에 변수가 없다면 질문 없이 즉시 문서를 완성하여 출력하세요.
+
+의미 없는 문자열로만 이루어진 경우라도 변수만 채우면 즉시 문서를 완성하세요.
+
+단, 본문이 숫자 등으로만 채워진 경우 “현재 문서 초안에는 본문 내용이 3으로만 채워져 있습니다. 이 내용을 그대로 출력해도 괜찮으신가요?” 라고 최초 1회만 물어보세요.
+
+문서 구조가 심각히 무너졌거나 작성 불가능한 경우, 즉시 에러를 출력하고 중단하세요.
+
+모든 응답은 자연스럽고 정중한 한국어로 작성하세요.
+
+같은 질문을 반복하지 마세요. 이전 질문에 사용자 응답이 있으면,
+그게 '예', '그래', '응', '출력해', '좋아' 등의 긍정적인 표현이라면 다음 단계로 진행하세요.
+반복적으로 동일 질문을 하지 마세요. 예외는 없습니다.
+
+문서를 마칠 때는 반드시 [문서 생성 완료! 문서를 다운로드 받으세요!] 를 넣으세요
      """, today));
     
     return sb.toString();

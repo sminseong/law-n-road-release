@@ -52,14 +52,21 @@ async function send() {
 }
 
 // PDF 저장
-function downloadPdf() {
+async function downloadPdf() {
+  await nextTick()
   const element = document.querySelector('.preview-content')
+  console.log("11111111111111111 : " + element)
+  if (!element) {
+    alert("PDF로 저장할 내용이 없습니다.")
+    return
+  }
   html2pdf().set({
     margin: 10,
     filename: 'document.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    image: {type: 'jpeg', quality: 0.98},
+    html2canvas: {scale: 2},
+    jsPDF: {unit: 'mm', format: 'a4', orientation: 'portrait'},
+    pagebreak: {mode: ['avoid-all', 'css', 'legacy']}
   }).from(element).save()
 }
 
@@ -73,6 +80,17 @@ watch(messages, async () => {
     el.scrollTop = el.scrollHeight
   }
 })
+
+function formatMessage(text) {
+  return text
+      .replace(/```html/g, '')           // 코드 블럭 시작 제거
+      .replace(/```/g, '')               // 코드 블럭 끝 제거
+      .replace(/<br\s*\/?>/gi, '\n')     // <br> → 줄바꿈
+      .replace(/<\/?p>/gi, '\n')         // <p> → 줄바꿈
+      .replace(/\n{2,}/g, '\n')          // 연속 줄바꿈 하나로 정리
+      .trim()                            // 앞뒤 공백 제거
+}
+
 </script>
 
 <template>
@@ -87,7 +105,7 @@ watch(messages, async () => {
           :class="['message', msg.role]"
       >
         <strong>{{ msg.role === 'user' ? '나' : 'AI' }}:</strong>
-        <span>{{ msg.content }}</span>
+        <pre class="message-text">{{ formatMessage(msg.content) }}</pre>
       </div>
     </div>
 
@@ -137,7 +155,6 @@ watch(messages, async () => {
 .preview-content {
   background: #fcfcfc;
   white-space: pre-wrap;
-  max-height: 300px;
-  overflow-y: auto;
+  min-height: 100px;
 }
 </style>
