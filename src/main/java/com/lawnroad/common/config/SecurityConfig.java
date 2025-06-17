@@ -58,9 +58,28 @@ public class SecurityConfig {
 
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**","/api/public/**","/api/find-id","/api/reset-password" ,"/mail/**","/api/user/**","/api/auth/nickname" ,"/uploads/**").permitAll()
-                        .requestMatchers("/api/client/**").hasAuthority("ROLE_CLIENT")
+                        // 비회원에게 허가할 api
+                        .requestMatchers(
+                            "/api/auth/**",
+                            "/api/public/**",
+                            "/api/find-id",
+                            "/api/reset-password",
+                            "/mail/**",
+                            "/api/user/**",
+                            "/api/auth/nickname",
+                            "/api/notification/**",
+                            "/uploads/**"
+                        ).permitAll()
+                    
+                        // 사용자 권한에게 허가할 api
+                        .requestMatchers("/api/client/**").hasRole("CLIENT")
+                    
+                        // 변호사 권한에게 허가할 api
                         .requestMatchers("/api/lawyer/**").hasRole("LAWYER")
+                    
+                        // 변호사, 혹은 사용자 권한일 때 허가할 api
+                        .requestMatchers("/api/ai/**").hasAnyRole("LAWYER", "CLIENT")
+                    
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

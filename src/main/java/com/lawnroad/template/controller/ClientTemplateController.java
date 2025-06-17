@@ -22,28 +22,7 @@ public class ClientTemplateController {
   private final ClientTemplateService clientTemplateService;
   
   /**
-   * 전체 템플릿 목록 조회 (사용자용)
-   * GET /api/client/templates?page=1&limit=20&categoryNo=3&keyword=계약서&type=EDITOR&sort=popular
-   */
-  @GetMapping
-  public TemplateListResponseDto getAllTemplates(TemplateSearchConditionDto condition) {
-    return clientTemplateService.findAllTemplates(condition);
-  }
-  
-  /**
-   * 템플릿 상세 정보 조회 (클라이언트용)
-   * @param no 템플릿 번호
-   * @return 템플릿 + 등록한 변호사 정보
-   */
-  @GetMapping("/{no}")
-  public ResponseEntity<ClientTemplateDetailResponseDto> getTemplateByNo(@PathVariable Long no) {
-    ClientTemplateDetailResponseDto dto = clientTemplateService.findTemplateDetailByNo(no);
-    return ResponseEntity.ok(dto);
-  }
-  
-  
-  /**
-   * 전체 주문 목록 조회 (필터 및 페이징 포함)
+   * 전체 주문 목록 조회 (필터 및 페이징 포함) (클라이언트 권한)
    */
   @GetMapping("/orders")
   public ResponseEntity<ClientOrderListResponseDto> getOrders(
@@ -51,7 +30,7 @@ public class ClientTemplateController {
       @RequestParam(defaultValue = "1") int page,
       @RequestParam(defaultValue = "10") int limit
   ) {
-    // 유저 번호는 하드코딩
+    // TODO: 유저 번호는 하드코딩
     Long userNo = 1L;
     
     // 목록 + 총 개수 조회
@@ -76,7 +55,7 @@ public class ClientTemplateController {
   }
   
   /**
-   * 특정 주문의 템플릿 상세 목록 조회 (필터 포함)
+   * 특정 주문의 템플릿 상세 목록 list 조회 (필터 포함) (클라이언트 권한)
    */
   @GetMapping("/orders/{orderNo}/items")
   public ResponseEntity<ClientOrderTemplateListResponseDto> getTemplatesByOrder(
@@ -112,7 +91,7 @@ public class ClientTemplateController {
   }
   
   /**
-   * 템플릿 상세 조회
+   * 템플릿 상세 조회 (클라이언트 권한)
    * @param templateNo 템플릿 PK
    * @param type 템플릿 유형 (EDITOR 또는 FILE)
    */
@@ -121,25 +100,30 @@ public class ClientTemplateController {
       @PathVariable Long templateNo,
       @RequestParam String type
   ) {
+    System.out.println("요청 templateNo=" + templateNo + ", type=" + type);
     if ("EDITOR".equalsIgnoreCase(type)) {
       ClientEditorTemplateDetailDto dto = clientTemplateService.getEditorTemplateDetail(templateNo);
+      
+      System.out.println("--------------- editor DTO=" + dto);
       return ResponseEntity.ok(dto);
     } else if ("FILE".equalsIgnoreCase(type)) {
       ClientFileTemplateDetailDto dto = clientTemplateService.getFileTemplateDetail(templateNo);
+      
+      System.out.println("------------------ file DTO=" + dto);
       return ResponseEntity.ok(dto);
     } else {
       return ResponseEntity.badRequest().body("잘못된 템플릿 유형입니다: " + type);
     }
   }
   
-  // 다운로드 상태로 변경
+  // 다운로드 상태로 변경 (클라이언트 권한)
   @PostMapping("/orders/download")
   public ResponseEntity<Void> markOrderDownloaded(@RequestBody CheckoutResponseDto dto) {
     clientTemplateService.markTemplateAsDownloaded(dto.getOrderNo(), dto.getTmplNo());
     return ResponseEntity.ok().build();
   }
   
-  // 다운로드 상태 조회 (개별 조회)
+  // 다운로드 상태 조회 (개별 조회) (클라이언트 권한)
   @PostMapping("/orders/isDownloaded")
   public ResponseEntity<?> checkDownloaded(@RequestBody CheckoutResponseDto dto) {
     boolean isDownloaded = clientTemplateService.checkIsDownloaded(dto.getOrderNo(), dto.getTmplNo());
