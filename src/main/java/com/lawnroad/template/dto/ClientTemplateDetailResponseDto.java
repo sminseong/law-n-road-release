@@ -24,9 +24,7 @@ public class ClientTemplateDetailResponseDto {
   private String profile;             // 프로필 이미지 경로
   private String fullAddress;         // 도로명 주소
   private String officeNumber;        // 사무실 전화번호
-  
-  // --- 아직 DB에 없는 소개 (placeholder) ---
-  
-  private String shortIntro;          // 한 줄 소개
-  private String longIntro;           // 상세 소개
+  private String lawyerOfficeName;    // 사무실 이름
+  private String shortIntro;
+  private String longIntro;
 }

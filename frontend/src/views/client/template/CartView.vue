@@ -9,7 +9,7 @@ const cartItems = ref([])
 const isLoading = ref(true)
 
 onMounted(async () => {
-  const res = await http.get('/api/cart')
+  const res = await http.get('/api/client/cart')
   cartItems.value = res.data
   isLoading.value = false
 })
@@ -21,7 +21,7 @@ const removeItem = async (cartNo) => {
 
   // 2) 삭제 요청 및 UI 업데이트
   try {
-    await http.delete(`/api/cart/${cartNo}`)
+    await http.delete(`/api/client/cart/${cartNo}`)
     cartItems.value = cartItems.value.filter(item => item.no !== cartNo)
   } catch (err) {
     console.error('장바구니 삭제 실패:', err)
@@ -31,7 +31,7 @@ const removeItem = async (cartNo) => {
 
 const updateCart = async () => {
   isLoading.value = true
-  const res = await http.get('/api/cart')
+  const res = await http.get('/api/client/cart')
   cartItems.value = res.data
   isLoading.value = false
 }
@@ -55,7 +55,7 @@ const clearCart = async () => {
   if (!ok) return
 
   try {
-    await http.delete('/api/cart/all')
+    await http.delete('/api/client/cart/all')
     cartItems.value = []
   } catch (err) {
     console.error('전체 삭제 실패:', err)

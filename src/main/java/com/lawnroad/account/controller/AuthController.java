@@ -3,18 +3,22 @@ import com.lawnroad.account.dto.*;
 import com.lawnroad.account.entity.ClientEntity;
 import com.lawnroad.account.entity.LawyerEntity;
 import com.lawnroad.account.entity.UserEntity;
+import com.lawnroad.account.mapper.ClientMapper;
 import com.lawnroad.account.mapper.LawyerMapper;
 import com.lawnroad.account.mapper.UserMapper;
 import com.lawnroad.account.service.ClientService;
 import com.lawnroad.account.service.LawyerService;
 import com.lawnroad.common.util.JwtTokenUtil;
 import com.lawnroad.common.util.UserContext;
+import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.mybatis.logging.Logger;
 import org.mybatis.logging.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -22,7 +26,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api")
 public class AuthController {
 
     @Autowired
@@ -31,8 +35,9 @@ public class AuthController {
     private final UserMapper userMapper;
     private final ClientService clientService;
     private final UserContext userContext;
+    private final ClientMapper clientMapper;
 
-    @GetMapping("/check-id")
+    @GetMapping("/auth/check-id")
     public ResponseEntity<Map<String, Object>> checkIdDuplicate(@RequestParam String clientId) {  // 여기는 클라이언트 아이디를 중복 확인 하는 함수
         boolean available = clientService.isClientIdAvailable(clientId);
 
@@ -42,7 +47,7 @@ public class AuthController {
         return ResponseEntity.ok(response); // 요청 성공했고, 이 데이터 줄게!  200일 때만 적용됨
     }
 
-    @GetMapping("/lawyer_check-id")
+    @GetMapping("/auth/lawyer_check-id")
     public ResponseEntity<Map<String, Object>> checkLawyerIdDuplicate(@RequestParam String lawyerId) { // 여기는 변호사 아이디를 중복 확인 하는 함수
         boolean available = lawyerService.isLawyerAvailable(lawyerId);
 
@@ -52,7 +57,7 @@ public class AuthController {
         return ResponseEntity.ok(response); // 요청 성공했고, 이 데이터 줄게!  200일 때만 적용됨
     }
 
-    @GetMapping("/check-nickname")
+    @GetMapping("/auth/check-nickname")
     public ResponseEntity<Map<String, Object>> checkNickNameDuplicate(@RequestParam String nickname) {
         boolean available = clientService.isClientNickNameAvailable(nickname);
 
@@ -63,20 +68,20 @@ public class AuthController {
     }
 
 
-    @PostMapping("/signup")
+    @PostMapping("/auth/signup")
     public ResponseEntity<?> signup(@RequestBody ClientSignupRequest request) {
         clientService.registerClient(request);
         return ResponseEntity.ok().body("회원가입 완료");
     }
 
-    @PostMapping("/lawyer_signup")
+    @PostMapping("/auth/lawyer_signup")
     public ResponseEntity<?> lawyer_signup(@RequestBody LawyerSignupRequest request) {
         lawyerService.registerLawyer(request);
         return ResponseEntity.ok().body("변호사 회원가입 완료");
     }
 
 
-    @GetMapping("/check-email")
+    @GetMapping("/auth/check-email")
     public ResponseEntity<Map<String, Object>> checkEmailDuplicate(@RequestParam String email) {
         boolean available = clientService.isEmailAvailable(email);
 
@@ -117,7 +122,7 @@ public class AuthController {
 //        }
 //    }
 
-    @PostMapping("/login")
+    @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
             System.out.println("💡 [전체 로그인 요청 도착] clientId: " + request.getClientId());
@@ -196,6 +201,9 @@ public class AuthController {
 ////        return ResponseEntity.ok(Map.of("clientId", clientId));
         String clientId = clientService.findClientId(request.getFullName(), request.getEmail());
         String lawyerId = lawyerService.findLawyerId(request.getFullName(), request.getEmail());
+        System.out.println("아이디 찾기 여기까지 들어옴");
+        System.out.println(clientId);
+        System.out.println(lawyerId);
 
         if (clientId == null && lawyerId == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("일치하는 계정을 찾을 수 없습니다.");
@@ -240,6 +248,72 @@ public class AuthController {
 
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
     }
+
+//    @PutMapping("/client/nickname")
+//    @PreAuthorize("hasRole('CLIENT')")
+//    public ResponseEntity<?> updateNickname(
+//            @RequestHeader("Authorization") String authHeader,
+//            @RequestBody Map<String, String> request
+//    ) {
+//        String token = authHeader.replace("Bearer ", "");
+//        Claims claims = jwtTokenUtil.parseToken(token);
+//        System.out.println("✅ 닉네임 수정 컨트롤러 진입");
+//
+//        String clientId = claims.getSubject(); // sub → clientId
+//        String newNickname = request.get("nickname");
+//
+//        if (newNickname == null || newNickname.trim().isEmpty()) {
+//            return ResponseEntity.badRequest().body("닉네임은 필수입니다.");
+//        }
+//
+//        clientService.updateNicknameByClientId(clientId, newNickname);
+//        return ResponseEntity.ok().build();
+//    }
+
+
+//    @PutMapping("/lawyer/info")
+//    //@PreAuthorize("hasRole('LAWYER')")
+//    public ResponseEntity<?> updateLawyerInfo(
+//            @RequestHeader("Authorization") String authHeader,
+//            @RequestBody Map<String, String> request
+//    ) {
+//        String token = authHeader.replace("Bearer ", "");
+//        Claims claims = jwtTokenUtil.parseToken(token);
+//        String lawyerId = claims.getSubject();
+//
+//        String officeNumber = request.get("officeNumber");
+//        String phone = request.get("phone");
+//        String detailAddress = request.get("detailAddress");
+//
+//        lawyerService.updateLawyerInfo(lawyerId, officeNumber, phone, detailAddress);
+//        return ResponseEntity.ok().build();
+//    }
+
+    @PutMapping("/client/profile")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ResponseEntity<?> updateClientProfile(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody Map<String, String> request
+    ) {
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtTokenUtil.parseToken(token);
+
+        String clientId = claims.getSubject();
+        String nickname = request.get("nickname");
+        String email = request.get("email");
+        String phone = request.get("phone");
+
+        if (nickname == null || email == null || phone == null ||
+                nickname.trim().isEmpty() || email.trim().isEmpty() || phone.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("모든 필드를 입력해주세요.");
+        }
+
+        clientService.updateClientProfile(clientId, nickname, email, phone);
+        return ResponseEntity.ok().build();
+    }
+
+
+
 
 
 

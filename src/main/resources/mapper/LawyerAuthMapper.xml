@@ -37,16 +37,41 @@
     <!--    </select>-->
 
 
+<!--    <insert id="insertLawyer">-->
+<!--        INSERT INTO lawyer (-->
+<!--            no, lawyer_id, pw_hash, profile, email, name, office_number, phone,-->
+<!--            zipcode, road_address, land_address, detail_address, point, consent,-->
+<!--            status, consult_price, card_front, card_back, office_name-->
+<!--        ) VALUES (-->
+<!--                     #{no}, #{lawyerId}, #{pwHash}, #{profile}, #{email}, #{name}, #{officeNumber}, #{phone},-->
+<!--                     #{zipcode}, #{roadAddress}, #{landAddress}, #{detailAddress}, #{point}, #{consent},-->
+<!--                     #{status}, #{consultPrice}, #{cardFront}, #{cardBack}, #{officeName}-->
+<!--                 )-->
+<!--    </insert>-->
+
     <insert id="insertLawyer">
         INSERT INTO lawyer (
             no, lawyer_id, pw_hash, profile, email, name, office_number, phone,
             zipcode, road_address, land_address, detail_address, point, consent,
-            status, consult_price, card_front, card_back, office_name
+            status, consult_price, card_front, card_back, office_name,
+            lawyer_intro, intro_detail
         ) VALUES (
                      #{no}, #{lawyerId}, #{pwHash}, #{profile}, #{email}, #{name}, #{officeNumber}, #{phone},
                      #{zipcode}, #{roadAddress}, #{landAddress}, #{detailAddress}, #{point}, #{consent},
-                     #{status}, #{consultPrice}, #{cardFront}, #{cardBack}, #{officeName}
+                     #{status}, #{consultPrice}, #{cardFront}, #{cardBack}, #{officeName},
+                     #{lawyerIntro}, #{introDetail}
                  )
     </insert>
+
+
+    <update id="updateLawyerInfo">
+        UPDATE lawyer
+        SET
+            office_number = #{officeNumber},
+            phone = #{phone},
+            detail_address = #{detailAddress}
+        WHERE lawyer_id = #{lawyerId}
+    </update>
+
 
 </mapper>

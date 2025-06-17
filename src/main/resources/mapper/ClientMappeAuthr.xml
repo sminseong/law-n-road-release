@@ -42,4 +42,21 @@
         SELECT COUNT(*) FROM client WHERE email = #{email}
     </select>
 
+    <update id="updateNicknameByClientId">
+        UPDATE client
+        SET nickname = #{nickname}
+        WHERE client_id = #{clientId}
+    </update>
+
+    <update id="updateClientProfile">
+        UPDATE client
+        SET
+            nickname = #{nickname},
+            email = #{email},
+            phone = #{phone}
+        WHERE client_id = #{clientId}
+    </update>
+
+
+
 </mapper>
