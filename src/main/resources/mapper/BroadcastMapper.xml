@@ -31,7 +31,8 @@
         SELECT
         b.no AS broadcast_no,
         b.session_id,
-        b.status
+        b.status,
+        b.start_time
         FROM broadcast b
         WHERE b.no = #{broadcastNo}
     </select>
@@ -92,5 +93,21 @@
         status = 'DONE'
         WHERE no = #{broadcastNo}
     </update>
+
+    <insert id="insertReport" parameterType="com.lawnroad.broadcast.live.dto.BroadcastReportRequestDto">
+        INSERT INTO broadcast_report
+        (broadcast_no, user_no, reason_code, detail_reason)
+        VALUES
+        (#{broadcastNo}, #{userNo}, #{reasonCode}, #{detailReason})
+    </insert>
+
+    <!-- 신고 코드, 라벨 조회 (기타를 가장 아래에 ORDER BY 나머지는 알파벳순 -->
+    <select id="findAllReportReasons" resultType="com.lawnroad.broadcast.live.dto.ReportReasonDto">
+        SELECT code, label
+        FROM report_reason_code
+        ORDER BY
+        CASE WHEN label = '기타' THEN 1 ELSE 0 END,
+        label ASC
+    </select>
 
 </mapper>

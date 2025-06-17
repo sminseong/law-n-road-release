@@ -29,4 +29,11 @@ public interface LawyerMapper {
 
     @Update("UPDATE lawyer SET pw_hash = #{newHashedPassword} WHERE lawyer_id = #{lawyerId}")
     void updatePassword(@Param("lawyerId") String lawyerId, @Param("newHashedPassword") String newHashedPassword);
+
+    void updateLawyerInfo(
+            @Param("lawyerId") String lawyerId,
+            @Param("officeNumber") String officeNumber,
+            @Param("phone") String phone,
+            @Param("detailAddress") String detailAddress
+    );
 }

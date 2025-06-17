@@ -13,12 +13,12 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/cart")
+@RequestMapping("/api/client/cart")
 public class CartController {
   
   private final CartService cartService;
   
-  // 1. 장바구니 추가
+  // 1. 장바구니 추가 (클라이언트 권한)
   @PostMapping
   public ResponseEntity<Void> addToCart(@RequestBody CartAddRequestDto dto) {
     Long userNo = 1L; // TODO: @AuthenticationPrincipal 로 교체 예정
@@ -31,14 +31,14 @@ public class CartController {
     }
   }
   
-  // 2. 장바구니 삭제 (cart row PK 기준)
+  // 2. 장바구니 삭제 (cart row PK 기준) (클라이언트 권한)
   @DeleteMapping("/{no}")
   public ResponseEntity<Void> removeFromCart(@PathVariable("no") Long cartNo) {
     cartService.removeFromCart(cartNo);
     return ResponseEntity.noContent().build();
   }
   
-  // 3. 장바구니 목록 조회
+  // 3. 장바구니 목록 조회 (클라이언트 권한)
   @GetMapping
   public ResponseEntity<List<CartItemResponseDto>> getCartList() {
     Long userNo = 1L; // TODO: @AuthenticationPrincipal 로 교체 예정
@@ -47,6 +47,7 @@ public class CartController {
     return ResponseEntity.ok(cartItems);
   }
   
+  // 결제 (클라이언트 권한)
   @PostMapping("/aa")
   public ResponseEntity<CheckoutResponseDto> checkout(
       @RequestBody CheckoutRequestDto req
@@ -57,7 +58,7 @@ public class CartController {
     return ResponseEntity.ok(new CheckoutResponseDto(orderNo));
   }
   
-  // 장바구니 전체 삭제
+  // 장바구니 전체 삭제 (클라이언트 권한)
   @DeleteMapping("/all")
   public ResponseEntity<Void> clearCart() {
     System.out.println( "clearCart()");

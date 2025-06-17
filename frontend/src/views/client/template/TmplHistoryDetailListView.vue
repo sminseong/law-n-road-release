@@ -95,7 +95,7 @@ async function fetchItems(page = 1, query = {}) {
   )
   // merged API returns { items, totalPages }
 
-  console.log('res:', res.data)
+  console.log('상세구매내역 (list) res:', res.data)
 
   rows.value       = res.data.templates
   totalPages.value = res.data.totalPages

@@ -1,14 +1,16 @@
 package com.lawnroad.broadcast.live.controller;
 
+import com.lawnroad.broadcast.live.dto.BroadcastReportRequestDto;
 import com.lawnroad.broadcast.live.dto.BroadcastStartResponseDto;
 import com.lawnroad.broadcast.live.dto.BroadcastViewDetailDto;
+import com.lawnroad.broadcast.live.dto.ReportReasonDto;
+import com.lawnroad.broadcast.live.mapper.BroadcastMapper;
 import com.lawnroad.broadcast.live.service.BroadcastService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/client/broadcast")
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class BroadcastClientController {
 
     private final BroadcastService broadcastService;
+    private final BroadcastMapper broadcastMapper;
 
     /**
      * 시청자용 방송 토큰 발급 API
@@ -32,5 +35,16 @@ public class BroadcastClientController {
     @GetMapping("/view-detail/{broadcastNo}")
     public ResponseEntity<BroadcastViewDetailDto> getDetailByBroadcastNo(@PathVariable Long broadcastNo) {
         return ResponseEntity.ok(broadcastService.getDetailByBroadcastNo(broadcastNo));
+    }
+
+    @PostMapping("/report")
+    public ResponseEntity<String> reportBroadcast(@RequestBody BroadcastReportRequestDto dto) {
+        broadcastService.reportBroadcast(dto);
+        return ResponseEntity.ok("신고가 정상적으로 접수되었습니다.");
+    }
+
+    @GetMapping("/report-reasons")
+    public ResponseEntity<List<ReportReasonDto>> getReportReasons() {
+        return ResponseEntity.ok(broadcastMapper.findAllReportReasons());
     }
 }
