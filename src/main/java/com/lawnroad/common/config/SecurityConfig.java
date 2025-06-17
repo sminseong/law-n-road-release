@@ -1,4 +1,5 @@
 package com.lawnroad.common.config;
+
 import com.lawnroad.account.security.JwtAuthenticationFilter;
 import com.lawnroad.common.util.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +29,6 @@ public class SecurityConfig {
     }
 
 
-
-
-
-
-
-
 //  private final JwtAuthenticationFilter jwtAuthenticationFilter;
 //  @Bean
 //  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -58,16 +53,35 @@ public class SecurityConfig {
 
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/mail/**","/api/auth/lawyer_signup" ,"/uploads/**","/ws/**").permitAll()
+                        // 비회원에게 허가할 api
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/public/**",
+                                "/api/find-id",
+                                "/api/reset-password",
+                                "/mail/**",
+                                "/api/user/**",
+                                "/api/auth/nickname",
+                                "/api/notification/**",
+                                "/uploads/**",
+                                "/ws/**"
+                        ).permitAll()
+
+                        // 사용자 권한에게 허가할 api
                         .requestMatchers("/api/client/**").hasRole("CLIENT")
+
+                        // 변호사 권한에게 허가할 api
                         .requestMatchers("/api/lawyer/**").hasRole("LAWYER")
+
+                        // 변호사, 혹은 사용자 권한일 때 허가할 api
+                        .requestMatchers("/api/ai/**").hasAnyRole("LAWYER", "CLIENT")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
 
 
     // ✅ AuthenticationManager Bean (필요한 경우 로그인 처리용)

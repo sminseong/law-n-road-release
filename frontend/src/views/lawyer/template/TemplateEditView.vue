@@ -42,6 +42,9 @@ const uploadedFiles = ref([])
 // 썸네일 제거 플래그
 const removeExistingThumbnail = ref(false)
 
+// 로딩 용
+const isSubmitting = ref(false)
+
 onMounted(async () => {
   try {
     const res = await http.get(`/api/lawyer/templates/${templateNo}`, { type: templateType })
@@ -116,11 +119,30 @@ function onThumbnailChange(e) {
 }
 
 async function handleUpdate() {
+  if (name.value.length > 50) {
+    return alert('❌ 템플릿명은 50자 이내로 입력해 주세요.');
+  }
+  if (price.value < 0 || price.value > 2147483647) {
+    return alert('❌ 가격은 0원 이상 2,147,483,647원 이하만 입력 가능합니다.');
+  }
+  if (discountRate.value < 0 || discountRate.value > 100) {
+    return alert('❌ 할인율은 0% 이상 100% 이하로만 입력 가능합니다.');
+  }
+  if (!name.value.trim()) {
+    return alert('❌ 템플릿명을 입력해 주세요.');
+  }
+  if (!categoryNo.value) {
+    return alert('❌ 카테고리를 선택해 주세요.');
+  }
+
   // 1) 변경 여부 비교
   let isContentChanged = false
   let isFileChanged = false
 
   if (selectedTab.value === 'ai') {
+    if (!editorContent.value.trim()) {
+      return alert('❌ 본문 내용을 입력해 주세요.');
+    }
     isContentChanged =
         editorContent.value !== originEditorContent.value ||
         JSON.stringify(editorVariables.value) !== JSON.stringify(originEditorVariables.value)
@@ -135,57 +157,61 @@ async function handleUpdate() {
   // 2) 분기: 복제 방식 또는 메타 업데이트
   try {
     if (isContentChanged || isFileChanged) {
-      if (!confirm('템플릿을 수정하면 판매기록이 초기화 됩니다. 정말 수정하시겠습니까?')) return
-      await callUpdateCloneAPI()
+      if (!confirm('템플릿을 수정하면 판매기록이 초기화 됩니다. 정말 수정하시겠습니까?')) return;
+      isSubmitting.value = true
+      await callUpdateCloneAPI();
     } else {
-      await callUpdateMetaAPI()
+      isSubmitting.value = true
+      await callUpdateMetaAPI();
     }
-    alert('수정 완료되었습니다.')
-    router.push('/lawyer/templates')
+    alert('수정 완료되었습니다.');
+    router.push('/lawyer/templates');
   } catch (e) {
-    console.error(e)
-    alert('수정 실패')
+    // 400 Bad Request: 백엔드가 보낸 상세 메시지 출력
+    if (e.response && e.response.status === 400) {
+      alert(e.response.data);
+    } else {
+      console.error(e);
+      alert('❌ 알 수 없는 오류가 발생했습니다.');
+    }
+  } finally {
+    isSubmitting.value = false
   }
 }
 
 async function callUpdateCloneAPI() {
-  try {
-    const formData = new FormData()
-    formData.append('no', templateNo)
-    formData.append('name', name.value)
-    formData.append('price', price.value)
-    formData.append('discountRate', discountRate.value)
-    formData.append('categoryNo', categoryNo.value)
-    formData.append('description', description.value)
-    formData.append('type', selectedTab.value === 'ai' ? 'EDITOR' : 'FILE')
-    formData.append('removeThumbnail', removeExistingThumbnail.value ? 1 : 0)
+  const formData = new FormData()
+  formData.append('no', templateNo)
+  formData.append('name', name.value)
+  formData.append('price', price.value)
+  formData.append('discountRate', discountRate.value)
+  formData.append('categoryNo', categoryNo.value)
+  formData.append('description', description.value)
+  formData.append('type', selectedTab.value === 'ai' ? 'EDITOR' : 'FILE')
+  formData.append('removeThumbnail', removeExistingThumbnail.value ? 1 : 0)
 
-    if (thumbnailFile.value) {
-      formData.append('file', thumbnailFile.value)
-    }
-
-    if (selectedTab.value === 'ai') {
-      formData.append('content', editorContent.value)
-      formData.append('varJson', JSON.stringify(editorVariables.value))
-      formData.append('aiEnabled', 1)
-    } else {
-      const existingMeta = uploadedFiles.value.filter(
-          item => item.originalName && item.savedPath
-      )
-      formData.append('pathJson', JSON.stringify(existingMeta))
-      uploadedFiles.value
-          .filter(item => item instanceof File)
-          .forEach(file => {
-            formData.append('templateFiles', file)
-          })
-    }
-
-    await http.post('/api/lawyer/templates/update', formData)
-    router.push('/lawyer/templates')
-  } catch (e) {
-    console.error(e)
-    alert('수정 실패')
+  if (thumbnailFile.value) {
+    formData.append('file', thumbnailFile.value)
   }
+
+  if (selectedTab.value === 'ai') {
+    formData.append('content', editorContent.value)
+    formData.append('varJson', JSON.stringify(editorVariables.value))
+    formData.append('aiEnabled', 1)
+  } else {
+    const existingMeta = uploadedFiles.value.filter(
+        item => item.originalName && item.savedPath
+    )
+    formData.append('pathJson', JSON.stringify(existingMeta))
+    uploadedFiles.value
+        .filter(item => item instanceof File)
+        .forEach(file => {
+          formData.append('templateFiles', file)
+        })
+  }
+
+  // 에러는 handleUpdate()에서 처리됩니다.
+  await http.post('/api/lawyer/templates/update', formData)
 }
 
 async function callUpdateMetaAPI() {
@@ -210,6 +236,13 @@ async function callUpdateMetaAPI() {
 
 <template>
   <LawyerFrame>
+    <!-- 전체 화면 로딩 오버레이 -->
+    <div v-if="isSubmitting" class="loading-overlay">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading…</span>
+      </div>
+    </div>
+
     <div class="container py-4">
       <h3 class="mb-4 fw-bold">템플릿 수정</h3>
 
@@ -273,10 +306,78 @@ async function callUpdateMetaAPI() {
         />
       </div>
 
+      <div class="card p-3 mb-4 bg-light-subtle template-guide">
+        <h6 style="text-align: center">모든 템플릿은 등록 전에 AI 기반의 문서 검증을 거쳐야 합니다. 정확하고 신중하게 작성해 주세요.</h6> <br>
+        <div class="d-flex justify-content-between align-items-center">
+          <strong>AI 문서 검증이란?</strong>
+        </div>
+        <p class="mt-2 mb-1 text-muted small">
+          AI가 작성한 문서가 법률 문서로서 적절한지 <b>5가지 항목</b>을 기준으로 자동 점검합니다.
+          <br>문서 등록 및 수정 시 <u><b>반드시 통과</b></u>해야 최종적으로 템플릿이 등록됩니다.
+        </p>
+
+        <table class="table table-bordered table-sm mt-3 mb-2 small text-center align-middle">
+          <thead class="table-light">
+          <tr>
+            <th style="width: 5%">코드</th>
+            <th style="width: 25%">메시지</th>
+            <th style="width: 35%">의미</th>
+            <th style="width: 35%">회피 방법</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>①</td>
+            <td>부적절한 내용 포함</td>
+            <td class="text-start">비속어, 혐오, 공격적 표현 포함</td>
+            <td class="text-start">중립적 표현으로 수정</td>
+          </tr>
+          <tr>
+            <td>②</td>
+            <td>주제와의 불일치</td>
+            <td class="text-start">제목/설명과 본문이 맞지 않음</td>
+            <td class="text-start">문서 내용을 주제에 맞게 작성</td>
+          </tr>
+          <tr>
+            <td>③</td>
+            <td>사실성 부족</td>
+            <td class="text-start">“그때 봐서” 같은 모호한 문장 포함</td>
+            <td class="text-start">수치·조건·역할 등 구체화</td>
+          </tr>
+          <tr>
+            <td>④</td>
+            <td>과도한 홍보성</td>
+            <td class="text-start">“믿고 사세요” 같은 광고 문구</td>
+            <td class="text-start">감정 표현 제거, 객관적으로 작성</td>
+          </tr>
+          <tr>
+            <td>⑤</td>
+            <td>문맥/구조적 완성도 미달</td>
+            <td class="text-start">조항 없음, 흐름 없음</td>
+            <td class="text-start">제1조 등 형식적 구조로 작성</td>
+          </tr>
+          </tbody>
+        </table>
+
+        <p class="mt-2 mb-0 text-muted small">
+          <strong>팁:</strong> 과장된 표현보다 <u>중립적이고 정보 중심의 문장</u>일수록 검증 성공률이 높습니다.
+        </p>
+      </div>
+
       <!-- 버튼 -->
       <div class="text-end">
-        <button class="btn btn-secondary me-2" @click="router.back()">취소</button>
-        <button class="btn btn-primary" @click="handleUpdate">수정 완료</button>
+        <button
+            class="btn btn-primary"
+            :disabled="isSubmitting"
+            @click="handleUpdate"
+        >
+        <span
+            v-if="isSubmitting"
+            class="spinner-border spinner-border-sm me-2"
+            role="status"
+        ></span>
+          {{ isSubmitting ? '수정 중…' : 'AI 검증 후 수정' }}
+        </button>
       </div>
     </div>
   </LawyerFrame>
@@ -297,5 +398,16 @@ async function callUpdateMetaAPI() {
   border-radius: 0.5rem;
   padding: 1.5rem;
   margin-bottom: 2rem;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(255, 255, 255, 0.4); /* 좀 더 투명 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
 }
 </style>
