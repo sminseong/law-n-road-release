@@ -5,7 +5,8 @@
 <mapper namespace="com.lawnroad.broadcast.chat.mapper.PreQuestionMapper">
 
     <resultMap id="PreQuestionResultMap" type="com.lawnroad.broadcast.chat.dto.PreQuestionDTO">
-        <id property="categoryNo" column="category_no"/>
+        <id property="scheduleNo" column="schedule_no"/>
+        <result property="scheduleNo" column="schedule_no"/>
         <result property="name" column="name"/>
         <result property="scheduleContent" column="schedule_content"/>
         <result property="thumbnailPath" column="thumbnail_path"/>
@@ -18,10 +19,12 @@
             <result column="keyword"/>
         </collection>
 
-        <!-- ✅ nickname + pre_question_content을 묶은 객체 리스트 -->
         <collection property="preQuestions" ofType="com.lawnroad.broadcast.chat.dto.PreQuestionItem">
+            <id property="no" column="no"/>
+            <result property="scheduleNo" column="schedule_no"/>
             <result property="nickname" column="nickname"/>
             <result property="preQuestionContent" column="pre_question_content"/>
+            <result property="userNo" column="user_no"/> <!-- ⭐ 추가 -->
         </collection>
     </resultMap>
 
@@ -31,10 +34,19 @@
         <result property="content" column="content"/>
     </resultMap>
 
+    <insert id="insertPreQuestion" parameterType="com.lawnroad.broadcast.chat.dto.PreQuestionItem">
+        INSERT INTO pre_question (
+            schedule_no, nickname, content, created_at, user_no
+        )
+        VALUES (
+                   #{scheduleNo}, #{nickname}, #{preQuestionContent}, NOW(), #{userNo}
+               )
+    </insert>
 
     <select id="findByPreQuestion" resultMap="PreQuestionResultMap">
         SELECT
-        bs.category_no,
+        bs.no AS schedule_no,
+        pq.no,
         bs.name,
         bs.content AS schedule_content,
         pq.content AS pre_question_content,
@@ -44,12 +56,13 @@
         bs.end_time,
         l.name AS lawyer_name,
         pq.nickname,
+        pq.user_no,
         k.keyword
         FROM broadcast_schedule bs
         JOIN `user` u ON bs.user_no = u.no
         JOIN lawyer l ON l.no = u.no
-        LEFT JOIN keyword k ON k.schedule_no = bs.no
         LEFT JOIN pre_question pq ON pq.schedule_no = bs.no
+        LEFT JOIN keyword k ON k.schedule_no = bs.no
         WHERE bs.no = #{scheduleNo}
     </select>
 
@@ -59,14 +72,19 @@
         WHERE schedule_no = #{scheduleNo}
     </select>
 
-
-    <!--  선택된 no를 제외하고 나머지 삭제 -->
-    <delete id="deletePreQuestion" parameterType="list">
+    <delete id="deleteLawyerPreQuestion" parameterType="list">
         DELETE FROM pre_question
         WHERE no NOT IN
         <foreach collection="list" item="no" open="(" separator="," close=")">
             #{no}
         </foreach>
+    </delete>
+
+    <delete id="deletePreQuestionByUser">
+        DELETE FROM pre_question
+        WHERE schedule_no = #{scheduleNo}
+          AND no = #{questionNo}
+          AND user_no = #{userNo}
     </delete>
 
 </mapper>

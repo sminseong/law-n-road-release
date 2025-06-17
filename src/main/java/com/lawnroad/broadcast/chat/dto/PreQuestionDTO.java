@@ -12,7 +12,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PreQuestionDTO {
-    private Long categoryNo;
+    private Long no;
+    private Long userNo;
+    private Long scheduleNo;
     private String lawyerName;
     private String name;
     private String scheduleContent;

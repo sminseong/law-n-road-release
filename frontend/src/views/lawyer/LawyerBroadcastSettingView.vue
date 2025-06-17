@@ -104,30 +104,36 @@ const addNightbotMessage = async () => {
     await loadNightbotMessages();
     alert("등록되었습니다.");
   } catch (e) {
-    console.error("등록 실패:", e);
     alert("등록 실패");
   }
 };
 
 // 자동응답 삭제
-const deleteNightbotMessage = async (id) => {
+const deleteNightbotMessage = async (no) => {
   try {
     const token = localStorage.getItem('token');
-    await axios.delete(`/api/nightBot/${id}`, {
+    await axios.delete(`/api/nightBot/${no}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     await loadNightbotMessages();
+    alert("삭제 되었습니다.");
+
   } catch (e) {
     alert("삭제 실패");
   }
 };
+
+
+function goToLawyerLive() {
+  window.location.href = 'http://localhost:5173/lawyer/broadcasts/live?scheduleNo=1';
+}
 </script>
 
 
 <template>
   <LawyerFrame>
     <div class="container-fluid my-5 d-flex justify-content-center">
-      <div class="bg-white border border-2 rounded-4 shadow px-5 py-4 w-100" style="min-height: 80vh; max-width: 1600px;">
+      <div class="bg-white border border-2 rounded-4 shadow px-5 py-4 w-100" style="min-height: 120vh; max-width: 1600px;">
         <div class="row w-100">
           <!-- 왼쪽: 방송 콘텐츠 영역 -->
           <div class="col-md-7 d-flex flex-column justify-content-center align-items-center">
@@ -170,7 +176,7 @@ const deleteNightbotMessage = async (id) => {
               </div>
             </div>
 
-            <!-- ✅ 나이트봇 - 구조 및 배치 변경 -->
+            <!--  나이트봇  -->
             <div class="mt-5 border rounded-3 p-3 shadow-sm">
               <div class="mb-3">
                 <span class="fs-4 fw-bold text-dark">나이트봇 자동응답 설정</span>
@@ -188,14 +194,14 @@ const deleteNightbotMessage = async (id) => {
                           rows="2"
                           placeholder="내용"></textarea>
                 <!-- 등록 버튼 (오른쪽 위) -->
-                <button class="btn btn-success position-absolute"
+                <button class="btn btn-primary position-absolute"
                         style="top:0; right:0; height:38px; z-index:2"
                         @click="addNightbotMessage">
                   등록
                 </button>
               </div>
               <!-- 목록 -->
-              <li v-for="msg in nightbotMessages" :key="msg.id"
+              <li v-for="msg in nightbotMessages" :key="msg.no"
                   class="list-group-item d-flex align-items-center border-0 px-0 py-2">
                 <span class="fw-bold me-1">{{ msg.keyword }}</span>
                 <span class="fw-bold me-1">:</span>
@@ -203,23 +209,19 @@ const deleteNightbotMessage = async (id) => {
                 {{ msg.message.length > 28 ? msg.message.slice(0, 28) + " ..." : msg.message }}
               </span>
                 <button class="btn btn-sm btn-danger ms-2"
-                        @click="deleteNightbotMessage(msg.id)">
+                        @click="deleteNightbotMessage(msg.no)">
                   삭제
                 </button>
               </li>
-
-
             </div>
           </div>
         </div>
+        <button
+            class="btn btn-primary"
+            @click="goToLawyerLive"
+        >라이브 방송 시작하기</button>
       </div>
     </div>
   </LawyerFrame>
 </template>
 
-<style scoped>
-.nightbot-list {
-  max-height: 140px;
-  overflow-y: auto;
-}
-</style>

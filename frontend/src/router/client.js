@@ -45,7 +45,7 @@ export default [
     {
         path: '/client/broadcasts/schedule/:scheduleNo/preQuestion',
         name: 'ClientBroadCastsPreQuestion',
-        component: () => import('@/views/client/preQuestion.vue')
+        component: () => import('@/views/client/ClientPreQuestionView.vue')
     },
     {
         path: '/client/broadcasts/schedule',

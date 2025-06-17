@@ -4,29 +4,92 @@ import { onMounted, ref } from "vue";
 import axios from "axios";
 import { useRoute } from "vue-router";
 
-const preQuestion = ref({}); // 배열 → 객체로 변경
+const nickname = ref('홍길동');
+const inputContent = ref('');
+const preQuestion = ref({});
 const route = useRoute();
+const scheduleNo = route.params.scheduleNo;
+const myUserNo = ref(null);
 
-// 방송 정보 + 사전 질문 불러오기
+
+// 방송 정보 + 사전 질문 불러오기 (GET, 토큰 없이)
 onMounted(async () => {
-  const scheduleNo = route.params.scheduleNo;
+  const token = localStorage.getItem('token');
+  if (token) {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    myUserNo.value = payload.no;
+  }
+
   const preQRes = await axios.get(`/api/broadcasts/schedule/${scheduleNo}/preQuestion`);
   preQuestion.value = preQRes.data;
-  console.log("응답 전체:", preQRes.data);
+
+
 });
 
-// 배경 색상
+const submitQuestion = async () => {
+  if (!inputContent.value.trim()) {
+    alert('내용을 입력해주세요!');
+    return;
+  }
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert("로그인이 필요합니다!");
+    return;
+  }
+  try {
+    await axios.post(
+        `/api/broadcasts/schedule/${scheduleNo}/preQuestion`,
+        {
+          scheduleNo: scheduleNo,
+          nickname: nickname.value,
+          preQuestionContent: inputContent.value
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+    );
+    inputContent.value = '';
+    alert('질문이 등록되었습니다.');
+    // 등록 후 리스트 갱신
+    const preQRes = await axios.get(`/api/broadcasts/schedule/${scheduleNo}/preQuestion`);
+    preQuestion.value = preQRes.data;
+  } catch (e) {
+    alert('등록에 실패했습니다.');
+  }
+};
+
+const deleteQuestion = async (q) => {
+  if (!confirm('정말 삭제하시겠습니까?')) return;
+  try {
+    await axios.delete(
+        `/api/broadcasts/schedule/${scheduleNo}/preQuestion/${q.no}`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        }
+    );
+
+    // 삭제 후 목록 갱신
+    const preQRes = await axios.get(`/api/broadcasts/schedule/${scheduleNo}/preQuestion`);
+    preQuestion.value = preQRes.data;
+  } catch (e) {
+    alert('삭제에 실패했습니다.');
+  }
+};
+
 function getQuestionStyle(index) {
   const colors = ['bg-success bg-opacity-10', 'bg-warning bg-opacity-10', 'bg-danger bg-opacity-10'];
   return colors[index % colors.length];
 }
 
-// 닉네임 색상
 function getTextColorClass(index) {
   const colors = ['text-success', 'text-warning', 'text-danger'];
   return colors[index % colors.length];
 }
+
 </script>
+
 
 <template>
   <ClientFrame>
@@ -74,24 +137,39 @@ function getTextColorClass(index) {
             </div>
 
             <!-- 사전 질문 목록 -->
-            <div class="flex-grow-1 overflow-auto" style="min-height: 0;">
+            <div
+                class="flex-grow-1 overflow-auto"
+                style="min-height: 0; max-height: 900px;"
+            >
               <div
                   v-for="(q, index) in preQuestion.preQuestions"
                   :key="index"
                   class="rounded-3 p-3 mb-2"
                   :class="getQuestionStyle(index)">
-                <div class="fw-bold" :class="getTextColorClass(index)">[{{ q.nickname }}]</div>
+                <div class="d-flex align-items-center justify-content-between">
+                  <span class="fw-bold" :class="getTextColorClass(index)">[{{ q.nickname }}]</span>
+                  <button
+                      v-if="q.userNo === myUserNo"
+                      class="btn btn-link btn-sm text-danger px-2"
+                      @click="deleteQuestion(q)"
+                      style="text-decoration: underline;">
+                    삭제
+                  </button>
+                </div>
                 <div>{{ q.preQuestionContent }}</div>
               </div>
             </div>
 
             <!-- 질문 입력창 -->
-            <form class="row g-2 align-items-center mt-auto" style="margin-bottom: 0;">
+            <form class="row g-2 align-items-center mt-auto"
+                  style="margin-bottom: 0;"
+                  @submit.prevent="submitQuestion">
               <div class="col">
-                <input type="text" class="form-control fs-5" placeholder="사전질문을 등록하세요" />
+                <input type="text" class="form-control fs-5" placeholder="사전질문을 등록하세요"
+                       v-model="inputContent"/>
               </div>
               <div class="col-auto">
-                <button type="button" class="btn btn-dark fs-5 px-4">등록</button>
+                <button type="submit" class="btn btn-primary fs-5 px-4">등록</button>
               </div>
             </form>
           </div>
