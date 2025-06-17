@@ -98,7 +98,7 @@ const router = useRouter()
 // 파라미터
 const lawyerNo = Number(route.params.lawyerNo)
 const lawyerName = route.params.lawyerName
-const userNo = 6  // TODO: 로그인된 유저 정보로 대체
+const userNo = 4
 
 // 상태
 const loading = ref(true)
@@ -108,10 +108,16 @@ const selectedNo = ref(null)
 // 마운트 시 슬롯 조회
 onMounted(async () => {
   try {
+    const token = localStorage.getItem('token')
     const today = new Date().toISOString().slice(0, 10)
     const res = await axios.get(
-        `/api/lawyers/${lawyerNo}/slots`,
-        {params: {startDate: today}}
+        `/api/lawyer/${lawyerNo}/slots`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+          , params: {startDate: today}
+        }
     )
     slotsFlat.value = res.data
   } catch (err) {
@@ -159,10 +165,21 @@ function select(slot) {
 // 예약 생성 후 결제 페이지로 이동
 async function apply() {
   try {
+    const token = localStorage.getItem('token')
     // 1) API 호출
+    const payload = {
+      slotNo: selectedNo.value,
+      userNo,
+      content: ''
+    }
     const res = await axios.post(
         `/api/client/${userNo}/reservations`,
-        {slotNo: selectedNo.value, userNo, content: ''}
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
     )
     const dto = res.data
     console.log('예약 생성 응답 DTO:', dto)

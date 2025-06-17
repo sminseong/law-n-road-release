@@ -83,7 +83,14 @@ const perPage     = 5
 
 onMounted(async () => {
   try {
-    const res = await axios.get(`/api/client/${clientNo}/reservations`)
+    const token = localStorage.getItem('token')
+
+    const res = await axios.get(`/api/client/${clientNo}/reservations`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        })
     reservations.value = res.data
   } catch {
     alert('예약 내역 조회에 실패했습니다.')
