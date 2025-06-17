@@ -1,9 +1,6 @@
 package com.lawnroad.broadcast.live.service;
 
-import com.lawnroad.broadcast.live.dto.BroadcastSessionDto;
-import com.lawnroad.broadcast.live.dto.BroadcastStartDto;
-import com.lawnroad.broadcast.live.dto.BroadcastStartResponseDto;
-import com.lawnroad.broadcast.live.dto.BroadcastViewDetailDto;
+import com.lawnroad.broadcast.live.dto.*;
 import com.lawnroad.broadcast.live.mapper.BroadcastMapper;
 import com.lawnroad.broadcast.live.model.BroadcastVo;
 import lombok.RequiredArgsConstructor;
@@ -110,5 +107,14 @@ public class BroadcastServiceImpl implements BroadcastService {
     @Transactional
     public void endBroadcast(Long broadcastNo) {
         broadcastMapper.endBroadcast(broadcastNo);
+    }
+
+    @Override
+    @Transactional
+    public void reportBroadcast(BroadcastReportRequestDto dto) {
+        int result = broadcastMapper.insertReport(dto);
+        if (result != 1) {
+            throw new RuntimeException("방송 신고 등록 실패");
+        }
     }
 }

@@ -28,6 +28,23 @@ export default defineComponent({
     let timerInterval = null;
     // 시청자 수
     const viewerCount = ref(0);
+    // 신고 관련 상태
+    const showReportModal = ref(false) // 모달 열기/닫기
+    const reportReasonCode = ref('')   // 선택된 신고 사유 코드
+    const reportDetail = ref('')       // 상세 사유
+
+    // 신고 사유 코드 목록 (백엔드와 일치)
+    const reportReasonOptions = ref([])
+
+    const loadReportReasons = async () => {
+      try {
+        const { data } = await axios.get('/api/client/broadcast/report-reasons')
+        reportReasonOptions.value = data
+        console.log('✅ 신고 사유 목록 로딩 완료:', data)
+      } catch (error) {
+        console.error('❌ 신고 사유 목록 로딩 실패:', error)
+      }
+    }
 
     // 시간 계산
     const startTimer = () => {
@@ -111,6 +128,30 @@ export default defineComponent({
       }
     };
 
+    const submitReport = async () => {
+      if (!reportReasonCode.value) {
+        alert('신고 사유를 선택해주세요.');
+        return;
+      }
+
+      try {
+        await axios.post('/api/client/broadcast/report', {
+          broadcastNo: broadcastNo.value,  // 이미 정의되어 있어야 함
+          userNo: 14,     // 로그인된 사용자 ID
+          reasonCode: reportReasonCode.value,
+          detailReason: reportDetail.value
+        });
+
+        alert('신고가 정상적으로 접수되었습니다.');
+        showReportModal.value = false;
+        reportReasonCode.value = '';
+        reportDetail.value = '';
+      } catch (err) {
+        console.error('신고 실패', err);
+        alert('신고 처리 중 오류가 발생했습니다.');
+      }
+    };
+
 
 
 
@@ -130,6 +171,7 @@ export default defineComponent({
       connect();
       loadBroadcastInfo();
       connectOpenVidu();
+      loadReportReasons()
     });
 
 
@@ -319,6 +361,11 @@ export default defineComponent({
       getNicknameColor,
       elapsedTime,
       viewerCount,
+      showReportModal,
+      reportReasonCode,
+      reportDetail,
+      reportReasonOptions,
+      submitReport,
     };
   }
 });
@@ -365,7 +412,7 @@ export default defineComponent({
             </div>
           </div>
 
-          <!-- 👤 변호사 정보 + 알림신청 버튼 -->
+          <!-- 변호사 정보 + 알림신청 + 신고버튼 -->
           <div class="d-flex justify-content-between align-items-end mt-4">
             <!-- 프로필 영역 -->
             <div class="d-flex align-items-center">
@@ -395,10 +442,87 @@ export default defineComponent({
                 <button class="btn btn-outline-primary btn-sm">🔔 알림신청</button>
               </div>
             </div>
-          </div>
 
+            <!-- 📛 방송 신고 버튼 -->
+            <button class="btn btn-outline-danger btn-sm" @click="showReportModal = true">
+              🚨 방송 신고
+            </button>
+          </div>
         </div>
       </div>
+
+
+
+      <!-- 신고 모달 -->
+      <div v-if="showReportModal" class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center" style="z-index: 1050;">
+        <div class="bg-white p-4 rounded shadow" style="width: 480px;">
+
+          <!-- 제목 -->
+          <h5 class="fw-bold mb-3">🚨 방송 신고</h5>
+
+          <!-- 방송 제목 표시 박스 -->
+          <div class="bg-light p-3 rounded text-dark fw-semibold mb-3">
+            {{ broadcastInfo.title }}
+          </div>
+
+          <hr class="my-3" />
+
+          <!-- 신고 사유 라디오 버튼 목록 -->
+          <div class="mb-4">
+            <label class="form-label d-block mb-3 fw-semibold">신고 사유</label>
+            <div class="d-flex flex-column gap-3">
+              <div
+                  v-for="option in reportReasonOptions"
+                  :key="option.code"
+                  class="border rounded px-3 py-2 d-flex align-items-center"
+                  :class="{
+            'bg-light border-primary': reportReasonCode === option.code,
+            'bg-white': reportReasonCode !== option.code
+          }"
+                  style="cursor: pointer; transition: background-color 0.2s;"
+                  @click="reportReasonCode = option.code"
+              >
+                <input
+                    class="form-check-input me-3"
+                    type="radio"
+                    :id="option.code"
+                    name="reportReason"
+                    :value="option.code"
+                    v-model="reportReasonCode"
+                    style="cursor: pointer;"
+                />
+                <label
+                    class="form-check-label fs-6 fw-normal text-dark mb-0"
+                    :for="option.code"
+                    style="cursor: pointer;"
+                >
+                  {{ option.label }}
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-3" />
+
+          <!-- 상세 입력 -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold">상세 내용 <span class="text-muted">(선택)</span></label>
+            <textarea
+                v-model="reportDetail"
+                class="form-control"
+                rows="3"
+                placeholder="신고 내용을 구체적으로 작성해 주세요."
+            ></textarea>
+          </div>
+
+          <!-- 버튼 -->
+          <div class="d-flex justify-content-end gap-2">
+            <button class="btn btn-secondary px-4" @click="showReportModal = false">취소</button>
+            <button class="btn btn-danger px-4" @click="submitReport">신고 제출</button>
+          </div>
+        </div>
+      </div>
+
 
 
       <!-- 채팅 영역 -->
