@@ -29,5 +29,12 @@
                      #{refundedAt}, #{metadata, jdbcType=VARCHAR}
                  )
     </insert>
+    <select id="findOrderNoByPaymentKey"
+            parameterType="string"
+            resultType="long">
+        SELECT order_no
+        FROM payments
+        WHERE payment_key = #{paymentKey}
+    </select>
 
 </mapper>

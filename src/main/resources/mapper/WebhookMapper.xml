@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.lawnroad.payment.mapper.WebhookLogMapper">
+<mapper namespace="com.lawnroad.payment.mapper.WebhookMapper">
 
     <insert id="insert" parameterType="com.lawnroad.payment.model.WebhookVO">
         INSERT INTO webhook_logs (

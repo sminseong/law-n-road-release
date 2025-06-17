@@ -10,6 +10,6 @@ public interface PaymentMapper {
     void insertPayment(PaymentSaveDTO paymentSaveDTO);
     Long findPaymentNoByPaymentKey(String paymentKey);
     void insertRefund(RefundSaveDTO refund);
-
+    Long findOrderNoByPaymentKey(String paymentKey);
 
 }

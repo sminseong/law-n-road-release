@@ -6,6 +6,7 @@ import com.lawnroad.payment.mapper.PaymentMapper;
 import com.lawnroad.payment.mapper.WebhookMapper;
 import com.lawnroad.payment.model.WebhookVO;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class WebhookService {
@@ -22,6 +23,7 @@ public class WebhookService {
         this.objectMapper = objectMapper;
     }
 
+    @Transactional
     public void saveWebhook(JsonNode json) {
         try {
             String eventType = json.get("eventType").asText();

@@ -8,6 +8,7 @@ import java.time.LocalTime;
 public class ReservationsCreateDTO {
     private Long no;
     private Long orderNo;
+    private String orderCode;
     private Long slotNo;
     private Long userNo;
     private String content;

@@ -1,62 +1,67 @@
 package com.lawnroad.payment.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lawnroad.payment.dto.PaymentSaveDTO;
-import com.lawnroad.payment.dto.RefundSaveDTO;
 import com.lawnroad.payment.mapper.PaymentMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Map;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class PaymentService {
 
     private final PaymentMapper paymentMapper;
-    private final ObjectMapper objectMapper;
 
-    public PaymentService(PaymentMapper paymentMapper, ObjectMapper objectMapper) {
+    public PaymentService(PaymentMapper paymentMapper) {
         this.paymentMapper = paymentMapper;
-        this.objectMapper = objectMapper;
     }
 
-    public void savePaymentFromToss(JsonNode tossResponseJson, Long orderNo) {
+    /**
+     * JsonNode 에서 값을 직접 꺼내서 PaymentSaveDTO 조립 → INSERT
+     */
+    public void savePaymentFromToss(JsonNode root, Long orderNo) {
         PaymentSaveDTO dto = new PaymentSaveDTO();
         dto.setOrderNo(orderNo);
-        dto.setPaymentKey(tossResponseJson.get("paymentKey").asText());
-        dto.setOrderCode(tossResponseJson.get("orderId").asText());
-        dto.setAmount(tossResponseJson.get("totalAmount").asLong());
-        dto.setStatus(tossResponseJson.get("status").asText());
-        dto.setPg(tossResponseJson.get("pg").asText());
+        dto.setPaymentKey(root.path("paymentKey").asText());
+        dto.setOrderCode(root.path("orderId").asText());
+        dto.setAmount(root.path("totalAmount").asLong());
+        dto.setStatus(root.path("status").asText());
 
-        if (tossResponseJson.has("card")) {
-            JsonNode card = tossResponseJson.get("card");
-            dto.setCardCompany(card.get("company").asText());
-            dto.setInstallmentMonth(card.get("installmentPlanMonths").asInt());
+        // PG 정보 설정: method > easyPay.provider > mId
+        String method = root.path("method").asText(null);
+        if (method != null && !method.isEmpty()) {
+            dto.setPg(method);
+        } else if (!root.path("easyPay").isMissingNode() && !root.path("easyPay").path("provider").isNull()) {
+            dto.setPg(root.path("easyPay").path("provider").asText());
+        } else {
+            dto.setPg(root.path("mId").asText(""));
         }
 
-        if (tossResponseJson.has("approvedAt")) {
-            dto.setPurchasedAt(LocalDateTime.parse(tossResponseJson.get("approvedAt").asText().replace("Z", "")));
+        // 카드 정보
+        JsonNode card = root.path("card");
+        if (!card.isMissingNode() && !card.isNull()) {
+            dto.setCardCompany(card.path("company").asText());
+            dto.setInstallmentMonth(card.path("installmentPlanMonths").asInt());
         }
 
-        if (tossResponseJson.has("metadata")) {
-            Map<String, Object> metadataMap = objectMapper.convertValue(
-                    tossResponseJson.get("metadata"),
-                    new TypeReference<>() {}
+        // 구매 시각 (오프셋 포함 문자열 파싱)
+        String approvedAt = root.path("approvedAt").asText(null);
+        if (approvedAt != null && !approvedAt.isEmpty()) {
+            OffsetDateTime odt = OffsetDateTime.parse(
+                    approvedAt,
+                    DateTimeFormatter.ISO_OFFSET_DATE_TIME
             );
+            dto.setPurchasedAt(odt.toLocalDateTime());
+        }
 
-            try {
-                String metadataJson = objectMapper.writeValueAsString(metadataMap);
-                dto.setMetadata(metadataJson);
-            } catch (Exception e) {
-                throw new RuntimeException("metadata 직렬화 실패", e);
-            }
+        // metadata JSON 문자열
+        JsonNode md = root.path("metadata");
+        if (!md.isMissingNode() && !md.isNull()) {
+            dto.setMetadata(md.toString());
         }
 
         paymentMapper.insertPayment(dto);
     }
-
-
 }

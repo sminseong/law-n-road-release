@@ -5,20 +5,21 @@
         {{ lawyerName }} 변호사 상담 예약
       </h2>
 
+      <!-- 로딩 스피너 -->
       <div v-if="loading" class="text-center py-10">로딩 중…</div>
+
+      <!-- 슬롯 리스트 -->
       <div v-else>
-        <!-- 날짜별 카드 (최대 7일치만) -->
         <div
             v-for="day in weeklySlots"
             :key="day.date"
             class="mb-6 bg-white rounded-lg shadow p-4"
         >
-          <!-- 날짜 헤더 -->
           <h3 class="text-xl font-semibold mb-3">
             {{ formatDate(day.date) }}
           </h3>
 
-          <!-- 오전 구간 -->
+          <!-- 오전 -->
           <div class="mb-4">
             <p class="text-sm font-medium text-gray-700 mb-2">
               오전 (08:00 ~ 11:00)
@@ -38,12 +39,12 @@
                       : 'hover:bg-green-50'
                 ]"
               >
-                {{ slot.slotTime.slice(0,5) }}
+                {{ slot.slotTime.slice(0, 5) }}
               </button>
             </div>
           </div>
 
-          <!-- 오후 구간 -->
+          <!-- 오후 -->
           <div>
             <p class="text-sm font-medium text-gray-700 mb-2">
               오후 (12:00 ~ 22:00)
@@ -63,7 +64,7 @@
                       : 'hover:bg-green-50'
                 ]"
               >
-                {{ slot.slotTime.slice(0,5) }}
+                {{ slot.slotTime.slice(0, 5) }}
               </button>
             </div>
           </div>
@@ -85,31 +86,32 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import {ref, onMounted, computed} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
 import axios from 'axios'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 
-// 라우트 & 라우터
+// 라우팅
 const route = useRoute()
 const router = useRouter()
 
-const lawyerNo   = Number(route.params.lawyerNo)
+// 파라미터
+const lawyerNo = Number(route.params.lawyerNo)
 const lawyerName = route.params.lawyerName
-const userNo     = 6  // 임시 하드코딩
+const userNo = 6  // TODO: 로그인된 유저 정보로 대체
 
 // 상태
-const loading    = ref(true)
-const slotsFlat  = ref([])
+const loading = ref(true)
+const slotsFlat = ref([])
 const selectedNo = ref(null)
 
-// API 호출: flat 리스트로 받아옴
+// 마운트 시 슬롯 조회
 onMounted(async () => {
   try {
-    const today = new Date().toISOString().slice(0,10)
+    const today = new Date().toISOString().slice(0, 10)
     const res = await axios.get(
         `/api/lawyers/${lawyerNo}/slots`,
-        { params: { startDate: today } }
+        {params: {startDate: today}}
     )
     slotsFlat.value = res.data
   } catch (err) {
@@ -120,7 +122,7 @@ onMounted(async () => {
   }
 })
 
-// 그룹핑: 날짜별로 모은 뒤 정렬
+// 슬롯을 날짜별로 그룹핑
 function groupByDate(list) {
   const map = {}
   list.forEach(s => {
@@ -131,16 +133,16 @@ function groupByDate(list) {
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([date, daySlots]) => ({
         date,
-        slots: daySlots.sort((a,b) => a.slotTime.localeCompare(b.slotTime))
+        slots: daySlots.sort((a, b) => a.slotTime.localeCompare(b.slotTime))
       }))
 }
 
-// computed: 오늘부터 최대 7일치 그룹만
-const weeklySlots = computed(() => {
-  return groupByDate(slotsFlat.value).slice(0, 7)
-})
+// 최대 7일치만
+const weeklySlots = computed(() =>
+    groupByDate(slotsFlat.value).slice(0, 7)
+)
 
-// 날짜 한글 포맷팅
+// 날짜 포맷
 function formatDate(str) {
   const d = new Date(str + 'T00:00:00')
   return d.toLocaleDateString('ko', {
@@ -154,36 +156,40 @@ function select(slot) {
   selectedNo.value = slot.no
 }
 
-// 예약 신청
+// 예약 생성 후 결제 페이지로 이동
 async function apply() {
   try {
+    // 1) API 호출
     const res = await axios.post(
         `/api/client/${userNo}/reservations`,
-        { slotNo: selectedNo.value, userNo, content: '' }
+        {slotNo: selectedNo.value, userNo, content: ''}
     )
+    const dto = res.data
+    console.log('예약 생성 응답 DTO:', dto)
 
-    const reservation = res.data
-    console.log(userNo)
-    alert('예약이 완료되었습니다. 결제 페이지로 이동합니다.')
-
-    // ✅ slotDate도 같이 전달
-    router.push({
-      path: '/client/reservations/payment',
+    // 2) 페이지 이동 — 여기서도 에러가 발생할 수 있습니다.
+    const pushResult = await router.push({
+      name: 'ClientReservationsPayment',   // 혹은 path: '/client/reservations/payment'
       query: {
-        reservationNo: reservation.no,
-        slotDate: reservation.slotDate,
-        slotTime: reservation.slotTime,
-        amount: reservation.amount,
-        lawyerName: lawyerName
+        orderCode: dto.orderCode,
+        reservationNo: dto.no,
+        slotDate: dto.slotDate,
+        slotTime: dto.slotTime,
+        amount: dto.amount,
+        lawyerName
       }
     })
-
+    console.log('router.push 결과:', pushResult)
   } catch (err) {
-    console.error(err)
-    alert('예약 신청에 실패했습니다.')
+    if (err.response && err.response.data) {
+      console.error('🚨 reservations 500 응답:', err.response.data)
+      alert(`예약 실패: ${err.response.data.message || JSON.stringify(err.response.data)}`)
+    } else {
+      console.error('apply() 에서 에러 발생', err)
+      alert('예약 신청에 실패했습니다.')
+    }
   }
 }
-
 </script>
 
 <style scoped>

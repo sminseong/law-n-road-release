@@ -15,7 +15,7 @@ public class OrdersVO {
     private Long no;
     private String orderCode;
     private Long userNo;
-    private Long totalAmount;
+    private Long amount;
     private String status;
     private String orderType;
     private LocalDateTime createdAt;

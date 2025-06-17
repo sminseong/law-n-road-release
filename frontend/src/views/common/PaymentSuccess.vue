@@ -1,117 +1,117 @@
 <template>
-  <div class="box_section" style="width: 600px">
-    <img
-        width="100px"
-        src="https://static.toss.im/illusts/check-blue-spot-ending-frame.png"
-    />
+  <ClientFrame>
+    <!-- 화면 전체를 채우는 flex 컨테이너 -->
+    <div
+        class="flex justify-center items-center"
+        style="min-height: 100vh; padding: 20px;"
+    >
+      <!-- 기존 성공 메시지 박스 -->
+      <div class="box_section" style="width: 600px; text-align: center;">
+        <img
+            width="100px"
+            src="https://static.toss.im/illusts/check-blue-spot-ending-frame.png"
+            alt="성공 이미지"
+        />
 
-    <h2>결제를 완료했어요</h2>
-    <div class="p-grid typography--p" style="margin-top: 50px">
-      <div class="p-grid-col text--left">
-        <b>결제금액</b>
-      </div>
-      <div class="p-grid-col text--right" id="amount">
-        {{ Number(route.query.amount).toLocaleString() }}원
+        <h2>결제를 완료했어요</h2>
+
+        <div class="p-grid typography--p" style="margin-top: 50px">
+          <div class="p-grid-col text--left"><b>결제금액</b></div>
+          <div class="p-grid-col text--right" id="amount">
+            {{ formattedAmount }}
+          </div>
+        </div>
+
+        <div class="p-grid typography--p" style="margin-top: 10px">
+          <div class="p-grid-col text--left"><b>주문번호</b></div>
+          <div class="p-grid-col text--right" id="orderId">
+            {{ orderId }}
+          </div>
+        </div>
+
+        <div class="p-grid typography--p" style="margin-top: 10px">
+          <div class="p-grid-col text--left"><b>paymentKey</b></div>
+          <div
+              class="p-grid-col text--right"
+              id="paymentKey"
+              style="white-space: initial; width: 250px"
+          >
+            {{ paymentKey }}
+          </div>
+        </div>
+
+        <div class="p-grid-col" style="margin-top: 30px; justify-content: center;">
+          <a href="/">
+            <button class="button p-grid-col5">메인화면으로 돌아가기</button>
+          </a>
+        </div>
       </div>
     </div>
 
-    <div class="p-grid typography--p" style="margin-top: 10px">
-      <div class="p-grid-col text--left">
-        <b>주문번호</b>
-      </div>
-      <div class="p-grid-col text--right" id="orderId">
-        {{ route.query.orderId }}
-      </div>
+    <!-- 응답 데이터 디버그용 -->
+    <div
+        class="box_section"
+        style="width: 600px; text-align: left; margin: 40px auto 0;"
+        v-if="responseData"
+    >
+      <b>Response Data :</b>
+      <pre style="white-space: pre-wrap">{{ JSON.stringify(responseData, null, 2) }}</pre>
     </div>
-
-    <div class="p-grid typography--p" style="margin-top: 10px">
-      <div class="p-grid-col text--left">
-        <b>paymentKey</b>
-      </div>
-      <div
-          class="p-grid-col text--right"
-          id="paymentKey"
-          style="white-space: initial; width: 250px"
-      >
-        {{ route.query.paymentKey }}
-      </div>
-    </div>
-
-    <div class="p-grid-col">
-      <a
-          href="https://docs.tosspayments.com/guides/v2/payment-window/integration"
-          target="_blank"
-          rel="noopener noreferrer"
-      >
-        <button class="button p-grid-col5">연동 문서</button>
-      </a>
-
-      <a
-          href="https://developers.tosspayments.com/go/techchat"
-          target="_blank"
-          rel="noopener noreferrer"
-      >
-        <button
-            class="button p-grid-col5"
-            style="background-color: #e8f3ff; color: #1b64da"
-        >
-          실시간 문의
-        </button>
-      </a>
-    </div>
-  </div>
-
-  <!--  <div-->
-  <!--    class="box_section"-->
-  <!--    style="width: 600px; text-align: left"-->
-  <!--    v-if="responseData"-->
-  <!--  >-->
-  <!--    <b>Response Data :</b>-->
-
-  <!--    <div id="response" style="white-space: initial">-->
-  <!--      <pre>{{ JSON.stringify(responseData, null, 4) }}</pre>-->
-  <!--    </div>-->
-  <!--  </div>-->
+  </ClientFrame>
 </template>
 
+
 <script setup>
-import { ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import {ref, computed} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 
-const route = useRoute();
-const router = useRouter();
+const route = useRoute()
+const router = useRouter()
 
-const responseData = ref(null);
+// 쿼리 파라미터 추출 + 기본값
+const orderId = route.query.orderId || ''
+const rawAmount = Number(route.query.amount || 0)
+const paymentKey = route.query.paymentKey || ''
 
-async function confirm() {
-  const requestData = {
-    orderId: route.query.orderId,
-    amount: Number(route.query.amount),
-    paymentKey: route.query.paymentKey,
-  };
+// 통화 포맷
+const formattedAmount = computed(() =>
+    rawAmount.toLocaleString() + '원'
+)
 
-  const response = await fetch("/api/confirm/payment", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(requestData),
-  });
+const responseData = ref(null)
 
-  const json = await response.json();
-
-  if (!response.ok) {
-    throw { message: json.message, code: json.code };
+async function confirmPayment() {
+  const payload = {
+    orderId,
+    amount: rawAmount,
+    paymentKey
   }
 
-  return json;
+  try {
+    const res = await fetch('/api/confirm/payment', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    })
+
+    const json = await res.json()
+    if (!res.ok) {
+      // 서버가 { message, code } 형태로 에러를 던진다고 가정
+      const code = json.code || 'UNKNOWN'
+      const message = json.message || '결제 승인 중 오류가 발생했습니다.'
+      throw {code, message}
+    }
+
+    responseData.value = json
+  } catch (err) {
+    // 실패 시 /payment/fail 로 이동
+    router.replace(
+        `/payment/fail?code=${encodeURIComponent(err.code)}&message=${encodeURIComponent(err.message)}`
+    )
+  }
 }
 
-confirm()
-    .then((data) => {
-      responseData.value = data;
-    })
-    .catch((error) => {
-      router.replace(`/fail?code=${error.code}&message=${error.message}`);
-    });
+// 마운트되면 바로 승인 요청
+confirmPayment()
 </script>

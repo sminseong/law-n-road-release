@@ -42,7 +42,7 @@ public class OrdersController {
         OrdersResponseDTO response = new OrdersResponseDTO();
         response.setNo(vo.getNo());
         response.setUserNo(vo.getUserNo());
-        response.setTotalAmount(vo.getTotalAmount());
+        response.setAmount(vo.getAmount());
         response.setStatus(vo.getStatus());
         response.setOrderType(vo.getOrderType());
         response.setCreatedAt(vo.getCreatedAt());

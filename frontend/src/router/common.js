@@ -51,7 +51,7 @@ export default [
         component: () => import('@/views/common/PaymentSuccess.vue')
     },
     {
-        path: '/fail',
+        path: '/payment/fail',
         name: 'PaymentFail',
         component: () => import('@/views/common/PaymentFail.vue')
     }

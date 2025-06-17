@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/client/{userNo}/reservations")
@@ -21,6 +20,7 @@ public class ClientReservationsController {
         this.service = service;
     }
 
+    /** 1) 예약 신청 */
     @PostMapping
     public ResponseEntity<ReservationsResponseDTO> createReservation(
             @PathVariable Long userNo,
@@ -29,20 +29,32 @@ public class ClientReservationsController {
         dto.setUserNo(userNo);
         Long reservationNo = service.createReservation(dto);
 
-        // 👉 예약 상세 조회 후 반환
-        ReservationsResponseDTO response = service.getReservationByNo(reservationNo);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        // 바로 상세 조회해서 응답
+        ReservationsResponseDTO responseDto =
+                service.getReservationByNo(reservationNo);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(responseDto);
     }
 
+    /** 2) 내 예약 리스트 조회 */
     @GetMapping
-    public List<ReservationsResponseDTO> getReservationsByUser(
+    public ResponseEntity<List<ReservationsResponseDTO>> getMyReservations(
             @PathVariable Long userNo
     ) {
-        return service.getReservationsByUser(userNo);
+        List<ReservationsResponseDTO> list =
+                service.getReservationsByUser(userNo);
+        return ResponseEntity.ok(list);
     }
 
+    /** 3) 내 예약 상태 카운트 */
     @GetMapping("/counts")
-    public ReservationCountDTO getCounts(@PathVariable Long userNo) {
-        return service.countByStatus(userNo);
+    public ResponseEntity<ReservationCountDTO> getCounts(
+            @PathVariable Long userNo
+    ) {
+        ReservationCountDTO counts =
+                service.countByStatus(userNo);
+        return ResponseEntity.ok(counts);
     }
 }

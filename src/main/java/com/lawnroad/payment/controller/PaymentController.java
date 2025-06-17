@@ -2,7 +2,10 @@ package com.lawnroad.payment.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lawnroad.payment.dto.*;
+import com.lawnroad.payment.dto.PaymentConfirmRequestDTO;
+import com.lawnroad.payment.dto.PaymentResponseDTO;
+import com.lawnroad.payment.dto.RefundRequestDTO;
+import com.lawnroad.payment.dto.OrdersStatusUpdateDTO;
 import com.lawnroad.payment.model.OrdersVO;
 import com.lawnroad.payment.service.OrdersService;
 import com.lawnroad.payment.service.PaymentService;
@@ -14,12 +17,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Map;
 
@@ -27,146 +25,98 @@ import java.util.Map;
 @RequestMapping("/api/confirm")
 public class PaymentController {
 
-    @Autowired
-    private OrdersService ordersService;
+    private final OrdersService   ordersService;
+    private final PaymentService  paymentService;
+    private final RefundService   refundService;
 
-    @Autowired
-    private PaymentService paymentService;
+    private static final String SECRET_KEY = "test_sk_4yKeq5bgrpoROnDY0L4XVGX0lzW6";
+    private static final String TOSS_CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
 
-    @Autowired
-    private RefundService refundService;
-
-    private final String SECRET_KEY = "test_sk_4yKeq5bgrpoROnDY0L4XVGX0lzW6";
-    private final String TOSS_URL = "https://api.tosspayments.com/v1/payments/confirm";
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    public PaymentController(OrdersService ordersService,
+                             PaymentService paymentService,
+                             RefundService refundService) {
+        this.ordersService  = ordersService;
+        this.paymentService = paymentService;
+        this.refundService  = refundService;
+    }
 
     @PostMapping("/payment")
-    public ResponseEntity<?> confirmPayment(@RequestBody PaymentConfirmRequestDTO request) {
+    public ResponseEntity<?> confirmPayment(@RequestBody PaymentConfirmRequestDTO req) {
+        RestTemplate rt = new RestTemplate();
+        String basic = Base64.getEncoder()
+                .encodeToString((SECRET_KEY + ":").getBytes(StandardCharsets.UTF_8));
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Basic " + basic);
+        Map<String, Object> payload = Map.of(
+                "paymentKey", req.getPaymentKey(),
+                "orderId",    req.getOrderId(),
+                "amount",     req.getAmount()
+        );
+        HttpEntity<Map<String,Object>> ent = new HttpEntity<>(payload, headers);
+
+        JsonNode root;
         try {
-            // Toss API 호출
-            RestTemplate restTemplate = new RestTemplate();
-            String encodedKey = Base64.getEncoder().encodeToString((SECRET_KEY + ":").getBytes(StandardCharsets.UTF_8));
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", "Basic " + encodedKey);
-
-            Map<String, Object> payload = Map.of(
-                    "paymentKey", request.getPaymentKey(),
-                    "orderId", request.getOrderId(),
-                    "amount", request.getAmount()
-            );
-
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
-            ResponseEntity<PaymentResponseDTO> tossResponse = restTemplate.postForEntity(
-                    TOSS_URL, entity, PaymentResponseDTO.class
-            );
-
-            PaymentResponseDTO response = tossResponse.getBody();
-            if (response == null) {
-                return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                        .body(Map.of("message", "Toss 응답이 비어 있습니다."));
-            }
-
-            OrdersVO order = ordersService.getOrderByCode(response.getOrderId());
-            if (order == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("message", "해당 주문이 존재하지 않습니다."));
-            }
-
-            Long orderNo = order.getNo();
-            JsonNode tossResponseJson = objectMapper.convertValue(response, JsonNode.class);
-            paymentService.savePaymentFromToss(tossResponseJson, orderNo);
-
-            OrdersStatusUpdateDTO dto = new OrdersStatusUpdateDTO();
-            dto.setOrderNo(orderNo);
-
-            switch (response.getStatus()) {
-                case "DONE" -> dto.setStatus("PAID");
-                case "CANCELED" -> {
-                    refundService.saveRefundFromToss(tossResponseJson);
-                    dto.setStatus("FAILED");
-                }
-                default -> dto.setStatus("FAILED");
-            }
-
-            ordersService.changeStatus(dto);
-            return ResponseEntity.status(tossResponse.getStatusCode()).body(response);
-
+            ResponseEntity<JsonNode> tossResp =
+                    rt.postForEntity(TOSS_CONFIRM_URL, ent, JsonNode.class);
+            root = tossResp.getBody();
+            if (root == null) throw new IllegalStateException("Empty Toss response");
         } catch (HttpClientErrorException | HttpServerErrorException ex) {
-            // Toss 자체에서 실패 응답 (예: 결제 만료, 카드 오류)
-            try {
-                JsonNode errorJson = objectMapper.readTree(ex.getResponseBodyAsString());
-                String orderId = request.getOrderId();
-                OrdersVO order = ordersService.getOrderByCode(orderId);
-                if (order != null) {
-                    OrdersStatusUpdateDTO dto = new OrdersStatusUpdateDTO();
-                    dto.setOrderNo(order.getNo());
-                    dto.setStatus("FAILED");
-                    ordersService.changeStatus(dto);
+            // Jackson 없이 에러메시지만 뽑아오기
+            String body = ex.getResponseBodyAsString();
+            // body 예시: {"message":"결제 승인 실패","error":"카드 한도가 초과되었습니다."}
+            String msg = "결제 승인 실패";
+            int idx = body.indexOf("\"message\"");
+            if (idx >= 0) {
+                int start = body.indexOf('"', idx + 9) + 1;
+                int end   = body.indexOf('"', start);
+                if (start>0 && end>start) {
+                    msg = body.substring(start, end);
                 }
-
-                return ResponseEntity.status(ex.getStatusCode()).body(Map.of(
-                        "message", "결제 승인 실패",
-                        "error", errorJson.get("message").asText()
-                ));
-            } catch (Exception parseEx) {
-                return ResponseEntity.status(500).body(Map.of(
-                        "message", "결제 승인 실패 및 오류 응답 처리 실패",
-                        "error", parseEx.getMessage()
-                ));
             }
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of(
-                    "message", "결제 승인 실패",
-                    "error", e.getMessage()
-            ));
+            return ResponseEntity.status(ex.getStatusCode())
+                    .body(Map.of("message", msg));
         }
+
+        // 이하 정상 로직...
+        // (1) order 조회
+        String orderCode = root.path("orderId").asText();
+        OrdersVO order = ordersService.getOrderByCode(orderCode);
+        if (order == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "해당 주문이 없습니다."));
+        }
+        Long orderNo = order.getNo();
+
+        // (2) 결제 저장
+        paymentService.savePaymentFromToss(root, orderNo);
+
+        // (3) 필요시 환불 저장
+        if ("CANCELED".equals(root.path("status").asText())) {
+            refundService.saveRefundFromToss(root);
+        }
+
+        // (4) 주문 상태 업데이트
+        OrdersStatusUpdateDTO st = new OrdersStatusUpdateDTO();
+        st.setOrderNo(orderNo);
+        st.setStatus("DONE".equals(root.path("status").asText()) ? "PAID" : "FAILED");
+        ordersService.changeStatus(st);
+
+        return ResponseEntity.ok(root);
     }
 
 
     @PostMapping("/cancel")
-    public ResponseEntity<?> cancelPayment(@RequestParam String paymentKey,
-                                           @RequestParam String reason) {
+    public ResponseEntity<?> cancelPayment(@RequestBody RefundRequestDTO req) {
         try {
-            // 1. Toss 요청
-            String encodedKey = Base64.getEncoder()
-                    .encodeToString((SECRET_KEY + ":").getBytes(StandardCharsets.UTF_8));
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("https://api.tosspayments.com/v1/payments/" + paymentKey + "/cancel"))
-                    .header("Authorization", "Basic " + encodedKey)
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString("{\"cancelReason\":\"" + reason + "\"}"))
-                    .build();
-
-            HttpResponse<String> response = HttpClient.newHttpClient()
-                    .send(request, HttpResponse.BodyHandlers.ofString());
-
-            JsonNode responseJson = objectMapper.readTree(response.body());
-
-            // 2. 환불 저장
-            refundService.saveRefundFromToss(responseJson);
-
-            // 🔥 3. 주문 상태도 업데이트 필요
-            String orderId = responseJson.get("orderId").asText();
-            OrdersVO order = ordersService.getOrderByCode(orderId);
-            if (order != null) {
-                OrdersStatusUpdateDTO dto = new OrdersStatusUpdateDTO();
-                dto.setOrderNo(order.getNo());
-                dto.setStatus("CANCELED");
-                ordersService.changeStatus(dto);
-            }
-
-            return ResponseEntity.ok(responseJson);
-
+            refundService.processRefund(req);
+            return ResponseEntity.ok(Map.of("message","환불 처리 완료"));
+        } catch (IllegalArgumentException ie) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", ie.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of(
-                    "message", "결제 취소 실패",
-                    "error", e.getMessage()
-            ));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message","환불 처리 실패","error",e.getMessage()));
         }
     }
-
 }
