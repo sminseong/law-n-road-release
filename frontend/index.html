@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <title>로앤로드 - 도로 위 모든 사건을 다루다</title>
 
@@ -17,50 +17,52 @@
     <link rel="stylesheet" href="/libs/bootstrap-icons/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="/libs/feather-webfont/feather-icons.css" />
     <link rel="stylesheet" href="/libs/simplebar/simplebar.min.css" />
-  
+
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-M8S4MT3EYG"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-      gtag("config", "G-M8S4MT3EYG");
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag("js", new Date());
+        gtag("config", "G-M8S4MT3EYG");
     </script>
 
     <!-- FontAwesome CDN (아이콘용) -->
     <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     />
 
     <!-- 메인 테마 스타일 -->
     <link rel="stylesheet" href="/assets/styles/theme.min.css" />
-  </head>
 
-  <body>
-    <div id="app"></div>
+    <!--  Daum 우편번호 API 추가 -->
+    <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+</head>
 
-    <!-- 외부 라이브러리 JS -->
-    <script src="/libs/jquery/jquery.min.js"></script>
-    <script src="/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="/libs/simplebar/simplebar.min.js"></script>
-    <script src="/libs/jquery-countdown/jquery.countdown.min.js"></script>
-    <script src="/libs/slick-carousel/slick/slick.min.js"></script>
-    <script src="/libs/tiny-slider/min/tiny-slider.js"></script>
+<body>
+<div id="app"></div>
 
+<!-- 외부 라이브러리 JS -->
+<script src="/libs/jquery/jquery.min.js"></script>
+<script src="/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/libs/simplebar/simplebar.min.js"></script>
+<script src="/libs/jquery-countdown/jquery.countdown.min.js"></script>
+<script src="/libs/slick-carousel/slick/slick.min.js"></script>
+<script src="/libs/tiny-slider/min/tiny-slider.js"></script>
 
-    <!-- 커스텀 JS (필요한 것만 활성화) -->
-    <script src="/js/theme.min.js"></script>
-    <script src="/js/vendors/countdown.js"></script>
-    <script src="/js/vendors/slick-slider.js"></script>
-    <script src="/js/vendors/tns-slider.js"></script>
-    <script src="/js/vendors/zoom.js"></script>
-    <script src="/js/vendors/increment-value.js"></script>
-    <script src="/js/vendors/layout-sync.js"></script>
+<!-- 커스텀 JS -->
+<script src="/js/theme.min.js"></script>
+<script src="/js/vendors/countdown.js"></script>
+<script src="/js/vendors/slick-slider.js"></script>
+<script src="/js/vendors/tns-slider.js"></script>
+<script src="/js/vendors/zoom.js"></script>
+<script src="/js/vendors/increment-value.js"></script>
+<script src="/js/vendors/layout-sync.js"></script>
 
-    <!-- Vue 앱 진입점 -->
-    <script type="module" src="/src/main.js"></script>
-  </body>
+<!-- Vue 앱 진입점 -->
+<script type="module" src="/src/main.js"></script>
+</body>
 </html>

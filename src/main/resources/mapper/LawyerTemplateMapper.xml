@@ -131,7 +131,7 @@
     <!-- 템플릿 수정 (복제 후 원본 삭제) -->
 
     <!-- Editor 기반 템플릿 상세 조회 -->
-    <select id="findEditorTemplateDetail" resultType="com.lawnroad.template.dto.EditorTemplateDetailDto">
+    <select id="findEditorTemplateDetail" resultType="com.lawnroad.template.dto.LawyerEditorTemplateDetailDto">
         SELECT
             t.no,
             t.name,
@@ -151,7 +151,7 @@
     </select>
 
     <!-- File 기반 템플릿 상세 조회 -->
-    <select id="findFileTemplateDetail" resultType="com.lawnroad.template.dto.FileTemplateDetailDto">
+    <select id="findFileTemplateDetail" resultType="com.lawnroad.template.dto.LawyerFileTemplateDetailDto">
         SELECT
             t.no,
             t.name,

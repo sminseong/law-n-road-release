@@ -22,13 +22,17 @@
     "axios": "^1.9.0",
     "bootstrap": "^5.3.6",
     "crypto-js": "^4.2.0",
+    "html2pdf.js": "^0.10.3",
+    "jspdf": "^3.0.1",
     "jwt-decode": "^4.0.0",
+    "marked": "^15.0.12",
     "openvidu-browser": "^2.30.0",
     "pinia": "^2.1.7",
     "sockjs-client": "^1.6.1",
     "solapi": "^5.4.0",
     "vue": "^3.4.21",
-    "vue-router": "^4.3.0"
+    "vue-router": "^4.3.0",
+    "vue3-markdown-it": "^1.0.10"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",

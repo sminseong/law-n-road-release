@@ -5,7 +5,6 @@ import axios from 'axios'
 import AccountFrame from '@/components/layout/account/AccountFrame.vue'
 
 const router = useRouter()
-
 const clientId = ref('')
 const nickname = ref('')
 const phone = ref('')

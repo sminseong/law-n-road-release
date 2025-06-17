@@ -8,6 +8,7 @@ import com.lawnroad.board.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -25,6 +26,7 @@ public class ClientBoardController {
 
     //게시글 등록
     @PostMapping
+    //@PreAuthorize("hasRole('CLIENT')")테스트 할 수 있어서 추가함
     public ResponseEntity<String> register(@RequestBody BoardCreateDto dto) {
         boardService.register(dto);
         return ResponseEntity.ok("게시글이 성공적으로 등록되었습니다.");
