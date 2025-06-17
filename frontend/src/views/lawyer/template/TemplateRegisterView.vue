@@ -289,7 +289,7 @@ function onThumbnailChange(e) {
       <!-- 제출 버튼 -->
       <div class="text-end">
         <button
-            class="btn btn-success"
+            class="btn btn-primary"
             :disabled="isSubmitting"
             @click="handleSubmit"
         >

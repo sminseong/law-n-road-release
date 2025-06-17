@@ -103,6 +103,10 @@ public class LawyerTemplateController {
         dto.setPathJson(pathJson);
         
         contentText = ocrService.extractTextFromUrls(savedPaths);
+        
+        if (contentText == null || contentText.trim().isEmpty()) {
+          return ResponseEntity.badRequest().body("❌ OCR 분석에 실패하여 문서를 수정할 수 없습니다.");
+        }
         // System.out.println("contentText: " + contentText);
       }
       
@@ -314,6 +318,10 @@ public class LawyerTemplateController {
             .map(m -> m.get("savedPath"))
             .collect(Collectors.toList());
         contentText = ocrService.extractTextFromUrls(filePaths);
+        
+        if (contentText == null || contentText.trim().isEmpty()) {
+          return ResponseEntity.badRequest().body("❌ OCR 분석에 실패하여 문서를 수정할 수 없습니다.");
+        }
       } else if ("EDITOR".equalsIgnoreCase(type)) {
         contentText = dto.getContent();
       }

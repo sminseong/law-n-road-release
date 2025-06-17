@@ -365,18 +365,20 @@ async function callUpdateMetaAPI() {
       </div>
 
       <!-- 버튼 -->
-      <button
-          class="btn btn-primary"
-          :disabled="isSubmitting"
-          @click="handleUpdate"
-      >
-      <span
-          v-if="isSubmitting"
-          class="spinner-border spinner-border-sm me-2"
-          role="status"
-      ></span>
-        {{ isSubmitting ? '수정 중…' : 'AI 검증 후 수정' }}
-      </button>
+      <div class="text-end">
+        <button
+            class="btn btn-primary"
+            :disabled="isSubmitting"
+            @click="handleUpdate"
+        >
+        <span
+            v-if="isSubmitting"
+            class="spinner-border spinner-border-sm me-2"
+            role="status"
+        ></span>
+          {{ isSubmitting ? '수정 중…' : 'AI 검증 후 수정' }}
+        </button>
+      </div>
     </div>
   </LawyerFrame>
 </template>
