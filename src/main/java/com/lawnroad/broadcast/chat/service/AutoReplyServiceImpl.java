@@ -30,4 +30,9 @@ public class AutoReplyServiceImpl implements AutoReplyService {
     public void deleteAutoReply(Long no) {
         autoReplyMapper.deleteAutoReply(no);
     }
+
+    @Override
+    public String findReplyMessage(Long broadcastNo, String keyword) {
+        return autoReplyMapper.findReplyMessage(broadcastNo, keyword);
+    }
 }

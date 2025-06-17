@@ -6,9 +6,11 @@ import com.lawnroad.account.entity.UserEntity;
 import com.lawnroad.account.mapper.UserMapper;
 import com.lawnroad.account.service.ClientService;
 import com.lawnroad.broadcast.chat.dto.ChatDTO;
+import com.lawnroad.broadcast.chat.service.AutoReplyService;
 import com.lawnroad.broadcast.chat.service.ChatRedisSaveServiceImpl;
 import com.lawnroad.common.util.JwtTokenUtil;
 import io.jsonwebtoken.Claims;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.*;
@@ -26,20 +28,15 @@ import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
-
+@RequiredArgsConstructor
 @Controller
 public class ChatController {
 
     private final ChatRedisSaveServiceImpl chatRedisSaveService;
     private final SimpMessagingTemplate messagingTemplate;
     private final JwtTokenUtil jwtTokenUtil;
+    private final AutoReplyService autoReplyService;
 
-    @Autowired
-    public ChatController(SimpMessagingTemplate messagingTemplate, ChatRedisSaveServiceImpl chatRedisSaveService, JwtTokenUtil jwtTokenUtil, UserMapper userMapper) {
-        this.messagingTemplate = messagingTemplate;
-        this.chatRedisSaveService = chatRedisSaveService;
-        this.jwtTokenUtil = jwtTokenUtil;
-    }
 
     @MessageMapping("/chat.addUser")
     public void addUser(@Payload ChatDTO chatDTO, @Header("Authorization") String authHeader) {
@@ -70,6 +67,32 @@ public class ChatController {
 
         chatRedisSaveService.saveChatMessage(chatDTO);
         messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), chatDTO);
+
+
+        // ------- 자동응답 처리 (broadcastNo로 조인) -------
+        String msg = chatDTO.getMessage();
+        if (msg != null && msg.startsWith("!")) {
+            String keyword = msg.substring("!".length()).trim();
+
+            // 여기에서 broadcastNo와 keyword만 사용
+            String autoReplyMsg = autoReplyService.findReplyMessage(chatDTO.getBroadcastNo(), keyword);
+
+            if (autoReplyMsg != null) {
+                ChatDTO reply = ChatDTO.builder()
+                        .broadcastNo(chatDTO.getBroadcastNo())
+                        .nickname("AutoReply") // 또는 "나이트봇" 등
+                        .message(autoReplyMsg)
+                        .type("AUTO_REPLY")
+                        .createdAt(LocalDateTime.now())
+                        .build();
+                messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), reply);
+            }
+        }
+        // ------- 자동응답 처리 끝 -------
+
+
+
+
     }
 
 

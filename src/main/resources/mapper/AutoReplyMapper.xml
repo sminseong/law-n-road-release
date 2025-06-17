@@ -28,6 +28,19 @@
     </delete>
 
 
+    <select id="findReplyMessage" resultType="string">
+        SELECT ar.message
+        FROM auto_reply ar
+                 JOIN broadcast b ON ar.schedule_no = b.schedule_no
+        WHERE b.no = #{broadcastNo}
+          AND ar.keyword = #{keyword}
+        LIMIT 1
+    </select>
+
+
+
+
+
 
 
 
