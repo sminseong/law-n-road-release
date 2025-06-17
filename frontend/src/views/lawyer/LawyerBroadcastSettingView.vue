@@ -1,59 +1,65 @@
 <script setup>
 import LawyerFrame from "@/components/layout/lawyer/LawyerFrame.vue";
-import { ref, onMounted, computed } from "vue";
-import { useRoute } from "vue-router";
+import { onMounted, ref, computed } from "vue";
 import axios from "axios";
+import { useRoute } from "vue-router";
 
-// 라우터에서 scheduleNo 받아오기
-const route = useRoute()
-const scheduleNo = Number(route.params.scheduleNo)
+const route = useRoute();
+const scheduleNo = route.params.scheduleNo;
 
-// 스케줄 상세 정보 상태
-const scheduleDetail = ref(null)
-const isLoading = ref(true)
-const isError = ref(false)
+const scheduleDetail = ref(null);
+const isScheduleLoading = ref(true);
+const isScheduleError = ref(false);
 
-// 데이터 불러오기 함수
+// 🔽 스케줄 상세 정보 불러오기
 const loadScheduleDetail = async () => {
   try {
-    const token = localStorage.getItem('token'); // 🔑 세션에서 토큰 꺼냄
-    const { data } = await axios.get(`/api/lawyer/broadcast/my/${scheduleNo}`, {
-      headers: {
-        Authorization: `Bearer ${token}`  // 🪪 인증 헤더 추가
-      }
+    const token = localStorage.getItem('token');
+    const { data } = await axios.get(`/api/schedule/my/${scheduleNo}`, {
+      headers: { Authorization: `Bearer ${token}` }
     });
     scheduleDetail.value = data;
-    isLoading.value = false;
-  } catch (err) {
-    console.error("❌ 스케줄 정보 로딩 실패:", err);
-    isError.value = true;
-    isLoading.value = false;
+    isScheduleLoading.value = false;
+  } catch (e) {
+    console.error("스케줄 정보 불러오기 실패:", e);
+    isScheduleError.value = true;
+    isScheduleLoading.value = false;
   }
 };
 
-// 헬퍼함수 (시간정보 깔끔하게 정리)
+// ⏰ 시간 포맷 도우미
 const formatTime = (datetime) => {
-  if (!datetime) return ''
-  const d = new Date(datetime)
-  const hh = d.getHours().toString().padStart(2, '0')
-  const mm = d.getMinutes().toString().padStart(2, '0')
-  return `${hh}:${mm}`
-}
+  if (!datetime) return '';
+  const d = new Date(datetime);
+  const hh = d.getHours().toString().padStart(2, '0');
+  const mm = d.getMinutes().toString().padStart(2, '0');
+  return `${hh}:${mm}`;
+};
 
 
 
 
-// 마운트 시 호출
-onMounted(async () => {
-  await loadScheduleDetail();
-  await loadBroadcastSettings();
+
+
+
+onMounted(() => {
+  loadAllData();
 });
 
 
+// 모든 초기 데이터 로딩
+const loadAllData = async () => {
+  await loadScheduleDetail();
+  await loadPreQuestions();
+};
 
 
 
-/** 사전질문 + 자동응답 */
+
+
+
+
+/** 사전질문, 자동응답 */
 const preQuestions = ref([]);
 
 // 색상 리스트
@@ -85,10 +91,10 @@ const saveSelectedQuestions = async () => {
 };
 
 // 사전 질문 데이터 불러오기
-const loadBroadcastSettings = async () => {
+const loadPreQuestions = async () => {
   try {
     const token = localStorage.getItem('token');
-    const res = await axios.get(`/api/lawyer/broadcasts/schedule/${scheduleNo}/preQuestion`, {
+    const res = await axios.get(`/api/Lawyer/broadcasts/schedule/${scheduleNo}/preQuestion`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = Array.isArray(res.data) ? res.data : res.data.data;
@@ -98,7 +104,7 @@ const loadBroadcastSettings = async () => {
     }));
     await loadNightbotMessages();
   } catch (e) {
-    console.error("❌ 사전 질문 또는 자동응답 로딩 실패:", e);
+    console.error("사전 질문 불러오기 실패:", e);
   }
 };
 
@@ -173,60 +179,95 @@ const deleteNightbotMessage = async (no) => {
 
 
 function goToLawyerLive() {
-  router.push({ path: '/lawyer/broadcasts/live', query: { scheduleNo } })
+  window.location.href = 'http://localhost:5173/lawyer/broadcasts/live?scheduleNo=1';
 }
 </script>
+
 
 <template>
   <LawyerFrame>
     <div class="container-fluid my-5 d-flex justify-content-center">
       <div class="bg-white border border-2 rounded-4 shadow px-5 py-4 w-100" style="min-height: 120vh; max-width: 1600px;">
         <div class="row w-100">
-          <!-- 왼쪽: 방송 콘텐츠 영역 (읽기 전용 뷰) -->
+          <!-- 왼쪽: 방송 콘텐츠 영역 (수정 불가 보기 전용) -->
           <div class="col-md-7 d-flex flex-column justify-content-start align-items-start pe-5">
-            <!-- 방송 스케줄 정보 로드 성공 -->
-            <div v-if="scheduleDetail" class="w-100 border rounded-3 shadow-sm p-4 bg-light mb-4">
-              <!-- 제목 -->
-              <h3 class="fw-bold mb-2">{{ scheduleDetail.name }}</h3>
+            <div class="w-100 card p-4 shadow-sm mb-4">
+
+              <!-- 방송 설정 제목 -->
+              <div class="mb-4">
+                <span class="fs-4 fw-bold text-dark">방송 설정</span>
+              </div>
+
+              <!-- 방송 제목 -->
+              <div class="mb-3 w-100">
+                <label class="form-label fw-bold">방송 제목</label>
+                <input :value="scheduleDetail.name" type="text" class="form-control bg-light text-dark" readonly />
+              </div>
 
               <!-- 카테고리 -->
-              <div class="mb-2 text-muted">{{ scheduleDetail.categoryName }}</div>
+              <div class="mb-3 w-100">
+                <label class="form-label fw-bold">카테고리</label>
+                <input :value="scheduleDetail.categoryName" type="text" class="form-control bg-light text-dark" readonly />
+              </div>
 
-              <!-- 설명 -->
-              <div class="mb-3">{{ scheduleDetail.content }}</div>
+              <!-- 방송 시간 (시작 / 종료 나눠서 표시) -->
+              <div class="mb-3 w-100">
+                <label class="form-label fw-bold">방송 시간</label>
+                <div class="row row-cols-2 g-2">
+                  <div>
+                    <div class="form-label text-muted small">시작 시간</div>
+                    <input
+                        :value="`${scheduleDetail.date} ${formatTime(scheduleDetail.startTime)}`"
+                        type="text"
+                        class="form-control bg-light text-dark"
+                        readonly
+                    />
+                  </div>
+                  <div>
+                    <div class="form-label text-muted small">종료 시간</div>
+                    <input
+                        :value="`${scheduleDetail.date} ${formatTime(scheduleDetail.endTime)}`"
+                        type="text"
+                        class="form-control bg-light text-dark"
+                        readonly
+                    />
+                  </div>
+                </div>
+              </div>
 
-              <!-- 날짜와 시간 -->
-              <div class="d-flex gap-4 mb-3">
-                <div>
-                  <i class="bi bi-calendar-event me-1"></i>
-                  {{ scheduleDetail.date }}
+              <!-- 썸네일 이미지 -->
+              <div class="mb-3 w-100">
+                <label class="form-label fw-bold">썸네일 이미지</label>
+                <div class="preview-box mb-2 border rounded d-flex justify-content-center align-items-center" style="height: 240px;">
+                  <img
+                      v-if="scheduleDetail.thumbnailPath"
+                      :src="scheduleDetail.thumbnailPath"
+                      alt="썸네일"
+                      class="img-fluid h-100"
+                      style="object-fit: contain;" />
+                  <span v-else class="text-muted">이미지 없음</span>
                 </div>
-                <div>
-                  <i class="bi bi-clock me-1"></i>
-                  {{ formatTime(scheduleDetail.startTime) }} ~ {{ formatTime(scheduleDetail.endTime) }}
-                </div>
+              </div>
+
+              <!-- 방송 설명 -->
+              <div class="mb-3 w-100">
+                <label class="form-label fw-bold">방송 설명</label>
+                <textarea :value="scheduleDetail.content" class="form-control bg-light text-dark" rows="4" readonly></textarea>
               </div>
 
               <!-- 키워드 -->
-              <div>
-                <span
-                    v-for="(kw, idx) in scheduleDetail.keywords"
-                    :key="idx"
-                    class="badge bg-secondary me-2"
-                >
-                  #{{ kw }}
-                </span>
+              <div class="mb-3 w-100">
+                <label class="form-label fw-bold">방송 키워드</label>
+                <div class="d-flex flex-wrap gap-2">
+        <span
+            v-for="(kw, i) in scheduleDetail.keywords"
+            :key="i"
+            class="badge bg-secondary px-3 py-2">
+          # {{ kw }}
+        </span>
+                </div>
               </div>
-            </div>
 
-            <!-- 로딩 중 -->
-            <div v-else-if="isLoading" class="text-muted">
-              방송 정보를 불러오는 중입니다...
-            </div>
-
-            <!-- 에러 발생 -->
-            <div v-else-if="isError" class="text-danger">
-              방송 정보를 불러오는 데 실패했습니다.
             </div>
           </div>
 
@@ -238,10 +279,12 @@ function goToLawyerLive() {
               <div class="mb-3">
                 <span class="fs-4 fw-bold text-dark">사전 질문 선택</span>
               </div>
+              <!-- 전체 선택 -->
               <label class="d-flex align-items-center mb-2 ms-2">
                 <input type="checkbox" class="form-check-input me-2" v-model="allChecked" />
                 <span>전체 선택</span>
               </label>
+              <!-- 사전 질문 목록 -->
               <div class="overflow-auto mb-3" style="max-height: 300px; min-height: 300px;">
                 <div
                     v-for="(q, index) in preQuestions"
@@ -255,6 +298,7 @@ function goToLawyerLive() {
                   </div>
                 </div>
               </div>
+              <!-- 저장 버튼 -->
               <div class="text-center">
                 <button class="btn btn-primary px-5 py-2" style="min-width: 100px;" @click="saveSelectedQuestions">
                   저장
@@ -262,40 +306,50 @@ function goToLawyerLive() {
               </div>
             </div>
 
-            <!-- ✅ 나이트봇 -->
+            <!--  나이트봇  -->
             <div class="mt-5 border rounded-3 p-3 shadow-sm">
               <div class="mb-3">
                 <span class="fs-4 fw-bold text-dark">나이트봇 자동응답 설정</span>
               </div>
+              <!-- 입력 영역 -->
               <div class="position-relative mb-2">
-                <input v-model="newKeyword" type="text" class="form-control mb-2" placeholder="ex) !상담" />
-                <textarea v-model="newMessage" class="form-control mb-2" rows="2" placeholder="내용"></textarea>
-                <button class="btn btn-primary position-absolute" style="top:0; right:0; height:38px; z-index:2"
+                <!-- 트리거 입력 -->
+                <input v-model="newKeyword"
+                       type="text"
+                       class="form-control mb-2"
+                       placeholder="ex) !상담" />
+                <!-- 내용 입력 -->
+                <textarea v-model="newMessage"
+                          class="form-control mb-2"
+                          rows="2"
+                          placeholder="내용"></textarea>
+                <!-- 등록 버튼 (오른쪽 위) -->
+                <button class="btn btn-primary position-absolute"
+                        style="top:0; right:0; height:38px; z-index:2"
                         @click="addNightbotMessage">
                   등록
                 </button>
               </div>
+              <!-- 목록 -->
               <li v-for="msg in nightbotMessages" :key="msg.no"
                   class="list-group-item d-flex align-items-center border-0 px-0 py-2">
                 <span class="fw-bold me-1">{{ msg.keyword }}</span>
                 <span class="fw-bold me-1">:</span>
                 <span class="text-muted small flex-grow-1 text-truncate">
-                  {{ msg.message.length > 28 ? msg.message.slice(0, 28) + " ..." : msg.message }}
-                </span>
-                <button class="btn btn-sm btn-danger ms-2" @click="deleteNightbotMessage(msg.no)">
+                {{ msg.message.length > 28 ? msg.message.slice(0, 28) + " ..." : msg.message }}
+              </span>
+                <button class="btn btn-sm btn-danger ms-2"
+                        @click="deleteNightbotMessage(msg.no)">
                   삭제
                 </button>
               </li>
             </div>
           </div>
         </div>
-
-        <!-- 방송 시작 버튼 -->
-        <div class="text-end mt-4">
-          <button class="btn btn-primary px-5 py-2" @click="goToLawyerLive">
-            라이브 방송 시작하기
-          </button>
-        </div>
+        <button
+            class="btn btn-primary"
+            @click="goToLawyerLive"
+        >라이브 방송 시작하기</button>
       </div>
     </div>
   </LawyerFrame>
