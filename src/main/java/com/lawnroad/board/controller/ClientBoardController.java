@@ -57,7 +57,7 @@ public class ClientBoardController {
 
     //게시글 등록
     @PostMapping
-    //@PreAuthorize("hasRole('CLIENT')")테스트 할 수 있어서 추가함
+    //@PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<String> register(@RequestBody BoardCreateDto dto) {
         boardService.register(dto);
         return ResponseEntity.ok("게시글이 성공적으로 등록되었습니다.");

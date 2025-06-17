@@ -66,7 +66,8 @@ public class LawyerService {
         lawyer.setProfile("테스트 중");
         lawyer.setCardFront(null);
         lawyer.setCardBack(null);
-
+        lawyer.setLawyerIntro(request.getLawyerIntro());
+        lawyer.setIntroDetail(request.getIntroDetail());
         lawyerMapper.insertLawyer(lawyer);
     }
 
@@ -133,4 +134,9 @@ public class LawyerService {
         lawyerMapper.updatePassword(lawyerId, hashed);
         return true;
     }
+
+    public void updateLawyerInfo(String lawyerId, String officeNumber, String phone, String detailAddress) {
+        lawyerMapper.updateLawyerInfo(lawyerId, officeNumber, phone, detailAddress);
+    }
+
 }
