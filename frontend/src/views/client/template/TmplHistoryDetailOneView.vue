@@ -223,6 +223,17 @@ const handleDownload = async (file) => {
           </p>
         </div>
 
+        <!-- 설명이 필요하다면 넣을 공간 -->
+          <div class="d-flex justify-content-between align-items-center">
+            <strong class="text-primary mt-5 ms-2">
+              템플릿을 사용해 작성된 법률 문서는 자체적으로 법적 효력을 가지지 않습니다. <br>
+              작성된 문서를 바탕으로 변호사와의 상담을 받아보세요.
+            </strong>
+            <button class="btn btn-outline-secondary btn-sm mt-3" @click="insertExample">
+              변호사 상담 받기
+            </button>
+          </div>
+
       </div>
     </div>
   </ClientFrame>
