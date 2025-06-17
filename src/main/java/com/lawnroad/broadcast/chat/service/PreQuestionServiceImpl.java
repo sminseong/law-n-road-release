@@ -2,6 +2,7 @@ package com.lawnroad.broadcast.chat.service;
 
 import com.lawnroad.broadcast.chat.dto.LawyerPreQuestion;
 import com.lawnroad.broadcast.chat.dto.PreQuestionDTO;
+import com.lawnroad.broadcast.chat.dto.PreQuestionItem;
 import com.lawnroad.broadcast.chat.mapper.PreQuestionMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,11 @@ public class PreQuestionServiceImpl implements PreQuestionService {
 
 
     @Override
+    public void insertPreQuestion(PreQuestionItem preQuestionItem) {
+        preQuestionMapper.insertPreQuestion(preQuestionItem);
+    }
+
+    @Override
     public PreQuestionDTO findByPreQuestion(int scheduleNo) {
         return preQuestionMapper.findByPreQuestion(scheduleNo);
     }
@@ -24,11 +30,17 @@ public class PreQuestionServiceImpl implements PreQuestionService {
         return preQuestionMapper.findByPreQuestionLawyer(scheduleNo);
     }
 
+    @Override
+    public void deletePreQuestionByUser(Long scheduleNo, Long questionNo, Long userNo) {
+        preQuestionMapper.deletePreQuestionByUser(scheduleNo, questionNo, userNo);
+    }
 
     @Override
-   public void deletePreQuestion (List<Long> preQuestionNo) {
-         preQuestionMapper.deletePreQuestion(preQuestionNo);
-   }
+    public void deleteLawyerPreQuestion (List<Long> preQuestionNo) {
+        preQuestionMapper.deleteLawyerPreQuestion(preQuestionNo);
+    }
+
+
 
 
 }

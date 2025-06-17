@@ -9,5 +9,7 @@ public interface AutoReplyService {
 
 
     void insertAutoReply(AutoReplyDTO autoReplyDTO);
-    List<AutoReplyDTO> findByAutoReply(int scheduleNo);
+    List<AutoReplyDTO> findByAutoReply(Long scheduleNo);
+    void deleteAutoReply(Long no);
+
 }

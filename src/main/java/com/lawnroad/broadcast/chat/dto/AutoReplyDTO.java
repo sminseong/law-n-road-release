@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AutoReplyDTO {
+    private Long no;
     private Long scheduleNo;
     private String keyword;
     private String message;

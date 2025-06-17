@@ -291,8 +291,7 @@ export default defineComponent({
                     userSelect: 'text',
                     position: 'relative',
                     fontWeight: 'bold'
-                  }"
-              >
+                  }">
                 {{ msg.nickname }}
                 <span
                     v-if="dropdownIdx === index"

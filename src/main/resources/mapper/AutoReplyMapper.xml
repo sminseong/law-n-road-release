@@ -15,16 +15,17 @@
     </insert>
 
 
-<select id="findByAutoReply" parameterType="list">
-
-SELECT schedule_no, keyword, message
-FROM auto_reply
-WHERE schedule_no = #{schedule_no}
-
-
-</select>
+    <select id="findByAutoReply" parameterType="long" resultType="com.lawnroad.broadcast.chat.dto.AutoReplyDTO">
+        SELECT no, schedule_no, keyword, message, created_at
+        FROM auto_reply
+        WHERE schedule_no = #{scheduleNo}
+    </select>
 
 
+
+    <delete id="deleteAutoReply" parameterType="long">
+        DELETE FROM auto_reply WHERE no = #{no}
+    </delete>
 
 
 

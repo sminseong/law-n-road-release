@@ -23,15 +23,14 @@ public class AutoReplyController {
 
     // 전체 리스트
     @GetMapping("/api/Lawyer/nightBot")
-    public List<AutoReplyDTO> getAllAutoReplies(@RequestParam int scheduleNo) {
+    public List<AutoReplyDTO> getAllAutoReplies(@RequestParam Long scheduleNo) {
         return autoReplyService.findByAutoReply(scheduleNo);
     }
 
-    // 삭제
-//    @DeleteMapping("/api/nightBot/{id}")
-//    public void deleteAutoReply(@PathVariable Long id) {
-//        autoReplyService.deleteAutoReply(id);
-//    }
+    @DeleteMapping("/api/nightBot/{no}")
+    public void deleteAutoReply(@PathVariable Long no) {
+        autoReplyService.deleteAutoReply(no);
+    }
 
 
 

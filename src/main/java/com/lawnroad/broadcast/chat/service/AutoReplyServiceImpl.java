@@ -22,7 +22,12 @@ public class AutoReplyServiceImpl implements AutoReplyService {
     }
 
     @Override
-    public List<AutoReplyDTO> findByAutoReply(int scheduleNo) {
+    public List<AutoReplyDTO> findByAutoReply(Long scheduleNo) {
         return autoReplyMapper.findByAutoReply(scheduleNo);
+    }
+
+    @Override
+    public void deleteAutoReply(Long no) {
+        autoReplyMapper.deleteAutoReply(no);
     }
 }
