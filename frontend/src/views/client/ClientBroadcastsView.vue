@@ -10,51 +10,54 @@ import { useRoute } from "vue-router";
 export default defineComponent({
   components: { ClientFrame },
   setup() {
-    /** 방송 */
+    /** 📺 방송 화면 참조 */
     const videoContainer = ref(null);
     const route = useRoute();
     const broadcastNo = route.params.broadcastNo;
 
-    // OpenVidu
+    /** 🌐 OpenVidu 세션 저장용 */
+    const session = ref(null);
+
+    /** 📡 OpenVidu 연결 */
     const connectOpenVidu = async () => {
       try {
-        const {data} = await axios.get(`/api/client/broadcast/${broadcastNo}/token`)
-        const {sessionId, token} = data
+        const { data } = await axios.get(`/api/client/broadcast/${broadcastNo}/token`);
+        const { sessionId, token } = data;
 
-        console.log("👁️ 시청자 sessionId:", sessionId)
-        console.log("🔑 시청자 token:", token)
+        console.log("👁️ 시청자 sessionId:", sessionId);
+        console.log("🔑 시청자 token:", token);
 
         const OV = new OpenVidu();
-        const session = OV.initSession();
+        session.value = OV.initSession();
 
-        session.on("streamCreated", ({stream}) => {
+        session.value.on("streamCreated", ({ stream }) => {
           console.log("📡 시청자: streamCreated 발생");
 
-          const subscriber = session.subscribe(stream, undefined);
+          const subscriber = session.value.subscribe(stream, undefined);
           console.log("Subscribing to", stream.connection.connectionId);
 
           nextTick(() => {
             const video = document.createElement("video");
             video.autoplay = true;
             video.playsInline = true;
-            video.muted = true; // 시청자도 autoplay 보장 위해 mute
+            video.muted = true; // autoplay 보장 위해 mute
             video.style.width = "100%";
             video.style.height = "100%";
             video.style.objectFit = "cover";
 
-            subscriber.addVideoElement(video); // ✅ 여기 수정됨
+            subscriber.addVideoElement(video);
 
             if (videoContainer.value) {
               videoContainer.value.innerHTML = "";
               videoContainer.value.appendChild(video);
-              console.log("✅ [시청자] 수동 video element append 완료");
+              console.log("✅ [시청자] video element append 완료");
             } else {
               console.warn("❌ videoContainer is null");
             }
           });
         });
 
-        await session.connect(token);
+        await session.value.connect(token);
         console.log("✅ [시청자] 방송 연결 완료");
       } catch (err) {
         console.error("❌ [시청자] 오류 발생:", err);
@@ -68,7 +71,9 @@ export default defineComponent({
     });
 
     onBeforeUnmount(() => {
-      stompClient.value?.deactivate();
+      console.log("시청자 페이지 종료 - 세션 종료");
+      if (session.value) session.value.disconnect(); // 💡 핵심
+      stompClient.value?.deactivate?.();
       closeDropdown();
     });
 

@@ -51,7 +51,11 @@ const startTimer = () => {
 };
 
 const updateViewerCount = () => {
-  viewerCount.value = session.value?.connections?.size || 1;
+  if (!session.value) return;
+
+  const count = session.value.remoteConnections?.size || 0; // 본인은 제외
+  console.log("👥 현재 시청자 수 (방송자 제외):", count);
+  viewerCount.value = count;
 };
 
 const initPublisherWithDelay = async () => {
@@ -121,6 +125,14 @@ const connectSession = async () => {
 
     session.value.on("connectionCreated", updateViewerCount);
     session.value.on("connectionDestroyed", updateViewerCount);
+    session.value.on("streamCreated", (event) => {
+      console.log("📡 방송자: streamCreated 발생 (시청자 연결)");
+      updateViewerCount();
+    });
+    session.value.on("streamDestroyed", (event) => {
+      console.log("📴 방송자: streamDestroyed 발생 (시청자 퇴장)");
+      updateViewerCount();
+    });
     session.value.on("exception", (exception) => {
       console.warn("OpenVidu 예외:", exception);
     });
@@ -392,13 +404,12 @@ const closeCompleteModal = () => {
             <div class="d-flex justify-content-between align-items-center">
               <!-- 키워드 -->
               <div>
-                <span
-                    v-for="(keyword, index) in broadcastInfo.keywords"
-                    :key="index"
-                    class="text-muted me-3 fs-6 fw-semibold"
-                    style="opacity: 0.75;"
-                ># {{ keyword }}
-                </span>
+          <span
+              v-for="(keyword, index) in broadcastInfo.keywords"
+              :key="index"
+              class="text-muted me-3 fs-6 fw-semibold"
+              style="opacity: 0.75;"
+          ># {{ keyword }}</span>
               </div>
 
               <!-- 방송 시간 & 시청자 수 -->
@@ -412,42 +423,46 @@ const closeCompleteModal = () => {
             </div>
           </div>
 
-          <!-- 👤 변호사 정보 -->
-          <div class="d-flex align-items-center mt-4 position-relative">
+          <!-- 👤 변호사 정보 + 종료 버튼 같은 라인 -->
+          <div class="d-flex justify-content-between align-items-end mt-4">
 
-            <!-- ✅ 초록 원 컨테이너 (살짝 줄임) -->
-            <div class="position-relative d-flex justify-content-center align-items-center"
-                 style="width: 80px; height: 80px; border: 3px solid #15ea7e; border-radius: 50%;">
+            <!-- 프로필 영역 -->
+            <div class="d-flex align-items-center">
+              <!-- ✅ 초록 원 컨테이너 -->
+              <div class="position-relative d-flex justify-content-center align-items-center"
+                   style="width: 80px; height: 80px; border: 3px solid #15ea7e; border-radius: 50%;">
+                <!-- 프로필 이미지 -->
+                <img
+                    :src="broadcastInfo.lawyerProfilePath"
+                    alt="변호사 프로필"
+                    class="rounded-circle"
+                    style="width: 68px; height: 68px; object-fit: cover;"
+                />
 
-              <!-- 프로필 이미지 (살짝 더 작게) -->
-              <img
-                  :src="broadcastInfo.lawyerProfilePath"
-                  alt="변호사 프로필"
-                  class="rounded-circle"
-                  style="width: 68px; height: 68px; object-fit: cover;"
-              />
-
-              <!-- LIVE 뱃지 (살짝 더 아래로) -->
-              <div
-                  class="position-absolute bottom-0 start-50 translate-middle-x bg-danger text-white fw-bold px-2 py-1 rounded"
-                  style="font-size: 0.8rem; line-height: 1; transform: translate(-30%, 70%);"
-              >
-                LIVE
+                <!-- LIVE 뱃지 -->
+                <div
+                    class="position-absolute bottom-0 start-50 translate-middle-x bg-danger text-white fw-bold px-2 py-1 rounded"
+                    style="font-size: 0.8rem; line-height: 1; transform: translate(-30%, 70%);"
+                >
+                  LIVE
+                </div>
               </div>
+
+              <!-- 변호사 이름 -->
+              <div class="fs-5 fw-bold ms-3">{{ broadcastInfo.lawyerName }} 변호사</div>
             </div>
 
-            <!-- 변호사 이름 -->
-            <div class="fs-5 fw-bold ms-3">{{ broadcastInfo.lawyerName }} 변호사</div>
-          </div>
-
-          <div class="mt-4 d-flex justify-content-end">
-            <button class="btn btn-danger px-4 py-2 fw-bold" @click="handleEndBroadcast">
-              📴 방송 종료
-            </button>
+            <!-- 방송 종료 버튼 -->
+            <div>
+              <button class="btn btn-danger px-4 py-2 fw-bold" @click="handleEndBroadcast">
+                📴 방송 종료
+              </button>
+            </div>
           </div>
 
         </div>
       </div>
+
 
       <!-- 채팅 영역 -->
       <!-- 채팅 영역 -->
