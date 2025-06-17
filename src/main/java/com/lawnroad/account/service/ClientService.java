@@ -31,8 +31,9 @@ public class ClientService {
 
 
     public boolean isClientIdAvailable(String clientId) {
-        int count = clientMapper.countByClientId(clientId);
-        return count == 0; // 0 이면 사용 가능, true 반환
+        int count1 = clientMapper.countByClientId1(clientId);
+        int count2 = clientMapper.countByClientId2(clientId);
+        return count1+count2 == 0; // 0 이면 사용 가능, true 반환
     }
 
     public boolean isClientNickNameAvailable(String nickname) {
@@ -89,5 +90,52 @@ public class ClientService {
 
         return client;
     }
+
+    public String findClientId(String fullName, String email) {
+        return clientMapper.findClientId(fullName, email);
+    }
+
+//    public boolean resetPassword(String email, String newPassword) {
+//        String hashed = passwordEncoder.encode(newPassword);
+//        int result = clientMapper.updatePasswordByEmail(email, hashed);
+//        return result > 0;
+//    }
+
+//    @Override
+//    public boolean resetPassword(String clientId, String email, String newPassword) {
+//        ClientEntity client = clientMapper.findByClientId(clientId);
+//        if (client == null || !client.getEmail().equals(email)) {
+//            return false;
+//        }
+//
+//        String hashed = passwordEncoder.encode(newPassword);
+//        clientMapper.updatePassword(clientId, hashed);
+//        return true;
+//    }
+
+
+    public boolean resetPassword(String clientId, String email, String fullName, String newPassword) {
+        ClientEntity client = clientMapper.findByClientId(clientId);
+        if (client == null || !client.getEmail().equals(email) || !client.getName().equals(fullName)) {
+            return false;
+        }
+
+        String hashed = passwordEncoder.encode(newPassword);
+        clientMapper.updatePassword(clientId, hashed);
+        return true;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }
