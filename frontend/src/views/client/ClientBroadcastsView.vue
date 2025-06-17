@@ -27,7 +27,7 @@ export default defineComponent({
     let streamStartTime = null;
     let timerInterval = null;
     // 시청자 수
-    const viewerCount = ref(1);
+    const viewerCount = ref(0);
 
     // 시간 계산
     const startTimer = () => {
@@ -63,20 +63,25 @@ export default defineComponent({
         const OV = new OpenVidu();
         session.value = OV.initSession();
 
+        // 시청자 수 업데이트 함수
+        const updateViewerCount = () => {
+          if (!session.value) return;
+          viewerCount.value = session.value.remoteConnections.size;
+        };
+
+        // 시청자 수 동기화 이벤트 (모든 사용자에게 적용됨)
+        session.value.on("connectionCreated", updateViewerCount);
+        session.value.on("connectionDestroyed", updateViewerCount);
+
+        // 스트림 수신 처리
         session.value.on("streamCreated", ({ stream }) => {
           console.log("📡 시청자: streamCreated 발생");
 
           const subscriber = session.value.subscribe(stream, undefined);
           console.log("Subscribing to", stream.connection.connectionId);
-          // 시간 시작
+
+          // 방송 시간 시작
           startTimer();
-          // 시청자 수
-          session.value.on("connectionCreated", () => {
-            viewerCount.value = session.value.remoteConnections.size + 1;
-          });
-          session.value.on("connectionDestroyed", () => {
-            viewerCount.value = session.value.remoteConnections.size + 1;
-          });
 
           nextTick(() => {
             const video = document.createElement("video");
