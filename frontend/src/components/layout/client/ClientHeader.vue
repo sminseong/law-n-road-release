@@ -1,10 +1,15 @@
 <!-- src/components/layout/User/ClientHeader.vue -->
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
-import { onMounted, onBeforeUnmount } from 'vue'
+import {onMounted, onBeforeUnmount, ref} from 'vue'
+import axios from "axios";
 
 const router = useRouter()
 const route = useRoute()
+
+// 로그인 관련
+const nickname = ref('')
+const isLoggedIn = ref(false)
 
 function goToMyPage() {
   const target = '/client/mypage'
@@ -27,11 +32,56 @@ function updateGradient(e) {
 
 onMounted(() => {
   document.addEventListener('mousemove', updateGradient)
+
+  const token = localStorage.getItem('token')
+  const nick = localStorage.getItem('nickname')
+
+  isLoggedIn.value = !!token
+  if (nick && nick !== 'null') {
+    nickname.value = nick
+  }
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('mousemove', updateGradient)
 })
+
+// 로그아웃 처리
+const logout = () => {
+  // ✅ 1. 로컬스토리지 항목 삭제
+  localStorage.removeItem('token')
+  localStorage.removeItem('refreshToken')
+  localStorage.removeItem('accountType')
+  localStorage.removeItem('name')
+  localStorage.removeItem('nickname')
+
+  // ✅ 2. Axios 인증 헤더 제거
+  delete axios.defaults.headers.common['Authorization']
+
+  // ✅ 3. 프론트 상태 초기화
+  isLoggedIn.value = false
+  nickname.value = '회원'
+
+  // ✅ 4. 콘솔 로그 출력: 삭제 여부 확인
+  console.log('[로그아웃 완료] localStorage 상태 확인:')
+  console.log('token:', localStorage.getItem('token'))
+  console.log('refreshToken:', localStorage.getItem('refreshToken'))
+  console.log('accountType:', localStorage.getItem('accountType'))
+  console.log('name:', localStorage.getItem('name'))
+  console.log('nickname:', localStorage.getItem('nickname'))
+
+  // ✅ 5. 로그인 페이지로 이동 + 새로고침
+  router.push('/login')
+  setTimeout(() => location.reload(), 300) // 새로고침으로 컴포넌트 초기화
+  console.log('[로그아웃 완료] localStorage 상태 확인:')
+  console.log('token:', localStorage.getItem('token'))
+  console.log('refreshToken:', localStorage.getItem('refreshToken'))
+  console.log('accountType:', localStorage.getItem('accountType'))
+  console.log('name:', localStorage.getItem('name'))
+  console.log('nickname:', localStorage.getItem('nickname'))
+}
+
+
 </script>
 
 <template>
@@ -59,7 +109,9 @@ onBeforeUnmount(() => {
                   <div class="list-inline me-4">
                     <div class="list-inline-item">
                       <!-- 사용자 아이콘: goToMyPage 호출 -->
+                      <!-- 로그인 상태일 때 -->
                       <a
+                          v-if="isLoggedIn"
                           href="#"
                           class="text-muted"
                           @click.prevent="goToMyPage"
@@ -80,6 +132,10 @@ onBeforeUnmount(() => {
                           <circle cx="12" cy="7" r="4"></circle>
                         </svg>
                       </a>
+                      <!-- 비로그인 상태일 때 -->
+                      <div v-else>
+                        <router-link to="/login" class="btn btn-primary">로그인</router-link>
+                      </div>
                     </div>
                   </div>
                   <!-- 햄버거 버튼 -->
@@ -150,7 +206,7 @@ onBeforeUnmount(() => {
 
             <!-- 장바구니, 유저정보 등 아이콘 -->
             <div class="col-md-2 col-xxl-1 text-end d-none d-lg-block">
-              <div class="list-inline">
+              <div v-if="isLoggedIn" class="list-inline">
                 <div class="list-inline-item">
                   <!-- 사용자 아이콘: goToMyPage 호출 -->
                   <a
@@ -200,6 +256,9 @@ onBeforeUnmount(() => {
                     </svg>
                   </a>
                 </div>
+              </div>
+              <div v-else>
+                <router-link to="/login" class="btn btn-primary">로그인</router-link>
               </div>
             </div>
 
