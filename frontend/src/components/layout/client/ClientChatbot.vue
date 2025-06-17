@@ -44,7 +44,6 @@ const sendMessage = () => {
             </div>
           </div>
         </div>
-
       </div>
     </div>
 

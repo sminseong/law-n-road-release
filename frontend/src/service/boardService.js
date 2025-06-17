@@ -2,15 +2,15 @@ import httpRequester from "@/libs/HttpRequester.js";
 
 /** [Public] 상담글 목록 조회 */
 export async function fetchBoardList(page = 1, size = 10) {
-    return await httpRequester.get(`/api/qna?page=${page}&size=${size}`)
+    return await httpRequester.get(`/api/public/qna?page=${page}&size=${size}`)
 }
 /** [Public] 상담글 상세 조회 */
 export async function fetchBoardDetail(id) {
-    return await httpRequester.get(`/api/qna/${id}`);
+    return await httpRequester.get(`/api/public/qna/${id}`);
 }
 /** [Public] 전체 게시글 수 조회 */
 export async function fetchBoardCount() {
-    return await httpRequester.get(`/api/qna/count`);
+    return await httpRequester.get(`/api/public/qna/count`);
 }
 
 /** [Client] 게시글 등록 */
