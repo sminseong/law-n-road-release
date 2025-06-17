@@ -31,7 +31,8 @@
         SELECT
         b.no AS broadcast_no,
         b.session_id,
-        b.status
+        b.status,
+        b.start_time
         FROM broadcast b
         WHERE b.no = #{broadcastNo}
     </select>

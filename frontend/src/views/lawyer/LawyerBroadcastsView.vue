@@ -20,7 +20,6 @@ const broadcastInfo = ref({});
 const broadcastNo = ref(null);
 const elapsedTime = ref("00:00:00");
 const viewerCount = ref(1);
-let streamStartTime = null;
 let timerInterval = null;
 
 const preventReload = (e) => {
@@ -38,11 +37,10 @@ const loadBroadcastInfo = async () => {
   }
 };
 
-const startTimer = () => {
-  streamStartTime = new Date();
+const startTimerFrom = (startTime) => {
   timerInterval = setInterval(() => {
     const now = new Date();
-    const diff = new Date(now.getTime() - streamStartTime.getTime());
+    const diff = new Date(now.getTime() - new Date(startTime).getTime());
     const hh = String(diff.getUTCHours()).padStart(2, "0");
     const mm = String(diff.getUTCMinutes()).padStart(2, "0");
     const ss = String(diff.getUTCSeconds()).padStart(2, "0");
@@ -52,8 +50,7 @@ const startTimer = () => {
 
 const updateViewerCount = () => {
   if (!session.value) return;
-
-  const count = session.value.remoteConnections?.size || 0; // 본인은 제외
+  const count = session.value.remoteConnections?.size || 0;
   console.log("👥 현재 시청자 수 (방송자 제외):", count);
   viewerCount.value = count;
 };
@@ -106,11 +103,12 @@ const connectSession = async () => {
     const res = await axios.post("/api/lawyer/broadcast/start", {
       scheduleNo: Number(scheduleNo),
     });
-    const { sessionId, token, broadcastNo: newBroadcastNo } = res.data;
+    const { sessionId, token, broadcastNo: newBroadcastNo, startTime } = res.data;
 
     console.log("📡 sessionId:", sessionId);
     console.log("🔑 token:", token);
     console.log("🎯 broadcastNo:", newBroadcastNo);
+    console.log("🕒 startTime:", startTime);
 
     broadcastNo.value = newBroadcastNo;
 
@@ -142,7 +140,7 @@ const connectSession = async () => {
 
     await session.value.connect(token);
     await initPublisherWithDelay();
-    startTimer();
+    startTimerFrom(startTime);
     updateViewerCount();
   } catch (e) {
     console.error("❌ 방송 연결 오류:", e);
@@ -152,7 +150,7 @@ const connectSession = async () => {
 const reconnectBroadcast = async (existingSessionId) => {
   try {
     const { data } = await axios.get(`/api/lawyer/broadcast/reconnect/${existingSessionId}`);
-    const { token } = data;
+    const { token, startTime } = data;
 
     OV.value = new OpenVidu();
     session.value = OV.value.initSession();
@@ -163,6 +161,7 @@ const reconnectBroadcast = async (existingSessionId) => {
 
     await session.value.connect(token);
     await initPublisherWithDelay();
+    startTimerFrom(startTime);
   } catch (err) {
     console.error("❌ 재접속 실패:", err);
     localStorage.removeItem("currentBroadcast");
@@ -183,17 +182,12 @@ const handleEndBroadcast = async () => {
     alert("✅ 방송이 종료되었습니다.");
     if (session.value) session.value.disconnect();
     if (timerInterval) clearInterval(timerInterval);
-    router.push("/lawyer/dashboard");
+    router.push("/lawyer");
   } catch (e) {
     console.error("❌ 방송 종료 실패:", e);
     alert("방송 종료 중 문제가 발생했습니다.");
   }
 };
-
-
-
-
-
 
 onMounted(async () => {
   window.addEventListener("beforeunload", preventReload);
@@ -203,10 +197,9 @@ onMounted(async () => {
     return;
   }
 
-  loadBroadcastInfo(); // 비동기 - 병렬 수행
-  await connectSession(); // 방송 시작 및 broadcastNo 확보
-
-  connect(); // 채팅 연결
+  loadBroadcastInfo();
+  await connectSession();
+  connect();
 });
 
 onBeforeUnmount(() => {
@@ -214,6 +207,7 @@ onBeforeUnmount(() => {
   stompClient.value?.deactivate();
   closeDropdown();
 });
+
 
 
 

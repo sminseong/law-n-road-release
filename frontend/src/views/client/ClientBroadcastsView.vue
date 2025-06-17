@@ -10,19 +10,52 @@ import { useRoute } from "vue-router";
 export default defineComponent({
   components: { ClientFrame },
   setup() {
-    /** 📺 방송 화면 참조 */
+    /** =============== 방송 관련 =============== */
     const videoContainer = ref(null);
     const route = useRoute();
-    const broadcastNo = route.params.broadcastNo;
-
-    /** 🌐 OpenVidu 세션 저장용 */
+    const broadcastNo = ref(Number(route.params.broadcastNo));
     const session = ref(null);
+    const broadcastInfo = ref({
+      title: "",
+      categoryName: "",
+      keywords: [],
+      lawyerName: "",
+      lawyerProfilePath: ""
+    });
+    // 방송 실시간 시간
+    const elapsedTime = ref("00:00:00");
+    let streamStartTime = null;
+    let timerInterval = null;
+    // 시청자 수
+    const viewerCount = ref(1);
 
-    /** 📡 OpenVidu 연결 */
+    // 시간 계산
+    const startTimer = () => {
+      timerInterval = setInterval(() => {
+        const now = new Date();
+        const diff = new Date(now.getTime() - streamStartTime.getTime());
+        const hh = String(diff.getUTCHours()).padStart(2, "0");
+        const mm = String(diff.getUTCMinutes()).padStart(2, "0");
+        const ss = String(diff.getUTCSeconds()).padStart(2, "0");
+        elapsedTime.value = `${hh}:${mm}:${ss}`;
+      }, 1000);
+    };
+
+    const loadBroadcastInfo = async () => {
+      try {
+        const { data } = await axios.get(`/api/client/broadcast/view-detail/${broadcastNo.value}`);
+        broadcastInfo.value = data;
+        console.log("📄 방송 정보 로딩 완료:", data);
+      } catch (e) {
+        console.error("❌ 방송 정보 조회 실패:", e);
+      }
+    };
+
     const connectOpenVidu = async () => {
       try {
-        const { data } = await axios.get(`/api/client/broadcast/${broadcastNo}/token`);
-        const { sessionId, token } = data;
+        const { data } = await axios.get(`/api/client/broadcast/${broadcastNo.value}/token`);
+        const { sessionId, token, startTime } = data;
+        streamStartTime = new Date(startTime); // 방송 시작 시간 받아서 저장
 
         console.log("👁️ 시청자 sessionId:", sessionId);
         console.log("🔑 시청자 token:", token);
@@ -35,12 +68,21 @@ export default defineComponent({
 
           const subscriber = session.value.subscribe(stream, undefined);
           console.log("Subscribing to", stream.connection.connectionId);
+          // 시간 시작
+          startTimer();
+          // 시청자 수
+          session.value.on("connectionCreated", () => {
+            viewerCount.value = session.value.remoteConnections.size + 1;
+          });
+          session.value.on("connectionDestroyed", () => {
+            viewerCount.value = session.value.remoteConnections.size + 1;
+          });
 
           nextTick(() => {
             const video = document.createElement("video");
             video.autoplay = true;
             video.playsInline = true;
-            video.muted = true; // autoplay 보장 위해 mute
+            video.muted = true;
             video.style.width = "100%";
             video.style.height = "100%";
             video.style.objectFit = "cover";
@@ -60,34 +102,57 @@ export default defineComponent({
         await session.value.connect(token);
         console.log("✅ [시청자] 방송 연결 완료");
       } catch (err) {
-        console.error("❌ [시청자] 오류 발생:", err);
+        console.error("❌ [시청자] 방송 연결 실패:", err);
       }
     };
 
 
-    onMounted(() => {
-      connect();
-      connectOpenVidu();
-    });
 
+
+
+
+
+    /** 언마운트 / 마운트 정리 */
     onBeforeUnmount(() => {
       console.log("시청자 페이지 종료 - 세션 종료");
-      if (session.value) session.value.disconnect(); // 💡 핵심
+      if (session.value) session.value.disconnect();
+      if (timerInterval) clearInterval(timerInterval);
       stompClient.value?.deactivate?.();
       closeDropdown();
     });
 
+    onMounted(() => {
+      connect();
+      loadBroadcastInfo();
+      connectOpenVidu();
+    });
 
 
 
-    /** 채팅 */
+
+
+
+
+
+
+
+    /** =============== 채팅 관련 =============== */
     const stompClient = ref(null);
     const message = ref("");
     const messages = ref([]);
     const messageContainer = ref(null);
 
-    // 닉네임별 랜덤 색상
     const nicknameColors = ref({});
+
+    //드롭다운/신고 모달 상태
+    const dropdownIdx = ref(null);
+    const selectedUser = ref(null);
+    const selectedMessage = ref(null);
+    const isConfirmModal = ref(false);
+    const isCompleteModal = ref(false);
+    const selectedUserNo = ref(null);
+
+    // 닉네임별 랜덤 색상
     const colorPalette = [
       "#1abc9c", "#034335", "#84ddaa", "#450978",
       "#184563", "#8bc2e4", "#c791dd", "#8e44ad",
@@ -106,14 +171,6 @@ export default defineComponent({
       return nicknameColors.value[nick];
     }
 
-    // 드롭다운/신고 모달 상태
-    const dropdownIdx = ref(null);
-    const selectedUser = ref(null);
-    const selectedMessage = ref(null);
-    const isConfirmModal = ref(false);
-    const isCompleteModal = ref(false);
-    const selectedUserNo = ref(null);
-
     // STOMP 연결 및 입장 메시지 전송
     const connect = () => {
       const token = localStorage.getItem('token');
@@ -129,17 +186,17 @@ export default defineComponent({
         },
         onConnect: () => {
           stompClient.value.subscribe(
-              `/topic/${broadcastNo}`,
+              `/topic/${broadcastNo.value}`,
               (msg) => {
                 const data = JSON.parse(msg.body);
                 messages.value.push(data);
                 scrollToBottom();
               }
           );
-          // 입장 시 type: "ENTER"만 전달
+          //입장 시 type: "ENTER"만 전달
           stompClient.value.publish({
             destination: "/app/chat.addUser",
-            body: JSON.stringify({broadcastNo}),
+            body: JSON.stringify({ broadcastNo: broadcastNo.value }),
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -169,7 +226,7 @@ export default defineComponent({
       }
       stompClient.value.publish({
         destination: "/app/chat.sendMessage",
-        body: JSON.stringify({broadcastNo, message: trimmed}),
+        body: JSON.stringify({ broadcastNo: broadcastNo.value, message: trimmed }),
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -197,10 +254,12 @@ export default defineComponent({
         window.addEventListener("mousedown", onWindowClick);
       }, 0);
     };
+
     const closeDropdown = () => {
       dropdownIdx.value = null;
       window.removeEventListener("mousedown", onWindowClick);
     };
+
     const onWindowClick = (e) => {
       if (!e.target.closest(".nickname-dropdown")) closeDropdown();
     };
@@ -210,6 +269,7 @@ export default defineComponent({
       isConfirmModal.value = true;
       closeDropdown();
     };
+
     const confirmReport = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -221,21 +281,21 @@ export default defineComponent({
               message: selectedMessage.value,
             },
             {
-              headers: {Authorization: `Bearer ${token}`}
+              headers: { Authorization: `Bearer ${token}` }
             },
         );
-
-      } catch (e) {
-      }
+      } catch (e) {}
       isConfirmModal.value = false;
       isCompleteModal.value = true;
     };
+
     const closeCompleteModal = () => {
       isCompleteModal.value = false;
     };
+
     return {
       videoContainer,
-      connectOpenVidu,
+      broadcastInfo,
       broadcastNo,
       message,
       messages,
@@ -252,19 +312,89 @@ export default defineComponent({
       selectedUser,
       selectedMessage,
       getNicknameColor,
+      elapsedTime,
+      viewerCount,
     };
   }
 });
 </script>
 
+
 <template>
   <ClientFrame>
     <div class="position-relative w-100 vh-100">
-      <!-- 영상 출력 영역 -->
-      <div ref="videoContainer"
-           class="position-absolute top-0 start-0 bg-dark shadow rounded d-flex align-items-center justify-content-center"
-           style="width: calc(100% - 480px); height: 520px; margin: 2rem; overflow: hidden;">
+      <!-- 방송 카드 전체 영역 -->
+      <div class="position-absolute top-0 start-0 bg-dark shadow rounded d-flex flex-column"
+           style="width: calc(100% - 480px); margin: 2rem;">
+
+        <!-- 방송 영상 영역 -->
+        <div ref="videoContainer" style="height: 520px;" class="rounded-top"></div>
+
+        <!-- 방송 정보 영역 -->
+        <div class="bg-light text-dark p-5 rounded-bottom position-relative">
+
+          <!-- 방송 제목 -->
+          <div class="mb-3">
+            <h2 class="fs-3 fw-bold mb-2">{{ broadcastInfo.title }}</h2>
+
+            <!-- 키워드 & 방송시간/시청자수 같은 라인에 정렬 -->
+            <div class="d-flex justify-content-between align-items-center">
+              <!-- 키워드 -->
+              <div>
+          <span
+              v-for="(keyword, index) in broadcastInfo.keywords"
+              :key="index"
+              class="text-muted me-3 fs-6 fw-semibold"
+              style="opacity: 0.75;"
+          ># {{ keyword }}</span>
+              </div>
+
+              <!-- 방송 시간 & 시청자 수 -->
+              <div class="text-muted d-flex gap-4 align-items-center">
+          <span>
+            <span class="blinking-dot"></span>
+            {{ elapsedTime }} 스트리밍 중
+          </span>
+                <span>👥 {{ viewerCount }}명 시청 중</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 👤 변호사 정보 + 알림신청 버튼 -->
+          <div class="d-flex justify-content-between align-items-end mt-4">
+            <!-- 프로필 영역 -->
+            <div class="d-flex align-items-center">
+              <!-- ✅ 초록 원 컨테이너 -->
+              <div class="position-relative d-flex justify-content-center align-items-center"
+                   style="width: 80px; height: 80px; border: 3px solid #15ea7e; border-radius: 50%;">
+                <!-- 프로필 이미지 -->
+                <img
+                    :src="broadcastInfo.lawyerProfilePath"
+                    alt="변호사 프로필"
+                    class="rounded-circle"
+                    style="width: 68px; height: 68px; object-fit: cover;"
+                />
+
+                <!-- LIVE 뱃지 -->
+                <div
+                    class="position-absolute bottom-0 start-50 translate-middle-x bg-danger text-white fw-bold px-2 py-1 rounded"
+                    style="font-size: 0.8rem; line-height: 1; transform: translate(-30%, 70%);"
+                >
+                  LIVE
+                </div>
+              </div>
+
+              <!-- 변호사 이름 + 알림신청 -->
+              <div class="d-flex align-items-center ms-3">
+                <div class="fs-5 fw-bold me-3">{{ broadcastInfo.lawyerName }} 변호사</div>
+                <button class="btn btn-outline-primary btn-sm">🔔 알림신청</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
+
 
       <!-- 채팅 영역 -->
       <div class="position-absolute border rounded shadow p-4 d-flex flex-column bg-white"
@@ -433,4 +563,24 @@ export default defineComponent({
 .modal-btn-cancel:hover { background: #efb485; }
 .modal-btn-ok { background: #435879; color: #ffffff; }
 .modal-btn-ok:hover { background: #7d8bbd; }
+
+.blinking-dot {
+  width: 10px;
+  height: 10px;
+  background-color: red;
+  border-radius: 50%;
+  animation: blink 1s infinite;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
 </style>
