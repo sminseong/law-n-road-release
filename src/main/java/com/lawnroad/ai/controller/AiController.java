@@ -4,7 +4,7 @@ import com.lawnroad.ai.dto.InterviewChatRequestDto;
 import com.lawnroad.ai.dto.InterviewChatResponseDto;
 import com.lawnroad.ai.dto.TextToneFixRequestDto;
 import com.lawnroad.ai.dto.TextToneFixResponseDto;
-import com.lawnroad.ai.service.TextToneFixService;
+import com.lawnroad.ai.service.AiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/gemini")
-public class TextToneFixController {
+public class AiController {
   
-  private final TextToneFixService textToneFixService;
+  private final AiService aiService;
   
   /**
    * 문장을 지정된 톤(toneKey)에 맞게 교정
@@ -31,19 +31,19 @@ public class TextToneFixController {
    */
   @PostMapping("/fix-tone")
   public ResponseEntity<TextToneFixResponseDto> fixTone(@RequestBody TextToneFixRequestDto dto) {
-    String fixed = textToneFixService.fixTextTone(dto.getText(), dto.getTone());
+    String fixed = aiService.fixTextTone(dto.getText(), dto.getTone());
     return ResponseEntity.ok(new TextToneFixResponseDto(fixed));
   }
   @PostMapping("/interview")
   public ResponseEntity<InterviewChatResponseDto> chat(@RequestBody InterviewChatRequestDto dto) {
-    InterviewChatResponseDto response = textToneFixService.generateResponse(dto);
+    
+    InterviewChatResponseDto response = aiService.generateResponse(dto);
     
     // AI: 제거
     response.setReply(
         response.getReply().replaceAll("(?m)^AI:\\s*", "").trim()
     );
     
-    System.out.println(response);
     return ResponseEntity.ok(response);
   }
   

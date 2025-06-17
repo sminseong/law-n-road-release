@@ -10,8 +10,14 @@ const props = defineProps({
     type: Array,
     required: true
   },
-  orderNo: Number,
-  tmplNo: Number,
+  orderNo: {
+    type: Number,
+    required: true
+  },
+  tmplNo: {
+    type: Number,
+    required: true
+  },
 })
 
 // 채팅 상태
@@ -35,7 +41,9 @@ async function send() {
       description: props.description,
       content: props.content,
       variables: props.variables,
-      history: messages.value
+      history: messages.value,
+      orderNo: props.orderNo,
+      tmplNo: props.tmplNo,
     })
 
     messages.value.push({ role: 'assistant', content: res.data.reply })
