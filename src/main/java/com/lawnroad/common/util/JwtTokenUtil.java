@@ -25,7 +25,7 @@ public class JwtTokenUtil {
         return Jwts.builder()
                 .setSubject(clientId)
                 .claim("no", no)
-                //.claim("role", role)
+
                 .claim("role",role)
                 .claim("nickname", nickname)
                 .setIssuedAt(new Date())

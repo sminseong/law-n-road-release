@@ -70,6 +70,33 @@ const updateProfile = async () => {
     }
   }
 }
+
+
+const withdrawAccount = async () => {
+  if (!confirm('정말로 회원 탈퇴하시겠습니까?')) return
+
+  try {
+    await axios.put('/api/client/withdraw', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    // 로그아웃 처리
+    localStorage.clear()
+    alert('회원 탈퇴가 완료되었습니다.')
+    router.push('/login')
+  } catch (err) {
+    console.error('회원 탈퇴 실패:', err)
+    alert('탈퇴 중 오류가 발생했습니다.')
+  }
+}
+
+
+
+
+
+
 </script>
 
 <template>
@@ -129,6 +156,7 @@ const updateProfile = async () => {
       </div>
 
       <button class="btn btn-primary" @click="updateProfile">프로필 수정</button>
+      <button class="btn btn-danger mt-2" @click="withdrawAccount">회원 탈퇴</button>
     </div>
   </div>
 </template>

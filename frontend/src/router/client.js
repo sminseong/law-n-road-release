@@ -71,7 +71,9 @@ export default [
         path: '/client/profile/edit',
         name: 'ClientProfileEdit',
         component: () => import('@/views/client/ClientProfileEditView.vue')
-    }
+
+    },
+
 
 
 

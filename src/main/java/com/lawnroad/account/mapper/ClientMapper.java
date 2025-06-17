@@ -42,5 +42,9 @@ public interface ClientMapper {
                              @Param("phone") String phone);
 
 
+    void updateWithdrawalAtNow(String clientId);
+
+
+
 
 }

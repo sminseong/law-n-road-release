@@ -133,5 +133,10 @@ public class ClientService {
         clientMapper.updateClientProfile(clientId, nickname, email, phone);
     }
 
+    public void withdrawClient(String clientId) {
+        clientMapper.updateWithdrawalAtNow(clientId);
+    }
+
+
 
 }

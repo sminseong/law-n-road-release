@@ -141,6 +141,8 @@ public class AuthController {
                 String refreshToken = jwtTokenUtil.generateRefreshToken(client.getClientId());
                 jwtTokenUtil.storeRefreshToken(client.getClientId(), refreshToken);
 
+                jwtTokenUtil.printPayload(accessToken);
+
 
                 System.out.println("accessToken : " + accessToken);
                 System.out.println("refreshToken : " + refreshToken);
@@ -149,6 +151,7 @@ public class AuthController {
                 result.put("refreshToken", refreshToken);
                 result.put("name", client.getName());
                 result.put("nickname", client.getNickname());
+                result.put("no",user.getNo());
                 result.put("role", user.getType());
                 return ResponseEntity.ok(result);
 
@@ -311,6 +314,20 @@ public class AuthController {
         clientService.updateClientProfile(clientId, nickname, email, phone);
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/client/withdraw")
+    //@PreAuthorize("hasRole('CLIENT')")
+    public ResponseEntity<?> withdrawClient(
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtTokenUtil.parseToken(token);
+        String clientId = claims.getSubject();
+
+        clientService.withdrawClient(clientId);
+        return ResponseEntity.ok().build();
+    }
+
 
 
 

@@ -35,7 +35,7 @@
 <!--    </select>-->
 
     <select id="findByClientId" resultType="ClientEntity">
-        SELECT * FROM client WHERE client_id = #{clientId}
+        SELECT * FROM client WHERE client_id = #{clientId} and withdrawal_at is null
     </select>
 
     <select id="countByEmail" resultType="int">
@@ -56,6 +56,14 @@
             phone = #{phone}
         WHERE client_id = #{clientId}
     </update>
+
+
+    <update id="updateWithdrawalAtNow">
+        UPDATE client
+        SET withdrawal_at = NOW()
+        WHERE client_id = #{clientId}
+    </update>
+
 
 
 
