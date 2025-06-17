@@ -363,25 +363,10 @@ const loadFn = async ({ page, size }) => {
 <template>
   <!-- 의뢰인 타입 본문 콘텐츠 -->
   <ClientFrame>
-
-
-    <!-- 로그인 상태일 때 -->
-    <div v-if="isLoggedIn">
-      <h3 class="mb-4">{{ nickname }}님, 환영합니다.</h3>
-      <button @click="logout" class="btn btn-outline-danger">로그아웃</button>
-    </div>
-
-    <!-- 비로그인 상태일 때 -->
-    <div v-else>
-      <router-link to="/login" class="btn btn-primary">로그인</router-link>
-    </div>
-
     <p>
       <a href="/lawyer">변호사 대시보드 이동하기</a>
     </p>
-    <p>
-      <a href="/client/mypage">의뢰인 대시보드 이동하기</a>
-    </p>
+
     <!-- ① 예약 신청 섹션 추가 -->
     <section class="my-8 p-4 bg-gray-50 rounded">
       <h3 class="text-xl font-semibold mb-2">상담 예약 신청하기</h3>
