@@ -67,7 +67,7 @@ onMounted(async () => {
   console.log('🧩 현재 경로 ID:', route.params.id)
 
   try {
-    const data = await fetchBoardDetail(route.params.id)
+    const data = await fetchBoardDetail(id)
     console.log('✅ 게시글 상세:', data.data)
 
     //정확한 필드명으로 수정
