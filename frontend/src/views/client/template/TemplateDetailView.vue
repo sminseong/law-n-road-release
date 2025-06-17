@@ -16,7 +16,7 @@ onMounted(async () => {
   try {
     const templateNo = route.params.no
 
-    const res = await http.get(`/api/client/templates/${templateNo}`)
+    const res = await http.get(`/api/public/templates/${templateNo}`)
     template.value = res.data
     console.log('template:', template.value)
     console.log('template.value:', template.value)
@@ -35,7 +35,7 @@ const handleAddToCart = async () => {
   }
 
   try {
-    await http.post('/api/cart', {
+    await http.post('/api/client/cart', {
       tmplNo: template.value.no
     })
 

@@ -20,7 +20,6 @@ const broadcastInfo = ref({});
 const broadcastNo = ref(null);
 const elapsedTime = ref("00:00:00");
 const viewerCount = ref(1);
-let streamStartTime = null;
 let timerInterval = null;
 
 const preventReload = (e) => {
@@ -38,11 +37,10 @@ const loadBroadcastInfo = async () => {
   }
 };
 
-const startTimer = () => {
-  streamStartTime = new Date();
+const startTimerFrom = (startTime) => {
   timerInterval = setInterval(() => {
     const now = new Date();
-    const diff = new Date(now.getTime() - streamStartTime.getTime());
+    const diff = new Date(now.getTime() - new Date(startTime).getTime());
     const hh = String(diff.getUTCHours()).padStart(2, "0");
     const mm = String(diff.getUTCMinutes()).padStart(2, "0");
     const ss = String(diff.getUTCSeconds()).padStart(2, "0");
@@ -51,7 +49,10 @@ const startTimer = () => {
 };
 
 const updateViewerCount = () => {
-  viewerCount.value = session.value?.connections?.size || 1;
+  if (!session.value) return;
+  const count = session.value.remoteConnections?.size || 0;
+  console.log("👥 현재 시청자 수 (방송자 제외):", count);
+  viewerCount.value = count;
 };
 
 const initPublisherWithDelay = async () => {
@@ -102,11 +103,12 @@ const connectSession = async () => {
     const res = await axios.post("/api/lawyer/broadcast/start", {
       scheduleNo: Number(scheduleNo),
     });
-    const { sessionId, token, broadcastNo: newBroadcastNo } = res.data;
+    const { sessionId, token, broadcastNo: newBroadcastNo, startTime } = res.data;
 
     console.log("📡 sessionId:", sessionId);
     console.log("🔑 token:", token);
     console.log("🎯 broadcastNo:", newBroadcastNo);
+    console.log("🕒 startTime:", startTime);
 
     broadcastNo.value = newBroadcastNo;
 
@@ -121,6 +123,14 @@ const connectSession = async () => {
 
     session.value.on("connectionCreated", updateViewerCount);
     session.value.on("connectionDestroyed", updateViewerCount);
+    session.value.on("streamCreated", (event) => {
+      console.log("📡 방송자: streamCreated 발생 (시청자 연결)");
+      updateViewerCount();
+    });
+    session.value.on("streamDestroyed", (event) => {
+      console.log("📴 방송자: streamDestroyed 발생 (시청자 퇴장)");
+      updateViewerCount();
+    });
     session.value.on("exception", (exception) => {
       console.warn("OpenVidu 예외:", exception);
     });
@@ -130,7 +140,7 @@ const connectSession = async () => {
 
     await session.value.connect(token);
     await initPublisherWithDelay();
-    startTimer();
+    startTimerFrom(startTime);
     updateViewerCount();
   } catch (e) {
     console.error("❌ 방송 연결 오류:", e);
@@ -140,7 +150,7 @@ const connectSession = async () => {
 const reconnectBroadcast = async (existingSessionId) => {
   try {
     const { data } = await axios.get(`/api/lawyer/broadcast/reconnect/${existingSessionId}`);
-    const { token } = data;
+    const { token, startTime } = data;
 
     OV.value = new OpenVidu();
     session.value = OV.value.initSession();
@@ -151,6 +161,7 @@ const reconnectBroadcast = async (existingSessionId) => {
 
     await session.value.connect(token);
     await initPublisherWithDelay();
+    startTimerFrom(startTime);
   } catch (err) {
     console.error("❌ 재접속 실패:", err);
     localStorage.removeItem("currentBroadcast");
@@ -171,17 +182,12 @@ const handleEndBroadcast = async () => {
     alert("✅ 방송이 종료되었습니다.");
     if (session.value) session.value.disconnect();
     if (timerInterval) clearInterval(timerInterval);
-    router.push("/lawyer/dashboard");
+    router.push("/lawyer");
   } catch (e) {
     console.error("❌ 방송 종료 실패:", e);
     alert("방송 종료 중 문제가 발생했습니다.");
   }
 };
-
-
-
-
-
 
 onMounted(async () => {
   window.addEventListener("beforeunload", preventReload);
@@ -191,10 +197,9 @@ onMounted(async () => {
     return;
   }
 
-  loadBroadcastInfo(); // 비동기 - 병렬 수행
-  await connectSession(); // 방송 시작 및 broadcastNo 확보
-
-  connect(); // 채팅 연결
+  loadBroadcastInfo();
+  await connectSession();
+  connect();
 });
 
 onBeforeUnmount(() => {
@@ -202,6 +207,7 @@ onBeforeUnmount(() => {
   stompClient.value?.deactivate();
   closeDropdown();
 });
+
 
 
 
@@ -392,13 +398,12 @@ const closeCompleteModal = () => {
             <div class="d-flex justify-content-between align-items-center">
               <!-- 키워드 -->
               <div>
-                <span
-                    v-for="(keyword, index) in broadcastInfo.keywords"
-                    :key="index"
-                    class="text-muted me-3 fs-6 fw-semibold"
-                    style="opacity: 0.75;"
-                ># {{ keyword }}
-                </span>
+          <span
+              v-for="(keyword, index) in broadcastInfo.keywords"
+              :key="index"
+              class="text-muted me-3 fs-6 fw-semibold"
+              style="opacity: 0.75;"
+          ># {{ keyword }}</span>
               </div>
 
               <!-- 방송 시간 & 시청자 수 -->
@@ -412,42 +417,46 @@ const closeCompleteModal = () => {
             </div>
           </div>
 
-          <!-- 👤 변호사 정보 -->
-          <div class="d-flex align-items-center mt-4 position-relative">
+          <!-- 👤 변호사 정보 + 종료 버튼 같은 라인 -->
+          <div class="d-flex justify-content-between align-items-end mt-4">
 
-            <!-- ✅ 초록 원 컨테이너 (살짝 줄임) -->
-            <div class="position-relative d-flex justify-content-center align-items-center"
-                 style="width: 80px; height: 80px; border: 3px solid #15ea7e; border-radius: 50%;">
+            <!-- 프로필 영역 -->
+            <div class="d-flex align-items-center">
+              <!-- ✅ 초록 원 컨테이너 -->
+              <div class="position-relative d-flex justify-content-center align-items-center"
+                   style="width: 80px; height: 80px; border: 3px solid #15ea7e; border-radius: 50%;">
+                <!-- 프로필 이미지 -->
+                <img
+                    :src="broadcastInfo.lawyerProfilePath"
+                    alt="변호사 프로필"
+                    class="rounded-circle"
+                    style="width: 68px; height: 68px; object-fit: cover;"
+                />
 
-              <!-- 프로필 이미지 (살짝 더 작게) -->
-              <img
-                  :src="broadcastInfo.lawyerProfilePath"
-                  alt="변호사 프로필"
-                  class="rounded-circle"
-                  style="width: 68px; height: 68px; object-fit: cover;"
-              />
-
-              <!-- LIVE 뱃지 (살짝 더 아래로) -->
-              <div
-                  class="position-absolute bottom-0 start-50 translate-middle-x bg-danger text-white fw-bold px-2 py-1 rounded"
-                  style="font-size: 0.8rem; line-height: 1; transform: translate(-30%, 70%);"
-              >
-                LIVE
+                <!-- LIVE 뱃지 -->
+                <div
+                    class="position-absolute bottom-0 start-50 translate-middle-x bg-danger text-white fw-bold px-2 py-1 rounded"
+                    style="font-size: 0.8rem; line-height: 1; transform: translate(-30%, 70%);"
+                >
+                  LIVE
+                </div>
               </div>
+
+              <!-- 변호사 이름 -->
+              <div class="fs-5 fw-bold ms-3">{{ broadcastInfo.lawyerName }} 변호사</div>
             </div>
 
-            <!-- 변호사 이름 -->
-            <div class="fs-5 fw-bold ms-3">{{ broadcastInfo.lawyerName }} 변호사</div>
-          </div>
-
-          <div class="mt-4 d-flex justify-content-end">
-            <button class="btn btn-danger px-4 py-2 fw-bold" @click="handleEndBroadcast">
-              📴 방송 종료
-            </button>
+            <!-- 방송 종료 버튼 -->
+            <div>
+              <button class="btn btn-danger px-4 py-2 fw-bold" @click="handleEndBroadcast">
+                📴 방송 종료
+              </button>
+            </div>
           </div>
 
         </div>
       </div>
+
 
       <!-- 채팅 영역 -->
       <!-- 채팅 영역 -->

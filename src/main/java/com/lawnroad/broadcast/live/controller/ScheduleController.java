@@ -30,7 +30,8 @@ public class ScheduleController {
 
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> registerSchedule(
-            @RequestParam("userNo") Long userNo,
+            @RequestHeader("Authorization") String authHeader,
+            //@RequestParam("userNo") Long userNo,
             @RequestParam("categoryNo") Long categoryNo,
             @RequestParam("name") String name,
             @RequestParam("content") String content,
@@ -56,6 +57,9 @@ public class ScheduleController {
                 throw new RuntimeException("키워드 파싱 오류", e);
             }
         }
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtTokenUtil.parseToken(token);
+        Long userNo = claims.get("no", Long.class);
 
         ScheduleRequestDto scheduleRequestDto = ScheduleRequestDto.builder()
                 .userNo(userNo)

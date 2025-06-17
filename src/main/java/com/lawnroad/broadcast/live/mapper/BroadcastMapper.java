@@ -1,7 +1,9 @@
 package com.lawnroad.broadcast.live.mapper;
 
+import com.lawnroad.broadcast.live.dto.BroadcastReportRequestDto;
 import com.lawnroad.broadcast.live.dto.BroadcastSessionDto;
 import com.lawnroad.broadcast.live.dto.BroadcastViewDetailDto;
+import com.lawnroad.broadcast.live.dto.ReportReasonDto;
 import com.lawnroad.broadcast.live.model.BroadcastVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -21,4 +23,8 @@ public interface BroadcastMapper {
     Long findScheduleNoByBroadcastNo(@Param("broadcastNo") Long broadcastNo);
 
     void endBroadcast(@Param("broadcastNo") Long broadcastNo);
+
+    // 방송 신고
+    int insertReport(BroadcastReportRequestDto dto);
+    List<ReportReasonDto> findAllReportReasons();
 }

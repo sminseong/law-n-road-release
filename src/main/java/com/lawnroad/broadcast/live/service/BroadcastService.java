@@ -1,5 +1,6 @@
 package com.lawnroad.broadcast.live.service;
 
+import com.lawnroad.broadcast.live.dto.BroadcastReportRequestDto;
 import com.lawnroad.broadcast.live.dto.BroadcastStartDto;
 import com.lawnroad.broadcast.live.dto.BroadcastStartResponseDto;
 import com.lawnroad.broadcast.live.dto.BroadcastViewDetailDto;
@@ -17,4 +18,7 @@ public interface BroadcastService {
 
     //방송 종료
     void endBroadcast(Long broadcastNo);
+
+    //방송 신고
+    void reportBroadcast(BroadcastReportRequestDto dto);
 }

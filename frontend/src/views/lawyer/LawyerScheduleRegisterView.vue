@@ -23,7 +23,12 @@ const categoryList = ref([])
 
 onMounted(async () => {
   try {
-    const response = await axios.get('/api/category/list')
+    const token = localStorage.getItem('token')
+    const response = await axios.get('/api/category/list', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
     categoryList.value = response.data
   } catch (e) {
     console.error('카테고리 불러오기 실패', e)

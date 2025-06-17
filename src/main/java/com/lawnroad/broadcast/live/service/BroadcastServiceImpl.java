@@ -1,9 +1,6 @@
 package com.lawnroad.broadcast.live.service;
 
-import com.lawnroad.broadcast.live.dto.BroadcastSessionDto;
-import com.lawnroad.broadcast.live.dto.BroadcastStartDto;
-import com.lawnroad.broadcast.live.dto.BroadcastStartResponseDto;
-import com.lawnroad.broadcast.live.dto.BroadcastViewDetailDto;
+import com.lawnroad.broadcast.live.dto.*;
 import com.lawnroad.broadcast.live.mapper.BroadcastMapper;
 import com.lawnroad.broadcast.live.model.BroadcastVo;
 import lombok.RequiredArgsConstructor;
@@ -24,14 +21,14 @@ public class BroadcastServiceImpl implements BroadcastService {
      * 방송자 - 방송 시작
      */
     @Override
-    public BroadcastStartResponseDto startBroadcast(Long userNo, BroadcastStartDto dto) {
+    public BroadcastStartResponseDto    startBroadcast(Long userNo, BroadcastStartDto dto) {
         BroadcastVo existing = broadcastMapper.findByScheduleNo(dto.getScheduleNo());
 
         // 기존 방송이 있고 세션이 살아있으면 토큰만 새로 생성해서 반환
         if (existing != null && openViduService.isSessionActive(existing.getSessionId())) {
             String token = openViduService.createTokenForExistingSession(existing.getSessionId());
             System.out.println("♻️ 방송자 기존 세션 재사용: " + existing.getSessionId());
-            return new BroadcastStartResponseDto(existing.getSessionId(), token, existing.getNo());
+            return new BroadcastStartResponseDto(existing.getSessionId(), token, existing.getNo(), existing.getStartTime());
         }
 
         // 신규 세션 생성
@@ -50,7 +47,7 @@ public class BroadcastServiceImpl implements BroadcastService {
         System.out.println("🎥 방송자 신규 sessionId 생성됨: " + sessionId);
 
         String token = openViduService.createSessionAndToken(sessionId);
-        return new BroadcastStartResponseDto(sessionId, token, vo.getNo());
+        return new BroadcastStartResponseDto(sessionId, token, vo.getNo(), vo.getStartTime());
     }
 
     /**
@@ -67,7 +64,7 @@ public class BroadcastServiceImpl implements BroadcastService {
         System.out.println("🔍 시청자용 sessionId: " + dto.getSessionId());
 
         String token = openViduService.createTokenForClient(dto.getSessionId());
-        return new BroadcastStartResponseDto(dto.getSessionId(), token, broadcastNo);
+        return new BroadcastStartResponseDto(dto.getSessionId(), token, broadcastNo, dto.getStartTime());
     }
 
     /**
@@ -86,7 +83,7 @@ public class BroadcastServiceImpl implements BroadcastService {
 
         System.out.println("♻️ 방송자 세션 재연결: " + sessionId);
         String token = openViduService.createTokenForExistingSession(sessionId);
-        return new BroadcastStartResponseDto(sessionId, token, vo.getNo());
+        return new BroadcastStartResponseDto(sessionId, token, vo.getNo(), vo.getStartTime());
     }
 
     @Override
@@ -110,5 +107,14 @@ public class BroadcastServiceImpl implements BroadcastService {
     @Transactional
     public void endBroadcast(Long broadcastNo) {
         broadcastMapper.endBroadcast(broadcastNo);
+    }
+
+    @Override
+    @Transactional
+    public void reportBroadcast(BroadcastReportRequestDto dto) {
+        int result = broadcastMapper.insertReport(dto);
+        if (result != 1) {
+            throw new RuntimeException("방송 신고 등록 실패");
+        }
     }
 }
