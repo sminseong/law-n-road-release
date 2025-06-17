@@ -1,26 +1,43 @@
 <!-- src/components/layout/User/ClientHeader.vue -->
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
+import { onMounted, onBeforeUnmount } from 'vue'
 
 const router = useRouter()
 const route = useRoute()
 
-// “마이페이지로 이동” 버튼(아이콘) 클릭 핸들러
 function goToMyPage() {
   const target = '/client/mypage'
   if (route.path === target) {
-    // 이미 마이페이지에 있는 경우, 새로고침
     window.location.reload()
     return
   }
   router.push(target)
 }
+
+function updateGradient(e) {
+  const headerEl = document.querySelector('header')
+  if (!headerEl) return
+  const rect = headerEl.getBoundingClientRect()
+  const x = ((e.clientX - rect.left) / rect.width) * 100
+  const y = ((e.clientY - rect.top) / rect.height) * 100
+  headerEl.style.setProperty('--x', `${x}%`)
+  headerEl.style.setProperty('--y', `${y}%`)
+}
+
+onMounted(() => {
+  document.addEventListener('mousemove', updateGradient)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousemove', updateGradient)
+})
 </script>
 
 <template>
   <header>
     <!-- 본문 시작 -->
-    <div class="border-bottom sticky-top bg-white shadow-extra-light" style="z-index: 9999;">
+    <div class="border-bottom sticky-top shadow-extra-light header-bg" style="z-index: 9999;">
       <div class="py-4 pt-lg-3 pb-lg-0">
         <div class="container">
           <div class="row w-100 align-items-center gx-lg-2 gx-0">
@@ -296,5 +313,34 @@ function goToMyPage() {
 </template>
 
 <style scoped>
-/* 추가 커스텀 스타일이 필요한 경우 이곳에 작성합니다 */
+header {
+  position: fixed;
+  z-index: 1050; /* 필요에 따라 조절 */
+  /* 초기 CSS 변수를 중앙으로 설정 */
+  width: 100%;
+  --x: 50%;
+  --y: 50%;
+}
+
+/* 헤더 배경색 (예: 연한 그레이) */
+.header-bg {
+  background-color: #ffffff;
+}
+
+/* 헤더 바로 아래 그림자처럼 퍼지는 그라데이션 */
+header::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 2px; /* 아래로 퍼지는 거리 */
+  background: radial-gradient(
+      circle at var(--x) var(--y),
+      rgb(62, 111, 180) 0%,      /* 최상단 강한 파랑 */ rgba(169, 182, 246, 0.4) 30%,     /* 중간 노랑 포인트 */
+      transparent 100%               /* 아래로 갈수록 투명 */
+  );
+  pointer-events: none;
+  z-index: -1;
+}
 </style>
