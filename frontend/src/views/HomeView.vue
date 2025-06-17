@@ -7,13 +7,13 @@
   import CardTable from '@/components/table/CardTable.vue'
   import ProductCard from '@/components/common/ProductCard.vue'
   import AdBannerPair from '@/components/common/SubBannerSlider.vue'
+
   import { ref, onMounted } from 'vue'
   import { useRouter } from 'vue-router'
   import axios from 'axios'
   const router = useRouter()
   const nickname = ref('')
   const isLoggedIn = ref(false)
-
 
 
   onMounted(() => {
@@ -349,7 +349,6 @@ const loadFn = async ({ page, size }) => {
   <ClientFrame>
 
 
-
     <!-- 로그인 상태일 때 -->
     <div v-if="isLoggedIn">
       <h3 class="mb-4">{{ nickname }}님, 환영합니다.</h3>
@@ -438,7 +437,9 @@ const loadFn = async ({ page, size }) => {
     </div>
 
   </ClientFrame>
+
 </template>
 
 <style scoped>
+
 </style>

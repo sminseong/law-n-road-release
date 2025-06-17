@@ -1,4 +1,5 @@
 <script setup>
+
 import { fetchBoardList } from '@/service/boardService.js'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import { ref ,watch ,onMounted, computed} from 'vue'
@@ -106,7 +107,7 @@ watch(page, () => {
             v-for="qa in list"
             :key="qa.no"
             class="qa-card bg-white rounded shadow-sm p-4 mb-3"
-            @click="router.push({ name: 'QaDetail', params: { id: qa.no } })"
+            @click="router.push(`/qna/${qa.no}`)"
             style="cursor: pointer;"
         >
           <small class="text-muted">{{ qa.categoryName || '' }}</small>
