@@ -1,4 +1,5 @@
 <script setup>
+// 1. 라우터 및 서비스 불러오기
 import { ref, computed ,onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
@@ -8,7 +9,7 @@ const router = useRouter()
 const route = useRoute()
 const id = route.params.id
 
-// 입력 필드
+// 2. 입력 필드 정의
 const title = ref('')
 const incidentDate = ref('')
 const content = ref('')
@@ -24,7 +25,7 @@ const categories = ref([
   { no: 6, name: '차량 외 사고' }
 ])
 
-// 상세 데이터 가져오기
+// 3. 기존 게시글 불러오기 (GET /api/qna/{id}) → 공개 API
 onMounted(async () => {
   try {
     const response = await fetchBoardDetail(id)
@@ -42,7 +43,7 @@ onMounted(async () => {
   }
 })
 
-// 유효성 검사
+// 4. 유효성 검사
 const isTitleValid     = computed(() => title.value.trim().length >= 10)
 const isContentValid   = computed(() => content.value.trim().length >= 100)
 const isDateValid      = computed(() => !!incidentDate.value)
