@@ -51,6 +51,8 @@ onMounted(async () => {
 
     detail.value = data
 
+    console.log(data)
+
     // 공통
     name.value         = data.name
     price.value        = data.price
@@ -183,6 +185,8 @@ const handleDownload = async (file) => {
           </div>
         </div>
 
+        <!-- 변호사 정보 -->
+
         <!-- 설명이 필요하다면 넣을 공간 -->
         <div v-if="detail.description" class="mb-3">
           <label class="form-label">상세 설명</label>
@@ -196,7 +200,7 @@ const handleDownload = async (file) => {
 
         <!-- 에디터 타입일 때 -->
         <ChatBox
-            v-if="templateType === 'EDITOR'"
+            v-if="templateType === 'EDITOR' && orderNo && tmplNo"
             :description="detail.description"
             :content="detail.content"
            :variables="JSON.parse(detail.varJson)"
@@ -221,6 +225,50 @@ const handleDownload = async (file) => {
           <p v-if="!uploadedFiles.length" class="text-muted mt-2">
             첨부된 파일이 없습니다.
           </p>
+        </div>
+
+        <!-- 설명이 필요하다면 넣을 공간 -->
+        <!-- 가운데 정렬된 경고 + 변호사 정보 + 상담 버튼 -->
+        <div class="card p-3 mt-5 bg-light-subtle ">
+
+          <!-- 경고 문구: 가운데 정렬 -->
+          <div class="text-center">
+            <strong class="text-primary">
+              템플릿을 사용해 작성된 법률 문서는 자체적으로 법적 효력을 가지지 않습니다. <br>
+              작성된 문서를 바탕으로 변호사와의 상담을 받아보세요.
+            </strong>
+          </div>
+
+          <hr>
+
+          <!-- 변호사 정보 좌측 + 버튼 우측 -->
+          <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <!-- 변호사 정보 (왼쪽) -->
+            <div class="d-flex align-items-center">
+              <img
+                  :src="detail.lawyerProfileImg"
+                  alt="프로필"
+                  class="rounded-circle me-3"
+                  width="64"
+                  height="64"
+                  style="object-fit: cover"
+              />
+              <div>
+                <div class="fw-bold">{{ detail.lawyerName }} 변호사 <span class="text-muted">| {{ detail.lawyerOfficeName }}</span></div>
+                <div class="text-muted small">{{ detail.lawyerShortIntro }}</div>
+                <div class="text-muted small">사무실 전화: {{ detail.lawyerOfficeTel }}</div>
+                <div class="text-muted small">주소: {{ detail.fullAddress }}</div>
+              </div>
+            </div>
+
+            <!-- 상담 버튼 (오른쪽) -->
+            <div class="mt-3 mt-md-0">
+              <button class="btn btn-outline-primary btn-sm" @click="insertExample">
+                변호사 상담 받기
+              </button>
+            </div>
+          </div>
+
         </div>
 
       </div>

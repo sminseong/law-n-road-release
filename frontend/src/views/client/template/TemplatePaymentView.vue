@@ -12,7 +12,7 @@ const isProcessing = ref(false)
 
 onMounted(async () => {
   try {
-    const res = await http.get('/api/cart')
+    const res = await http.get('/api/client/cart')
     cartItems.value = res.data
   } catch (err) {
     console.error(err)
@@ -41,7 +41,7 @@ async function goToCheckout() {
 
   try {
     // ✅ 1) 주문 생성 요청: cartIds는 안 보내도 됨 (백엔드에서 userNo=1L 하드코딩 중)
-    const res = await http.post('/api/cart/aa', {})
+    const res = await http.post('/api/client/cart/aa', {})
 
     // ✅ 2) orderNo 응답받기
     const orderNo = res.data.orderNo

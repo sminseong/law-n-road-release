@@ -31,6 +31,18 @@ export default [
         name: 'QaDetail',
         component: () => import('@/views/common/QaDetailView.vue')
     },
+    // -------- id/Pw 찾기
+    {
+        path: '/forgot-password',
+        component: () => import('@/views/common/ForgotPasswordView.vue')
+    },
+    {
+        path: '/user/mypage',
+        name: 'UserMypage',
+        component: () => import('@/views/common/UserMypageHome.vue')
+    },
+
+
 
     // ---------- 템플릿 ----------
     {

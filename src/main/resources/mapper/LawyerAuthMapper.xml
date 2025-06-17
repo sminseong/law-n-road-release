@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lawnroad.account.mapper.LawyerMapper">
+    <select id="countByLawyerId1" resultType="int">
+        SELECT COUNT(*)
+        FROM lawyer
+        WHERE lawyer_id = #{lawyerId}
+    </select>
+
+    <select id="countByLawyerId2" resultType="int">
+        SELECT COUNT(*)
+        FROM client
+        WHERE client_id = #{lawyerId}
+    </select>
+
+
+
+
+
+    <!--    <select id="findByEmail" resultType="com.lawnroad.account.entity.ClientEntity">-->
+    <!--        SELECT * FROM client WHERE email = #{email}-->
+    <!--    </select>-->
+
+
+
+    <select id="findByLawyerId" resultType="LawyerEntity">
+        SELECT * FROM lawyer WHERE lawyer_id = #{lawyerId}
+    </select>
+
+
+
+
+    <!--    <select id="countByEmail" resultType="int">-->
+    <!--        SELECT COUNT(*) FROM client WHERE email = #{email}-->
+    <!--    </select>-->
+
+
+<!--    <insert id="insertLawyer">-->
+<!--        INSERT INTO lawyer (-->
+<!--            no, lawyer_id, pw_hash, profile, email, name, office_number, phone,-->
+<!--            zipcode, road_address, land_address, detail_address, point, consent,-->
+<!--            status, consult_price, card_front, card_back, office_name-->
+<!--        ) VALUES (-->
+<!--                     #{no}, #{lawyerId}, #{pwHash}, #{profile}, #{email}, #{name}, #{officeNumber}, #{phone},-->
+<!--                     #{zipcode}, #{roadAddress}, #{landAddress}, #{detailAddress}, #{point}, #{consent},-->
+<!--                     #{status}, #{consultPrice}, #{cardFront}, #{cardBack}, #{officeName}-->
+<!--                 )-->
+<!--    </insert>-->
+
+    <insert id="insertLawyer">
+        INSERT INTO lawyer (
+            no, lawyer_id, pw_hash, profile, email, name, office_number, phone,
+            zipcode, road_address, land_address, detail_address, point, consent,
+            status, consult_price, card_front, card_back, office_name,
+            lawyer_intro, intro_detail
+        ) VALUES (
+                     #{no}, #{lawyerId}, #{pwHash}, #{profile}, #{email}, #{name}, #{officeNumber}, #{phone},
+                     #{zipcode}, #{roadAddress}, #{landAddress}, #{detailAddress}, #{point}, #{consent},
+                     #{status}, #{consultPrice}, #{cardFront}, #{cardBack}, #{officeName},
+                     #{lawyerIntro}, #{introDetail}
+                 )
+    </insert>
+
+
+    <update id="updateLawyerInfo">
+        UPDATE lawyer
+        SET
+            office_number = #{officeNumber},
+            phone = #{phone},
+            detail_address = #{detailAddress}
+        WHERE lawyer_id = #{lawyerId}
+    </update>
+
+
+</mapper>

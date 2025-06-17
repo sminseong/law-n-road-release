@@ -73,13 +73,15 @@
             t.thumbnail_path,
             t.sales_count,
             t.description,
+
+            -- 변호사 정보
             l.name              AS lawyer_name,
             l.profile           AS profile,
             CONCAT_WS(' ', l.road_address, l.land_address, l.detail_address) AS full_address,
             l.office_number     AS office_number,
-
-            ''                  AS short_intro,
-            ''                  AS long_intro
+            l.office_name       AS lawyer_office_name,
+            l.lawyer_intro      AS short_intro,
+            l.intro_detail      AS long_intro
         FROM template t
                  LEFT JOIN category c ON t.category_no = c.no
                  LEFT JOIN lawyer   l ON t.user_no     = l.no
@@ -187,11 +189,21 @@
             e.content,
             e.var_json,
             e.ai_enabled,
-            t.created_at
+            t.created_at,
+
+            -- 변호사 정보
+            l.no              AS lawyer_no,
+            l.name            AS lawyer_name,
+            l.profile         AS lawyer_profile_img,
+            l.lawyer_intro    AS lawyer_short_intro,
+            l.office_name     AS lawyer_office_name,
+            CONCAT_WS(' ', l.road_address, l.land_address, l.detail_address) AS full_address,
+            l.office_number   AS lawyer_office_tel
+
         FROM template t
                  JOIN tmpl_editor_based e ON t.no = e.no
+                 JOIN lawyer l ON t.user_no = l.no
         WHERE t.no = #{templateNo}
-          AND t.is_deleted = 0
     </select>
 
     <!-- File 기반 템플릿 상세 조회 -->
@@ -205,11 +217,21 @@
             t.description,
             t.thumbnail_path,
             f.path_json,
-            t.created_at
+            t.created_at,
+
+            -- 변호사 정보
+            l.no              AS lawyer_no,
+            l.name            AS lawyer_name,
+            l.profile         AS lawyer_profile_img,
+            l.lawyer_intro    AS lawyer_short_intro,
+            l.office_name     AS lawyer_office_name,
+            CONCAT_WS(' ', l.road_address, l.land_address, l.detail_address) AS full_address,
+            l.office_number   AS lawyer_office_tel
+
         FROM template t
                  JOIN tmpl_file_based f ON t.no = f.no
+                 JOIN lawyer l ON t.user_no = l.no
         WHERE t.no = #{templateNo}
-          AND t.is_deleted = 0
     </select>
 
     <!-- 다운로드 상태로 변경 -->

@@ -22,10 +22,23 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024  // 10MB
 function handleFileChange(e) {
   const files = Array.from(e.target.files)
 
-  // 1) 크기 검사
+  // 1) 확장자 검사
+  const isPdf = file => {
+    const ext = file.name?.split('.').pop()?.toLowerCase()
+    return ext === 'pdf'
+  }
+
+  const pdfs = files.filter(isPdf)
+  const invalids = files.filter(f => !isPdf(f))
+  if (invalids.length) {
+    const names = invalids.map(f => f.name).join(', ')
+    alert(`❌ 다음 파일은 PDF가 아닙니다:\n${names}`)
+  }
+
+  // 2) 크기 검사
   const tooBig = []
   const ok     = []
-  files.forEach(file => {
+  pdfs.forEach(file => {
     if (file.size > MAX_FILE_SIZE) {
       tooBig.push(file)
     } else {
@@ -33,22 +46,19 @@ function handleFileChange(e) {
     }
   })
 
-  // 2) 10MB 초과 파일 경고
   if (tooBig.length) {
     const names = tooBig.map(f => f.name).join(', ')
     alert(`❌ 다음 파일들은 10MB를 초과했습니다:\n${names}`)
   }
 
-  // 3) 허용된 파일만 부모로 emit
+  // 3) emit
   if (ok.length) {
-    // 기존에 있던 파일 + 새로 허용된 파일
     emit('update:templateFiles', [
       ...props.templateFiles,
       ...ok
     ])
   }
 
-  // 4) 동일 파일 재선택 방지
   e.target.value = null
 }
 
@@ -66,10 +76,11 @@ const count = computed(() => props.templateFiles.length)
 <template>
   <div class="card p-3 mb-4">
     <span class="form-label fw-bold mb-2">템플릿 파일 업로드</span>
+    <small class="mb-3" >* PDF 파일만 업로드 가능하며, 최대 10페이지까지 지원됩니다.</small>
     <input
         type="file"
         class="form-control mb-3"
-        accept=".pdf,.doc,.docx"
+        accept=".pdf"
         multiple
         @change="handleFileChange"
     />

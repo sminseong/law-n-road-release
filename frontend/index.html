@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8"/>
+    <meta charset="UTF-8" />
     <title>로앤로드 - 도로 위 모든 사건을 다루다</title>
 
     <!-- 메타 정보 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta name="description" content="라이브로 쉽고 편하게, 도로 위 모든 사건을 다룹니다."/>
-    <meta name="author" content="도로의 판정단"/>
-    <link rel="icon" type="image/x-icon" href="/LR_favicon.ico"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="라이브로 쉽고 편하게, 도로 위 모든 사건을 다룹니다." />
+    <meta name="author" content="도로의 판정단" />
+    <link rel="icon" type="image/x-icon" href="/LR_favicon.ico" />
 
     <!-- 외부 스타일 -->
-    <link rel="stylesheet" href="/libs/slick-carousel/slick/slick.css"/>
-    <link rel="stylesheet" href="/libs/slick-carousel/slick/slick-theme.css"/>
-    <link rel="stylesheet" href="/libs/tiny-slider/tiny-slider.css"/>
-    <link rel="stylesheet" href="/libs/bootstrap-icons/font/bootstrap-icons.css"/>
-    <link rel="stylesheet" href="/libs/feather-webfont/feather-icons.css"/>
-    <link rel="stylesheet" href="/libs/simplebar/simplebar.min.css"/>
+    <link rel="stylesheet" href="/libs/slick-carousel/slick/slick.css" />
+    <link rel="stylesheet" href="/libs/slick-carousel/slick/slick-theme.css" />
+    <link rel="stylesheet" href="/libs/tiny-slider/tiny-slider.css" />
+    <link rel="stylesheet" href="/libs/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/libs/feather-webfont/feather-icons.css" />
+    <link rel="stylesheet" href="/libs/simplebar/simplebar.min.css" />
 
     <script src="https://js.tosspayments.com/v1"></script>
 
@@ -24,11 +24,9 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-M8S4MT3EYG"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
-
         function gtag() {
             dataLayer.push(arguments);
         }
-
         gtag("js", new Date());
         gtag("config", "G-M8S4MT3EYG");
     </script>
@@ -40,7 +38,10 @@
     />
 
     <!-- 메인 테마 스타일 -->
-    <link rel="stylesheet" href="/assets/styles/theme.min.css"/>
+    <link rel="stylesheet" href="/assets/styles/theme.min.css" />
+
+    <!--  Daum 우편번호 API 추가 -->
+    <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 
 <body>
@@ -54,8 +55,7 @@
 <script src="/libs/slick-carousel/slick/slick.min.js"></script>
 <script src="/libs/tiny-slider/min/tiny-slider.js"></script>
 
-
-<!-- 커스텀 JS (필요한 것만 활성화) -->
+<!-- 커스텀 JS -->
 <script src="/js/theme.min.js"></script>
 <script src="/js/vendors/countdown.js"></script>
 <script src="/js/vendors/slick-slider.js"></script>

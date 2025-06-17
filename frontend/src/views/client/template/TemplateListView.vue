@@ -48,7 +48,7 @@ async function fetchPage() {
   }
 
   try {
-    const res = await http.get('/api/client/templates', query)
+    const res = await http.get('/api/public/templates', query)
 
     // 응답 형태: { templates: [...], totalPages: n, totalCount: m }
     pageItems.value = res.data.templates.map(item => ({

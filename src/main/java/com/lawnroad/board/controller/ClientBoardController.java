@@ -8,6 +8,7 @@ import com.lawnroad.board.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -47,7 +48,7 @@ public class ClientBoardController {
 
         return ResponseEntity.ok(resp); // 클라이언트에게 200 OK와 함께 응답 반환
     }
-    //전체 게시글 수 조회
+ //   전체 게시글 수 조회
     @GetMapping("/count") // GET /api/client/qna/count
     public ResponseEntity<Integer> getBoardCount() {
         // 단순 count 조회 결과 반환
@@ -56,6 +57,7 @@ public class ClientBoardController {
 
     //게시글 등록
     @PostMapping
+    //@PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<String> register(@RequestBody BoardCreateDto dto) {
         boardService.register(dto);
         return ResponseEntity.ok("게시글이 성공적으로 등록되었습니다.");

@@ -48,6 +48,18 @@ const submitLogin = async () => {
     localStorage.setItem('accountType', tab.value)
     localStorage.setItem('name', name)
     localStorage.setItem('nickname', nickname)
+    console.log('🚨🚨🚨 localStorage 저장 완료! 🚨🚨🚨')
+    console.log('TOKEN:', localStorage.getItem('token'))
+    console.log('ACCOUNT TYPE:', localStorage.getItem('accountType'))
+
+    // localStorage 저장 확인 로그
+    console.log('💾 localStorage 저장된 데이터:', {
+      token: localStorage.getItem('token'),
+      refreshToken: localStorage.getItem('refreshToken'),
+      accountType: localStorage.getItem('accountType'),
+      name: localStorage.getItem('name'),
+      nickname: localStorage.getItem('nickname')
+    })
 
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`
 

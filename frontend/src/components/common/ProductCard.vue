@@ -29,7 +29,7 @@ const handleAddToCart = async (e) => {
   }
 
   try {
-    await http.post('/api/cart', {
+    await http.post('/api/client/cart', {
       tmplNo: props.no
     })
 
