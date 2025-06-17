@@ -125,17 +125,13 @@ public class ClientService {
         return true;
     }
 
+//    public void updateNicknameByClientId(String clientId, String nickname) {
+//        clientMapper.updateNicknameByClientId(clientId, nickname);
+//    }
 
-
-
-
-
-
-
-
-
-
-
+    public void updateClientProfile(String clientId, String nickname, String email, String phone) {
+        clientMapper.updateClientProfile(clientId, nickname, email, phone);
+    }
 
 
 }

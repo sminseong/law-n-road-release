@@ -8,7 +8,6 @@ import lombok.Setter;
 @Setter
 public class LawyerEntity {
 
-
     private Long no;
     private String lawyerId;
     private String pwHash;
@@ -28,5 +27,7 @@ public class LawyerEntity {
     private String cardFront;
     private String cardBack;
     private String officeName;
+    private String lawyerIntro;
+    private String introDetail;
 }
 

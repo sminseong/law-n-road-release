@@ -62,7 +62,7 @@ const findId = async () => {
   if (!isEmailVerified.value) return alert('이메일 인증을 먼저 완료하세요.')
 
   try {
-    const res = await axios.post('/api/auth/find-id', {
+    const res = await axios.post('/api/find-id', {
       fullName: nameForId.value,
       email: email.value
     })
@@ -74,6 +74,7 @@ const findId = async () => {
       foundId.value = `변호사 아이디: ${lawyerId}`
     } else {
       foundId.value = null
+      console.log(foundId.value)
       alert('❌ 일치하는 계정을 찾을 수 없습니다.')
     }
   } catch (err) {
@@ -94,7 +95,7 @@ const resetPassword = async () => {
   }
 
   try {
-    await axios.post('/api/auth/reset-password', {
+    await axios.post('/api/reset-password', {
       userId: clientId.value,
       fullName: nameForPw.value,
       email: email.value,

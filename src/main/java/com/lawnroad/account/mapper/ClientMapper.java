@@ -34,4 +34,13 @@ public interface ClientMapper {
 
     int countByEmail(@Param("email") String email);
 
+    //void updateNicknameByClientId(@Param("clientId") String clientId, @Param("nickname") String nickname);
+
+    void updateClientProfile(@Param("clientId") String clientId,
+                             @Param("nickname") String nickname,
+                             @Param("email") String email,
+                             @Param("phone") String phone);
+
+
+
 }
