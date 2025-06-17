@@ -50,14 +50,105 @@ function toggleConsultation() {
   console.log('상담 관련 알림 수신 여부:', notifyConsultEnabled.value ? '수신함' : '수신 안 함')
 }
 
-// 알림톡 테스트 함수들 생략 없이 그대로 포함
-async function testBroadcastStart() { /* 생략 */ }
-async function testVerificationCode() { /* 생략 */ }
-async function testClientReservationStarted() { /* 생략 */ }
-async function testLawyerReservationStarted() { /* 생략 */ }
-async function testClientReservationCreated() { /* 생략 */ }
-async function testLawyerReservationCreated() { /* 생략 */ }
-async function testLawyerReservationCanceled() { /* 생략 */ }
+// 각 알림톡 테스트 함수
+async function testBroadcastStart() {
+  try {
+    await sendBroadcastStartAlimtalk({
+      to: "01081272572",
+      name: "박건희",
+      title: "음주운전 뺑소니 사고",
+      start: "22:00"
+    });
+    alert(":흰색_확인_표시: 방송 시작 알림톡 발송 완료");
+  } catch (e) {
+    alert(":x: 방송 시작 알림 실패");
+  }
+}
+async function testVerificationCode() {
+  try {
+    await sendVerificationCodeAlimtalk({
+      to: "01081272572",
+      code: "928374"
+    });
+    alert(":흰색_확인_표시: 인증번호 발송 완료");
+  } catch (e) {
+    alert(":x: 인증번호 발송 실패");
+  }
+}
+async function testClientReservationStarted() {
+  try {
+    await sendClientReservationStartedAlimtalk({
+      to: "01081272572",
+      client: "홍길동",
+      lawyer: "박건희",
+      datetime: "2025-06-05 15:00"
+    });
+    alert(":흰색_확인_표시: 상담 임박(의뢰인) 발송 완료");
+  } catch (e) {
+    alert(":x: 상담 임박(의뢰인) 실패");
+  }
+}
+async function testLawyerReservationStarted() {
+  try {
+    await sendLawyerReservationStartedAlimtalk({
+      to: "01081272572",
+      lawyer: "박건희",
+      client: "홍길동",
+      datetime: "2025-06-05 15:00",
+      summary: "음주운전 관련 문의"
+    });
+    alert(":흰색_확인_표시: 상담 임박(변호사) 발송 완료");
+  } catch (e) {
+    alert(":x: 상담 임박(변호사) 실패");
+  }
+}
+async function testClientReservationCreated() {
+  try {
+    await sendClientReservationCreatedAlimtalk({
+      to: "01081272572",
+      client: "홍길동",
+      lawyer: "박건희",
+      datetime: "2025-06-05 15:00",
+      summary: "음주운전 벌금 문의"
+    });
+    alert(":흰색_확인_표시: 상담 신청 완료(의뢰인) 발송 완료");
+  } catch (e) {
+    alert(":x: 상담 신청(의뢰인) 실패");
+  }
+}
+async function testLawyerReservationCreated() {
+  try {
+    await sendLawyerReservationCreatedAlimtalk({
+      to: "01081272572",
+      lawyer: "박건희",
+      client: "홍길동",
+      datetime: "2025-06-05 15:00",
+      summary: "음주운전 벌금 문의"
+    });
+    alert(":흰색_확인_표시: 상담 신청 완료(변호사) 발송 완료");
+  } catch (e) {
+    alert(":x: 상담 신청(변호사) 실패");
+  }
+}
+async function testLawyerReservationCanceled() {
+  try {
+    await sendLawyerReservationCanceledAlimtalk({
+      to: "01081272572",
+      lawyer: "박건희",
+      client: "홍길동",
+      datetime: "2025-06-05 15:00"
+    });
+    alert(":흰색_확인_표시: 상담 취소(변호사) 발송 완료");
+  } catch (e) {
+    alert(":x: 상담 취소(변호사) 실패");
+  }
+}
+
+
+
+
+
+
 </script>
 
 <template>
