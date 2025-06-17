@@ -61,8 +61,6 @@
     console.log('nickname:', localStorage.getItem('nickname'))
   }
 
-
-
   // 메인 베너
   const mainBanners = [
     {
