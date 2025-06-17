@@ -47,14 +47,14 @@ public class test {
         autoReplyMapper.insertAutoReply(dto);
     }
 
-    @Test
-    void findByAutoReplyLawyerTest() {
-        List<AutoReplyDTO> list = autoReplyMapper.findByAutoReply(3);
-        for (AutoReplyDTO autoReplyDTO : list) {
-            System.out.println(autoReplyDTO);
-
-        }
-    }
+//    @Test
+//    void findByAutoReplyLawyerTest() {
+//        List<AutoReplyDTO> list = autoReplyMapper.findByAutoReply(3L);
+//        for (AutoReplyDTO autoReplyDTO : list) {
+//            System.out.println(autoReplyDTO);
+//
+//        }
+//    }
 
 
     @Test
