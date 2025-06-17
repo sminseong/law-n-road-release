@@ -121,11 +121,16 @@ public class ClientTemplateController {
       @PathVariable Long templateNo,
       @RequestParam String type
   ) {
+    System.out.println("요청 templateNo=" + templateNo + ", type=" + type);
     if ("EDITOR".equalsIgnoreCase(type)) {
       ClientEditorTemplateDetailDto dto = clientTemplateService.getEditorTemplateDetail(templateNo);
+      
+      System.out.println("--------------- editor DTO=" + dto);
       return ResponseEntity.ok(dto);
     } else if ("FILE".equalsIgnoreCase(type)) {
       ClientFileTemplateDetailDto dto = clientTemplateService.getFileTemplateDetail(templateNo);
+      
+      System.out.println("------------------ file DTO=" + dto);
       return ResponseEntity.ok(dto);
     } else {
       return ResponseEntity.badRequest().body("잘못된 템플릿 유형입니다: " + type);

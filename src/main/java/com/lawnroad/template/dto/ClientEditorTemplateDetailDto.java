@@ -39,4 +39,13 @@ public class ClientEditorTemplateDetailDto {
   
   // 생성 일시
   private LocalDateTime createdAt;
+  
+  // 변호사 정보
+  private Long lawyerNo;              // l.no → lawyer_no
+  private String lawyerName;          // l.name → lawyer_name
+  private String lawyerProfileImg;    // l.profile → lawyer_profile_img
+  private String lawyerShortIntro;    // l.lawyer_intro → lawyer_short_intro
+  private String lawyerOfficeName;    // l.office_name → lawyer_office_name
+  private String fullAddress;         // CONCAT_WS → full_address
+  private String lawyerOfficeTel;     // l.office_number → lawyer_office_tel
 }
