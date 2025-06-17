@@ -21,6 +21,8 @@ const detailAddress = ref('')
 const agreeTerms = ref(false)
 const authCode = ref('')
 const isEmailVerified = ref(false)
+const lawyerIntro = ref('')
+const introDetail = ref('')
 
 // ✅ 주소 검색 팝업 함수
 function openPostcodePopup() {
@@ -130,7 +132,9 @@ async function onSubmit() {
       landAddress: landAddress.value,
       detailAddress: detailAddress.value,
       consent: 1,
-      type: 'LAWYER'
+      type: 'LAWYER',
+      lawyerIntro: lawyerIntro.value,
+      introDetail: introDetail.value
     }
 
     await axios.post('/api/auth/lawyer_signup', payload)
@@ -180,6 +184,9 @@ async function onSubmit() {
       <input v-model="roadAddress" class="form-control mb-2" placeholder="도로명 주소" readonly />
       <input v-model="landAddress" class="form-control mb-2" placeholder="지번 주소" readonly />
       <input v-model="detailAddress" class="form-control mb-2" placeholder="상세 주소" />
+      <textarea v-model="lawyerIntro" class="form-control mb-2" placeholder="한 줄 소개 (ex: 형사 전문 변호사입니다)" rows="2" />
+      <textarea v-model="introDetail" class="form-control mb-3" placeholder="상세 소개 (ex: 경력, 강점, 수상 이력 등)" rows="4" />
+
 
       <div class="form-check mb-3">
         <input class="form-check-input" type="checkbox" v-model="agreeTerms" id="agree" />

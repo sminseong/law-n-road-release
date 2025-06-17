@@ -58,8 +58,8 @@ public class SecurityConfig {
 
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/mail/**","/api/auth/lawyer_signup" ,"/uploads/**").permitAll()
-                        .requestMatchers("/api/client/**").hasRole("CLIENT")
+                        .requestMatchers("/api/auth/**","/api/public/**","/api/find-id","/api/reset-password" ,"/mail/**","/api/user/**","/api/auth/nickname" ,"/uploads/**").permitAll()
+                        .requestMatchers("/api/client/**").hasAuthority("ROLE_CLIENT")
                         .requestMatchers("/api/lawyer/**").hasRole("LAWYER")
                         .anyRequest().authenticated()
                 )

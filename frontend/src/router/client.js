@@ -63,7 +63,17 @@ export default [
         path: '/client/template/orders/detail/:tmplNo', // 마이페에지 -> 주문상세내역 -> 단일 상품 조회
         name: 'TmplHistoryDetailOneView',
         component: () => import('@/views/client/template/TmplHistoryDetailOneView.vue')
+    },
+
+
+    // ---------- 회원 ----------
+    {
+        path: '/client/profile/edit',
+        name: 'ClientProfileEdit',
+        component: () => import('@/views/client/ClientProfileEditView.vue')
     }
+
+
 
     // ---------- 광고 ----------
 ]
