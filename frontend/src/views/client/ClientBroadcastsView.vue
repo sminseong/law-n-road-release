@@ -273,7 +273,8 @@ export default defineComponent({
       }
       stompClient.value.publish({
         destination: "/app/chat.sendMessage",
-        body: JSON.stringify({ broadcastNo: broadcastNo.value, message: trimmed }),
+        body: JSON.stringify({ broadcastNo: broadcastNo.value,
+            message: trimmed }),
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -544,6 +545,11 @@ export default defineComponent({
                  class="w-100 text-center"
                  style="color: #435879; font-size: 0.9rem;">
               {{ msg.message }}
+            </div>
+            <div v-else-if="msg.type === 'AUTO_REPLY'"
+                 class="text-primary fw-bold"
+                 style="font-size: 1.05rem;">
+             {{broadcastInfo.lawyerName}} 변호사: {{ msg.message }}
             </div>
             <div v-else style="font-size: 1.0rem; font-weight: bold; display:flex; align-items:center;">
               <!-- 닉네임 드롭다운 & 랜덤 색상 -->

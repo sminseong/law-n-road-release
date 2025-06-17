@@ -6,12 +6,14 @@ import com.lawnroad.broadcast.chat.dto.PreQuestionDTO;
 import com.lawnroad.broadcast.chat.dto.PreQuestionItem;
 import com.lawnroad.broadcast.chat.mapper.AutoReplyMapper;
 import com.lawnroad.broadcast.chat.mapper.PreQuestionMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 public class test {
@@ -75,5 +77,21 @@ public class test {
        preQuestionMapper.deletePreQuestionByUser(scheduleNo, questionNo, userNo);
 
     }
+
+    @Test
+    @DisplayName("findReplyMessage - broadcastNo와 keyword로 자동응답 메시지 조회")
+    void testFindReplyMessage() {
+        // given: 테스트용 broadcastNo와 keyword
+        Long broadcastNo = 30L; // 실제 존재하는 방송 번호로 바꿔주세요!
+        String keyword = "상담"; // 실제 DB에 저장된 keyword로 바꿔주세요!
+
+        // when
+        String result = autoReplyMapper.findReplyMessage(broadcastNo, keyword);
+
+        // then
+        assertThat(result).isNotNull();
+        System.out.println("자동응답 메시지 결과: " + result);
+    }
+
 
 }

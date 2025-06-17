@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ChatDTO {
 
     /** PK */
@@ -16,6 +17,7 @@ public class ChatDTO {
 
     /** 방송(채팅룸) 번호 (broadcast_no) */
     private Long broadcastNo;
+    private Long scheduleNo;
 
     /** 채팅 보낸 사람 닉네임 */
     private String nickname;
