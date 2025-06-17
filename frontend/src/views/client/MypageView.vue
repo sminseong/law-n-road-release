@@ -34,6 +34,8 @@ onMounted(async () => {
   }
 
   try {
+
+    const userNo = 6
     const res = await HttpRequester.get(`/api/client/${userNo}/reservations/counts`)
     requestedCount.value = res.data.requestedCount
     doneCount.value = res.data.doneCount
@@ -219,13 +221,13 @@ async function testLawyerReservationCanceled() {
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="text-muted small">카카오톡 방송 키워드 알림</span>
             <div class="form-check form-switch m-0">
-              <input class="form-check-input" type="checkbox" v-model="notifyKeywordEnabled" @change="toggleKeyword" />
+              <input class="form-check-input" type="checkbox" no="keywordSwitch"  v-model="notifyKeywordEnabled" @change="toggleKeyword" />
             </div>
           </div>
           <div class="d-flex justify-content-between align-items-center">
             <span class="text-muted small">카카오톡 상담 관련 알림</span>
             <div class="form-check form-switch m-0">
-              <input class="form-check-input" type="checkbox" v-model="notifyConsultEnabled" @change="toggleConsultation" />
+              <input class="form-check-input" type="checkbox" no="consultationSwitch" v-model="notifyConsultEnabled" @change="toggleConsultation" />
             </div>
           </div>
           <hr />
@@ -278,6 +280,10 @@ async function testLawyerReservationCanceled() {
 .form-check-input {
   width: 2rem;
   height: 1rem;
+}
+
+.btn {
+  /* 전역 버튼 스타일 사용 */
 }
 
 .badge {
