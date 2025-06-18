@@ -4,7 +4,7 @@ import { onMounted, ref } from "vue";
 import axios from "axios";
 import { useRoute } from "vue-router";
 
-const nickname = ref('홍길동');
+const nickname = ref('');
 const inputContent = ref('');
 const preQuestion = ref({});
 const route = useRoute();
@@ -21,10 +21,24 @@ onMounted(async () => {
   }
 
   const preQRes = await axios.get(`/api/broadcasts/schedule/${scheduleNo}/preQuestion`);
-  preQuestion.value = preQRes.data;
+  const data = preQRes.data;
 
+  // 실제 값 콘솔로 찍어보기
+  console.log("preQuestions 실제값:", data.preQuestions);
 
+  if (Array.isArray(data.preQuestions)) {
+    data.preQuestions = data.preQuestions.filter(
+        q =>
+            q && typeof q === 'object' && !Array.isArray(q)
+            && Object.keys(q).length > 0
+            && q.nickname
+            && q.preQuestionContent
+    );
+  }
+
+  preQuestion.value = data;
 });
+
 
 const submitQuestion = async () => {
   if (!inputContent.value.trim()) {
@@ -69,10 +83,9 @@ const deleteQuestion = async (q) => {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         }
     );
+    location.reload();
 
-    // 삭제 후 목록 갱신
-    const preQRes = await axios.get(`/api/broadcasts/schedule/${scheduleNo}/preQuestion`);
-    preQuestion.value = preQRes.data;
+
   } catch (e) {
     alert('삭제에 실패했습니다.');
   }
@@ -135,30 +148,38 @@ function getTextColorClass(index) {
             <div class="mb-3">
               <span class="fs-4 fw-bold text-dark">사전 질문 등록</span>
             </div>
-
             <!-- 사전 질문 목록 -->
-            <div
-                class="flex-grow-1 overflow-auto"
-                style="min-height: 0; max-height: 900px;"
-            >
+            <!-- 사전 질문 목록 -->
+            <div class="flex-grow-1 overflow-auto" style="min-height: 0; max-height: 900px;">
+              <!-- 사전질문이 있을 때만 목록 렌더링 -->
               <div
-                  v-for="(q, index) in preQuestion.preQuestions"
-                  :key="index"
-                  class="rounded-3 p-3 mb-2"
-                  :class="getQuestionStyle(index)">
-                <div class="d-flex align-items-center justify-content-between">
-                  <span class="fw-bold" :class="getTextColorClass(index)">[{{ q.nickname }}]</span>
-                  <button
-                      v-if="q.userNo === myUserNo"
-                      class="btn btn-link btn-sm text-danger px-2"
-                      @click="deleteQuestion(q)"
-                      style="text-decoration: underline;">
-                    삭제
-                  </button>
+                  v-if="preQuestion.preQuestions && preQuestion.preQuestions.length > 0"
+              >
+                <div
+                    v-for="(q, index) in preQuestion.preQuestions"
+                    :key="index"
+                    class="rounded-3 p-3 mb-2"
+                    :class="getQuestionStyle(index)">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span class="fw-bold" :class="getTextColorClass(index)">[{{ q.nickname }}]</span>
+                    <button
+                        v-if="q.userNo === myUserNo"
+                        class="btn btn-link btn-sm text-danger px-2"
+                        @click="deleteQuestion(q)"
+                        style="text-decoration: underline;">
+                      삭제
+                    </button>
+                  </div>
+                  <div>{{ q.preQuestionContent }}</div>
                 </div>
-                <div>{{ q.preQuestionContent }}</div>
               </div>
+              <!-- 사전질문이 하나도 없으면 아무것도 표시 X (아래 주석 참고) -->
+              <div v-else class="text-muted text-center py-4">
+                아직 등록된 사전질문이 없습니다.
+              </div>
+
             </div>
+
 
             <!-- 질문 입력창 -->
             <form class="row g-2 align-items-center mt-auto"

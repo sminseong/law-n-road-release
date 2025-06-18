@@ -24,7 +24,7 @@
             <result property="scheduleNo" column="schedule_no"/>
             <result property="nickname" column="nickname"/>
             <result property="preQuestionContent" column="pre_question_content"/>
-            <result property="userNo" column="user_no"/> <!-- ⭐ 추가 -->
+            <result property="userNo" column="user_no"/>
         </collection>
     </resultMap>
 
