@@ -6,9 +6,9 @@ export default [
         component: () => import('@/views/lawyer/DashboardView.vue')
     },
     {
-        path: '/lawyer/profile',
+        path: '/lawyer/:lawyerNo/homepage',
         name: 'LawyerProfile',
-        component: () => import('@/views/lawyer/ProfileSettingView.vue')
+        component: () => import('@/views/lawyer/LawyerHomePageView.vue')
     },
 
     // ---------- QNA ----------

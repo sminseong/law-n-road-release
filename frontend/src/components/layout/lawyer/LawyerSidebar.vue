@@ -1,15 +1,45 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
-import { ref, watch } from 'vue'
+import {watch, computed, onMounted} from 'vue'
+import { useLawyerStore } from '@/stores/lawyer'
+
 const router = useRouter()
 const route = useRoute()
+
 const emit = defineEmits(['update:title'])
 
-const lawyer = {
-  // 실제 적용 시에는 로그인 완료 후 API로 받아오는 값으로 대체하면 됨
-  name: '김수영',
-  profileImage: '/img/profiles/kim.png',
+function parseJwt(token) {
+  try {
+    const base64 = token.split('.')[1]
+    const json = decodeURIComponent(
+        atob(base64)
+            .split('')
+            .map((c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'))
+            .join('')
+    )
+    return JSON.parse(json)
+  } catch (e) {
+    console.error('❌ 토큰 파싱 실패', e)
+    return null
+  }
 }
+
+const token = localStorage.getItem('token')
+const payload = parseJwt(token)
+// console.log(payload)
+const role = payload.role
+const lawyerNo = payload.no
+const store = useLawyerStore()
+const lawyerInfo = computed(() => store.lawyerInfo)
+
+onMounted(async () => {
+  if (!token || role !== 'LAWYER') {
+    alert('변호사 계정으로 로그인 후 이용해 주세요.')
+    return router.push('/login')
+  }
+
+  await store.fetchLawyerInfo(lawyerNo)
+})
 
 const menuItems = [
   { label: '홈 대시보드', icon: 'bi-house-door', path: '/lawyer' },
@@ -55,10 +85,10 @@ watch(
 
       <!-- 프로필 -->
       <div class="profile-box text-center mb-5 mt-3">
-        <img :src="lawyer.profileImage" alt="프로필" class="profile-img" />
-        <div class="profile-name mt-2 fw-semibold">{{ lawyer.name }} 변호사</div>
+        <img :src="lawyerInfo.profileImagePath" alt="프로필" class="profile-img" />
+        <div class="profile-name mt-2 fw-semibold">{{ lawyerInfo.name }} 변호사</div>
         <button class="btn btn-sm btn-outline-light mt-2"
-                @click="go('/lawyer/profile', '계정 설정')">
+                @click="go(`/lawyer/${lawyerNo}/homepage`, '내 홈페이지 보기')">
           내 홈페이지 보기
         </button>
       </div>
