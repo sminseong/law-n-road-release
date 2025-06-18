@@ -31,7 +31,6 @@ public class ScheduleLawyerController {
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> registerSchedule(
             @RequestHeader("Authorization") String authHeader,
-            //@RequestParam("userNo") Long userNo,
             @RequestParam("categoryNo") Long categoryNo,
             @RequestParam("name") String name,
             @RequestParam("content") String content,
@@ -116,16 +115,32 @@ public class ScheduleLawyerController {
             @RequestParam("name") String name,
             @RequestParam("content") String content,
             @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
-            @RequestParam(value = "keywords", required = false) String keywordsJson
+            @RequestParam(value = "keywords", required = false) String keywordsJson,
+            @RequestHeader("Authorization") String authHeader // 👈 토큰 받아오기
     ) {
-        String path = null;
-        if (thumbnail != null && !thumbnail.isEmpty()) {
-            path = "http://localhost:8080" + fileStorageUtil.save(thumbnail, "uploads/images", null);
-        } else {
-            path = scheduleService.findDetailByScheduleNo(scheduleNo).getThumbnailPath();
+        // 사용자 인증
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtTokenUtil.parseToken(token);
+        Long userNo = claims.get("no", Long.class);
+
+        // 스케줄 소유자 확인
+        ScheduleDetailDto detail = scheduleService.findDetailByScheduleNo(scheduleNo);
+        if (detail == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("수정할 스케줄이 존재하지 않습니다.");
+        }
+        if (!detail.getUserNo().equals(userNo)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("본인의 스케줄만 수정할 수 있습니다.");
         }
 
-        // keywords JSON → List<String>
+        // 썸네일 처리
+        String path = detail.getThumbnailPath(); // 기본값
+        if (thumbnail != null && !thumbnail.isEmpty()) {
+            path = "http://localhost:8080" + fileStorageUtil.save(thumbnail, "uploads/images", null);
+        }
+
+        // 키워드 처리
         List<String> keywords = null;
         if (keywordsJson != null && !keywordsJson.isBlank()) {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -136,6 +151,7 @@ public class ScheduleLawyerController {
             }
         }
 
+        // DTO 생성 및 서비스 호출
         ScheduleUpdateDto dto = ScheduleUpdateDto.builder()
                 .scheduleNo(scheduleNo)
                 .categoryNo(categoryNo)
@@ -150,12 +166,31 @@ public class ScheduleLawyerController {
     }
 
     @DeleteMapping("/delete/{scheduleNo}")
-    public ResponseEntity<String> deleteSchedule(@PathVariable Long scheduleNo) {
-        int deletedCount = scheduleService.deleteScheduleByNo(scheduleNo);
-        if (deletedCount == 0) {
+    public ResponseEntity<String> deleteSchedule(
+            @PathVariable Long scheduleNo,
+            @RequestHeader("Authorization") String authHeader) {
+
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtTokenUtil.parseToken(token);
+        Long userNo = claims.get("no", Long.class);
+
+        // 소유자 확인
+        ScheduleDetailDto detail = scheduleService.findDetailByScheduleNo(scheduleNo);
+        if (detail == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("삭제할 스케줄이 존재하지 않습니다.");
         }
+        if (!detail.getUserNo().equals(userNo)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("본인의 스케줄만 삭제할 수 있습니다.");
+        }
+
+        int deletedCount = scheduleService.deleteScheduleByNo(scheduleNo);
+        if (deletedCount == 0) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("삭제에 실패했습니다.");
+        }
+
         return ResponseEntity.ok("삭제 완료");
     }
 }

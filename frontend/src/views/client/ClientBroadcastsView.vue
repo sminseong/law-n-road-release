@@ -135,11 +135,15 @@ export default defineComponent({
       }
 
       try {
+        const jwtToken = localStorage.getItem("authToken");
         await axios.post('/api/client/broadcast/report', {
           broadcastNo: broadcastNo.value,  // 이미 정의되어 있어야 함
-          userNo: 3,     // 로그인된 사용자 ID
           reasonCode: reportReasonCode.value,
           detailReason: reportDetail.value
+        },{
+          headers: {
+            Authorization: `Bearer ${jwtToken}` // ✅ 여기만 넘김
+          }
         });
 
         alert('신고가 정상적으로 접수되었습니다.');

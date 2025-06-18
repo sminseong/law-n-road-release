@@ -186,10 +186,6 @@ const deleteNightbotMessage = async (no) => {
   }
 };
 
-
-function goToLawyerLive() {
-  window.location.href = 'http://localhost:5173/lawyer/broadcasts/live?scheduleNo=1';
-}
 </script>
 
 
