@@ -188,8 +188,8 @@ export default defineComponent({
     const message = ref("");
     const messages = ref([]);
     const messageContainer = ref(null);
-
     const nicknameColors = ref({});
+    const myNo = ref(null);
 
     //드롭다운/신고 모달 상태
     const dropdownIdx = ref(null);
@@ -218,6 +218,19 @@ export default defineComponent({
       return nicknameColors.value[nick];
     }
 
+    async function fetchMyNo() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("로그인이 필요합니다!");
+        return false;
+      }
+      const res = await axios.get("/api/client/my-no", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      myNo.value = res.data;
+      return true;
+    }
+
     // STOMP 연결 및 입장 메시지 전송
     const connect = () => {
       const token = localStorage.getItem('token');
@@ -225,6 +238,8 @@ export default defineComponent({
         alert("로그인이 필요합니다!");
         return;
       }
+      fetchMyNo().then((ok) => {
+        if (!ok) return;
       stompClient.value = new Client({
         webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
         reconnectDelay: 5000,
@@ -260,6 +275,7 @@ export default defineComponent({
         },
       });
       stompClient.value.activate();
+      });
     };
 
     // 채팅 메시지 전송 (type: "CHAT"만 전달)
@@ -367,12 +383,11 @@ export default defineComponent({
       reportDetail,
       reportReasonOptions,
       submitReport,
+      myNo,
     };
   }
 });
 </script>
-
-
 <template>
   <ClientFrame>
     <div class="position-relative w-100 vh-100">
@@ -526,6 +541,10 @@ export default defineComponent({
 
 
 
+
+
+
+
       <!-- 채팅 영역 -->
       <div class="position-absolute border rounded shadow p-4 d-flex flex-column bg-white"
            style="width: 400px; height: 700px; top: 2rem; right: 2rem;">
@@ -533,7 +552,6 @@ export default defineComponent({
         <!-- 채팅 상단 제목 및 아이콘 -->
         <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
           <div class="fw-bold fs-5">채팅</div>
-
         </div>
 
         <!-- 메시지 출력 -->
@@ -554,19 +572,20 @@ export default defineComponent({
             <div v-else style="font-size: 1.0rem; font-weight: bold; display:flex; align-items:center;">
               <!-- 닉네임 드롭다운 & 랜덤 색상 -->
               <span
-                  @click.stop="openDropdown(index, msg)"
-                  :style="{
-                    color: getNicknameColor(msg.nickname),
-                    cursor: 'pointer',
-                    userSelect: 'text',
-                    position: 'relative',
-                    fontWeight: 'bold'
-                  }">
-                {{ msg.nickname }}
-                <span
-                    v-if="dropdownIdx === index"
-                    class="nickname-dropdown"
-                    style="position:absolute;top:120%;left:0;z-index:10000;">
+                  @click.stop="Number(msg.no) !== Number(myNo) && openDropdown(index, msg)"
+              :style="{
+              color: getNicknameColor(msg.nickname),
+              cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
+              userSelect: 'text',
+              position: 'relative',
+              fontWeight: 'bold'
+              }"
+              >
+              {{ msg.nickname }}
+              <span
+                  v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
+                  class="nickname-dropdown"
+                  style="position:absolute;top:120%;left:0;z-index:10000;">
                   <ul class="dropdown-custom-menu">
                     <li class="menu-report" @click.stop="onReportClick">🚨 메시지 신고 🚨</li>
                   </ul>
