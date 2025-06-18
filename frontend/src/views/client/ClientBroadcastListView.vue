@@ -2,7 +2,6 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
-
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 
 const router = useRouter()
@@ -53,21 +52,30 @@ onMounted(() => {
               @mouseenter="hoveredCard = item.broadcastNo"
               @mouseleave="hoveredCard = null"
           >
-            <!-- 썸네일 + LIVE 뱃지 -->
+            <!-- 썸네일 + 뱃지 -->
             <div class="position-relative rounded-top overflow-hidden" style="aspect-ratio: 16 / 9;">
               <img
                   :src="item.thumbnailPath || '/images/default-thumbnail.jpg'"
                   class="w-100 h-100 object-fit-cover"
                   alt="썸네일"
               />
-              <span
-                  class="position-absolute text-white fw-bold px-2 py-1 rounded-pill small d-flex align-items-center gap-1 live-badge"
-                  style="top: 0.5rem; left: 0.75rem; font-size: 0.75rem; z-index: 1;"
-              >
-                <span class="blink">🔴</span> LIVE
-              </span>
 
-              <!-- 방송 시작 시간 (v-show로 페이드 인 효과) -->
+              <!-- LIVE 뱃지 -->
+              <div class="position-absolute d-flex align-items-center gap-2" style="top: 0.5rem; left: 0.75rem; z-index: 1;">
+                <span class="text-white fw-bold px-2 py-1 rounded-pill small d-flex align-items-center gap-1 live-badge">
+                  <span class="blink">🔴</span> LIVE
+                </span>
+              </div>
+
+              <!-- 시청자 수 뱃지 (hover 시 표시) -->
+              <div
+                  class="position-absolute top-0 end-0 me-2 mt-2 viewer-count-badge"
+                  :class="{ 'visible': hoveredCard === item.broadcastNo }"
+              >
+                 {{ item.viewerCount }}명 시청 중
+              </div>
+
+              <!-- 방송 시작 시간 (hover 시 표시) -->
               <div
                   class="position-absolute bottom-0 start-0 w-100 text-white text-center py-1 small start-time-label"
                   :class="{ 'visible': hoveredCard === item.broadcastNo }"
@@ -90,9 +98,6 @@ onMounted(() => {
                 </h5>
                 <p class="mb-2 text-dark fw-semibold" style="font-size: 0.95rem;">
                   {{ item.lawyerName }} 변호사
-                </p>
-                <p class="mb-0 text-muted small">
-                  👁️ {{ item.viewerCount }}명 시청 중
                 </p>
                 <div class="d-flex flex-wrap gap-1">
                   <span
@@ -156,6 +161,23 @@ onMounted(() => {
 }
 
 .start-time-label.visible {
+  opacity: 1;
+}
+
+/* 시청자 수 뱃지 (hover 시 표시) */
+.viewer-count-badge {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  border-radius: 1rem;
+  font-weight: bold;
+  backdrop-filter: blur(2px);
+}
+
+.viewer-count-badge.visible {
   opacity: 1;
 }
 </style>

@@ -120,9 +120,7 @@ public class OpenViduServiceImpl implements OpenViduService {
                 System.out.println("❌ 세션 ID가 존재하지 않음 (broadcastNo: " + broadcastNo + ")");
                 return 0;
             }
-            System.out.println("조회 대상 세션 ID: " + sessionId);
             Session session = openVidu.getActiveSession(sessionId);
-            System.out.println("세션 존재 여부: " + (session != null));
             if (session != null) {
                 return session.getActiveConnections().size();
             }

@@ -131,7 +131,6 @@ public class BroadcastServiceImpl implements BroadcastService {
             // OpenViduService에서 broadcastNo 기반으로 sessionId 조회 후 시청자 수 반환
             int viewerCount = openViduService.getViewerCountByBroadcastNo(dto.getBroadcastNo());
             dto.setViewerCount(viewerCount);
-            System.out.println(dto.getViewerCount());
         }
 
         return list;
