@@ -18,4 +18,6 @@ public class BroadcastListDto {
 
     private String lawyerName;      // 변호사 이름
     private String profile;     // 변호사 프로필
+
+    private Integer viewerCount; // 시청자 수
 }

@@ -142,5 +142,8 @@
         WHERE b.status = 'RECORD'
         ORDER BY b.start_time DESC
     </select>
-
+    <!-- 세션ID 가져오기 -->
+    <select id="findSessionIdByBroadcastNo" resultType="String">
+        SELECT session_id FROM broadcast WHERE no = #{broadcastNo}
+    </select>
 </mapper>

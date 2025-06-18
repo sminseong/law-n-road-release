@@ -91,6 +91,9 @@ onMounted(() => {
                 <p class="mb-2 text-dark fw-semibold" style="font-size: 0.95rem;">
                   {{ item.lawyerName }} 변호사
                 </p>
+                <p class="mb-0 text-muted small">
+                  👁️ {{ item.viewerCount }}명 시청 중
+                </p>
                 <div class="d-flex flex-wrap gap-1">
                   <span
                       v-for="(kw, i) in item.keywords"

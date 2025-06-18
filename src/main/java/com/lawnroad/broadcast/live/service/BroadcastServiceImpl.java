@@ -98,6 +98,10 @@ public class BroadcastServiceImpl implements BroadcastService {
     public BroadcastViewDetailDto getDetailByBroadcastNo(Long broadcastNo) {
         BroadcastViewDetailDto dto = broadcastMapper.findDetailByBroadcastNo(broadcastNo);
 
+        if (dto == null) {
+            throw new RuntimeException("❌ 방송 상세 정보를 찾을 수 없습니다. broadcastNo = " + broadcastNo);
+        }
+
         Long scheduleNo = broadcastMapper.findScheduleNoByBroadcastNo(broadcastNo);
         dto.setKeywords(broadcastMapper.findKeywordsByScheduleNo(scheduleNo));
 
@@ -121,6 +125,15 @@ public class BroadcastServiceImpl implements BroadcastService {
 
     @Override
     public List<BroadcastListDto> getLiveBroadcasts() {
-        return broadcastMapper.selectLiveBroadcasts();
+        List<BroadcastListDto> list = broadcastMapper.selectLiveBroadcasts();
+
+        for (BroadcastListDto dto : list) {
+            // OpenViduService에서 broadcastNo 기반으로 sessionId 조회 후 시청자 수 반환
+            int viewerCount = openViduService.getViewerCountByBroadcastNo(dto.getBroadcastNo());
+            dto.setViewerCount(viewerCount);
+            System.out.println(dto.getViewerCount());
+        }
+
+        return list;
     }
 }
