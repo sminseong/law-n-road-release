@@ -12,6 +12,7 @@ import com.lawnroad.common.util.JwtTokenUtil;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -27,6 +28,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 @RequiredArgsConstructor
 @Controller
@@ -69,12 +72,11 @@ public class ChatController {
         messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), chatDTO);
 
 
-        // ------- 자동응답 처리 (broadcastNo로 조인) -------
+        // ------- 자동응답 처리 -------
         String msg = chatDTO.getMessage();
         if (msg != null && msg.startsWith("!")) {
             String keyword = msg.substring("!".length()).trim();
 
-            // 여기에서 broadcastNo와 keyword만 사용
             String autoReplyMsg = autoReplyService.findReplyMessage(chatDTO.getBroadcastNo(), keyword);
 
             if (autoReplyMsg != null) {
@@ -88,12 +90,13 @@ public class ChatController {
                 messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), reply);
             }
         }
-        // ------- 자동응답 처리 끝 -------
-
-
-
-
     }
 
-
+    @GetMapping("/api/client/my-no")
+    public Long getMyNo(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtTokenUtil.parseToken(token);
+        Long no = claims.get("no", Long.class);
+        return no;
+    }
 }

@@ -466,7 +466,6 @@ const closeCompleteModal = () => {
         <!-- 채팅 상단 제목 및 아이콘 -->
         <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
           <div class="fw-bold fs-5">채팅</div>
-
         </div>
 
         <!-- 메시지 출력 -->
