@@ -2,9 +2,10 @@
 import LawyerFrame from "@/components/layout/lawyer/LawyerFrame.vue";
 import { onMounted, ref, computed } from "vue";
 import axios from "axios";
-import { useRoute } from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 
 const route = useRoute();
+const router = useRouter();
 const scheduleNo = route.params.scheduleNo;
 
 const scheduleDetail = ref(null);
@@ -36,7 +37,15 @@ const formatTime = (datetime) => {
   return `${hh}:${mm}`;
 };
 
+const goBackToSchedule = () => {
+  router.push('/lawyer/broadcasts/schedule');
+};
 
+const confirmStartLive = () => {
+  if (confirm('라이브 방송을 시작하시겠습니까?')) {
+    router.push({ path: '/lawyer/broadcasts/live', query: { scheduleNo } });
+  }
+};
 
 
 
@@ -188,168 +197,114 @@ function goToLawyerLive() {
   <LawyerFrame>
     <div class="container-fluid my-5 d-flex justify-content-center">
       <div class="bg-white border border-2 rounded-4 shadow px-5 py-4 w-100" style="min-height: 120vh; max-width: 1600px;">
-        <div class="row w-100">
+        <div class="row w-100 align-items-start">
           <!-- 왼쪽: 방송 콘텐츠 영역 (수정 불가 보기 전용) -->
           <div class="col-md-7 d-flex flex-column justify-content-start align-items-start pe-5">
-            <div class="w-100 card p-4 shadow-sm mb-4">
-
-              <!-- 방송 설정 제목 -->
+            <div class="w-100 border rounded-3 p-4 shadow-sm mb-4" v-if="scheduleDetail">
               <div class="mb-4">
-                <span class="fs-4 fw-bold text-dark">방송 설정</span>
+                <span class="fs-4 fw-bold text-dark">방송 설정 확인</span>
               </div>
-
-              <!-- 방송 제목 -->
               <div class="mb-3 w-100">
                 <label class="form-label fw-bold">방송 제목</label>
                 <input :value="scheduleDetail.name" type="text" class="form-control bg-light text-dark" readonly />
               </div>
-
-              <!-- 카테고리 -->
               <div class="mb-3 w-100">
                 <label class="form-label fw-bold">카테고리</label>
                 <input :value="scheduleDetail.categoryName" type="text" class="form-control bg-light text-dark" readonly />
               </div>
-
-              <!-- 방송 시간 (시작 / 종료 나눠서 표시) -->
               <div class="mb-3 w-100">
                 <label class="form-label fw-bold">방송 시간</label>
                 <div class="row row-cols-2 g-2">
                   <div>
                     <div class="form-label text-muted small">시작 시간</div>
-                    <input
-                        :value="`${scheduleDetail.date} ${formatTime(scheduleDetail.startTime)}`"
-                        type="text"
-                        class="form-control bg-light text-dark"
-                        readonly
-                    />
+                    <input :value="`${scheduleDetail.date} ${formatTime(scheduleDetail.startTime)}`" type="text" class="form-control bg-light text-dark" readonly />
                   </div>
                   <div>
                     <div class="form-label text-muted small">종료 시간</div>
-                    <input
-                        :value="`${scheduleDetail.date} ${formatTime(scheduleDetail.endTime)}`"
-                        type="text"
-                        class="form-control bg-light text-dark"
-                        readonly
-                    />
+                    <input :value="`${scheduleDetail.date} ${formatTime(scheduleDetail.endTime)}`" type="text" class="form-control bg-light text-dark" readonly />
                   </div>
                 </div>
               </div>
-
-              <!-- 썸네일 이미지 -->
               <div class="mb-3 w-100">
                 <label class="form-label fw-bold">썸네일 이미지</label>
                 <div class="preview-box mb-2 border rounded d-flex justify-content-center align-items-center" style="height: 240px;">
-                  <img
-                      v-if="scheduleDetail.thumbnailPath"
-                      :src="scheduleDetail.thumbnailPath"
-                      alt="썸네일"
-                      class="img-fluid h-100"
-                      style="object-fit: contain;" />
+                  <img v-if="scheduleDetail.thumbnailPath" :src="scheduleDetail.thumbnailPath" alt="썸네일" class="img-fluid h-100" style="object-fit: contain;" />
                   <span v-else class="text-muted">이미지 없음</span>
                 </div>
               </div>
-
-              <!-- 방송 설명 -->
               <div class="mb-3 w-100">
                 <label class="form-label fw-bold">방송 설명</label>
                 <textarea :value="scheduleDetail.content" class="form-control bg-light text-dark" rows="4" readonly></textarea>
               </div>
-
-              <!-- 키워드 -->
               <div class="mb-3 w-100">
                 <label class="form-label fw-bold">방송 키워드</label>
                 <div class="d-flex flex-wrap gap-2">
-        <span
-            v-for="(kw, i) in scheduleDetail.keywords"
-            :key="i"
-            class="badge bg-secondary px-3 py-2">
-          # {{ kw }}
-        </span>
+                  <span v-for="(kw, i) in scheduleDetail.keywords" :key="i" class="badge bg-secondary px-3 py-2"># {{ kw }}</span>
                 </div>
               </div>
-
+            </div>
+            <div v-else class="w-100 text-center py-5">
+              <div v-if="isScheduleLoading" class="text-muted">⏳ 방송 정보를 불러오는 중입니다...</div>
+              <div v-else-if="isScheduleError" class="text-danger">❌ 방송 정보를 불러오지 못했습니다.</div>
             </div>
           </div>
-
 
           <!-- 오른쪽: 사전 질문 + 나이트봇 -->
-          <div class="col-md-5">
-            <!-- ✅ 사전질문 -->
-            <div class="mt-4 border rounded-3 p-3 shadow-sm d-flex flex-column">
-              <div class="mb-3">
-                <span class="fs-4 fw-bold text-dark">사전 질문 선택</span>
-              </div>
-              <!-- 전체 선택 -->
-              <label class="d-flex align-items-center mb-2 ms-2">
-                <input type="checkbox" class="form-check-input me-2" v-model="allChecked" />
-                <span>전체 선택</span>
-              </label>
-              <!-- 사전 질문 목록 -->
-              <div class="overflow-auto mb-3" style="max-height: 300px; min-height: 300px;">
-                <div
-                    v-for="(q, index) in preQuestions"
-                    :key="q.no"
-                    class="rounded-3 p-3 mb-2 d-flex"
-                    :class="getQuestionStyle(index)">
-                  <input type="checkbox" v-model="q.checked" class="form-check-input me-3 mt-1" />
-                  <div>
-                    <div :class="['fw-bold', getTextColorClass(index)]">[{{ q.nickname }}]</div>
-                    <div>{{ q.content }}</div>
+          <div class="col-md-5 d-flex flex-column justify-content-between">
+            <div>
+              <div class="border rounded-3 p-3 shadow-sm mb-4">
+                <div class="mb-3">
+                  <span class="fs-4 fw-bold text-dark">사전 질문 선택</span>
+                </div>
+                <label class="d-flex align-items-center mb-2 ms-2">
+                  <input type="checkbox" class="form-check-input me-2" v-model="allChecked" />
+                  <span>전체 선택</span>
+                </label>
+                <div class="overflow-auto mb-3" style="max-height: 300px; min-height: 300px;">
+                  <div v-for="(q, index) in preQuestions" :key="q.no" class="rounded-3 p-3 mb-2 d-flex" :class="getQuestionStyle(index)">
+                    <input type="checkbox" v-model="q.checked" class="form-check-input me-3 mt-1" />
+                    <div>
+                      <div :class="['fw-bold', getTextColorClass(index)]">[{{ q.nickname }}]</div>
+                      <div>{{ q.content }}</div>
+                    </div>
                   </div>
                 </div>
+                <div class="text-center">
+                  <button class="btn btn-primary px-5 py-2" style="min-width: 100px;" @click="saveSelectedQuestions">
+                    저장
+                  </button>
+                </div>
               </div>
-              <!-- 저장 버튼 -->
-              <div class="text-center">
-                <button class="btn btn-primary px-5 py-2" style="min-width: 100px;" @click="saveSelectedQuestions">
-                  저장
-                </button>
-              </div>
-            </div>
 
-            <!--  나이트봇  -->
-            <div class="mt-5 border rounded-3 p-3 shadow-sm">
-              <div class="mb-3">
-                <span class="fs-4 fw-bold text-dark">나이트봇 자동응답 설정</span>
+              <div class="border rounded-3 p-3 shadow-sm">
+                <div class="mb-3">
+                  <span class="fs-4 fw-bold text-dark">나이트봇 자동응답 설정</span>
+                </div>
+                <div class="position-relative mb-2">
+                  <input v-model="newKeyword" type="text" class="form-control mb-2" placeholder="ex) !상담" />
+                  <textarea v-model="newMessage" class="form-control mb-2" rows="2" placeholder="내용"></textarea>
+                  <button class="btn btn-primary position-absolute" style="top:0; right:0; height:38px; z-index:2" @click="addNightbotMessage">
+                    등록
+                  </button>
+                </div>
+                <li v-for="msg in nightbotMessages" :key="msg.no" class="list-group-item d-flex align-items-center border-0 px-0 py-2">
+                  <span class="fw-bold me-1">{{ msg.keyword }}</span>
+                  <span class="fw-bold me-1">:</span>
+                  <span class="text-muted small flex-grow-1 text-truncate">
+                    {{ msg.message.length > 28 ? msg.message.slice(0, 28) + " ..." : msg.message }}
+                  </span>
+                  <button class="btn btn-sm btn-danger ms-2" @click="deleteNightbotMessage(msg.no)">삭제</button>
+                </li>
               </div>
-              <!-- 입력 영역 -->
-              <div class="position-relative mb-2">
-                <!-- 트리거 입력 -->
-                <input v-model="newKeyword"
-                       type="text"
-                       class="form-control mb-2"
-                       placeholder="ex) !상담" />
-                <!-- 내용 입력 -->
-                <textarea v-model="newMessage"
-                          class="form-control mb-2"
-                          rows="2"
-                          placeholder="내용"></textarea>
-                <!-- 등록 버튼 (오른쪽 위) -->
-                <button class="btn btn-primary position-absolute"
-                        style="top:0; right:0; height:38px; z-index:2"
-                        @click="addNightbotMessage">
-                  등록
-                </button>
-              </div>
-              <!-- 목록 -->
-              <li v-for="msg in nightbotMessages" :key="msg.no"
-                  class="list-group-item d-flex align-items-center border-0 px-0 py-2">
-                <span class="fw-bold me-1">{{ msg.keyword }}</span>
-                <span class="fw-bold me-1">:</span>
-                <span class="text-muted small flex-grow-1 text-truncate">
-                {{ msg.message.length > 28 ? msg.message.slice(0, 28) + " ..." : msg.message }}
-              </span>
-                <button class="btn btn-sm btn-danger ms-2"
-                        @click="deleteNightbotMessage(msg.no)">
-                  삭제
-                </button>
-              </li>
             </div>
           </div>
+
+          <!-- 하단 버튼 영역: 목록/방송시작 같이 위치 -->
+          <div class="d-flex justify-content-between align-items-center mt-5 px-4 w-100">
+            <button class="btn btn-outline-secondary" @click="goBackToSchedule">← 목록으로 돌아가기</button>
+            <button class="btn btn-primary px-4" @click="confirmStartLive">라이브 방송 시작하기</button>
+          </div>
         </div>
-        <button
-            class="btn btn-primary"
-            @click="goToLawyerLive"
-        >라이브 방송 시작하기</button>
       </div>
     </div>
   </LawyerFrame>
