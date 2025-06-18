@@ -1,4 +1,5 @@
 <script setup>
+
 import { fetchBoardList } from '@/service/boardService.js'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import { ref ,watch ,onMounted, computed} from 'vue'
@@ -14,6 +15,7 @@ const totalElements = ref(null) // 전체 개수 (백엔드가 제공하면 사�
 const totalPages = ref(null)   // 전체 페이지 수 (백엔드가 제공하거나 계산)
 const isLoading = ref(false)   // 로딩 상태
 const error = ref(null)        // 오류 상태
+
 
 // 페이지네이션 그룹 계산 (예: 10개씩 묶음)
 const pagesInGroup = 10
@@ -74,7 +76,7 @@ async function loadList() {
 }
 
 // 페이지 최초 로딩시 -> 데이터 로드
-onMounted(async () => {
+onMounted(() => {
   loadList()
 })
 
@@ -106,7 +108,7 @@ watch(page, () => {
             v-for="qa in list"
             :key="qa.no"
             class="qa-card bg-white rounded shadow-sm p-4 mb-3"
-            @click="router.push({ name: 'QaDetail', params: { id: qa.no } })"
+            @click="router.push({ name: 'QaDetailView', params: { id: qa.no } })"
             style="cursor: pointer;"
         >
           <small class="text-muted">{{ qa.categoryName || '' }}</small>
