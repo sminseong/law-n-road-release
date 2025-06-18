@@ -29,8 +29,8 @@ const newKeyword = ref('')
 onMounted(async () => {
   try {
     const [catRes, schedRes] = await Promise.all([
-      axios.get('/api/category/list'),
-      axios.get(`/api/schedule/my/${scheduleNo}`)
+      axios.get('/api/public/category/list'),
+      axios.get(`/api/lawyer/schedule/my/${scheduleNo}`)
     ])
     categoryList.value = catRes.data
     const s = schedRes.data
@@ -85,7 +85,7 @@ const deleteSchedule = async () => {
   if (!confirmDelete) return
 
   try {
-    await axios.delete(`/api/schedule/delete/${scheduleNo}`)
+    await axios.delete(`/api/lawyer/schedule/delete/${scheduleNo}`)
     alert('🗑️ 방송 스케줄이 삭제되었습니다.')
     router.push('/lawyer/broadcasts/schedule')
   } catch (err) {
@@ -111,7 +111,7 @@ const updateSchedule = async () => {
       form.append('thumbnail', selectedFile.value)
     }
 
-    await axios.post('/api/schedule/update?_method=PUT', form, {
+    await axios.post('/api/lawyer/schedule/update?_method=PUT', form, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
 

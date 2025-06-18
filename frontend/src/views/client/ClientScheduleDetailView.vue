@@ -18,7 +18,7 @@ const colors = [
 
 onMounted(async () => {
   try {
-    const res = await axios.get(`/api/schedule/${dateStr}`)
+    const res = await axios.get(`/api/client/schedule/${dateStr}`)
     const arranged = arrangeSchedulePositions(res.data)
     schedules.value = arranged
   } catch (e) {

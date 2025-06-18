@@ -24,7 +24,7 @@ const categoryList = ref([])
 onMounted(async () => {
   try {
     const token = localStorage.getItem('token')
-    const response = await axios.get('/api/category/list', {
+    const response = await axios.get('/api/public/category/list', {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -126,7 +126,7 @@ const submitSchedule = async () => {
     formData.append('thumbnail', selectedFile.value)
     formData.append('keywords', JSON.stringify(keywords.value))
 
-    await axios.post('/api/schedule/register', formData, {
+    await axios.post('/api/lawyer/schedule/register', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
 

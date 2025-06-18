@@ -11,7 +11,7 @@ const router = useRouter()
 const fetchSchedules = async () => {
   try {
     const token = localStorage.getItem('token')
-    const res = await axios.get('/api/schedule/my', {
+    const res = await axios.get('/api/lawyer/schedule/my', {
       headers: {
         Authorization: `Bearer ${token}`
       }

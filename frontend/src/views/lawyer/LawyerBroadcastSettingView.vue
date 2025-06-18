@@ -16,7 +16,7 @@ const isScheduleError = ref(false);
 const loadScheduleDetail = async () => {
   try {
     const token = localStorage.getItem('token');
-    const { data } = await axios.get(`/api/schedule/my/${scheduleNo}`, {
+    const { data } = await axios.get(`/api/lawyer/schedule/my/${scheduleNo}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     scheduleDetail.value = data;

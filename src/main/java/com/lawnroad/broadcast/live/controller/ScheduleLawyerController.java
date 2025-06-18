@@ -20,9 +20,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/schedule")
+@RequestMapping("/api/lawyer/schedule")
 @RequiredArgsConstructor
-public class ScheduleController {
+public class ScheduleLawyerController {
 
     private final JwtTokenUtil jwtTokenUtil;
     private final ScheduleService scheduleService;
@@ -75,19 +75,6 @@ public class ScheduleController {
 
         scheduleService.registerSchedule(scheduleRequestDto);
         return ResponseEntity.ok("방송 스케줄이 성공적으로 등록되었습니다.");
-    }
-
-    @GetMapping("/month")
-    public ResponseEntity<List<ScheduleCalendarDto>> getMonthlySchedule(@RequestParam String month) {
-        List<ScheduleCalendarDto> result = scheduleService.getSchedulesByMonth(month);
-        return ResponseEntity.ok(result);
-    }
-
-    @GetMapping("/{date}")
-    public ResponseEntity<List<ScheduleDateDto>> getScheduleByDate(@PathVariable String date) {
-        LocalDate parsedDate = LocalDate.parse(date);
-        List<ScheduleDateDto> schedules = scheduleService.getSchedulesByDate(parsedDate);
-        return ResponseEntity.ok(schedules);
     }
 
     @GetMapping("/my")
