@@ -53,33 +53,66 @@ public class SecurityConfig {
 //    return http.build();
 //  }
 
+//    @Bean
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//
+//        http.csrf(csrf -> csrf.disable())
+//                .authorizeHttpRequests(auth -> auth
+//                        // 비회원에게 허가할 api
+//                        .requestMatchers(
+//                            "/api/auth/**",
+//                            "/api/public/**",
+//                            "/api/find-id",
+//                            "/api/reset-password",
+//                            "/mail/**",
+//                            "/api/user/**",
+//                            "/api/auth/nickname",
+//                            "/api/notification/**",
+//                            "/uploads/**"
+//                        ).permitAll()
+//
+//                        // 사용자 권한에게 허가할 api
+//                        .requestMatchers("/api/client/**").hasRole("CLIENT")
+//
+//                        // 변호사 권한에게 허가할 api
+//                        .requestMatchers("/api/lawyer/**").hasRole("LAWYER")
+//
+//                        // 변호사, 혹은 사용자 권한일 때 허가할 api
+//                        .requestMatchers("/api/ai/**").hasAnyRole("LAWYER", "CLIENT")
+//
+//                        .anyRequest().authenticated()
+//                )
+//                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+//
+//        return http.build();
+//    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-        http.csrf(csrf -> csrf.disable())
+        http
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // 비회원에게 허가할 api
+                        // 비회원 허용
                         .requestMatchers(
-                            "/api/auth/**",
-                            "/api/public/**",
-                            "/api/find-id",
-                            "/api/reset-password",
-                            "/mail/**",
-                            "/api/user/**",
-                            "/api/auth/nickname",
-                            "/api/notification/**",
-                            "/uploads/**"
+                                "/api/auth/**",
+                                "/api/public/**",
+                                "/api/find-id",
+                                "/api/reset-password",
+                                "/mail/**",
+                                "/api/user/**",
+                                "/api/auth/nickname",
+                                "/api/notification/**",
+                                "/uploads/**",
+                                "/api/signuplawyer" ,"/api/refresh"   // ← 여기에 추가
                         ).permitAll()
-                    
-                        // 사용자 권한에게 허가할 api
+
+                        // 클라이언트 권한
                         .requestMatchers("/api/client/**").hasRole("CLIENT")
-                    
-                        // 변호사 권한에게 허가할 api
+                        // 변호사 권한
                         .requestMatchers("/api/lawyer/**").hasRole("LAWYER")
-                    
-                        // 변호사, 혹은 사용자 권한일 때 허가할 api
-                        .requestMatchers("/api/ai/**").hasAnyRole("LAWYER", "CLIENT")
-                    
+                        // AI 접근 허용
+                        .requestMatchers("/api/ai/**").hasAnyRole("LAWYER","CLIENT")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

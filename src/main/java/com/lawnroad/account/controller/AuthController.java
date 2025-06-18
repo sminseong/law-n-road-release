@@ -5,9 +5,11 @@ import com.lawnroad.account.entity.LawyerEntity;
 import com.lawnroad.account.entity.UserEntity;
 import com.lawnroad.account.mapper.ClientMapper;
 import com.lawnroad.account.mapper.LawyerMapper;
+
 import com.lawnroad.account.mapper.UserMapper;
 import com.lawnroad.account.service.ClientService;
 import com.lawnroad.account.service.LawyerService;
+import com.lawnroad.account.service.RefreshTokenService;
 import com.lawnroad.common.util.JwtTokenUtil;
 import com.lawnroad.common.util.UserContext;
 import io.jsonwebtoken.Claims;
@@ -16,11 +18,19 @@ import lombok.RequiredArgsConstructor;
 import org.mybatis.logging.Logger;
 import org.mybatis.logging.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,6 +46,9 @@ public class AuthController {
     private final ClientService clientService;
     private final UserContext userContext;
     private final ClientMapper clientMapper;
+    private final RefreshTokenService refreshTokenService;
+    private final JdbcTemplate jdbcTemplate;
+
 
     @GetMapping("/auth/check-id")
     public ResponseEntity<Map<String, Object>> checkIdDuplicate(@RequestParam String clientId) {  // 여기는 클라이언트 아이디를 중복 확인 하는 함수
@@ -74,11 +87,40 @@ public class AuthController {
         return ResponseEntity.ok().body("회원가입 완료");
     }
 
-    @PostMapping("/auth/lawyer_signup")
-    public ResponseEntity<?> lawyer_signup(@RequestBody LawyerSignupRequest request) {
-        lawyerService.registerLawyer(request);
-        return ResponseEntity.ok().body("변호사 회원가입 완료");
-    }
+//    @PostMapping("/auth/lawyer_signup")
+//    public ResponseEntity<?> lawyer_signup(@RequestBody LawyerSignupRequest request) {
+//        lawyerService.registerLawyer(request);
+//        return ResponseEntity.ok().body("변호사 회원가입 완료");
+//    }
+
+//    @PostMapping(value = "/signuplawyer", consumes = "multipart/form-data")
+//    public ResponseEntity<?> lawyerSignup(
+//            @ModelAttribute LawyerSignupRequest request,
+//            @RequestPart("profileImage") MultipartFile profileImage,
+//            @RequestPart("idCardFront") MultipartFile idCardFront,
+//            @RequestPart("idCardBack") MultipartFile idCardBack
+//    ) {
+//        lawyerService.registerLawyer(request, profileImage, idCardFront, idCardBack);
+//        return ResponseEntity.ok("변호사 회원가입 완료");
+//    }
+@PostMapping(
+        value = "/signuplawyer",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+
+)
+public ResponseEntity<?> lawyerSignup(
+        @ModelAttribute LawyerSignupRequest request
+) {
+    System.out.println("변호사 회원가입 진입!!");
+    lawyerService.registerLawyer(
+            request,
+            request.getProfileImage(),
+            request.getIdCardFront(),
+            request.getIdCardBack()
+    );
+    return ResponseEntity.ok("변호사 회원가입 완료");
+}
+
 
 
     @GetMapping("/auth/check-email")
@@ -122,71 +164,127 @@ public class AuthController {
 //        }
 //    }
 
+//    @PostMapping("/auth/login")
+//    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+//        try {
+//            System.out.println("💡 [전체 로그인 요청 도착] clientId: " + request.getClientId());
+//            System.out.println("💡 [전체 로그인 요청 도착] type: " + request.getType());
+//
+//            String type = request.getType();
+//            if (type == null) {
+//                return ResponseEntity.badRequest().body("사용자 유형이 지정되지 않았습니다.");
+//            }
+//
+//            if (type.equalsIgnoreCase("CLIENT")) {
+//                ClientEntity client = clientService.login(request.getClientId(), request.getPassword());
+//                UserEntity user = userMapper.findByNo(client.getNo());
+//
+//                String accessToken = jwtTokenUtil.generateAccessToken(client.getClientId(), client.getNo(), user.getType(), client.getNickname());
+//                String refreshToken = jwtTokenUtil.generateRefreshToken(client.getClientId());
+//                jwtTokenUtil.storeRefreshToken(client.getClientId(), refreshToken);
+//
+//                jwtTokenUtil.printPayload(accessToken);
+//
+//
+//                System.out.println("accessToken : " + accessToken);
+//                System.out.println("refreshToken : " + refreshToken);
+//                Map<String, Object> result = new HashMap<>();
+//                result.put("accessToken", accessToken);
+//                result.put("refreshToken", refreshToken);
+//                result.put("name", client.getName());
+//                result.put("nickname", client.getNickname());
+//                result.put("no",user.getNo());
+//                result.put("role", user.getType());
+//                return ResponseEntity.ok(result);
+//
+//            }
+//
+//            else if (type.equalsIgnoreCase("lawyer")) {
+//                // 🔽 LawyerService 에 login 함수 구현 필요
+//                LawyerEntity lawyer = lawyerService.login(request.getClientId(), request.getPassword());
+//                UserEntity user = userMapper.findByNo(lawyer.getNo());
+//                System.out.println("dfdfsdfksdfjkhdsksdjkhfjkdshfjkdhf");
+//
+//                System.out.println("로그인 요청: " + request.getClientId() + ", " + request.getType());
+//                System.out.println("lawyer.getNo(): " + lawyer.getNo());
+//
+//                String accessToken = jwtTokenUtil.generateAccessToken(lawyer.getLawyerId(), lawyer.getNo(), user.getType(), lawyer.getName());
+//                String refreshToken = jwtTokenUtil.generateRefreshToken(lawyer.getLawyerId());
+//                jwtTokenUtil.storeRefreshToken(lawyer.getLawyerId(), refreshToken);
+//                jwtTokenUtil.printPayload(accessToken);
+//
+//                Map<String, Object> result = new HashMap<>();
+//                result.put("accessToken", accessToken);
+//                result.put("refreshToken", refreshToken);
+//                result.put("name", lawyer.getName());
+//                result.put("nickname", lawyer.getName()); // nickname 필드 없으면 name 대체
+//                result.put("role", user.getType());
+//
+//                return ResponseEntity.ok(result);
+//            }
+//
+//            return ResponseEntity.badRequest().body("알 수 없는 사용자 유형입니다.");
+//
+//        } catch (IllegalArgumentException e) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패");
+//        }
+//    }
+
     @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        try {
-            System.out.println("💡 [전체 로그인 요청 도착] clientId: " + request.getClientId());
-            System.out.println("💡 [전체 로그인 요청 도착] type: " + request.getType());
-
-            String type = request.getType();
-            if (type == null) {
-                return ResponseEntity.badRequest().body("사용자 유형이 지정되지 않았습니다.");
-            }
-
-            if (type.equalsIgnoreCase("CLIENT")) {
-                ClientEntity client = clientService.login(request.getClientId(), request.getPassword());
-                UserEntity user = userMapper.findByNo(client.getNo());
-
-                String accessToken = jwtTokenUtil.generateAccessToken(client.getClientId(), client.getNo(), user.getType(), client.getNickname());
-                String refreshToken = jwtTokenUtil.generateRefreshToken(client.getClientId());
-                jwtTokenUtil.storeRefreshToken(client.getClientId(), refreshToken);
-
-                jwtTokenUtil.printPayload(accessToken);
-
-
-                System.out.println("accessToken : " + accessToken);
-                System.out.println("refreshToken : " + refreshToken);
-                Map<String, Object> result = new HashMap<>();
-                result.put("accessToken", accessToken);
-                result.put("refreshToken", refreshToken);
-                result.put("name", client.getName());
-                result.put("nickname", client.getNickname());
-                result.put("no",user.getNo());
-                result.put("role", user.getType());
-                return ResponseEntity.ok(result);
-
-            }
-
-            else if (type.equalsIgnoreCase("lawyer")) {
-                // 🔽 LawyerService 에 login 함수 구현 필요
-                LawyerEntity lawyer = lawyerService.login(request.getClientId(), request.getPassword());
-                UserEntity user = userMapper.findByNo(lawyer.getNo());
-                System.out.println("dfdfsdfksdfjkhdsksdjkhfjkdshfjkdhf");
-
-                System.out.println("로그인 요청: " + request.getClientId() + ", " + request.getType());
-                System.out.println("lawyer.getNo(): " + lawyer.getNo());
-
-                String accessToken = jwtTokenUtil.generateAccessToken(lawyer.getLawyerId(), lawyer.getNo(), user.getType(), lawyer.getName());
-                String refreshToken = jwtTokenUtil.generateRefreshToken(lawyer.getLawyerId());
-                jwtTokenUtil.storeRefreshToken(lawyer.getLawyerId(), refreshToken);
-                jwtTokenUtil.printPayload(accessToken);
-
-                Map<String, Object> result = new HashMap<>();
-                result.put("accessToken", accessToken);
-                result.put("refreshToken", refreshToken);
-                result.put("name", lawyer.getName());
-                result.put("nickname", lawyer.getName()); // nickname 필드 없으면 name 대체
-                result.put("role", user.getType());
-
-                return ResponseEntity.ok(result);
-            }
-
-            return ResponseEntity.badRequest().body("알 수 없는 사용자 유형입니다.");
-
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 실패");
+        String type = request.getType();
+        if (type == null) {
+            return ResponseEntity.badRequest().body("사용자 유형이 지정되지 않았습니다.");
         }
+
+        Long   userNo;
+        String clientId;
+        String accessToken;
+        String refreshToken;
+        Map<String, Object> result = new HashMap<>();
+
+        if (type.equalsIgnoreCase("CLIENT")) {
+            ClientEntity client = clientService.login(request.getClientId(), request.getPassword());
+            userNo   = client.getNo();
+            clientId = client.getClientId();
+
+            accessToken  = jwtTokenUtil.generateAccessToken(clientId,  userNo, /*role*/"CLIENT", client.getNickname());
+            refreshToken = jwtTokenUtil.generateRefreshToken(clientId);
+
+            result.put("name",     client.getName());
+            result.put("nickname", client.getNickname());
+            result.put("no",       client.getNo());
+        }
+        else if (type.equalsIgnoreCase("LAWYER")) {
+            LawyerEntity lawyer = lawyerService.login(request.getClientId(), request.getPassword());
+            userNo   = lawyer.getNo();
+            clientId = lawyer.getLawyerId();
+
+            accessToken  = jwtTokenUtil.generateAccessToken(clientId,  userNo, /*role*/"LAWYER", lawyer.getName());
+            refreshToken = jwtTokenUtil.generateRefreshToken(clientId);
+
+            result.put("name",     lawyer.getName());
+            result.put("nickname", lawyer.getName());
+            result.put("no", lawyer.getNo());
+        }
+        else {
+            return ResponseEntity.badRequest().body("알 수 없는 사용자 유형입니다.");
+        }
+
+        // ✏️ 여기서 DB에 저장만 하면 끝
+        refreshTokenService.save(userNo, refreshToken);
+
+        // 응답 페이로드
+        result.put("accessToken",  accessToken);
+        result.put("refreshToken", refreshToken);
+        result.put("no",           userNo);
+        result.put("role",         type.toUpperCase());
+
+        return ResponseEntity.ok(result);
     }
+
+
+
 
 
 
@@ -328,10 +426,75 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/auth/logout")
+    public ResponseEntity<?> logout(@RequestBody LogoutRequest request) {
+        Long userNo = request.getUserNo(); // 프론트에서 전달받음
+        refreshTokenService.deleteByUserNo(userNo);
+        return ResponseEntity.ok("로그아웃 완료 (토큰 삭제)");
+    }
 
 
 
 
+
+//    @GetMapping("/refresh")
+//    public ResponseEntity<?> refreshAccessToken(@RequestParam("no") Long no) {
+//        System.out.println("🔄 [리프레시 요청] 사용자 no: " + no);
+//
+//        try {
+//            // DB에서 사용자 정보 조회
+//            String sql = "SELECT client_id, role, nickname FROM client WHERE no = ?";
+//            Map<String, Object> user = jdbcTemplate.queryForMap(sql, no);
+//
+//            String clientId = (String) user.get("client_id");
+//            String role = (String) user.get("role");
+//            String nickname = (String) user.get("nickname");
+//
+//            // accessToken 발급
+//            String newAccessToken = jwtTokenUtil.generateAccessToken(clientId, no, role, nickname);
+//            System.out.println("✅ 재발급 완료: " + newAccessToken);
+//
+//            return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
+//        } catch (EmptyResultDataAccessException e) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("사용자 없음");
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("재발급 오류");
+//        }
+//    }
+
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshAccessToken(@RequestBody Map<String, Object> payload) {
+        Long no = Long.valueOf(payload.get("no").toString());
+        System.out.println("🔄 [리프레시 요청] 사용자 no: " + no);
+
+        try {
+            // ✅ user.type을 role로 alias 지정
+            String sql = "SELECT c.client_id, c.nickname, u.type AS role " +
+                    "FROM client c " +
+                    "JOIN user u ON c.no = u.no " +
+                    "WHERE c.no = ?";
+
+            Map<String, Object> user = jdbcTemplate.queryForMap(sql, no);
+            System.out.println("✅ 쿼리문 통과");
+
+            String clientId = (String) user.get("client_id");
+            String nickname = (String) user.get("nickname");
+            String role = (String) user.get("role");  // u.type을 role로 사용
+            System.out.println("🎯 사용자 정보: " + clientId + " / " + role + " / " + nickname);
+
+            // ✅ accessToken 재발급
+            String newAccessToken = jwtTokenUtil.generateAccessToken(clientId, no, role, nickname);
+            System.out.println("✅ 재발급 완료: " + newAccessToken);
+
+            return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
+        } catch (EmptyResultDataAccessException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("❌ 사용자 없음");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("❌ 토큰 재발급 실패");
+        }
+    }
 
 
 

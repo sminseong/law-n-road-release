@@ -13,10 +13,9 @@ public class LawNRoadApplication {
 
         PasswordEncoder encoder = new BCryptPasswordEncoder();
 
-        String raw = "!tlqk"; // 로그인 시 입력한 비번
-        String hashed = "$2a$10$OPqvUfC54R/PlyCYBaZdjeJgCS3NTxz4F2jyCyhAf8AQ/3bAMNTeK"; // DB 값
 
-        System.out.println("일치? " + encoder.matches(raw, hashed)); // true or false
+
+
 
 
         SpringApplication.run(LawNRoadApplication.class, args);

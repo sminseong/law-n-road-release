@@ -1,7 +1,7 @@
 <script setup>
-import { ref, computed } from 'vue'
-import axios from 'axios'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { makeApiRequest, refreshAccessToken } from '@/libs/axios-auth.js'  // ✅ 전역 유틸 import
 
 const router = useRouter()
 
@@ -9,13 +9,11 @@ const router = useRouter()
 const originalNickname = localStorage.getItem('nickname') || ''
 const originalEmail = localStorage.getItem('email') || ''
 const originalPhone = localStorage.getItem('phone') || ''
-const token = localStorage.getItem('token')
 
-// 닉네임, 전화번호
 const nickname = ref(originalNickname)
 const phone = ref(originalPhone)
 
-// 이메일 파싱 (이전에 저장된 값이 있다면 분리)
+// 이메일 파싱
 const emailId = ref(originalEmail.split('@')[0] || '')
 const savedDomain = originalEmail.split('@')[1] || 'gmail.com'
 const emailDomainSelect = ref(['gmail.com', 'naver.com', 'daum.net'].includes(savedDomain) ? savedDomain : 'custom')
@@ -26,82 +24,100 @@ const email = computed(() => {
   return emailId.value + '@' + (emailDomainSelect.value === 'custom' ? emailDomainCustom.value : emailDomainSelect.value)
 })
 
+onMounted(() => {
+  console.log('=== 디버깅 정보 ===')
+  console.log('현재 토큰:', localStorage.getItem('token'))
+  console.log('사용자 번호:', localStorage.getItem('no'))
+  console.log('닉네임:', localStorage.getItem('nickname'))
+  console.log('이메일:', localStorage.getItem('email'))
+  console.log('전화번호:', localStorage.getItem('phone'))
+  console.log('==================')
+})
+
+// ✅ 프로필 수정
 const updateProfile = async () => {
   if (!nickname.value.trim() || !email.value.trim() || !phone.value.trim()) {
     alert('모든 정보를 입력해주세요.')
     return
   }
 
-  if (!token) {
-    alert('로그인이 필요합니다.')
-    router.push('/login')
-    return
+  const updateData = {
+    nickname: nickname.value,
+    email: email.value,
+    phone: phone.value
   }
 
   try {
-    await axios.put(
-        '/api/client/profile',
-        {
-          nickname: nickname.value,
-          email: email.value,
-          phone: phone.value
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-    )
+    const response = await makeApiRequest({
+      method: 'put',
+      url: '/api/client/profile',
+      data: updateData
+    })
 
-    // 로컬스토리지 업데이트
-    localStorage.setItem('nickname', nickname.value)
-    localStorage.setItem('email', email.value)
-    localStorage.setItem('phone', phone.value)
+    if (response) {
+      localStorage.setItem('nickname', nickname.value)
+      localStorage.setItem('email', email.value)
+      localStorage.setItem('phone', phone.value)
 
-    alert('✅ 프로필이 성공적으로 수정되었습니다.')
-    router.push('/client/mypage')
+      alert('✅ 프로필이 성공적으로 수정되었습니다.')
+      router.push('/client/mypage')
+    }
   } catch (error) {
-    console.error('프로필 수정 실패:', error)
-    if (error.response?.status === 403) {
+    console.error('❌ 프로필 수정 실패:', error)
+
+    const status = error.response?.status
+    if (status === 400) {
+      alert('입력 정보가 올바르지 않습니다.')
+    } else if (status === 403) {
       alert('권한이 없습니다. 다시 로그인해주세요.')
+      localStorage.clear()
       router.push('/login')
     } else {
-      alert('❌ 수정에 실패했습니다.')
+      alert('서버 오류가 발생했습니다.')
     }
   }
 }
 
-
+// ✅ 회원 탈퇴
 const withdrawAccount = async () => {
   if (!confirm('정말로 회원 탈퇴하시겠습니까?')) return
 
   try {
-    await axios.put('/api/client/withdraw', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+    const response = await makeApiRequest({
+      method: 'put',
+      url: '/api/client/withdraw',
+      data: {}
     })
 
-    // 로그아웃 처리
-    localStorage.clear()
-    alert('회원 탈퇴가 완료되었습니다.')
-    router.push('/login')
+    if (response) {
+      localStorage.clear()
+      alert('회원 탈퇴가 완료되었습니다.')
+      router.push('/login')
+    }
   } catch (err) {
-    console.error('회원 탈퇴 실패:', err)
+    console.error('❌ 회원 탈퇴 실패:', err)
     alert('탈퇴 중 오류가 발생했습니다.')
   }
 }
 
-
-
-
-
-
+// 🔍 테스트용 토큰 재발급 버튼
+const testRefreshToken = async () => {
+  console.log('🧪 토큰 재발급 테스트 시작')
+  await refreshAccessToken()
+}
 </script>
 
 <template>
   <div class="container mt-5">
     <h3 class="mb-4">프로필 수정</h3>
+
+    <!-- 디버깅 버튼 -->
+    <div class="card p-3 mb-3 bg-light">
+      <h5>디버깅 도구</h5>
+      <button class="btn btn-info btn-sm" @click="testRefreshToken">토큰 재발급 테스트</button>
+      <small class="text-muted mt-2 d-block">콘솔창(F12)을 열고 테스트해보세요.</small>
+    </div>
+
     <div class="card p-4">
       <div class="mb-3">
         <label for="nickname" class="form-label">닉네임</label>
@@ -142,6 +158,7 @@ const withdrawAccount = async () => {
             />
           </div>
         </div>
+        <small class="text-muted">현재 이메일: {{ email }}</small>
       </div>
 
       <div class="mb-3">
@@ -166,14 +183,15 @@ const withdrawAccount = async () => {
   max-width: 600px;
   margin: 0 auto;
 }
-
 .card {
   background-color: #ffffff;
   border: 1px solid #e0e0e0;
   border-radius: 12px;
 }
-
 .btn {
   width: 100%;
+}
+.btn-sm {
+  width: auto;
 }
 </style>
