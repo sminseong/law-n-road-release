@@ -1,11 +1,11 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
+import {ref, onMounted, onBeforeUnmount, nextTick} from "vue";
 import SockJS from "sockjs-client";
-import { Client } from "@stomp/stompjs";
-import { OpenVidu } from "openvidu-browser";
+import {Client} from "@stomp/stompjs";
+import {OpenVidu} from "openvidu-browser";
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import axios from "axios";
-import { useRoute, useRouter } from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 
 const route = useRoute();
 const router = useRouter();
@@ -103,7 +103,7 @@ const connectSession = async () => {
     const res = await axios.post("/api/lawyer/broadcast/start", {
       scheduleNo: Number(scheduleNo),
     });
-    const { sessionId, token, broadcastNo: newBroadcastNo, startTime } = res.data;
+    const {sessionId, token, broadcastNo: newBroadcastNo, startTime} = res.data;
 
     console.log("📡 sessionId:", sessionId);
     console.log("🔑 token:", token);
@@ -149,8 +149,8 @@ const connectSession = async () => {
 
 const reconnectBroadcast = async (existingSessionId) => {
   try {
-    const { data } = await axios.get(`/api/lawyer/broadcast/reconnect/${existingSessionId}`);
-    const { token, startTime } = data;
+    const {data} = await axios.get(`/api/lawyer/broadcast/reconnect/${existingSessionId}`);
+    const {token, startTime} = data;
 
     OV.value = new OpenVidu();
     session.value = OV.value.initSession();
@@ -209,15 +209,6 @@ onBeforeUnmount(() => {
 });
 
 
-
-
-
-
-
-
-
-
-
 // --- 채팅 WebSocket 관련 ---
 /** 채팅 */
 const stompClient = ref(null);
@@ -240,7 +231,7 @@ const colorPalette = [
   "#1abc9c", "#034335", "#84ddaa", "#450978",
   "#184563", "#8bc2e4", "#c791dd", "#8e44ad",
   "#837225", "#876124", "#004aff", "#ff6400",
-  "#ec8d85", "#c0392b", "#246667", "#e4de0d"
+  "#ec8d85", "#603a37", "#246667", "#e4de0d"
 ];
 
 function getRandomColor() {
@@ -261,7 +252,7 @@ async function fetchMyNo() {
     return false;
   }
   const res = await axios.get("/api/Lawyer/my-no", {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: {Authorization: `Bearer ${token}`}
   });
   myNo.value = res.data;
   return true;
@@ -294,7 +285,7 @@ const connect = () => {
         //입장 시 type: "ENTER"만 전달
         stompClient.value.publish({
           destination: "/app/chat.addUser",
-          body: JSON.stringify({ broadcastNo: broadcastNo.value }),
+          body: JSON.stringify({broadcastNo: broadcastNo.value}),
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -325,8 +316,11 @@ const sendMessage = () => {
   }
   stompClient.value.publish({
     destination: "/app/chat.sendMessage",
-    body: JSON.stringify({ broadcastNo: broadcastNo.value,
-      message: trimmed }),
+    body: JSON.stringify({
+      broadcastNo: broadcastNo.value,
+      message: trimmed,
+      type: "Lawyer"
+    }),
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -334,6 +328,7 @@ const sendMessage = () => {
   message.value = "";
   scrollToBottom();
 };
+
 
 // 스크롤 자동 하단 이동
 const scrollToBottom = () => {
@@ -377,15 +372,16 @@ const confirmReport = async () => {
         "/api/Lawyer/chat/report",
         {
           userNo: selectedUserNo.value,
-          reportedUserNo : myNo.value,
+          reportedUserNo: myNo.value,
           nickname: selectedUser.value,
           message: selectedMessage.value,
         },
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: {Authorization: `Bearer ${token}`}
         },
     );
-  } catch (e) {}
+  } catch (e) {
+  }
   isConfirmModal.value = false;
   isCompleteModal.value = true;
 };
@@ -494,27 +490,31 @@ const closeCompleteModal = () => {
           <div v-for="(msg, index) in messages" :key="index" class="mb-3" style="position:relative;">
             <div v-if="msg.type === 'ENTER'"
                  class="w-100 text-center"
-                 style="color: #435879; font-size: 0.9rem;">
+                 style="color: #435879; font-size: 0.80rem;">
               {{ msg.message }}
             </div>
-            <div v-else-if="msg.type === 'AUTO_REPLY'"
-                 class="text-primary fw-bold"
-                 style="font-size: 1.05rem;">
-              {{broadcastInfo.lawyerName}} 변호사: {{ msg.message }}
+            <div v-else-if="msg.type === 'Lawyer'"
+                 style="font-size: 0.95rem; display: flex; align-items: center;">
+              <!-- 닉네임: 검정색 고정 -->
+              <span style="color: #222; user-select: text;">
+       👑 {{ msg.nickname }} 변호사
+      </span>
+              <!-- 메시지: 빨간색 -->
+              <span style="color: #fd1900; margin-left: 0.6em;">
+         {{ msg.message }}
+      </span>
             </div>
-            <div v-else style="font-size: 1.0rem; font-weight: bold; display:flex; align-items:center;">
+            <div v-else style="font-size: 0.95rem; display:flex; align-items:center;">
               <!-- 닉네임 드롭다운 & 랜덤 색상 -->
               <span
                   @click.stop="Number(msg.no) !== Number(myNo) && openDropdown(index, msg)"
                   :style="{
-              color: getNicknameColor(msg.nickname),
-              cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
-              userSelect: 'text',
-              position: 'relative',
-              fontWeight: 'bold'
-              }"
-              >
-              {{ msg.nickname }}
+                        color: getNicknameColor(msg.nickname),
+                        cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
+                        userSelect: 'text',
+                        position: 'relative'
+                    }">
+                       {{ msg.nickname }}
               <span
                   v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
                   class="nickname-dropdown"
@@ -523,9 +523,10 @@ const closeCompleteModal = () => {
                     <li class="menu-report" @click.stop="onReportClick">🚨 메시지 신고 🚨</li>
                   </ul>
                 </span>
-              </span>
-              <span style="margin-left:0.6em;">: {{ msg.message }}</span>
+            </span>
+              <span style="color: #222; margin-left:0.6em;"> {{ msg.message }}</span>
             </div>
+
           </div>
         </div>
 
@@ -535,7 +536,7 @@ const closeCompleteModal = () => {
                  type="text"
                  class="form-control bg-body-secondary text-dark border-0 rounded-pill px-3 py-2"
                  placeholder="채팅을 입력해 주세요."
-                 @keyup.enter="sendMessage" />
+                 @keyup.enter="sendMessage"/>
         </div>
       </div>
 
@@ -545,7 +546,7 @@ const closeCompleteModal = () => {
           <div class="modal-custom-content">
             <div class="modal-custom-msg">
               <div class="modal-custom-text">
-                <strong>{{ selectedUser }}</strong>님의 메시지를 신고하시겠습니까?<br />
+                <strong>{{ selectedUser }}</strong>님의 메시지를 신고하시겠습니까?<br/>
                 <p class="fw-light">신고된 메시지는 처리를 위해 수집됩니다.</p>
                 <span style="font-size:0.9rem; color:#888;">"{{ selectedMessage }}"</span>
               </div>
@@ -564,8 +565,8 @@ const closeCompleteModal = () => {
           <div class="modal-custom-content">
             <div class="modal-custom-msg">
               <div class="modal-custom-text" style="text-align:center;">
-                메시지 신고가 정상 접수되었습니다.<br />
-                가이드 위반 여부 검토 후 조치 예정입니다.<br />
+                메시지 신고가 정상 접수되었습니다.<br/>
+                가이드 위반 여부 검토 후 조치 예정입니다.<br/>
                 감사합니다.
               </div>
             </div>

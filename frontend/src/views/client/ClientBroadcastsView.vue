@@ -290,7 +290,8 @@ export default defineComponent({
       stompClient.value.publish({
         destination: "/app/chat.sendMessage",
         body: JSON.stringify({ broadcastNo: broadcastNo.value,
-            message: trimmed }),
+            message: trimmed,
+        }),
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -345,13 +346,14 @@ export default defineComponent({
               nickname: selectedUser.value,
               message: selectedMessage.value,
             },
-            {
+        {
               headers: { Authorization: `Bearer ${token}` }
             },
         );
       } catch (e) {}
       isConfirmModal.value = false;
       isCompleteModal.value = true;
+
     };
 
     const closeCompleteModal = () => {
@@ -562,27 +564,48 @@ export default defineComponent({
           <div v-for="(msg, index) in messages" :key="index" class="mb-3" style="position:relative;">
             <div v-if="msg.type === 'ENTER'"
                  class="w-100 text-center"
-                 style="color: #435879; font-size: 0.9rem;">
+                 style="color: #435879; font-size: 0.75rem;">
               {{ msg.message }}
             </div>
-            <div v-else-if="msg.type === 'AUTO_REPLY'"
-                 class="text-primary fw-bold"
-                 style="font-size: 1.05rem;">
-             {{broadcastInfo.lawyerName}} 변호사: {{ msg.message }}
+            <div v-else-if="msg.type === 'Lawyer'"
+                 style="font-size: 0.90rem; display: flex; align-items: center;">
+              <!-- 닉네임: 검정색 고정 + 클릭 가능 -->
+              <span
+                  @click.stop="Number(msg.no) !== Number(myNo) && openDropdown(index, msg)"
+                  :style="{
+      color: '#222',
+      userSelect: 'text',
+      cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
+      fontWeight: 'bold'
+    }"
+              >
+    👑 {{ msg.nickname }} 변호사
+    <span
+        v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
+        class="nickname-dropdown"
+        style="position:absolute;top:120%;left:0;z-index:10000;">
+      <ul class="dropdown-custom-menu">
+        <li class="menu-report" @click.stop="onReportClick">🚨 메시지 신고 🚨</li>
+      </ul>
+    </span>
+  </span>
+              <!-- 메시지: 빨간색 -->
+              <span style="color: #fd1900; margin-left: 0.6em;">
+    {{ msg.message }}
+  </span>
             </div>
-            <div v-else style="font-size: 1.0rem; font-weight: bold; display:flex; align-items:center;">
+
+            <div v-else style="font-size: 0.90rem; display:flex; align-items:center;">
               <!-- 닉네임 드롭다운 & 랜덤 색상 -->
               <span
                   @click.stop="Number(msg.no) !== Number(myNo) && openDropdown(index, msg)"
-              :style="{
-              color: getNicknameColor(msg.nickname),
-              cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
-              userSelect: 'text',
-              position: 'relative',
-              fontWeight: 'bold'
-              }"
-              >
-              {{ msg.nickname }}
+                  :style="{
+                        color: getNicknameColor(msg.nickname),
+                        cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
+                        userSelect: 'text',
+                        position: 'relative'
+                    }">
+                       {{ msg.nickname }}
               <span
                   v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
                   class="nickname-dropdown"
@@ -591,12 +614,12 @@ export default defineComponent({
                     <li class="menu-report" @click.stop="onReportClick">🚨 메시지 신고 🚨</li>
                   </ul>
                 </span>
-              </span>
-              <span style="margin-left:0.6em;">: {{ msg.message }}</span>
+            </span>
+              <span style="color: #222; margin-left:0.6em;"> {{ msg.message }}</span>
             </div>
+
           </div>
         </div>
-
         <!-- 입력창 -->
         <div class="d-flex">
           <input v-model="message"
@@ -615,7 +638,7 @@ export default defineComponent({
               <div class="modal-custom-text">
                 <strong>{{ selectedUser }}</strong>님의 메시지를 신고하시겠습니까?<br />
                 <p class="fw-light">신고된 메시지는 처리를 위해 수집됩니다.</p>
-                <span style="font-size:0.9rem; color:#888;">"{{ selectedMessage }}"</span>
+                <span style="font-size:0.85rem; color:#888;">"{{ selectedMessage }}"</span>
               </div>
             </div>
             <div class="modal-custom-btns">
