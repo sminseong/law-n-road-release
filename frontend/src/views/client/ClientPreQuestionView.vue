@@ -3,6 +3,7 @@ import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import { onMounted, ref } from "vue";
 import axios from "axios";
 import { useRoute } from "vue-router";
+import { computed } from "vue";
 
 const nickname = ref('');
 const inputContent = ref('');
@@ -39,6 +40,14 @@ onMounted(async () => {
   preQuestion.value = data;
 });
 
+const alreadyAsked = computed(() => {
+  // preQuestions 배열과 내 userNo가 모두 있을 때만 체크
+  if (!preQuestion.value.preQuestions || !myUserNo.value) return false;
+  // preQuestions 배열에 내 userNo와 일치하는 질문이 하나라도 있으면 true
+  return preQuestion.value.preQuestions.some(
+      q => q.userNo === myUserNo.value
+  );
+});
 
 const submitQuestion = async () => {
   if (!inputContent.value.trim()) {
@@ -111,44 +120,52 @@ function getTextColorClass(index) {
         <div class="row" style="height: 100%;">
           <!-- 왼쪽: 방송 정보 -->
           <div class="col-md-7 d-flex flex-column justify-content-center align-items-center" style="min-height: 70vh;">
-            <!-- 상단 이미지 -->
-            <div class="w-100 d-flex justify-content-center" style="margin-top: 45px; margin-bottom: 48px;">
-              <img :src="preQuestion.thumbnailPath || '/img/ads/slider-image-1.jpg'" alt="방송 이미지"
-                   style="max-width: 100%; height: auto; border-radius: 18px;">
+            <!-- 상단 이미지: 더 라운드하고, 그림자 강조 -->
+            <div class="w-100 d-flex justify-content-center mb-4 mt-3">
+              <img :src="preQuestion.thumbnailPath " alt="방송 이미지"
+                   style="max-width: 100%; height: 100%; border-radius: 18px;">
             </div>
 
-            <!-- 방송 상세 정보 -->
-            <div class="bg-light rounded-3 p-4 w-100 d-flex flex-row align-items-center" style="gap: 10px; min-height: 220px;">
-              <!-- 프로필 이미지 -->
-              <div class="position-relative d-flex justify-content-center align-items-center" style="min-width: 170px;">
-                <img src="/img/profiles/kim.png" alt="프로필" class="rounded-circle border border-2"
-                     style="width: 96px; height: 96px;" />
+            <!-- 방송 상세 카드 -->
+            <div class="bg-white border rounded-4 shadow p-4 w-100 d-flex flex-row align-items-center gap-4" style="min-height: 230px;">
+              <!-- 프로필: 더 크게, 그림자, 엣지 강조 -->
+              <div class="d-flex flex-column align-items-center" style="min-width: 130px;">
+                <img
+                    src="/img/profiles/kim.png"
+                    alt="프로필"
+                    class="rounded-circle border border-2 shadow-sm"
+                    style="width: 108px; height: 108px; object-fit: cover;"
+                />
+                <span class="mt-3 fw-semibold fs-5 text-primary text-center" style="letter-spacing:0.03em;">
+        {{ preQuestion.lawyerName }} 변호사
+      </span>
               </div>
 
               <!-- 방송 정보 텍스트 -->
               <div class="text-start flex-grow-1">
-                <div class="fw-semibold mb-1 fs-2">{{ preQuestion.name }}</div>
-                <div class="fw-bold fs-5 mb-1">{{ preQuestion.scheduleContent }}</div>
-                <div class="fw-bold fs-5 mb-1">
-                  {{ preQuestion.date }}　　
-                  {{ preQuestion.startTime?.slice(11, 16) }} ~ {{ preQuestion.endTime?.slice(11, 16) }}
+                <div class="fw-bold fs-2 mb-2">{{ preQuestion.name }}</div>
+                <div class="text-muted fs-5 mb-2">{{ preQuestion.scheduleContent }}</div>
+                <div class="fs-5 mb-1">
+                  <i class="bi bi-calendar2-week text-primary me-1"></i>
+                  {{ preQuestion.date }}
+                  <span v-if="preQuestion.startTime">｜{{ preQuestion.startTime?.slice(11, 16) }} ~ {{ preQuestion.endTime?.slice(11, 16) }}</span>
                 </div>
-                <div class="text-secondary mb-2">- {{ preQuestion.lawyerName }} 변호사 -</div>
                 <div class="mt-2">
-                  <span class="badge bg-primary me-1" v-for="(kw, idx) in preQuestion.keywords" :key="idx">
-                    # {{ kw }}
-                  </span>
+        <span class="badge bg-primary-100 text-primary me-1" v-for="(kw, idx) in preQuestion.keywords" :key="idx" style="font-size:1.07em;">
+          #{{ kw }}
+        </span>
                 </div>
               </div>
             </div>
           </div>
+
+
 
           <!-- 오른쪽: 사전 질문 영역 -->
           <div class="col-md-5 d-flex flex-column" style="min-height: 70vh;">
             <div class="mb-3">
               <span class="fs-4 fw-bold text-dark">사전 질문 등록</span>
             </div>
-            <!-- 사전 질문 목록 -->
             <!-- 사전 질문 목록 -->
             <div class="flex-grow-1 overflow-auto" style="min-height: 0; max-height: 900px;">
               <!-- 사전질문이 있을 때만 목록 렌더링 -->
@@ -182,9 +199,13 @@ function getTextColorClass(index) {
 
 
             <!-- 질문 입력창 -->
-            <form class="row g-2 align-items-center mt-auto"
-                  style="margin-bottom: 0;"
-                  @submit.prevent="submitQuestion">
+            <!-- 질문 등록 폼: 이미 등록한 경우엔 아예 안 보이게 -->
+            <form
+                class="row g-2 align-items-center mt-auto"
+                style="margin-bottom: 0;"
+                @submit.prevent="submitQuestion"
+                v-if="!alreadyAsked"
+            >
               <div class="col">
                 <input type="text" class="form-control fs-5" placeholder="사전질문을 등록하세요"
                        v-model="inputContent"/>
@@ -193,6 +214,10 @@ function getTextColorClass(index) {
                 <button type="submit" class="btn btn-primary fs-5 px-4">등록</button>
               </div>
             </form>
+            <!-- 이미 등록했으면 안내문만 표시 -->
+            <div v-else class="text-success text-center py-2">
+              이미 사전질문을 등록하셨습니다.
+            </div>
           </div>
         </div>
       </div>
