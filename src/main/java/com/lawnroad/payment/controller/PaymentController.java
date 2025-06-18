@@ -62,7 +62,7 @@ public class PaymentController {
             root = tossResp.getBody();
             if (root == null) throw new IllegalStateException("Empty Toss response");
         } catch (HttpClientErrorException | HttpServerErrorException ex) {
-            // Jackson 없이 에러메시지만 뽑아오기
+
             String body = ex.getResponseBodyAsString();
             // body 예시: {"message":"결제 승인 실패","error":"카드 한도가 초과되었습니다."}
             String msg = "결제 승인 실패";
@@ -78,7 +78,7 @@ public class PaymentController {
                     .body(Map.of("message", msg));
         }
 
-        // 이하 정상 로직...
+
         // (1) order 조회
         String orderCode = root.path("orderId").asText();
         OrdersVO order = ordersService.getOrderByCode(orderCode);

@@ -98,7 +98,6 @@ const router = useRouter()
 // 파라미터
 const lawyerNo = Number(route.params.lawyerNo)
 const lawyerName = route.params.lawyerName
-const userNo = 4
 
 // 상태
 const loading = ref(true)
@@ -184,7 +183,7 @@ async function apply() {
     const dto = res.data
     console.log('예약 생성 응답 DTO:', dto)
 
-    // 2) 페이지 이동 — 여기서도 에러가 발생할 수 있습니다.
+    // 2) 페이지 이동
     const pushResult = await router.push({
       name: 'ClientReservationsPayment',   // 혹은 path: '/client/reservations/payment'
       query: {

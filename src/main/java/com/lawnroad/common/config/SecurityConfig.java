@@ -4,7 +4,6 @@ import com.lawnroad.common.util.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -59,29 +58,27 @@ public class SecurityConfig {
 
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/api/lawyer/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/client/**", "/api/confirm/payment", "/api/confirm/cancel").permitAll()
                         // 비회원에게 허가할 api
                         .requestMatchers(
-                            "/api/auth/**",
-                            "/api/public/**",
-                            "/api/find-id",
-                            "/api/reset-password",
-                            "/mail/**",
-                            "/api/user/**",
-                            "/api/auth/nickname",
-                            "/api/notification/**",
-                            "/uploads/**"
+                                "/api/auth/**",
+                                "/api/public/**",
+                                "/api/find-id",
+                                "/api/reset-password",
+                                "/mail/**",
+                                "/api/user/**",
+                                "/api/auth/nickname",
+                                "/api/notification/**",
+                                "/uploads/**"
                         ).permitAll()
 
                         // 사용자 권한에게 허가할 api
-                        .requestMatchers("/api/client/**", "/api/confirm/**","/api/webhook/**").hasAuthority("CLIENT")
+                        .requestMatchers("/api/client/**").hasRole("CLIENT")
 
                         // 변호사 권한에게 허가할 api
                         .requestMatchers("/api/lawyer/**").hasRole("LAWYER")
 
                         // 변호사, 혹은 사용자 권한일 때 허가할 api
-                        .requestMatchers("/api/ai/**").hasAnyAuthority("LAWYER", "CLIENT")
+                        .requestMatchers("/api/ai/**").hasAnyRole("LAWYER", "CLIENT")
 
                         .anyRequest().authenticated()
                 )
