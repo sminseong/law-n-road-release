@@ -37,7 +37,7 @@ onMounted(async () => {
     alert('변호사 계정으로 로그인 후 이용해 주세요.')
     return router.push('/login')
   }
-
+  console.log(lawyerNo)
   await store.fetchLawyerInfo(lawyerNo)
 })
 
