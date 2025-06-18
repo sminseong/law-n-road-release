@@ -1,9 +1,9 @@
 <script setup>
-import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
+import AdminFrame from "@/components/layout/admin/AdminFrame.vue";
 </script>
 
 <template>
-  <LawyerFrame>
+  <AdminFrame>
     <a href="/">메인 화면 이동하기</a>
     <br>
     <br>
@@ -13,5 +13,5 @@ import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
       <li>예정된 방송: 2건</li>
       <li>광고 클릭수: 128회</li>
     </ul>
-    </LawyerFrame>
+    </AdminFrame>
 </template>

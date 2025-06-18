@@ -30,7 +30,7 @@ function logout() {
   // 여기에 실제 로그아웃 처리 로직 넣기
   // 예: 토큰 삭제, 상태 초기화, 로그인 페이지로 이동
   console.log('로그아웃')
-  router.push('/login')
+  router.push('/')
 }
 
 watch(
