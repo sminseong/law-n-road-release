@@ -137,7 +137,7 @@ export default defineComponent({
       try {
         await axios.post('/api/client/broadcast/report', {
           broadcastNo: broadcastNo.value,  // 이미 정의되어 있어야 함
-          userNo: 14,     // 로그인된 사용자 ID
+          userNo: 3,     // 로그인된 사용자 ID
           reasonCode: reportReasonCode.value,
           detailReason: reportDetail.value
         });

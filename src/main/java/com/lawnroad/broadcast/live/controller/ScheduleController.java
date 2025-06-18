@@ -101,12 +101,24 @@ public class ScheduleController {
     }
 
     @GetMapping("/my/{scheduleNo}")
-    public ResponseEntity<ScheduleDetailDto> getScheduleDetail(@PathVariable Long scheduleNo) {
+    public ResponseEntity<ScheduleDetailDto> getScheduleDetail(
+            @PathVariable Long scheduleNo,
+            @RequestHeader("Authorization") String authHeader) {
+
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtTokenUtil.parseToken(token);
+        Long userNo = claims.get("no", Long.class);
+
         ScheduleDetailDto detail = scheduleService.findDetailByScheduleNo(scheduleNo);
 
         if (detail == null) {
             return ResponseEntity.notFound().build();
         }
+        // 로그인한 사용자의 스케줄이 맞는지 확인
+        if (!detail.getUserNo().equals(userNo)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build(); // 403 권한 없음
+        }
+
         return ResponseEntity.ok(detail);
     }
 
