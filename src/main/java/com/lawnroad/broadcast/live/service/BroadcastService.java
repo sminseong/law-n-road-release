@@ -1,24 +1,20 @@
 package com.lawnroad.broadcast.live.service;
 
-import com.lawnroad.broadcast.live.dto.BroadcastReportRequestDto;
-import com.lawnroad.broadcast.live.dto.BroadcastStartDto;
-import com.lawnroad.broadcast.live.dto.BroadcastStartResponseDto;
-import com.lawnroad.broadcast.live.dto.BroadcastViewDetailDto;
+import com.lawnroad.broadcast.live.dto.*;
 
-import java.util.Map;
+import java.util.List;
 
 public interface BroadcastService {
     BroadcastStartResponseDto startBroadcast(Long userNo, BroadcastStartDto dto);
     BroadcastStartResponseDto getClientToken(Long broadcastNo);
     BroadcastStartResponseDto reconnectBroadcast(String sessionId);
-
     // 방송에 정보 불러오기
     BroadcastViewDetailDto getDetailByScheduleNo(Long scheduleNo);
     BroadcastViewDetailDto getDetailByBroadcastNo(Long broadcastNo);
-
     //방송 종료
     void endBroadcast(Long broadcastNo);
-
     //방송 신고
     void reportBroadcast(BroadcastReportRequestDto dto);
+    // 방송 리스트
+    List<BroadcastListDto> getLiveBroadcasts();
 }

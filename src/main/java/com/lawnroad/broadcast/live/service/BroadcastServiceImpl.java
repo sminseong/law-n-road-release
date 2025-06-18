@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -116,5 +117,10 @@ public class BroadcastServiceImpl implements BroadcastService {
         if (result != 1) {
             throw new RuntimeException("방송 신고 등록 실패");
         }
+    }
+
+    @Override
+    public List<BroadcastListDto> getLiveBroadcasts() {
+        return broadcastMapper.selectLiveBroadcasts();
     }
 }

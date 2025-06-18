@@ -1,9 +1,6 @@
 package com.lawnroad.broadcast.live.controller;
 
-import com.lawnroad.broadcast.live.dto.BroadcastReportRequestDto;
-import com.lawnroad.broadcast.live.dto.BroadcastStartResponseDto;
-import com.lawnroad.broadcast.live.dto.BroadcastViewDetailDto;
-import com.lawnroad.broadcast.live.dto.ReportReasonDto;
+import com.lawnroad.broadcast.live.dto.*;
 import com.lawnroad.broadcast.live.mapper.BroadcastMapper;
 import com.lawnroad.broadcast.live.service.BroadcastService;
 import lombok.RequiredArgsConstructor;
@@ -46,5 +43,11 @@ public class BroadcastClientController {
     @GetMapping("/report-reasons")
     public ResponseEntity<List<ReportReasonDto>> getReportReasons() {
         return ResponseEntity.ok(broadcastMapper.findAllReportReasons());
+    }
+    // 라이브 목록조회
+    @GetMapping("/live")
+    public ResponseEntity<List<BroadcastListDto>> getLiveBroadcasts() {
+        List<BroadcastListDto> liveList = broadcastService.getLiveBroadcasts();
+        return ResponseEntity.ok(liveList);
     }
 }
