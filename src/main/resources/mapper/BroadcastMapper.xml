@@ -15,6 +15,7 @@
     <!-- 방송 리스트 MAP -->
     <resultMap id="BroadcastListMap" type="com.lawnroad.broadcast.live.dto.BroadcastListDto">
         <id property="broadcastNo" column="broadcast_no"/>
+        <result property="startTime" column="start_time"/>
         <result property="title" column="title"/>
         <result property="thumbnailPath" column="thumbnail_path"/>
         <result property="categoryName" column="category_name"/>
@@ -126,18 +127,19 @@
     <select id="selectLiveBroadcasts" resultMap="BroadcastListMap">
         SELECT
         b.no AS broadcast_no,
+        b.start_time,
         s.no AS schedule_no,
         s.name AS title,
         s.thumbnail_path,
         c.name AS category_name,
         l.name AS lawyer_name,
-        l.profile_path
+        l.profile
         FROM broadcast b
         JOIN broadcast_schedule s ON b.schedule_no = s.no
         JOIN user u ON b.user_no = u.no
         JOIN lawyer l ON u.no = l.no
         JOIN category c ON s.category_no = c.no
-        WHERE b.status = 'RECODE'
+        WHERE b.status = 'RECORD'
         ORDER BY b.start_time DESC
     </select>
 
