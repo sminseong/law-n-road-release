@@ -341,6 +341,7 @@ export default defineComponent({
             "/api/client/chat/report",
             {
               userNo: selectedUserNo.value,
+              reportedUserNo : myNo.value,
               nickname: selectedUser.value,
               message: selectedMessage.value,
             },

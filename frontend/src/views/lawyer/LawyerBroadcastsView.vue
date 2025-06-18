@@ -377,6 +377,7 @@ const confirmReport = async () => {
         "/api/Lawyer/chat/report",
         {
           userNo: selectedUserNo.value,
+          reportedUserNo : myNo.value,
           nickname: selectedUser.value,
           message: selectedMessage.value,
         },
