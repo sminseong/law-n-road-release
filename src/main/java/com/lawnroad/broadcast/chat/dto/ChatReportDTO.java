@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ChatReportDTO {
     private Long userNo;
+    private Long reportedUserNo;
     private String nickname;
     private String message;
     private LocalDateTime CreatedAt;

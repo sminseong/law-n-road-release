@@ -65,7 +65,9 @@ public class ChatController {
         chatDTO.setNickname(nickname);
         chatDTO.setCreatedAt(LocalDateTime.now());
         chatDTO.setNo(no);
-        chatDTO.setType("CHAT");
+        if(chatDTO.getType() == null) {
+            chatDTO.setType("CHAT"); // 일반 채팅이면 기본값
+        }
         chatDTO.setReportStatus(0);
 
         chatRedisSaveService.saveChatMessage(chatDTO);
