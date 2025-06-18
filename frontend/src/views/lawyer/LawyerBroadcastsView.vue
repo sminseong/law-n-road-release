@@ -224,18 +224,29 @@ const stompClient = ref(null);
 const message = ref("");
 const messages = ref([]);
 const messageContainer = ref(null);
+const nicknameColors = ref({});
+const myNo = ref(null);
+
+//드롭다운/신고 모달 상태
+const dropdownIdx = ref(null);
+const selectedUser = ref(null);
+const selectedMessage = ref(null);
+const isConfirmModal = ref(false);
+const isCompleteModal = ref(false);
+const selectedUserNo = ref(null);
 
 // 닉네임별 랜덤 색상
-const nicknameColors = ref({});
 const colorPalette = [
   "#1abc9c", "#034335", "#84ddaa", "#450978",
   "#184563", "#8bc2e4", "#c791dd", "#8e44ad",
   "#837225", "#876124", "#004aff", "#ff6400",
   "#ec8d85", "#c0392b", "#246667", "#e4de0d"
 ];
+
 function getRandomColor() {
   return colorPalette[Math.floor(Math.random() * colorPalette.length)];
 }
+
 function getNicknameColor(nick) {
   if (!nicknameColors.value[nick]) {
     nicknameColors.value[nick] = getRandomColor();
@@ -243,13 +254,18 @@ function getNicknameColor(nick) {
   return nicknameColors.value[nick];
 }
 
-// 드롭다운/신고 모달 상태
-const dropdownIdx = ref(null);
-const selectedUser = ref(null);
-const selectedMessage = ref(null);
-const isConfirmModal = ref(false);
-const isCompleteModal = ref(false);
-const selectedUserNo = ref(null);
+async function fetchMyNo() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("로그인이 필요합니다!");
+    return false;
+  }
+  const res = await axios.get("/api/Lawyer/my-no", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  myNo.value = res.data;
+  return true;
+}
 
 // STOMP 연결 및 입장 메시지 전송
 const connect = () => {
@@ -258,45 +274,44 @@ const connect = () => {
     alert("로그인이 필요합니다!");
     return;
   }
-  stompClient.value = new Client({
-    webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
-    reconnectDelay: 5000,
-    connectHeaders: {
-      Authorization: `Bearer ${token}`,
-    },
-    onConnect: () => {
-
-      stompClient.value.subscribe(
-          `/topic/${broadcastNo.value}`,
-          (msg) => {
-            const data = JSON.parse(msg.body);
-            messages.value.push(data);
-            scrollToBottom();
-          }
-      );
-
-
-      // 입장 시 type: "ENTER"만 전달
-      stompClient.value.publish({
-
-        destination: "/app/chat.addUser",
-        body: JSON.stringify({ broadcastNo: broadcastNo.value }),
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-    },
-    onStompError: (frame) => {
-      if (frame.body && frame.body.includes("expired")) {
-        alert("로그인이 만료되었습니다. 다시 로그인 해주세요.");
-        localStorage.removeItem('token');
-        location.href = "/login";
-      } else {
-        console.error("STOMP error:", frame);
-      }
-    },
+  fetchMyNo().then((ok) => {
+    if (!ok) return;
+    stompClient.value = new Client({
+      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+      reconnectDelay: 5000,
+      connectHeaders: {
+        Authorization: `Bearer ${token}`,
+      },
+      onConnect: () => {
+        stompClient.value.subscribe(
+            `/topic/${broadcastNo.value}`,
+            (msg) => {
+              const data = JSON.parse(msg.body);
+              messages.value.push(data);
+              scrollToBottom();
+            }
+        );
+        //입장 시 type: "ENTER"만 전달
+        stompClient.value.publish({
+          destination: "/app/chat.addUser",
+          body: JSON.stringify({ broadcastNo: broadcastNo.value }),
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      },
+      onStompError: (frame) => {
+        if (frame.body && frame.body.includes("expired")) {
+          alert("로그인이 만료되었습니다. 다시 로그인 해주세요.");
+          localStorage.removeItem('token');
+          location.href = "/login";
+        } else {
+          console.error("STOMP error:", frame);
+        }
+      },
+    });
+    stompClient.value.activate();
   });
-  stompClient.value.activate();
 };
 
 // 채팅 메시지 전송 (type: "CHAT"만 전달)
@@ -310,7 +325,8 @@ const sendMessage = () => {
   }
   stompClient.value.publish({
     destination: "/app/chat.sendMessage",
-    body: JSON.stringify({ broadcastNo: broadcastNo.value, message: trimmed }),
+    body: JSON.stringify({ broadcastNo: broadcastNo.value,
+      message: trimmed }),
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -338,10 +354,12 @@ const openDropdown = (idx, msg) => {
     window.addEventListener("mousedown", onWindowClick);
   }, 0);
 };
+
 const closeDropdown = () => {
   dropdownIdx.value = null;
   window.removeEventListener("mousedown", onWindowClick);
 };
+
 const onWindowClick = (e) => {
   if (!e.target.closest(".nickname-dropdown")) closeDropdown();
 };
@@ -351,11 +369,12 @@ const onReportClick = () => {
   isConfirmModal.value = true;
   closeDropdown();
 };
+
 const confirmReport = async () => {
   try {
     const token = localStorage.getItem('token');
     await axios.post(
-        "/api/client/chat/report",
+        "/api/Lawyer/chat/report",
         {
           userNo: selectedUserNo.value,
           nickname: selectedUser.value,
@@ -365,16 +384,16 @@ const confirmReport = async () => {
           headers: { Authorization: `Bearer ${token}` }
         },
     );
-
   } catch (e) {}
   isConfirmModal.value = false;
   isCompleteModal.value = true;
 };
+
 const closeCompleteModal = () => {
   isCompleteModal.value = false;
 };
-</script>
 
+</script>
 
 <template>
   <ClientFrame>
@@ -459,7 +478,6 @@ const closeCompleteModal = () => {
 
 
       <!-- 채팅 영역 -->
-      <!-- 채팅 영역 -->
       <div class="position-absolute border rounded shadow p-4 d-flex flex-column bg-white"
            style="width: 400px; height: 700px; top: 2rem; right: 2rem;">
 
@@ -478,23 +496,28 @@ const closeCompleteModal = () => {
                  style="color: #435879; font-size: 0.9rem;">
               {{ msg.message }}
             </div>
+            <div v-else-if="msg.type === 'AUTO_REPLY'"
+                 class="text-primary fw-bold"
+                 style="font-size: 1.05rem;">
+              {{broadcastInfo.lawyerName}} 변호사: {{ msg.message }}
+            </div>
             <div v-else style="font-size: 1.0rem; font-weight: bold; display:flex; align-items:center;">
               <!-- 닉네임 드롭다운 & 랜덤 색상 -->
               <span
-                  @click.stop="openDropdown(index, msg)"
+                  @click.stop="Number(msg.no) !== Number(myNo) && openDropdown(index, msg)"
                   :style="{
-                    color: getNicknameColor(msg.nickname),
-                    cursor: 'pointer',
-                    userSelect: 'text',
-                    position: 'relative',
-                    fontWeight: 'bold'
-                  }"
+              color: getNicknameColor(msg.nickname),
+              cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
+              userSelect: 'text',
+              position: 'relative',
+              fontWeight: 'bold'
+              }"
               >
-                {{ msg.nickname }}
-                <span
-                    v-if="dropdownIdx === index"
-                    class="nickname-dropdown"
-                    style="position:absolute;top:120%;left:0;z-index:10000;">
+              {{ msg.nickname }}
+              <span
+                  v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
+                  class="nickname-dropdown"
+                  style="position:absolute;top:120%;left:0;z-index:10000;">
                   <ul class="dropdown-custom-menu">
                     <li class="menu-report" @click.stop="onReportClick">🚨 메시지 신고 🚨</li>
                   </ul>

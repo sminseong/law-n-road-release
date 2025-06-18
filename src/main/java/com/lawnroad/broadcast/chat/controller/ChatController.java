@@ -93,10 +93,19 @@ public class ChatController {
     }
 
     @GetMapping("/api/client/my-no")
-    public Long getMyNo(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<Long> getMyNo(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         Claims claims = jwtTokenUtil.parseToken(token);
         Long no = claims.get("no", Long.class);
-        return no;
+        return ResponseEntity.ok(no);
     }
+
+    @GetMapping("/api/Lawyer/my-no")
+    public ResponseEntity<Long> getLawyerMyNo(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtTokenUtil.parseToken(token);
+        Long no = claims.get("no", Long.class);
+        return ResponseEntity.ok(no);
+    }
+
 }
