@@ -62,8 +62,16 @@ const props = defineProps({
     <!-- ──────────────────────────────────────────────────────────────────────────────────── -->
 
     <!-- ─── 푸터 ────────────────────────────────────────────────────────────────────────────── -->
-    <footer class="account-footer text-center text-muted small py-3 border-top">
-      © 2025 Law & Road · <a href="/terms">이용약관</a> · <a href="/privacy">개인정보처리방침</a>
+    <footer class="account-footer border-top py-3">
+      <div class="container d-flex justify-content-between align-items-center small text-muted">
+        <div> ㄴㅇㄹㄴㅇㄴㅇㄹㄴㅇㄹㄴㅇㄹㅇㄴㄹ</div>
+        <div>
+          © 2025 Law & Road · <a href="/terms">이용약관</a> · <a href="/privacy">개인정보처리방침</a>
+        </div>
+        <div>
+          <a href="/terms">로톡 관계자이신가요?</a>
+        </div>
+      </div>
     </footer>
     <!-- ──────────────────────────────────────────────────────────────────────────────────── -->
   </div>
