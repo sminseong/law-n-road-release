@@ -205,7 +205,7 @@ function goToLawyerLive() {
 <template>
   <LawyerFrame>
     <div class="container-fluid my-5 d-flex justify-content-center">
-      <div class="bg-white border border-2 rounded-4 shadow px-5 py-4 w-100" style="min-height: 70vh; max-width: 1600px;">
+      <div class="bg-white border border-2 rounded-4 shadow px-5 py-4 w-100" style="min-height: 80vh; max-width: 1600px;">
         <div class="row w-100 align-items-start">
           <!-- 왼쪽: 방송 콘텐츠 영역 (수정 불가 보기 전용) -->
           <div class="col-md-7 d-flex flex-column justify-content-start align-items-start pe-5">
@@ -257,6 +257,9 @@ function goToLawyerLive() {
               <div v-else-if="isScheduleError" class="text-danger">❌ 방송 정보를 불러오지 못했습니다.</div>
             </div>
           </div>
+
+
+
 
           <!-- 오른쪽: 사전 질문 + 나이트봇 -->
           <div class="col-md-5 d-flex flex-column justify-content-between">
