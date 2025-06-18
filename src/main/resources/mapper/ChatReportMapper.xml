@@ -7,9 +7,9 @@
 
     <insert id="insertChatReport" parameterType="ChatReportDTO">
         INSERT INTO chat_report
-        (user_no, nickname, message, created_at)
+        (user_no, reported_user_no, nickname, message, created_at)
         VALUES
-            (#{userNo}, #{nickname}, #{message}, NOW())
+            (#{userNo}, #{reportedUserNo} ,#{nickname}, #{message}, NOW())
     </insert>
 
 </mapper>
