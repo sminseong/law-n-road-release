@@ -71,7 +71,6 @@ const logout = () => {
   console.log('nickname:', localStorage.getItem('nickname'))
 
   // ✅ 5. 로그인 페이지로 이동 + 새로고침
-  router.push('/login')
   setTimeout(() => location.reload(), 300) // 새로고침으로 컴포넌트 초기화
   console.log('[로그아웃 완료] localStorage 상태 확인:')
   console.log('token:', localStorage.getItem('token'))
@@ -107,11 +106,10 @@ const logout = () => {
                 <!-- 모바일 아이콘 + 햄버거 아이콘 -->
                 <div class="d-flex align-items-center lh-1">
                   <div class="list-inline me-4">
-                    <div class="list-inline-item">
+                    <div v-if="isLoggedIn" class="list-inline-item">
                       <!-- 사용자 아이콘: goToMyPage 호출 -->
                       <!-- 로그인 상태일 때 -->
                       <a
-                          v-if="isLoggedIn"
                           href="#"
                           class="text-muted"
                           @click.prevent="goToMyPage"
@@ -132,10 +130,37 @@ const logout = () => {
                           <circle cx="12" cy="7" r="4"></circle>
                         </svg>
                       </a>
-                      <!-- 비로그인 상태일 때 -->
-                      <div v-else>
-                        <router-link to="/login" class="btn btn-primary">로그인</router-link>
+
+                      <div class="ms-4 list-inline-item">
+                        <!-- 로그아웃 아이콘: logout 호출 -->
+                        <a
+                            href="#"
+                            class="text-muted"
+                            @click="logout"
+                            title="로그아웃"
+                        >
+                          <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="feather feather-log-out"
+                          >
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
+                          </svg>
+                        </a>
                       </div>
+                    </div>
+                    <!-- 비로그인 상태일 때 -->
+                    <div v-else>
+                      <router-link to="/login" class="btn btn-primary">로그인</router-link>
                     </div>
                   </div>
                   <!-- 햄버거 버튼 -->
@@ -207,12 +232,14 @@ const logout = () => {
             <!-- 장바구니, 유저정보 등 아이콘 -->
             <div class="col-md-2 col-xxl-1 text-end d-none d-lg-block">
               <div v-if="isLoggedIn" class="list-inline">
+
                 <div class="list-inline-item">
                   <!-- 사용자 아이콘: goToMyPage 호출 -->
                   <a
                       href="#"
                       class="text-muted"
                       @click.prevent="goToMyPage"
+                      title="마이페이지"
                   >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -231,12 +258,15 @@ const logout = () => {
                     </svg>
                   </a>
                 </div>
+
                 <div class="list-inline-item">
+                  <!-- 장바구니 아이콘 -->
                   <a
                       class="text-muted position-relative"
                       href="/client/cart"
                       role="button"
                       aria-controls="offcanvasRight"
+                      title="장바구니"
                   >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -253,6 +283,33 @@ const logout = () => {
                       <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
                       <line x1="3" y1="6" x2="21" y2="6"></line>
                       <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                  </a>
+                </div>
+
+                <div class="list-inline-item">
+                  <!-- 로그아웃 아이콘: logout 호출 -->
+                  <a
+                      href="#"
+                      class="text-muted"
+                      @click="logout"
+                      title="로그아웃"
+                  >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="feather feather-log-out"
+                    >
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                      <polyline points="16 17 21 12 16 7" />
+                      <line x1="21" y1="12" x2="9" y2="12" />
                     </svg>
                   </a>
                 </div>
