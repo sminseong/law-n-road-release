@@ -45,7 +45,6 @@ public class SecurityConfig {
                                 "/api/webhook/**"
                         ).permitAll()
 
-                        // 결제 승인 취소 콜백 인증 없게 처리
                         .requestMatchers(HttpMethod.POST,"/api/confirm/payment", "/api/confirm/cancel").permitAll()
 
                         // 2) AI 및 슬롯 조회는 CLIENT 또는 LAWYER 권한 모두 허용
