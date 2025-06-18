@@ -5,20 +5,23 @@ import { useRoute } from 'vue-router'
 import http from '@/libs/HttpRequester'
 
 const route = useRoute()
-const tmplNo = route.params.tmplNo
+const data = ref({})
 
 async function fetchLawyerHomepage(lawyerNo) {
   try {
+    console.log(lawyerNo)
     const res = await http.get(`/api/public/homepage/${lawyerNo}`)
     console.log(res.data) // 또는 return response.data;
+    data.value = res.data
   } catch (error) {
     console.error('❌ 변호사 홈화면 불러오기 실패:', error)
   }
 }
 
 onMounted(async () => {
-  fetchLawyerHomepage(1);
+  fetchLawyerHomepage(route.params.lawyerNo);
 })
+
 const template = ref({
   name: '교통사고 합의서 양식',
   price: 30000,
@@ -44,7 +47,7 @@ function handleAddToCart() {
         <!-- 썸네일 -->
         <div class="col-md-4">
           <div class="card shadow-sm h-100">
-            <img :src="template.thumbnailPath" class="card-img-top" alt="프로필" style="object-fit: cover; height: 100%; max-height: 400px;">
+            <img :src="data.profileImagePath" class="card-img-top" alt="프로필" style="object-fit: cover; height: 100%; max-height: 400px;">
           </div>
         </div>
 
@@ -53,67 +56,65 @@ function handleAddToCart() {
           <div class="card shadow-sm p-4">
             <!-- 🔹 누적 판매수 -->
             <div class="text-muted text-end small mb-2">
-              누적 판매수: {{ template.salesCount }}건
+
             </div>
 
             <!-- 🔹 변호사 정보 -->
             <div class="d-flex align-items-start mb-3 position-relative" style="min-height: 55px;">
-              <img
-                  :src="template.profile"
-                  class="rounded-circle me-3"
-                  style="width: 50px; height: 50px; object-fit: cover;"
-              />
               <div>
-                <strong class="fw-semibold">{{ template.lawyerName }} 변호사 | {{ template.lawyerIntro }}</strong><br />
-                <small class="text-muted">템플릿 유형: {{ template.type }}</small>
+                <strong class="fw-semibold fs-1"> {{ data.shortIntro }} </strong>
+                <br />
+                <br />
+                <strong class="fw-semibold fs-5"> {{ data.name }} 변호사 </strong>
               </div>
-              <a
-                  :href="`/lawyer/${template.userNo}`"
-                  class="text-muted small text-decoration-underline me-2"
-                  style="position: absolute; bottom: 0; right: 0;"
-              >
-                프로필 보러가기
-              </a>
             </div>
 
             <hr>
 
-            <h1 class="fw-bold mb-2">{{ template.name }}</h1>
-
-            <div class="d-flex align-items-baseline mb-3">
-              <span class="text-danger fw-bold fs-3">{{ template.discountRate }}%</span>
-              <div class="d-flex align-items-baseline ms-auto">
-                <del class="text-muted me-2 fs-6">{{ template.price.toLocaleString() }}원</del>
-                <span class="text-danger fw-bold fs-3">
-                  {{ (template.price * (1 - template.discountRate / 100)).toLocaleString() }}원
-                </span>
+            <!--pre 태그 엔터, 띄어쓰기 그대로 반영, 쓸데없이 엔터 금지-->
+            <div class="d-flex align-items-start justify-content-between gap-4 mb-8 mt-2">
+              <!-- 왼쪽 -->
+              <div class="ms-3 small w-100 w-md-50">
+                <div><strong>이메일</strong> {{ data.email }}</div>
+                <div><strong>전화</strong> {{ data.officePhone }}</div>
+                <br>
+                <div><strong>{{ data.officeName }}</strong><br>
+                  {{ data.officeAddress }}
+                </div>
+                <br>
+                <div><strong>상담비용</strong> {{ data.consultPrice }} 원</div>
               </div>
+
+              <!-- 오른쪽 -->
+              <pre class="w-100 w-md-50 mb-0"
+                   style="white-space: pre-wrap;
+               word-break: break-word;
+               font-family: inherit;">{{ data.longIntro }}</pre>
             </div>
 
-            <div class="mt-4 d-flex gap-2">
-              <button class="btn btn-primary flex-fill">전화상담 예약하러 가기</button>
-            </div>
+
+            <router-link
+                :to="{ name: 'ClientReservations', params: { lawyerNo: 1, lawyerName: '김민수' } }"
+                class="btn btn-primary w-100 text-center"
+            >
+              전화상담 예약하러 가기
+            </router-link>
           </div>
         </div>
       </div>
 
       <div class="card shadow-sm mb-4 p-4">
-        <h5 class="fw-bold">{{}} 변호사의 방송 다시보기</h5>
+        <h5 class="fw-bold">{{ data.name }} 변호사의 방송 다시보기</h5>
         <p class="mb-0">{{ template.description }}</p>
       </div>
 
       <div class="card shadow-sm mb-4 p-4">
-        <h5 class="fw-bold">{{}} 변호사의 법률 템플릿</h5>
+        <h5 class="fw-bold">{{ data.name }} 변호사의 법률 템플릿</h5>
         <p class="mb-0">{{ template.description }}</p>
       </div>
 
       <div class="card shadow-sm mb-4 p-4">
-        <h5 class="fw-bold">{{}} 변호사가 답변한 상담글</h5>
-        <p class="mb-0">{{ template.description }}</p>
-      </div>
-
-      <div class="card shadow-sm mb-4 p-4">
-        <h5 class="fw-bold">{{}} 변호사의 사무실 정보</h5>
+        <h5 class="fw-bold">{{ data.name }} 변호사가 답변한 상담글</h5>
         <p class="mb-0">{{ template.description }}</p>
       </div>
     </div>

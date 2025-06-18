@@ -20,6 +20,7 @@ private final PublicHomepageService publicHomepageService;
 @GetMapping("/homepage/{lawyerNo}")
 public ResponseEntity<LawyerHomepageDto> getLawyerHomepage(@PathVariable Long lawyerNo) {
   LawyerHomepageDto dto = publicHomepageService.getLawyerHomepage(lawyerNo);
+//  System.out.println(lawyerNo + " : " + dto);
   return ResponseEntity.ok(dto);
 }
 }

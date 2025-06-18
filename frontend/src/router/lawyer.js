@@ -6,8 +6,13 @@ export default [
         component: () => import('@/views/lawyer/DashboardView.vue')
     },
     {
-        path: '/lawyer/:lawyerNo/homepage',
+        path: '/lawyer/profile',
         name: 'LawyerProfile',
+        component: () => import('@/views/lawyer/ProfileSettingView.vue')
+    },
+    {
+        path: '/lawyer/:lawyerNo/homepage',
+        name: 'LawyerHomePage',
         component: () => import('@/views/lawyer/LawyerHomePageView.vue')
     },
 

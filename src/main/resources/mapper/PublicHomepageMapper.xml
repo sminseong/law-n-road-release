@@ -13,6 +13,7 @@
             l.intro_detail AS longIntro,
             l.profile AS profileImagePath,
             l.office_name AS officeName,
+            l.consult_price AS consultPrice,
             CONCAT_WS(' ', l.road_address, l.detail_address) AS officeAddress,
             l.office_number AS officePhone,
             l.email AS email
@@ -28,7 +29,7 @@
             t.discount_rate AS discountRate,
             t.thumbnail_path AS thumbnailPath
         FROM template t
-        WHERE t.user_no = #{lawyerNo}
+        WHERE t.user_no = 1
           AND t.is_deleted = 0
         ORDER BY t.sales_count DESC, t.created_at DESC
         LIMIT 10
@@ -40,7 +41,7 @@
             b.title,
             b.content
         FROM board b
-        WHERE b.user_no = #{lawyerNo}
+        WHERE b.user_no = 1
         ORDER BY b.created_at DESC
         LIMIT 5
     </select>

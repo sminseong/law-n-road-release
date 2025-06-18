@@ -37,8 +37,13 @@ onMounted(async () => {
     alert('변호사 계정으로 로그인 후 이용해 주세요.')
     return router.push('/login')
   }
+
   console.log(lawyerNo)
-  await store.fetchLawyerInfo(lawyerNo)
+  // ✅ lawyerInfo가 없을 때만 fetch (중복 요청 방지)
+  if (!store.lawyerInfo) {
+    console.log(store.lawyerInfo)
+    await store.fetchLawyerInfo(lawyerNo)
+  }
 })
 
 const menuItems = [
@@ -87,10 +92,18 @@ watch(
       <div class="profile-box text-center mb-5 mt-3">
         <img :src="lawyerInfo.profileImagePath" alt="프로필" class="profile-img" />
         <div class="profile-name mt-2 fw-semibold">{{ lawyerInfo.name }} 변호사</div>
-        <button class="btn btn-sm btn-outline-light mt-2"
-                @click="go(`/lawyer/${lawyerNo}/homepage`, '내 홈페이지 보기')">
+<!--        <button class="btn btn-sm btn-outline-light mt-2"-->
+<!--                @click="go(`/lawyer/${lawyerNo}/homepage`, '내 홈페이지 보기')">-->
+<!--          내 홈페이지 보기-->
+<!--        </button>-->
+        <a
+            :href="`/lawyer/${lawyerNo}/homepage`"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-sm btn-outline-light mt-2"
+        >
           내 홈페이지 보기
-        </button>
+        </a>
       </div>
 
       <!-- 메뉴 -->

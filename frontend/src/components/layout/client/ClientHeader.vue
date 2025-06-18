@@ -10,13 +10,24 @@ const route = useRoute()
 // 로그인 관련
 const nickname = ref('')
 const isLoggedIn = ref(false)
+const role = ref('')
 
 function goToMyPage() {
-  const target = '/client/mypage'
+  if (!role.value) {
+    alert('로그인이 필요합니다.')
+    return router.push('/login')
+  }
+
+  const target =
+      role.value === 'client' ? '/client/mypage' :
+          role.value === 'lawyer' ? '/lawyer' :
+              '/'
+
   if (route.path === target) {
     window.location.reload()
     return
   }
+
   router.push(target)
 }
 
@@ -35,11 +46,13 @@ onMounted(() => {
 
   const token = localStorage.getItem('token')
   const nick = localStorage.getItem('nickname')
+  role.value = localStorage.getItem('accountType')
 
   isLoggedIn.value = !!token
   if (nick && nick !== 'null') {
     nickname.value = nick
   }
+
 })
 
 onBeforeUnmount(() => {
@@ -259,7 +272,7 @@ const logout = () => {
                   </a>
                 </div>
 
-                <div class="list-inline-item">
+                <div v-if="role === 'client'" class="list-inline-item">
                   <!-- 장바구니 아이콘 -->
                   <a
                       class="text-muted position-relative"

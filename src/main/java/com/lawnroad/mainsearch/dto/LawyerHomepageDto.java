@@ -13,6 +13,7 @@ public class LawyerHomepageDto {
   private String shortIntro; // 자기소개 요약
   private String longIntro; // 자기소개 상세
   private String profileImagePath; // 프로필 이미지
+  private int consultPrice; // 상담비용
   
   private String officeName; // 사무실 이름
   private String officeAddress; // 주소
