@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/client/{userNo}/reservations")
+@RequestMapping("/api/client/reservations")
 public class ClientReservationsController {
 
     private final ReservationsService service;
@@ -46,7 +46,7 @@ public class ClientReservationsController {
     }
 
     /** 2) 내 예약 리스트 조회 */
-    @GetMapping
+    @GetMapping("/list")
     public ResponseEntity<List<ReservationsResponseDTO>> getMyReservations(
             @RequestHeader("Authorization") String authHeader
     ) {

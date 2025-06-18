@@ -2,7 +2,7 @@
   <ClientFrame>
     <div class="container mx-auto py-6">
       <h2 class="text-3xl font-bold mb-6">
-        {{ lawyerName }} 변호사 상담 예약
+        {{ props.lawyerName }} 변호사 상담 예약
       </h2>
 
       <!-- 로딩 스피너 -->
@@ -73,7 +73,7 @@
         <!-- 예약 신청 버튼 -->
         <div class="text-right">
           <button
-              class="px-5 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+              class="px-5 py-2 bg-blue-600 text-white disabled:opacity-50"
               :disabled="!selectedNo"
               @click="apply"
           >
@@ -86,36 +86,33 @@
 </template>
 
 <script setup>
-import {ref, onMounted, computed} from 'vue'
-import {useRoute, useRouter} from 'vue-router'
+import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 
-// 라우팅
-const route = useRoute()
-const router = useRouter()
+// 1) 라우터로부터 props 받기
+const props = defineProps({
+  lawyerNo:   { type: Number, required: true },
+  lawyerName: { type: String, required: true }
+})
 
-// 파라미터
-const lawyerNo = Number(route.params.lawyerNo)
-const lawyerName = route.params.lawyerName
-
-// 상태
-const loading = ref(true)
-const slotsFlat = ref([])
+const route    = useRoute()
+const router   = useRouter()
+const loading    = ref(true)
+const slotsFlat  = ref([])
 const selectedNo = ref(null)
 
-// 마운트 시 슬롯 조회
+// 슬롯 조회
 onMounted(async () => {
   try {
     const token = localStorage.getItem('token')
     const today = new Date().toISOString().slice(0, 10)
     const res = await axios.get(
-        `/api/lawyer/${lawyerNo}/slots`,
+        `/api/lawyer/${props.lawyerNo}/slots`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          }
-          , params: {startDate: today}
+          headers: { Authorization: `Bearer ${token}` },
+          params:  { startDate: today }
         }
     )
     slotsFlat.value = res.data
@@ -127,7 +124,7 @@ onMounted(async () => {
   }
 })
 
-// 슬롯을 날짜별로 그룹핑
+// 그룹핑 함수
 function groupByDate(list) {
   const map = {}
   list.forEach(s => {
@@ -142,68 +139,44 @@ function groupByDate(list) {
       }))
 }
 
-// 최대 7일치만
-const weeklySlots = computed(() =>
-    groupByDate(slotsFlat.value).slice(0, 7)
-)
+const weeklySlots = computed(() => groupByDate(slotsFlat.value).slice(0, 7))
 
-// 날짜 포맷
 function formatDate(str) {
   const d = new Date(str + 'T00:00:00')
-  return d.toLocaleDateString('ko', {
-    month: 'long', day: 'numeric', weekday: 'short'
-  })
+  return d.toLocaleDateString('ko', { month: 'long', day: 'numeric', weekday: 'short' })
 }
 
-// 슬롯 선택
 function select(slot) {
   if (slot.status !== 1) return
   selectedNo.value = slot.no
 }
 
-// 예약 생성 후 결제 페이지로 이동
 async function apply() {
   try {
     const token = localStorage.getItem('token')
-    // 1) API 호출
     const payload = {
-      slotNo: selectedNo.value,
-      userNo,
+      slotNo:  selectedNo.value,
       content: ''
     }
-    const res = await axios.post(
-        `/api/client/${userNo}/reservations`,
+    const { data: dto } = await axios.post(
+        `/api/client/reservations`,
         payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
     )
-    const dto = res.data
-    console.log('예약 생성 응답 DTO:', dto)
-
-    // 2) 페이지 이동
-    const pushResult = await router.push({
-      name: 'ClientReservationsPayment',   // 혹은 path: '/client/reservations/payment'
+    await router.push({
+      name:  'ClientReservationsPayment',
       query: {
-        orderCode: dto.orderCode,
+        orderCode:     dto.orderCode,
         reservationNo: dto.no,
-        slotDate: dto.slotDate,
-        slotTime: dto.slotTime,
-        amount: dto.amount,
-        lawyerName
+        slotDate:      dto.slotDate,
+        slotTime:      dto.slotTime,
+        amount:        dto.amount,
+        lawyerName:    props.lawyerName
       }
     })
-    console.log('router.push 결과:', pushResult)
   } catch (err) {
-    if (err.response && err.response.data) {
-      console.error('🚨 reservations 500 응답:', err.response.data)
-      alert(`예약 실패: ${err.response.data.message || JSON.stringify(err.response.data)}`)
-    } else {
-      console.error('apply() 에서 에러 발생', err)
-      alert('예약 신청에 실패했습니다.')
-    }
+    console.error(err)
+    alert('예약 신청에 실패했습니다.')
   }
 }
 </script>

@@ -26,7 +26,7 @@ export default [
         component: () => import('@/views/client/ClientReservationsView.vue')
     },
     {
-        path: '/client/reservations/:clientNo',
+        path: '/client/reservations/list',
         name: 'ClientReservationsList',
         component: () => import('@/views/client/ClientReservationsList.vue')
     },

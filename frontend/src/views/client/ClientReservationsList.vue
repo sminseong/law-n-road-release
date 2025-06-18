@@ -85,7 +85,7 @@ onMounted(async () => {
   try {
     const token = localStorage.getItem('token')
 
-    const res = await axios.get(`/api/client/${clientNo}/reservations`,
+    const res = await axios.get(`/api/client/reservations/list`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

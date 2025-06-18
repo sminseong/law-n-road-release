@@ -78,7 +78,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/lawyer/**").hasRole("LAWYER")
 
                         // 변호사, 혹은 사용자 권한일 때 허가할 api
-                        .requestMatchers("/api/ai/**").hasAnyRole("LAWYER", "CLIENT")
+                        .requestMatchers("/api/ai/**", "/api/lawyer/*/slots").hasAnyRole("LAWYER", "CLIENT")
 
                         .anyRequest().authenticated()
                 )
