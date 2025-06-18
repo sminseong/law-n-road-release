@@ -33,9 +33,7 @@
           <div class="p-grid-col text--left"><b>paymentKey</b></div>
           <div
               class="p-grid-col text--right"
-              id="paymentKey"
-              style="white-space: initial; width: 250px"
-          >
+              id="paymentKey">
             {{ paymentKey }}
           </div>
         </div>
@@ -49,14 +47,14 @@
     </div>
 
     <!-- 응답 데이터 디버그용 -->
-    <div
-        class="box_section"
-        style="width: 600px; text-align: left; margin: 40px auto 0;"
-        v-if="responseData"
-    >
-      <b>Response Data :</b>
-      <pre style="white-space: pre-wrap">{{ JSON.stringify(responseData, null, 2) }}</pre>
-    </div>
+    <!--    <div-->
+    <!--        class="box_section"-->
+    <!--        style="width: 600px; text-align: left; margin: 40px auto 0;"-->
+    <!--        v-if="responseData"-->
+    <!--    >-->
+    <!--      <b>Response Data :</b>-->
+    <!--      <pre style="white-space: pre-wrap">{{ JSON.stringify(responseData, null, 2) }}</pre>-->
+    <!--    </div>-->
   </ClientFrame>
 </template>
 

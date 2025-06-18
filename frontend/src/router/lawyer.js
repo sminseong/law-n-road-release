@@ -28,7 +28,8 @@ export default [
     {
         path: '/lawyer/:lawyerNo/slots',
         name: 'TimeSlotUpdate',
-        component: () => import('@/views/lawyer/TimeSlotUpdate.vue')
+        component: () => import('@/views/lawyer/TimeSlotUpdate.vue'),
+        props: true
     },
 
     // ---------- 방송 ----------
