@@ -26,7 +26,6 @@ const sendMessage = async (manualText = null) => {
 
   try {
     const res = await sendChatToBot(text)
-    console.log('백엔드 응답:', res.data)
 
     const content = res.data?.content?.[0]
     if (!content) {
@@ -88,17 +87,14 @@ const handleOptionClick = (text) => {
 onMounted(async () => {
   try {
     const welcome = await sendWelcomeMessage()
-    console.log('✅ 웰컴 응답:', welcome)
 
     // .content 기준으로 파싱
     const items = welcome?.content
     if (!items?.length) {
-      console.warn('⛔ content 없음:', welcome)
       return
     }
 
     items.forEach((item, index) => {
-      console.log(`🟢 content[${index}]:`, item)
 
       if (item.type === 'text') {
         messages.value.push({

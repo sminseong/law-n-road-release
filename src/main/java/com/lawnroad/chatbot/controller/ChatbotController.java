@@ -20,19 +20,16 @@ import java.util.Map;
 public class ChatbotController {
 
     private final ChatbotConfig chatbotConfig;
-    private final RestTemplate restTemplate = new RestTemplate(); //
 
     // 1. open 이벤트
     @PostMapping("/open")
     public ResponseEntity<String> openChatbot() {
-        log.info("open chatbot 호출");
         return transmitMessage("", true);
     }
 
     // 2. send 이벤트
     @PostMapping("/send")
     public ResponseEntity<String> sendChatbot(@RequestBody Map<String, String> body) {
-        log.info("send chatbot 호출");
         String question = body.get("question");
         return transmitMessage(question, false);
     }
@@ -40,9 +37,6 @@ public class ChatbotController {
     // 클로바로 메시지 전달
     private ResponseEntity<String> transmitMessage(String question, boolean isOpen) {
         try {
-            log.info("💬 전송할 질문 내용: {}", question);
-            log.info("📌 SecretKey: {}", chatbotConfig.getSecretKey());
-            log.info("📌 Invoke URL: {}", chatbotConfig.getInvokeUrl());
             // 시간
             long timestamp = LocalDateTime.now().atZone(ZoneId.of("Asia/Seoul")).toEpochSecond();
 
