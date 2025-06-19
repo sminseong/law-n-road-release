@@ -1,6 +1,7 @@
 package com.lawnroad.account.service;
 
 
+import com.lawnroad.account.dto.ClientProfileDTO;
 import com.lawnroad.account.dto.ClientSignupRequest;
 import com.lawnroad.account.dto.LoginRequest;
 import com.lawnroad.account.entity.ClientEntity;
@@ -135,6 +136,11 @@ public class ClientService {
 
     public void withdrawClient(String clientId) {
         clientMapper.updateWithdrawalAtNow(clientId);
+    }
+
+    public ClientProfileDTO fetchClientProfile(String clientId) {
+        System.out.println("서비스 접근");
+        return clientMapper.selectProfileByClientId(clientId);
     }
 
 

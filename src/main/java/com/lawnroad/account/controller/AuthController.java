@@ -390,6 +390,23 @@ public ResponseEntity<?> lawyerSignup(
 //        return ResponseEntity.ok().build();
 //    }
 
+
+    @GetMapping("/client/profile")
+    public ResponseEntity<ClientProfileDTO> getClientProfile(
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        String token    = authHeader.replace("Bearer ", "");
+        Claims claims   = jwtTokenUtil.parseToken(token);
+        String clientId = claims.getSubject();
+
+        System.out.println("GETMAPPING");
+
+        ClientProfileDTO dto = clientService.fetchClientProfile(clientId);
+        return ResponseEntity.ok(dto);
+    }
+
+
+
     @PutMapping("/client/profile")
     //@PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> updateClientProfile(
@@ -413,7 +430,7 @@ public ResponseEntity<?> lawyerSignup(
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/client/withdraw")
+    @DeleteMapping("/client/withdraw")
     //@PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> withdrawClient(
             @RequestHeader("Authorization") String authHeader

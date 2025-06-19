@@ -16,15 +16,54 @@ const phone = ref(originalPhone)
 // 이메일 파싱
 const emailId = ref(originalEmail.split('@')[0] || '')
 const savedDomain = originalEmail.split('@')[1] || 'gmail.com'
-const emailDomainSelect = ref(['gmail.com', 'naver.com', 'daum.net'].includes(savedDomain) ? savedDomain : 'custom')
-const emailDomainCustom = ref(emailDomainSelect.value === 'custom' ? savedDomain : '')
+const emailDomainSelect = ref(
+    ['gmail.com', 'naver.com', 'daum.net'].includes(savedDomain) ? savedDomain : 'custom'
+)
+const emailDomainCustom = ref(
+    emailDomainSelect.value === 'custom' ? savedDomain : ''
+)
 
 // 이메일 최종 조합
 const email = computed(() => {
-  return emailId.value + '@' + (emailDomainSelect.value === 'custom' ? emailDomainCustom.value : emailDomainSelect.value)
+  return (
+      emailId.value + '@' +
+      (emailDomainSelect.value === 'custom'
+          ? emailDomainCustom.value
+          : emailDomainSelect.value)
+  )
 })
 
+// ——— 1) 기존 프로필 조회(GET) 함수 추가 ———
+const fetchProfile = async () => {
+  try {
+    const res = await makeApiRequest({ method: 'get', url: '/api/client/profile' })
+    if (res?.data) {
+      // 서버 응답에서 nickname, email, phone 할당
+
+      nickname.value = res.data.nickname
+      phone.value = res.data.phone
+      console.log("프론트쪽 get 접근 테스트중 ")
+      console.log(nickname.value)
+      console.log(phone.value)
+
+      const [id, domain] = res.data.email.split('@')
+      emailId.value = id
+      if (['gmail.com', 'naver.com', 'daum.net'].includes(domain)) {
+        emailDomainSelect.value = domain
+        emailDomainCustom.value = ''
+      } else {
+        emailDomainSelect.value = 'custom'
+        emailDomainCustom.value = domain
+      }
+    }
+  } catch (err) {
+    console.error('프로필 조회 실패:', err)
+  }
+}
+
+// 컴포넌트 마운트 시 프로필 자동 조회 및 디버깅 정보 출력
 onMounted(() => {
+  fetchProfile()
   console.log('=== 디버깅 정보 ===')
   console.log('현재 토큰:', localStorage.getItem('token'))
   console.log('사용자 번호:', localStorage.getItem('no'))
@@ -84,7 +123,7 @@ const withdrawAccount = async () => {
 
   try {
     const response = await makeApiRequest({
-      method: 'put',
+      method: 'delete',
       url: '/api/client/withdraw',
       data: {}
     })
@@ -103,7 +142,7 @@ const withdrawAccount = async () => {
 // 🔍 테스트용 토큰 재발급 버튼
 const testRefreshToken = async () => {
   console.log('🧪 토큰 재발급 테스트 시작')
-  await refreshAccessToken()
+  //await refreshAccessToken()
 }
 </script>
 
@@ -114,8 +153,12 @@ const testRefreshToken = async () => {
     <!-- 디버깅 버튼 -->
     <div class="card p-3 mb-3 bg-light">
       <h5>디버깅 도구</h5>
-      <button class="btn btn-info btn-sm" @click="testRefreshToken">토큰 재발급 테스트</button>
-      <small class="text-muted mt-2 d-block">콘솔창(F12)을 열고 테스트해보세요.</small>
+      <button class="btn btn-info btn-sm" @click="testRefreshToken">
+        토큰 재발급 테스트
+      </button>
+      <small class="text-muted mt-2 d-block">
+        콘솔창(F12)을 열고 테스트해보세요.
+      </small>
     </div>
 
     <div class="card p-4">
@@ -159,6 +202,7 @@ const testRefreshToken = async () => {
           </div>
         </div>
         <small class="text-muted">현재 이메일: {{ email }}</small>
+        <small class="text-muted">현재 닉네임: {{ nickname }}</small>
       </div>
 
       <div class="mb-3">
@@ -172,8 +216,12 @@ const testRefreshToken = async () => {
         />
       </div>
 
-      <button class="btn btn-primary" @click="updateProfile">프로필 수정</button>
-      <button class="btn btn-danger mt-2" @click="withdrawAccount">회원 탈퇴</button>
+      <button class="btn btn-primary" @click="updateProfile">
+        프로필 수정
+      </button>
+      <button class="btn btn-danger mt-2" @click="withdrawAccount">
+        회원 탈퇴
+      </button>
     </div>
   </div>
 </template>
