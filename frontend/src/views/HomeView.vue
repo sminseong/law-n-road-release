@@ -440,7 +440,7 @@ const loadFn = async ({ page, size }) => {
       </div>
     </div>
 
-    <div class="row g-4 row-cols-lg-5 row-cols-2 row-cols-md-3">
+    <div v-if="productList.length > 0" class="row g-4 row-cols-lg-5 row-cols-2 row-cols-md-3">
       <div class="col-md-3 mb-4" v-for="product in productList" :key="product.no">
         <ProductCard
             :no="product.no"
@@ -451,6 +451,10 @@ const loadFn = async ({ page, size }) => {
             :discountedPrice="product.discountedPrice"
         />
       </div>
+    </div>
+
+    <div v-else class="text-center text-muted py-5">
+      등록된 상품이 없습니다.
     </div>
 
   </ClientFrame>

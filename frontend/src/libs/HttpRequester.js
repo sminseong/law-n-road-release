@@ -3,7 +3,7 @@ import {useAccountStore} from "@/stores/account";
 
 const instance = axios.create();
 
-// ✅ interceptor는 이 인스턴스에 붙여야 동작함
+// interceptor는 이 인스턴스에 붙여야 동작함
 instance.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) {

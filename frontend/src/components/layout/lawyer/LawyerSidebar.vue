@@ -9,6 +9,7 @@ const route = useRoute()
 const emit = defineEmits(['update:title'])
 
 function parseJwt(token) {
+  if (!token) return null
   try {
     const base64 = token.split('.')[1]
     const json = decodeURIComponent(
@@ -25,15 +26,17 @@ function parseJwt(token) {
 }
 
 const token = localStorage.getItem('token')
-const payload = parseJwt(token)
+const payload = token ? parseJwt(token) : null
 // console.log(payload)
-const role = payload.role
-const lawyerNo = payload.no
+const role = payload?.role
+const lawyerNo = payload?.no
 const store = useLawyerStore()
 const lawyerInfo = computed(() => store.lawyerInfo)
 
 onMounted(async () => {
-  if (!token || role !== 'LAWYER') {
+  // console.log("💠", localStorage.getItem('accountType'))
+  // console.log("💠", token)
+  if (!token || localStorage.getItem('accountType') !== 'lawyer') {
     alert('변호사 계정으로 로그인 후 이용해 주세요.')
     return router.push('/login')
   }
