@@ -50,6 +50,7 @@ public class LawyerTemplateController {
   public ResponseEntity<String> registerTemplate(@ModelAttribute LawyerTemplateRegisterDto dto) {
     Long lawyerNo = 1L; // TODO: 로그인 연동 후 교체
     String type = dto.getType();
+    // 기본 값
     String thumbnailPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
     List<String> uploadedPaths = new ArrayList<>(); // 실패 시 삭제 대상
     
@@ -139,12 +140,12 @@ public class LawyerTemplateController {
       }
       
       // -----------------------------------
-      // [4] 썸네일 저장 (검증 통과 후)
+      // [4] 썸네일 저장 (검증 통과 후) **
       // -----------------------------------
       if (dto.getFile() != null && !dto.getFile().isEmpty()) {
         thumbnailPath = ncpObjectStorageUtil.save(
             dto.getFile(),
-            "uploads/lawyers/" + lawyerNo + "/thumbnails",
+            "uploads/lawyers/" + lawyerNo + "/thumbnails",  //profile
             null
         );
         uploadedPaths.add(thumbnailPath);

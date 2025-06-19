@@ -25,11 +25,11 @@ public class JwtTokenUtil {
         return Jwts.builder()
                 .setSubject(clientId)
                 .claim("no", no)
-                //.claim("role", role)
+
                 .claim("role",role)
                 .claim("nickname", nickname)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 30))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
@@ -61,6 +61,7 @@ public class JwtTokenUtil {
             return false;
         }
     }
+
 
     public String getClientIdFromToken(String token) {
         return Jwts.parserBuilder()

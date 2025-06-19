@@ -1,6 +1,7 @@
 package com.lawnroad.account.mapper;
 
 
+import com.lawnroad.account.dto.ClientProfileDTO;
 import com.lawnroad.account.entity.ClientEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -40,6 +41,12 @@ public interface ClientMapper {
                              @Param("nickname") String nickname,
                              @Param("email") String email,
                              @Param("phone") String phone);
+
+
+    void updateWithdrawalAtNow(String clientId);
+
+    ClientProfileDTO selectProfileByClientId(@Param("clientId") String clientId);
+
 
 
 
