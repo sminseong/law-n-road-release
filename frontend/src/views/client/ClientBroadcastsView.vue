@@ -6,6 +6,7 @@ import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import {OpenVidu} from "openvidu-browser";
 import axios from "axios";
 import {useRoute} from "vue-router";
+import { makeApiRequest } from '@/libs/axios-auth.js';
 
 export default defineComponent({
   components: {ClientFrame},
@@ -133,12 +134,17 @@ export default defineComponent({
         alert('신고 사유를 선택해주세요.');
         return;
       }
+      const reportData = {
+        broadcastNo: broadcastNo.value,
+        reasonCode: reportReasonCode.value,
+        detailReason: reportDetail.value
+      }
 
       try {
-        await axios.post('/api/client/broadcast/report', {
-          broadcastNo: broadcastNo.value,
-          reasonCode: reportReasonCode.value,
-          detailReason: reportDetail.value
+        const reponse = await makeApiRequest({
+          method: 'post',
+          url: '/api/client/broadcast/report',
+          data: reportData
         });
 
         alert('신고가 정상적으로 접수되었습니다.');
