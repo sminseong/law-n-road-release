@@ -363,10 +363,6 @@ const loadFn = async ({ page, size }) => {
 <template>
   <!-- 의뢰인 타입 본문 콘텐츠 -->
   <ClientFrame>
-    <p>
-      <a href="/client/broadcasts/schedule">의뢰인 방송 스케줄 보기 이동</a>
-    </p>
-
     <!-- ① 예약 신청 섹션 추가 -->
     <section class="my-8 p-4 bg-gray-50 rounded">
       <h3 class="text-xl font-semibold mb-2">상담 예약 신청하기</h3>
