@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lawnroad.payment.mapper.WebhookMapper">
+
+    <insert id="insert" parameterType="com.lawnroad.payment.model.WebhookVO">
+        INSERT INTO webhook_logs (
+            payment_no, event_type, payload, received_at, processed, error_message
+        )
+        VALUES (
+                   #{paymentNo}, #{eventType}, #{payload}, NOW(), #{processed}, #{errorMessage}
+               )
+    </insert>
+
+</mapper>

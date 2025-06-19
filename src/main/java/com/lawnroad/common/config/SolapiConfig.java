@@ -19,7 +19,7 @@ public class SolapiConfig {
   private String apiUrl;
   private String from;
   private String pfId;
-  
+
   public void setApiKey(String apiKey) { this.apiKey = apiKey; }
   public void setApiSecret(String apiSecret) { this.apiSecret = apiSecret; }
   public void setApiUrl(String apiUrl) { this.apiUrl = apiUrl; }

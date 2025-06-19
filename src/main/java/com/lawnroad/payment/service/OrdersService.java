@@ -16,13 +16,12 @@ public class OrdersService {
         this.ordersMapper = ordersMapper;
     }
 
-    //  새로운 주문 생성 하고 PK 반환
+    // ✅ 외부에서 모든 필드(orderCode, userNo, amount 등)를 세팅해서 넘겨주는 방식
     @Transactional
     public Long createOrder(OrdersCreateDTO dto) {
-        ordersMapper.insertOrder(dto);
-        return dto.getNo();
+        ordersMapper.insertOrder(dto);  // insert 시 no 자동 주입되어야 함
+        return dto.getNo();             // insert 시 <selectKey>로 dto.no에 값 주입 필요
     }
-
 
     // 주문 상태 변경
     @Transactional
@@ -34,5 +33,10 @@ public class OrdersService {
     @Transactional(readOnly = true)
     public OrdersVO getOrder(Long orderNo) {
         return ordersMapper.selectOrder(orderNo);
+    }
+
+    @Transactional(readOnly = true)
+    public OrdersVO getOrderByCode(String orderCode) {
+        return ordersMapper.selectByOrderCode(orderCode);
     }
 }

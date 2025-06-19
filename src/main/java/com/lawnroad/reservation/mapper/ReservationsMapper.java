@@ -17,4 +17,6 @@ public interface ReservationsMapper {
             @Param("userNo") Long userNo,
             @Param("status") String status
     );
+    List<ReservationsResponseDTO> selectByLawyerNo(@Param("lawyerNo") Long lawyerNo);
+    ReservationsResponseDTO selectReservationByNo(@Param("reservationNo") Long reservationNo);
 }

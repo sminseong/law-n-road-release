@@ -10,6 +10,11 @@ export default [
         name: 'LawyerProfile',
         component: () => import('@/views/lawyer/ProfileSettingView.vue')
     },
+    {
+        path: '/lawyer/:lawyerNo/homepage',
+        name: 'LawyerHomePage',
+        component: () => import('@/views/lawyer/LawyerHomePageView.vue')
+    },
 
     // ---------- QNA ----------
     {
@@ -20,14 +25,16 @@ export default [
 
     // ---------- 예약 ----------
     {
-        path: '/lawyer/reservation',
+        path: '/lawyer/:lawyerNo/reservation',
         name: 'LawyerReservation',
-        component: () => import('@/views/lawyer/LawyerReservationView.vue')
+        component: () => import('@/views/lawyer/LawyerReservationView.vue'),
+        props: true
     },
     {
         path: '/lawyer/:lawyerNo/slots',
         name: 'TimeSlotUpdate',
-        component: () => import('@/views/lawyer/TimeSlotUpdate.vue')
+        component: () => import('@/views/lawyer/TimeSlotUpdate.vue'),
+        props: true
     },
 
     // ---------- 방송 ----------

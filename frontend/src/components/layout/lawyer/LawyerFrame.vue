@@ -1,9 +1,13 @@
 <script setup>
-import { ref } from 'vue'
 import LawyerHeader from './LawyerHeader.vue'
 import LawyerSidebar from './LawyerSidebar.vue'
 import LawyerFooter from './LawyerFooter.vue'
 import LawyerPageWrapper from './LawyerPageWrapper.vue'
+
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const currentTitle = ref('홈 대시보드')
 </script>

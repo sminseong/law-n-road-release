@@ -363,19 +363,23 @@ const loadFn = async ({ page, size }) => {
 <template>
   <!-- 의뢰인 타입 본문 콘텐츠 -->
   <ClientFrame>
+<!--    <p>-->
+<!--      <a href="/lawyer">변호사 대시보드 이동하기</a>-->
+<!--    </p>-->
+
     <!-- ① 예약 신청 섹션 추가 -->
-    <section class="my-8 p-4 bg-gray-50 rounded">
-      <h3 class="text-xl font-semibold mb-2">상담 예약 신청하기</h3>
-      <div class="flex space-x-4">
-        <!-- 여기에 실제 변호사 리스트를 넣어도 되고, 테스트용으로 하드코딩해도 됩니다. -->
-        <router-link
-            :to="{ name: 'ClientReservations', params: { lawyerNo: 1, lawyerName: '김민수' } }"
-            class="px-3 py-1 "
-        >
-          김민수 변호사 예약하기
-        </router-link>
-      </div>
-    </section>
+<!--    <section class="my-8 p-4 bg-gray-50 rounded">-->
+<!--      <h3 class="text-xl font-semibold mb-2">상담 예약 신청하기</h3>-->
+<!--      <div class="flex space-x-4">-->
+<!--        &lt;!&ndash; 여기에 실제 변호사 리스트를 넣어도 되고, 테스트용으로 하드코딩해도 됩니다. &ndash;&gt;-->
+<!--        <router-link-->
+<!--            :to="{ name: 'ClientReservations', params: { lawyerNo: 1, lawyerName: '김민수' } }"-->
+<!--            class="px-3 py-1 "-->
+<!--        >-->
+<!--          김민수 변호사 예약하기-->
+<!--        </router-link>-->
+<!--      </div>-->
+<!--    </section>-->
 
     <!-- 메인 베너 -->
     <MainBannerSlider :banners="mainBanners" defaultBadgeText="로앤로드 대표 서비스" />
@@ -436,7 +440,7 @@ const loadFn = async ({ page, size }) => {
       </div>
     </div>
 
-    <div class="row g-4 row-cols-lg-5 row-cols-2 row-cols-md-3">
+    <div v-if="productList.length > 0" class="row g-4 row-cols-lg-5 row-cols-2 row-cols-md-3">
       <div class="col-md-3 mb-4" v-for="product in productList" :key="product.no">
         <ProductCard
             :no="product.no"
@@ -447,6 +451,10 @@ const loadFn = async ({ page, size }) => {
             :discountedPrice="product.discountedPrice"
         />
       </div>
+    </div>
+
+    <div v-else class="text-center text-muted py-5">
+      등록된 상품이 없습니다.
     </div>
 
   </ClientFrame>

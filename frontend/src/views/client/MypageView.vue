@@ -36,7 +36,7 @@ onMounted(async () => {
   try {
 
     const userNo = 6
-    const res = await HttpRequester.get(`/api/client/${userNo}/reservations/counts`)
+    const res = await HttpRequester.get(`/api/client/reservations/counts`)
     requestedCount.value = res.data.requestedCount
     doneCount.value = res.data.doneCount
   } catch (e) {

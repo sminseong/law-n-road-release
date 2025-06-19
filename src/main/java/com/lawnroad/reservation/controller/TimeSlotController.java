@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/lawyers/{lawyerNo}/slots")
+@RequestMapping("/api/lawyer/{lawyerNo}/slots")
 public class TimeSlotController {
 
     private final TimeSlotService timeSlotService;
