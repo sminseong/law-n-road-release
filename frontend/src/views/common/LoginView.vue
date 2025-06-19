@@ -67,6 +67,7 @@ const submitLogin = async () => {
 
     const payload = parseJwt(accessToken)
     const no = payload.no
+    console.log("test ", no)
     if (tab.value === 'lawyer') {
       try {
         console.log('🔍 lawyerNo:', no)
@@ -100,13 +101,15 @@ const submitLogin = async () => {
 }
 function parseJwt(token) {
   try {
-    const base64 = token.split('.')[1]
-    const json = decodeURIComponent(
-        atob(base64)
-            .split('')
-            .map((c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'))
-            .join('')
-    )
+    let base64 = token.split('.')[1]
+    // base64url → base64 변환
+    base64 = base64.replace(/-/g, '+').replace(/_/g, '/')
+    // 패딩 추가 (길이가 4의 배수가 되도록)
+    while (base64.length % 4 !== 0) {
+      base64 += '='
+    }
+
+    const json = atob(base64)
     return JSON.parse(json)
   } catch (e) {
     console.error('❌ JWT 파싱 실패:', e)
