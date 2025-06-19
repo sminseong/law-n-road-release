@@ -43,7 +43,7 @@ const submitLogin = async () => {
 
     console.log('✅ 로그인 성공 응답:', res.data)
 
-    const { accessToken, refreshToken, name, nickname,no } = res.data
+    const { accessToken, refreshToken, name, nickname,no} = res.data
 
     localStorage.setItem('token', accessToken)
     localStorage.setItem('refreshToken', refreshToken)
@@ -51,6 +51,8 @@ const submitLogin = async () => {
     localStorage.setItem('name', name)
     localStorage.setItem('nickname', nickname)
     localStorage.setItem('no', no)
+
+
 
 
     console.log('🚨🚨🚨 localStorage 저장 완료! 🚨🚨🚨')
@@ -70,8 +72,8 @@ const submitLogin = async () => {
 
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`
 
-    const payload = parseJwt(accessToken)
-    const no = payload.no
+
+
     if (tab.value === 'lawyer') {
       try {
         console.log('🔍 lawyerNo:', no)
