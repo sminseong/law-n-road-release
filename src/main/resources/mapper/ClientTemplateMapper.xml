@@ -97,9 +97,11 @@
         SELECT
         o.no AS order_no,
         o.status,
+        o.order_code AS orderCode,
         DATE_FORMAT(o.created_at, '%Y-%m-%d') AS order_date,
-        o.total_amount,
+        o.amount,
 
+        -- 대표 템플릿명 가져오기 (서브쿼리)
         -- 대표 템플릿명 가져오기 (서브쿼리)
         (SELECT t.name
         FROM tmpl_orders_history toh

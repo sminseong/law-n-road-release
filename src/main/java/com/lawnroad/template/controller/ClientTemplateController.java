@@ -37,6 +37,8 @@ public class ClientTemplateController {
     List<ClientOrderListDto> list = clientTemplateService.findOrders(userNo, status, page, limit);
     int totalCount = clientTemplateService.countOrders(userNo, status);
     
+    // System.out.println(list);
+    
     // 총 페이지 계산
     int totalPages = (int) Math.ceil((double) totalCount / limit);
     
