@@ -17,7 +17,8 @@ onMounted(() => {
     dots: true,
     arrows: false,
     autoplay: true,
-    autoplaySpeed: 3000
+    autoplaySpeed: 5000,
+    speed: 2000
   })
 })
 

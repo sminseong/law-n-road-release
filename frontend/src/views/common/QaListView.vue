@@ -7,6 +7,7 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
+
 // 페이징 및 데이터 상태
 const page = ref(1)            // 현재 페이지. 기본 1
 const size = ref(10)           // 페이지당 항목 수. 기본 10

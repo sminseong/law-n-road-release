@@ -10,6 +10,11 @@ export default [
         component: () => import('@/views/common/LoginView.vue')
     },
     {
+        path: '/login/admin',
+        name: 'AdminLogin',
+        component: () => import('@/views/common/AdminLoginView.vue')
+    },
+    {
         path: '/lawyer/signup',
         name: 'LawyerSignup',
         component: () => import('@/views/common/LawyerSignupView.vue')

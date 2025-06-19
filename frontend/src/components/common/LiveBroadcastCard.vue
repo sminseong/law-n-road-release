@@ -68,7 +68,7 @@ const props = defineProps({
                             </div>
                         </div>
 
-                        <a :href="broadcast.link" class="btn btn-secondary live-btn">
+                        <a :href="broadcast.link" class="btn btn-primary live-btn">
                             {{ broadcast.isLive ? '방송 보러가기' : '사전질문 하러가기' }}
                         </a>
                     </div>
