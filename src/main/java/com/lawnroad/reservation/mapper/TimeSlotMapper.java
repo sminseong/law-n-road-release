@@ -29,8 +29,6 @@ public interface TimeSlotMapper {
     
     // 주간 슬롯에서 가격을 가져오기
     Long getAmountBySlotNo(@Param("slotNo") Long slotNo);
-    // 해당 슬롯을 가진 변호사의 no 가져오기
-    Long getUserNoBySlot(@Param("userNo") Long userNo);
     // slotNo로 슬롯 전체 정보(날짜·시간·userNo 등)를 조회
     TimeSlotVO selectBySlotNo(@Param("slotNo") Long slotNo);
 }

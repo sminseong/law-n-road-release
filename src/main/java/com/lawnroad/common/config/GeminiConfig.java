@@ -16,5 +16,5 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "gemini")
 public class GeminiConfig {
   private String apiKey;
-  
+
 }

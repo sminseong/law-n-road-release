@@ -1,23 +1,21 @@
 package com.lawnroad.payment.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-public class OrdersVO {
+@Data
+public class PaymentVO {
     private Long no;
+    private Long orderNo;
+    private String paymentKey;
     private String orderCode;
-    private Long userNo;
     private Long amount;
     private String status;
-    private String orderType;
+    private String cardCompany;
+    private Integer installmentMonth;
+    private LocalDateTime purchasedAt;
+    private String pg;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

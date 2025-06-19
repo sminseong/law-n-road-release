@@ -1,9 +1,11 @@
 package com.lawnroad.common.config;
+
 import com.lawnroad.account.security.JwtAuthenticationFilter;
 import com.lawnroad.common.util.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -53,46 +55,12 @@ public class SecurityConfig {
 //    return http.build();
 //  }
 
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//
-//        http.csrf(csrf -> csrf.disable())
-//                .authorizeHttpRequests(auth -> auth
-//                        // 비회원에게 허가할 api
-//                        .requestMatchers(
-//                            "/api/auth/**",
-//                            "/api/public/**",
-//                            "/api/find-id",
-//                            "/api/reset-password",
-//                            "/mail/**",
-//                            "/api/user/**",
-//                            "/api/auth/nickname",
-//                            "/api/notification/**",
-//                            "/uploads/**"
-//                        ).permitAll()
-//
-//                        // 사용자 권한에게 허가할 api
-//                        .requestMatchers("/api/client/**").hasRole("CLIENT")
-//
-//                        // 변호사 권한에게 허가할 api
-//                        .requestMatchers("/api/lawyer/**").hasRole("LAWYER")
-//
-//                        // 변호사, 혹은 사용자 권한일 때 허가할 api
-//                        .requestMatchers("/api/ai/**").hasAnyRole("LAWYER", "CLIENT")
-//
-//                        .anyRequest().authenticated()
-//                )
-//                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-//
-//        return http.build();
-//    }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
+
+        http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // 비회원 허용
+                        // 1) 비회원에게 허용
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/public/**",
@@ -103,16 +71,23 @@ public class SecurityConfig {
                                 "/api/auth/nickname",
                                 "/api/notification/**",
                                 "/uploads/**",
+                                "/api/webhook/**",
                                 "/api/signuplawyer" ,"/api/refresh"   // ← 여기에 추가
                         ).permitAll()
 
-                        // 클라이언트 권한
-                        .requestMatchers("/api/client/**").hasRole("CLIENT")
-                        // 변호사 권한
-                        .requestMatchers("/api/lawyer/**").hasRole("LAWYER")
-                        // AI 접근 허용
-                        .requestMatchers("/api/ai/**").hasAnyRole("LAWYER","CLIENT")
+                        // 2) AI 및 슬롯 조회는 CLIENT 또는 LAWYER 권한 모두 허용
+                        .requestMatchers("/api/ai/**", "/api/lawyer/*/slots", "/api/confirm/payment","/api/confirm/cancel")
+                        .hasAnyRole("CLIENT", "LAWYER")
 
+                        // 3) 클라이언트 전용 API
+                        .requestMatchers("/api/client/**")
+                        .hasRole("CLIENT")
+
+                        // 4) 변호사 전용 API
+                        .requestMatchers("/api/lawyer/**")
+                        .hasRole("LAWYER")
+
+                        // 5) 그 외 모든 요청은 인증만 되어 있으면 OK
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

@@ -29,7 +29,7 @@ public class TimeSlotServiceIntegrationTest {
     @Rollback(false)
     void createWeeklyTimeSlots() {
         Long lawyerNo = 1L;
-        LocalDate start = LocalDate.of(2025, 6, 9);
+        LocalDate start = LocalDate.of(2025, 6, 16);
         timeSlotService.generateWeeklyTimeSlots(lawyerNo, start);
     }
 

@@ -9,12 +9,15 @@ import com.lawnroad.account.entity.UserEntity;
 import com.lawnroad.account.mapper.ClientMapper;
 import com.lawnroad.account.mapper.LawyerMapper;
 import com.lawnroad.account.mapper.UserMapper;
+import com.lawnroad.reservation.service.TimeSlotService;
 import com.lawnroad.common.util.NcpObjectStorageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import static java.time.LocalDate.now;
 
 @Service
 public class LawyerService {
@@ -25,13 +28,15 @@ public class LawyerService {
     private LawyerMapper lawyerMapper;
     private UserMapper userMapper;
     private PasswordEncoder passwordEncoder;
+    private TimeSlotService timeSlotService;
     private final NcpObjectStorageUtil ncpObjectStorageUtil;
 
-    public LawyerService(UserMapper userMapper, LawyerMapper lawyerMapper, PasswordEncoder passwordEncoder
+    public LawyerService(UserMapper userMapper, LawyerMapper lawyerMapper, PasswordEncoder passwordEncoder, TimeSlotService timeSlotService
     ,NcpObjectStorageUtil ncpObjectStorageUtil) {
         this.userMapper = userMapper;
         this.lawyerMapper = lawyerMapper;
         this.passwordEncoder = passwordEncoder;
+        this.timeSlotService = timeSlotService;
         this.ncpObjectStorageUtil = ncpObjectStorageUtil;
 
 
@@ -43,39 +48,6 @@ public class LawyerService {
         int count2 = lawyerMapper.countByLawyerId2(lawyerId);
         return count1 + count2 == 0; // 0 이면 사용 가능, true 반환
     }
-
-//    @Transactional
-//    public void registerLawyer(LawyerSignupRequest request) {
-//        // 1. user 테이블 삽입
-//        UserEntity user = new UserEntity();
-//        user.setType("LAWYER");
-//        userMapper.insertUser(user);
-//
-//        // 2. lawyer 테이블 삽입
-//        LawyerEntity lawyer = new LawyerEntity();
-//        lawyer.setNo(user.getNo());
-//        lawyer.setLawyerId(request.getLawyerId());
-//        lawyer.setPwHash(passwordEncoder.encode(request.getPassword()));
-//        lawyer.setEmail(request.getEmail());
-//        lawyer.setName(request.getFullName());
-//        lawyer.setPhone(request.getPhone());
-//        lawyer.setOfficeName(request.getOfficeName());
-//        lawyer.setOfficeNumber(request.getOfficeNumber());
-//        lawyer.setZipcode(request.getZipcode());
-//        lawyer.setRoadAddress(request.getRoadAddress());
-//        lawyer.setLandAddress(request.getLandAddress());
-//        lawyer.setDetailAddress(request.getDetailAddress());
-//        lawyer.setConsent(request.getConsent());
-//        lawyer.setPoint(0);
-//        lawyer.setConsultPrice(30000);
-//        lawyer.setStatus("REJECTED_JOIN");
-//        lawyer.setProfile("테스트 중");
-//        lawyer.setCardFront(null);
-//        lawyer.setCardBack(null);
-//        lawyer.setLawyerIntro(request.getLawyerIntro());
-//        lawyer.setIntroDetail(request.getIntroDetail());
-//        lawyerMapper.insertLawyer(lawyer);
-//    }
 
     @Transactional
     public void registerLawyer(LawyerSignupRequest request,
@@ -118,8 +90,10 @@ public class LawyerService {
 
         lawyer.setLawyerIntro(request.getLawyerIntro());
         lawyer.setIntroDetail(request.getIntroDetail());
-
         lawyerMapper.insertLawyer(lawyer);
+
+        // 회원가입을 하게 된 변호사의 일주일간의 주간 슬롯 생성
+        timeSlotService.generateWeeklyTimeSlots(user.getNo(),now());
     }
 
 

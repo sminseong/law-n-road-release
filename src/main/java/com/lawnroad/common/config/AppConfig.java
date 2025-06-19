@@ -14,7 +14,7 @@ public class AppConfig {
     {
         return new BCryptPasswordEncoder();
     }
-    
+
     // naver ocr
     @Bean
     public RestTemplate restTemplate() {

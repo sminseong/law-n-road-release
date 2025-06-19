@@ -379,7 +379,7 @@ const loadFn = async ({ page, size }) => {
       <div class="flex space-x-4">
         <!-- 여기에 실제 변호사 리스트를 넣어도 되고, 테스트용으로 하드코딩해도 됩니다. -->
         <router-link
-            :to="{ name: 'ClientReservations', params: { lawyerNo: 1, lawyerName: '김민수' } }"
+            :to="{ name: 'ClientReservations', params: { lawyerNo: 3, lawyerName: '김변호사' } }"
             class="px-3 py-1 "
         >
           김민수 변호사 예약하기
