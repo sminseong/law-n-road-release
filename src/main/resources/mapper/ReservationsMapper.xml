@@ -34,7 +34,7 @@
                  JOIN weekly_time_slots w ON r.slot_no  = w.no
                  JOIN orders o ON r.order_no = o.no
         WHERE r.user_no = #{userNo}
-        ORDER BY w.slot_date DESC
+        ORDER BY r.no DESC, w.slot_date DESC, w.slot_time DESC
     </select>
 
     <update id="updateReservationStatus" parameterType="map">
@@ -94,5 +94,13 @@
                  JOIN lawyer l ON ts.user_no = l.no
         WHERE r.no = #{reservationNo}
     </select>
+    <select id="selectReservationByOrderNo"
+            resultType="com.lawnroad.reservation.dto.ReservationsResponseDTO"
+            parameterType="long">
+        SELECT *
+        FROM reservations
+        WHERE order_no = #{orderNo}
+    </select>
+
 
 </mapper>
