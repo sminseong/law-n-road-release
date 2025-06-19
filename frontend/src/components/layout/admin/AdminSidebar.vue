@@ -8,17 +8,12 @@ const emit = defineEmits(['update:title'])
 const lawyer = {
   // 실제 적용 시에는 로그인 완료 후 API로 받아오는 값으로 대체하면 됨
   name: '김수영',
-  profileImage: '/img/profiles/kim.png',
 }
 
 const menuItems = [
-  { label: '홈 대시보드', icon: 'bi-house-door', path: '/lawyer' },
-  { label: '1:1 상담예약', icon: 'bi-chat-dots', path: '/lawyer/reservation' },
-  { label: '방송 스케줄', icon: 'bi-mic', path: '/lawyer/broadcasts/schedule' },
-  { label: '문서 템플릿', icon: 'bi-folder2-open', path: '/lawyer/templates' },
-  { label: 'Q&A 관리', icon: 'bi-chat-left-dots', path: '/lawyer/qna' },
-  { label: '광고 관리', icon: 'bi-megaphone', path: '/lawyer/ads' },
-  { label: '계정 설정', icon: 'bi-person-gear', path: '/lawyer/profile' },
+  { label: '홈 대시보드', icon: 'bi-house-door', path: '/admin' },
+  { label: '회원관리', icon: 'bi-people', path: '/admin/member' },
+  { label: '광고관리', icon: 'bi-megaphone', path: '/admin/ads' },
 ]
 
 function go(path, label) {
@@ -55,12 +50,9 @@ watch(
 
       <!-- 프로필 -->
       <div class="profile-box text-center mb-5 mt-3">
-        <img :src="lawyer.profileImage" alt="프로필" class="profile-img" />
-        <div class="profile-name mt-2 fw-semibold">{{ lawyer.name }} 변호사</div>
-        <button class="btn btn-sm btn-outline-light mt-2"
-                @click="go('/lawyer/profile', '계정 설정')">
-          내 홈페이지 보기
-        </button>
+        <i class="bi bi-person-lock fs-1"></i>
+        <div class="profile-name mt-0 fw-semibold">{{ lawyer.name }} 관리자</div>
+        <div class="small text-white-50">접속을 환영합니다</div>
       </div>
 
       <!-- 메뉴 -->

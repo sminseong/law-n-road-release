@@ -1,5 +1,5 @@
 <template>
-    <footer class="footer border-top py-4 mt-auto text-muted">
+    <footer class="footer border-top py-6 mt-auto text-muted">
       <div class="container small">
 
         <!-- 슬로건 / 브랜드 소개 -->

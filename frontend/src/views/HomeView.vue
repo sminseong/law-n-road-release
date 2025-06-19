@@ -61,8 +61,6 @@
     console.log('nickname:', localStorage.getItem('nickname'))
   }
 
-
-
   // 메인 베너
   const mainBanners = [
     {
@@ -365,25 +363,10 @@ const loadFn = async ({ page, size }) => {
 <template>
   <!-- 의뢰인 타입 본문 콘텐츠 -->
   <ClientFrame>
-
-
-    <!-- 로그인 상태일 때 -->
-    <div v-if="isLoggedIn">
-      <h3 class="mb-4">{{ nickname }}님, 환영합니다.</h3>
-      <button @click="logout" class="btn btn-outline-danger">로그아웃</button>
-    </div>
-
-    <!-- 비로그인 상태일 때 -->
-    <div v-else>
-      <router-link to="/login" class="btn btn-primary">로그인</router-link>
-    </div>
-
     <p>
       <a href="/lawyer">변호사 대시보드 이동하기</a>
     </p>
-    <p>
-      <a href="/client/mypage">의뢰인 대시보드 이동하기</a>
-    </p>
+
     <!-- ① 예약 신청 섹션 추가 -->
     <section class="my-8 p-4 bg-gray-50 rounded">
       <h3 class="text-xl font-semibold mb-2">상담 예약 신청하기</h3>
@@ -407,7 +390,10 @@ const loadFn = async ({ page, size }) => {
     <!-- 라이브 방송박스 -->
     <div class="row">
         <div class="col-12 mb-6">
-          <h3 class="mb-0">변호사와 함께하는 실시간 라이브 방송</h3>
+          <div class="d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">변호사와 함께하는 실시간 라이브 방송</h3>
+            <h5 class="mb-0 text-muted me-3" style="cursor: pointer;">더 보러가기 ></h5>
+          </div>
         </div>
       </div>
 
@@ -417,7 +403,10 @@ const loadFn = async ({ page, size }) => {
     <!-- VOD 방송 다시보기 -->
     <div class="row">
       <div class="col-12 mb-6">
-        <h3 class="mb-0">VOD 방송 다시보기</h3>
+        <div class="d-flex justify-content-between align-items-center">
+          <h3 class="mb-0">VOD 방송 다시보기</h3>
+          <h5 class="mb-0 text-muted me-3" style="cursor: pointer;">더 보러가기 ></h5>
+        </div>
       </div>
     </div>
     <!-- <CardSlider :replayItems="vodList" :itemsPerRow="4" :rowsPerSlide="1" /> -->
@@ -426,7 +415,12 @@ const loadFn = async ({ page, size }) => {
     <!-- QNA 게시판 테이블 -->
     <div class="row">
       <div class="col-12 mb-6">
-        <h3 class="mb-0">나와 비슷한 사례 찾아보기</h3>
+        <div class="d-flex justify-content-between align-items-center">
+          <h3 class="mb-0">나와 비슷한 사례 찾아보기</h3>
+          <a href="/qna">
+            <h5 class="mb-0 text-muted me-3" style="cursor: pointer;">더 보러가기 ></h5>
+          </a>
+        </div>
       </div>
     </div>
     <CardTable :List="qnaSampleList" :maxLines="4" />
@@ -437,7 +431,12 @@ const loadFn = async ({ page, size }) => {
     <!-- 템플릿 상품 판매 -->
     <div class="row">
       <div class="col-12 mb-6">
-        <h3 class="mb-0">많이 찾는 법률문서 베스트 10</h3>
+        <div class="d-flex justify-content-between align-items-center">
+          <h3 class="mb-0">많이 찾는 법률문서 베스트 10</h3>
+          <a href="/templates">
+            <h5 class="mb-0 text-muted me-3" style="cursor: pointer;">더 보러가기 ></h5>
+          </a>
+        </div>
       </div>
     </div>
 
