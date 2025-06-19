@@ -77,7 +77,7 @@
             -- 변호사 정보
             l.name              AS lawyer_name,
             l.profile           AS profile,
-            CONCAT_WS(' ', l.road_address, l.land_address, l.detail_address) AS full_address,
+            CONCAT_WS(' ', l.road_address, l.detail_address) AS full_address,
             l.office_number     AS office_number,
             l.office_name       AS lawyer_office_name,
             l.lawyer_intro      AS short_intro,
@@ -197,7 +197,7 @@
             l.profile         AS lawyer_profile_img,
             l.lawyer_intro    AS lawyer_short_intro,
             l.office_name     AS lawyer_office_name,
-            CONCAT_WS(' ', l.road_address, l.land_address, l.detail_address) AS full_address,
+            CONCAT_WS(' ', l.road_address, l.detail_address) AS full_address,
             l.office_number   AS lawyer_office_tel
 
         FROM template t
@@ -225,7 +225,7 @@
             l.profile         AS lawyer_profile_img,
             l.lawyer_intro    AS lawyer_short_intro,
             l.office_name     AS lawyer_office_name,
-            CONCAT_WS(' ', l.road_address, l.land_address, l.detail_address) AS full_address,
+            CONCAT_WS(' ', l.road_address, l.detail_address) AS full_address,
             l.office_number   AS lawyer_office_tel
 
         FROM template t

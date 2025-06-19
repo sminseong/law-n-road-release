@@ -3,6 +3,7 @@ import { ref, watchEffect } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import AccountFrame from '@/components/layout/account/AccountFrame.vue'
+import { useLawyerStore } from '@/stores/lawyer'
 
 const token = localStorage.getItem('token')
 if (token) {
@@ -11,6 +12,7 @@ if (token) {
 
 const router = useRouter()
 const route = useRoute()
+const lawyerStore = useLawyerStore()
 
 const tab = ref('client')
 
@@ -63,6 +65,22 @@ const submitLogin = async () => {
 
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`
 
+    const payload = parseJwt(accessToken)
+    const no = payload.no
+    if (tab.value === 'lawyer') {
+      try {
+        console.log('🔍 lawyerNo:', no)
+        setTimeout(async () => {
+          await lawyerStore.fetchLawyerInfo(no)
+        }, 100)
+        console.log('✅ fetchLawyerInfo 성공')
+      } catch (e) {
+        console.error('❌ fetchLawyerInfo 실패:', e)
+        alert('변호사 정보 불러오기 실패')
+        return
+      }
+    }
+
     // ✅ 리다이렉트 처리 추가
     const redirect = route.query.redirect || (tab.value === 'lawyer' ? '/lawyer' : '/')
     router.push(redirect)
@@ -80,6 +98,22 @@ const submitLogin = async () => {
     }
   }
 }
+function parseJwt(token) {
+  try {
+    const base64 = token.split('.')[1]
+    const json = decodeURIComponent(
+        atob(base64)
+            .split('')
+            .map((c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'))
+            .join('')
+    )
+    return JSON.parse(json)
+  } catch (e) {
+    console.error('❌ JWT 파싱 실패:', e)
+    return null
+  }
+}
+
 </script>
 
 <template>
