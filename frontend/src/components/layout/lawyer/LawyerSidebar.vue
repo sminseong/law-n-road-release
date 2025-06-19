@@ -9,25 +9,26 @@ const route = useRoute()
 const emit = defineEmits(['update:title'])
 
 function parseJwt(token) {
-  if (!token) return null
   try {
-    const base64 = token.split('.')[1]
-    const json = decodeURIComponent(
-        atob(base64)
-            .split('')
-            .map((c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'))
-            .join('')
-    )
+    let base64 = token.split('.')[1]
+    // base64url → base64 변환
+    base64 = base64.replace(/-/g, '+').replace(/_/g, '/')
+    // 패딩 추가 (길이가 4의 배수가 되도록)
+    while (base64.length % 4 !== 0) {
+      base64 += '='
+    }
+
+    const json = atob(base64)
     return JSON.parse(json)
   } catch (e) {
-    console.error('❌ 토큰 파싱 실패', e)
+    console.error('❌ JWT 파싱 실패:', e)
     return null
   }
 }
 
 const token = localStorage.getItem('token')
 const payload = token ? parseJwt(token) : null
-// console.log(payload)
+console.log(parseJwt(token))
 const role = payload?.role
 const lawyerNo = payload?.no
 const store = useLawyerStore()
