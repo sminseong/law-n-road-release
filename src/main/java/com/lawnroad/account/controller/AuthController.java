@@ -391,7 +391,7 @@ public ResponseEntity<?> lawyerSignup(
 //    }
 
     @PutMapping("/client/profile")
-    @PreAuthorize("hasRole('CLIENT')")
+    //@PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<?> updateClientProfile(
             @RequestHeader("Authorization") String authHeader,
             @RequestBody Map<String, String> request
@@ -463,39 +463,119 @@ public ResponseEntity<?> lawyerSignup(
 //    }
 
 
+//    @PostMapping("/refresh")
+//    public ResponseEntity<?> refreshAccessToken(@RequestBody Map<String, Object> payload) {
+//        Long no = Long.valueOf(payload.get("no").toString());
+//        System.out.println("🔄 [리프레시 요청] 사용자 no: " + no);
+//
+//        try {
+//            // ✅ user.type을 role로 alias 지정
+//            String sql = "SELECT c.client_id, c.nickname, u.type AS role " +
+//                    "FROM client c " +
+//                    "JOIN user u ON c.no = u.no " +
+//                    "WHERE c.no = ?";
+//
+//            Map<String, Object> user = jdbcTemplate.queryForMap(sql, no);
+//            System.out.println("✅ 쿼리문 통과");
+//
+//            String clientId = (String) user.get("client_id");
+//            String nickname = (String) user.get("nickname");
+//            String role = (String) user.get("role");  // u.type을 role로 사용
+//            System.out.println("🎯 사용자 정보: " + clientId + " / " + role + " / " + nickname);
+//
+//            // ✅ accessToken 재발급
+//            String newAccessToken = jwtTokenUtil.generateAccessToken(clientId, no, role, nickname);
+//            System.out.println("✅ 재발급 완료: " + newAccessToken);
+//
+//            return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
+//        } catch (EmptyResultDataAccessException e) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("❌ 사용자 없음");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("❌ 토큰 재발급 실패");
+//        }
+//    }
+
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshAccessToken(@RequestBody Map<String, Object> payload) {
         Long no = Long.valueOf(payload.get("no").toString());
         System.out.println("🔄 [리프레시 요청] 사용자 no: " + no);
 
         try {
-            // ✅ user.type을 role로 alias 지정
-            String sql = "SELECT c.client_id, c.nickname, u.type AS role " +
-                    "FROM client c " +
-                    "JOIN user u ON c.no = u.no " +
-                    "WHERE c.no = ?";
+            // 1. user 테이블에서 type 조회
+            String userSql = "SELECT type FROM user WHERE no = ?";
+            String role = jdbcTemplate.queryForObject(userSql, String.class, no);
+            System.out.println("✅ 사용자 role: " + role);
 
-            Map<String, Object> user = jdbcTemplate.queryForMap(sql, no);
-            System.out.println("✅ 쿼리문 통과");
+            String id;
+            String nickname = "";  // 기본값 비어있음
 
-            String clientId = (String) user.get("client_id");
-            String nickname = (String) user.get("nickname");
-            String role = (String) user.get("role");  // u.type을 role로 사용
-            System.out.println("🎯 사용자 정보: " + clientId + " / " + role + " / " + nickname);
+            // 2. role에 따라 client 또는 lawyer 테이블에서 정보 조회
+            if ("CLIENT".equalsIgnoreCase(role)) {
+                String clientSql = "SELECT client_id, nickname FROM client WHERE no = ?";
+                Map<String, Object> client = jdbcTemplate.queryForMap(clientSql, no);
+                id = (String) client.get("client_id");
+                nickname = (String) client.get("nickname");
+            } else if ("LAWYER".equalsIgnoreCase(role)) {
+                String lawyerSql = "SELECT lawyer_id FROM lawyer WHERE no = ?";
+                Map<String, Object> lawyer = jdbcTemplate.queryForMap(lawyerSql, no);
+                id = (String) lawyer.get("lawyer_id");
+                // nickname 컬럼이 없으므로 그대로 빈 문자열 사용하거나
+                // 필요하면 lawyer 이름 컬럼(예: name)으로 대체 조회
+            } else {
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body("❌ 지원하지 않는 사용자 유형");
+            }
 
-            // ✅ accessToken 재발급
-            String newAccessToken = jwtTokenUtil.generateAccessToken(clientId, no, role, nickname);
+            System.out.println("🎯 사용자 정보: " + id + " / " + role + " / " + nickname);
+
+            // 3. accessToken 재발급
+            String newAccessToken = jwtTokenUtil.generateAccessToken(id, no, role, nickname);
             System.out.println("✅ 재발급 완료: " + newAccessToken);
 
             return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
         } catch (EmptyResultDataAccessException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("❌ 사용자 없음");
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("❌ 사용자 없음");
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("❌ 토큰 재발급 실패");
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("❌ 토큰 재발급 실패");
         }
     }
 
 
+
+
+    @PutMapping("/lawyer/info")
+    public ResponseEntity<?> updateLawyerProfile(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody Map<String, String> request
+    ) {
+        System.out.println("변호사 정보 수정 컨트롤러 진입");
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtTokenUtil.parseToken(token); // JWT 파싱
+
+        String lawyerId = claims.getSubject();
+        String officeNumber = request.get("officeNumber");
+        String phone = request.get("phone");
+        String detailAddress = request.get("detailAddress");
+        System.out.println(lawyerId);
+        System.out.println(officeNumber);
+        System.out.println(phone);
+        System.out.println(detailAddress);
+
+
+
+        if (officeNumber == null || phone == null || detailAddress == null ||
+                officeNumber.trim().isEmpty() || phone.trim().isEmpty() || detailAddress.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("모든 필드를 입력해주세요.");
+        }
+        lawyerService.updateLawyerInfo(lawyerId, officeNumber, phone, detailAddress);
+        return ResponseEntity.ok().build();
+    }
 
 }

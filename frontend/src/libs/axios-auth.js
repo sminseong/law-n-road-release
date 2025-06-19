@@ -5,17 +5,17 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 export const refreshAccessToken = async () => {
-    const userNo = localStorage.getItem('no')
+    const userNo = localStorage.getItem('no') //로컬스토리지에 있는 no 값을 선언한다
     if (!userNo) {
-        alert('사용자 정보 없음 → 로그인 필요')
+        alert('죄송합니다! 다시 로그인해주세요') //없으면 다시 로그인
         router.push('/login')
         return null
     }
 
     try {
-        const res = await axios.post('/api/refresh', { no: Number(userNo) })
-        const newAccessToken = res.data.accessToken
-        localStorage.setItem('token', newAccessToken)
+        const res = await axios.post('/api/refresh', { no: Number(userNo) }) //있으면 /api/refresh 호출
+        const newAccessToken = res.data.accessToken // 백엔드로 부터 받아온 새로운 accessToken
+        localStorage.setItem('token', newAccessToken) // 로컬 스토리지에 저장
         axios.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`
         return newAccessToken
     } catch (err) {
@@ -45,7 +45,7 @@ export const makeApiRequest = async (config) => {
         })
     } catch (error) {
         if (error.response?.status === 401 || error.response?.status === 403) {
-            const newToken = await refreshAccessToken()
+            const newToken = await refreshAccessToken() // 사용자가 요청 중에 401 또는 403 에러기 발생하면  재발급 하는 함수 호출
             if (!newToken) return null
 
             return await axios({
