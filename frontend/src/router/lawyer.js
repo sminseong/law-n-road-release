@@ -17,6 +17,12 @@ export default [
         name: 'LawyerQna',
         component: () => import('@/views/lawyer/QnaListView.vue')
     },
+    {
+        path: '/lawyer/qna/answer/:id',
+        name: 'ReplyRegister',
+        component: () => import('@/views/lawyer/ReplyRegisterView.vue')
+    },
+
 
     // ---------- 예약 ----------
     {
