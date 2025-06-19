@@ -1,14 +1,14 @@
 <script>
-import { defineComponent, ref, onMounted, onBeforeUnmount, nextTick } from "vue";
+import {defineComponent, ref, onMounted, onBeforeUnmount, nextTick} from "vue";
 import SockJS from "sockjs-client";
-import { Client } from "@stomp/stompjs";
+import {Client} from "@stomp/stompjs";
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
-import { OpenVidu } from "openvidu-browser";
+import {OpenVidu} from "openvidu-browser";
 import axios from "axios";
-import { useRoute } from "vue-router";
+import {useRoute} from "vue-router";
 
 export default defineComponent({
-  components: { ClientFrame },
+  components: {ClientFrame},
   setup() {
     /** =============== 방송 관련 =============== */
     const videoContainer = ref(null);
@@ -38,7 +38,7 @@ export default defineComponent({
 
     const loadReportReasons = async () => {
       try {
-        const { data } = await axios.get('/api/client/broadcast/report-reasons')
+        const {data} = await axios.get('/api/client/broadcast/report-reasons')
         reportReasonOptions.value = data
         console.log('✅ 신고 사유 목록 로딩 완료:', data)
       } catch (error) {
@@ -60,7 +60,7 @@ export default defineComponent({
 
     const loadBroadcastInfo = async () => {
       try {
-        const { data } = await axios.get(`/api/client/broadcast/view-detail/${broadcastNo.value}`);
+        const {data} = await axios.get(`/api/client/broadcast/view-detail/${broadcastNo.value}`);
         broadcastInfo.value = data;
         console.log("📄 방송 정보 로딩 완료:", data);
       } catch (e) {
@@ -70,8 +70,8 @@ export default defineComponent({
 
     const connectOpenVidu = async () => {
       try {
-        const { data } = await axios.get(`/api/client/broadcast/${broadcastNo.value}/token`);
-        const { sessionId, token, startTime } = data;
+        const {data} = await axios.get(`/api/client/broadcast/${broadcastNo.value}/token`);
+        const {sessionId, token, startTime} = data;
         streamStartTime = new Date(startTime); // 방송 시작 시간 받아서 저장
 
         console.log("👁️ 시청자 sessionId:", sessionId);
@@ -91,7 +91,7 @@ export default defineComponent({
         session.value.on("connectionDestroyed", updateViewerCount);
 
         // 스트림 수신 처리
-        session.value.on("streamCreated", ({ stream }) => {
+        session.value.on("streamCreated", ({stream}) => {
           console.log("📡 시청자: streamCreated 발생");
 
           const subscriber = session.value.subscribe(stream, undefined);
@@ -140,7 +140,7 @@ export default defineComponent({
           broadcastNo: broadcastNo.value,  // 이미 정의되어 있어야 함
           reasonCode: reportReasonCode.value,
           detailReason: reportDetail.value
-        },{
+        }, {
           headers: {
             Authorization: `Bearer ${jwtToken}` // ✅ 여기만 넘김
           }
@@ -155,11 +155,6 @@ export default defineComponent({
         alert('신고 처리 중 오류가 발생했습니다.');
       }
     };
-
-
-
-
-
 
 
     /** 언마운트 / 마운트 정리 */
@@ -177,14 +172,6 @@ export default defineComponent({
       connectOpenVidu();
       loadReportReasons()
     });
-
-
-
-
-
-
-
-
 
 
     /** =============== 채팅 관련 =============== */
@@ -229,7 +216,7 @@ export default defineComponent({
         return false;
       }
       const res = await axios.get("/api/client/my-no", {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: {Authorization: `Bearer ${token}`}
       });
       myNo.value = res.data;
       return true;
@@ -244,41 +231,45 @@ export default defineComponent({
       }
       fetchMyNo().then((ok) => {
         if (!ok) return;
-      stompClient.value = new Client({
-        webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
-        reconnectDelay: 5000,
-        connectHeaders: {
-          Authorization: `Bearer ${token}`,
-        },
-        onConnect: () => {
-          stompClient.value.subscribe(
-              `/topic/${broadcastNo.value}`,
-              (msg) => {
-                const data = JSON.parse(msg.body);
-                messages.value.push(data);
-                scrollToBottom();
-              }
-          );
-          //입장 시 type: "ENTER"만 전달
-          stompClient.value.publish({
-            destination: "/app/chat.addUser",
-            body: JSON.stringify({ broadcastNo: broadcastNo.value }),
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-        },
-        onStompError: (frame) => {
-          if (frame.body && frame.body.includes("expired")) {
-            alert("로그인이 만료되었습니다. 다시 로그인 해주세요.");
-            localStorage.removeItem('token');
-            location.href = "/login";
-          } else {
-            console.error("STOMP error:", frame);
-          }
-        },
-      });
-      stompClient.value.activate();
+        stompClient.value = new Client({
+          webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+          reconnectDelay: 5000,
+          connectHeaders: {
+            Authorization: `Bearer ${token}`,
+          },
+          onConnect: () => {
+            stompClient.value.subscribe(
+                `/topic/${broadcastNo.value}`,
+                (msg) => {
+                  const data = JSON.parse(msg.body);
+                  messages.value.push(data);
+                  scrollToBottom();
+                }
+            );
+            //입장
+            stompClient.value.publish({
+              destination: "/app/chat.addUser",
+              body: JSON.stringify({broadcastNo: broadcastNo.value}),
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            messages.value.push({
+              type: "WELCOME",
+              message: "📢 도로 위 질서만큼이나 채팅 예절도 중요합니다. 부적절한 내용은 전송이 제한되니 모두가 함께 즐기는 방송을 만들어주세요. 😊"
+            });
+          },
+          onStompError: (frame) => {
+            if (frame.body && frame.body.includes("expired")) {
+              alert("로그인이 만료되었습니다. 다시 로그인 해주세요.");
+              localStorage.removeItem('token');
+              location.href = "/login";
+            } else {
+              console.error("STOMP error:", frame);
+            }
+          },
+        });
+        stompClient.value.activate();
       });
     };
 
@@ -293,8 +284,9 @@ export default defineComponent({
       }
       stompClient.value.publish({
         destination: "/app/chat.sendMessage",
-        body: JSON.stringify({ broadcastNo: broadcastNo.value,
-            message: trimmed,
+        body: JSON.stringify({
+          broadcastNo: broadcastNo.value,
+          message: trimmed,
         }),
         headers: {
           Authorization: `Bearer ${token}`,
@@ -346,15 +338,16 @@ export default defineComponent({
             "/api/client/chat/report",
             {
               userNo: selectedUserNo.value,
-              reportedUserNo : myNo.value,
+              reportedUserNo: myNo.value,
               nickname: selectedUser.value,
               message: selectedMessage.value,
             },
-        {
-              headers: { Authorization: `Bearer ${token}` }
+            {
+              headers: {Authorization: `Bearer ${token}`}
             },
         );
-      } catch (e) {}
+      } catch (e) {
+      }
       isConfirmModal.value = false;
       isCompleteModal.value = true;
 
@@ -475,9 +468,10 @@ export default defineComponent({
       </div>
 
 
-
       <!-- 신고 모달 -->
-      <div v-if="showReportModal" class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center" style="z-index: 1050;">
+      <div v-if="showReportModal"
+           class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center"
+           style="z-index: 1050;">
         <div class="bg-white p-4 rounded shadow" style="width: 480px;">
 
           <!-- 제목 -->
@@ -488,7 +482,7 @@ export default defineComponent({
             {{ broadcastInfo.title }}
           </div>
 
-          <hr class="my-3" />
+          <hr class="my-3"/>
 
           <!-- 신고 사유 라디오 버튼 목록 -->
           <div class="mb-4">
@@ -525,7 +519,7 @@ export default defineComponent({
             </div>
           </div>
 
-          <hr class="my-3" />
+          <hr class="my-3"/>
 
           <!-- 상세 입력 -->
           <div class="mb-4">
@@ -547,11 +541,6 @@ export default defineComponent({
       </div>
 
 
-
-
-
-
-
       <!-- 채팅 영역 -->
       <div class="position-absolute border rounded shadow p-4 d-flex flex-column bg-white"
            style="width: 400px; height: 700px; top: 2rem; right: 2rem;">
@@ -571,32 +560,34 @@ export default defineComponent({
                  style="color: #435879; font-size: 0.75rem;">
               {{ msg.message }}
             </div>
+            <div v-else-if="msg.type === 'WELCOME'"
+                 class="w-100 text-center"
+                 style="color: rgb(120,118,118); background: #e4e4e4; border-radius: 12px; font-size: 0.84rem; padding: 9px 1px;">
+              {{ msg.message }}
+            </div>
             <div v-else-if="msg.type === 'Lawyer'"
                  style="font-size: 0.90rem; display: flex; align-items: center;">
               <!-- 닉네임: 검정색 고정 + 클릭 가능 -->
               <span
-                  @click.stop="Number(msg.no) !== Number(myNo) && openDropdown(index, msg)"
-                  :style="{
-      color: '#222',
-      userSelect: 'text',
-      cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
-      fontWeight: 'bold'
-    }"
-              >
-    👑 {{ msg.nickname }} 변호사
-    <span
-        v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
-        class="nickname-dropdown"
-        style="position:absolute;top:120%;left:0;z-index:10000;">
-      <ul class="dropdown-custom-menu">
-        <li class="menu-report" @click.stop="onReportClick">🚨 메시지 신고 🚨</li>
-      </ul>
-    </span>
-  </span>
+                @click.stop="Number(msg.no) !== Number(myNo) && openDropdown(index, msg)"
+                :style="{
+                    color: '#222',
+                    userSelect: 'text',
+                    cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
+                    fontWeight: 'bold'
+                    }">👑 {{ msg.nickname }} 변호사
+                <span v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
+                      class="nickname-dropdown"
+                      style="position:absolute;top:120%;left:0;z-index:10000;">
+                  <ul class="dropdown-custom-menu">
+                    <li class="menu-report" @click.stop="onReportClick">🚨 메시지 신고 🚨</li>
+                </ul>
+              </span>
+            </span>
               <!-- 메시지: 빨간색 -->
               <span style="color: #fd1900; margin-left: 0.6em;">
-    {{ msg.message }}
-  </span>
+              {{ msg.message }}
+            </span>
             </div>
 
             <div v-else style="font-size: 0.90rem; display:flex; align-items:center;">
@@ -630,7 +621,7 @@ export default defineComponent({
                  type="text"
                  class="form-control bg-body-secondary text-dark border-0 rounded-pill px-3 py-2"
                  placeholder="채팅을 입력해 주세요."
-                 @keyup.enter="sendMessage" />
+                 @keyup.enter="sendMessage"/>
         </div>
       </div>
 
@@ -640,7 +631,7 @@ export default defineComponent({
           <div class="modal-custom-content">
             <div class="modal-custom-msg">
               <div class="modal-custom-text">
-                <strong>{{ selectedUser }}</strong>님의 메시지를 신고하시겠습니까?<br />
+                <strong>{{ selectedUser }}</strong>님의 메시지를 신고하시겠습니까?<br/>
                 <p class="fw-light">신고된 메시지는 처리를 위해 수집됩니다.</p>
                 <span style="font-size:0.85rem; color:#888;">"{{ selectedMessage }}"</span>
               </div>
@@ -659,8 +650,8 @@ export default defineComponent({
           <div class="modal-custom-content">
             <div class="modal-custom-msg">
               <div class="modal-custom-text" style="text-align:center;">
-                메시지 신고가 정상 접수되었습니다.<br />
-                가이드 위반 여부 검토 후 조치 예정입니다.<br />
+                메시지 신고가 정상 접수되었습니다.<br/>
+                가이드 위반 여부 검토 후 조치 예정입니다.<br/>
                 감사합니다.
               </div>
             </div>
@@ -675,13 +666,19 @@ export default defineComponent({
 </template>
 
 <style scoped>
-.scroll-hidden::-webkit-scrollbar { display: none; }
-.scroll-hidden { -ms-overflow-style: none; }
+.scroll-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-hidden {
+  -ms-overflow-style: none;
+}
+
 .dropdown-custom-menu {
   background: #232428;
   color: #dedede;
   border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.24);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.24);
   min-width: 190px;
   padding: 8px 0;
   margin: 0;
@@ -689,6 +686,7 @@ export default defineComponent({
   border: 1px solid #282a30;
   font-size: 1.07rem;
 }
+
 .dropdown-custom-menu li {
   display: flex;
   align-items: center;
@@ -698,36 +696,64 @@ export default defineComponent({
   gap: 10px;
   font-weight: 500;
 }
-.dropdown-custom-menu li:hover { background: #2d2f34; }
-.dropdown-custom-menu .menu-report { color: #fd6262; background: #26272b; }
-.dropdown-custom-menu .menu-report:hover { background: #33292c; }
+
+.dropdown-custom-menu li:hover {
+  background: #2d2f34;
+}
+
+.dropdown-custom-menu .menu-report {
+  color: #fd6262;
+  background: #26272b;
+}
+
+.dropdown-custom-menu .menu-report:hover {
+  background: #33292c;
+}
 
 .modal-overlay-dark {
-  position: fixed; top:0; left:0; width:100vw; height:100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(18, 19, 21, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
 }
+
 .modal-custom-box {
   background: white;
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.28);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
   min-width: 360px;
   padding: 0;
   overflow: hidden;
   color: black;
 }
-.modal-custom-content { padding: 36px 36px 24px 36px; }
-.modal-custom-msg { margin-bottom: 34px; }
-.modal-custom-text { font-size: 1.14rem; line-height: 1.7; font-weight: 600; }
+
+.modal-custom-content {
+  padding: 36px 36px 24px 36px;
+}
+
+.modal-custom-msg {
+  margin-bottom: 34px;
+}
+
+.modal-custom-text {
+  font-size: 1.14rem;
+  line-height: 1.7;
+  font-weight: 600;
+}
+
 .modal-custom-btns {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 18px;
 }
+
 .modal-btn-cancel, .modal-btn-ok {
   padding: 0 0;
   border: none;
@@ -740,10 +766,24 @@ export default defineComponent({
   cursor: pointer;
   transition: background 0.13s, color 0.12s;
 }
-.modal-btn-cancel { background: #f47e4a; color: #ffffff; }
-.modal-btn-cancel:hover { background: #efb485; }
-.modal-btn-ok { background: #435879; color: #ffffff; }
-.modal-btn-ok:hover { background: #7d8bbd; }
+
+.modal-btn-cancel {
+  background: #f47e4a;
+  color: #ffffff;
+}
+
+.modal-btn-cancel:hover {
+  background: #efb485;
+}
+
+.modal-btn-ok {
+  background: #435879;
+  color: #ffffff;
+}
+
+.modal-btn-ok:hover {
+  background: #7d8bbd;
+}
 
 .blinking-dot {
   width: 10px;
