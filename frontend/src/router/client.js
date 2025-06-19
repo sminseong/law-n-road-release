@@ -58,6 +58,11 @@ export default [
         component: () => import('@/views/client/ClientScheduleDetailView.vue'),
         props: true
     },
+    {
+        path: '/client/broadcasts/list',
+        name: 'ClientBroadCastsList',
+        component: () => import('@/views/client/ClientBroadcastListView.vue')
+    },
 
     // ---------- 템플릿 ----------
     {

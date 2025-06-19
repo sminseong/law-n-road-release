@@ -16,7 +16,7 @@ const isScheduleError = ref(false);
 const loadScheduleDetail = async () => {
   try {
     const token = localStorage.getItem('token');
-    const { data } = await axios.get(`/api/schedule/my/${scheduleNo}`, {
+    const { data } = await axios.get(`/api/lawyer/schedule/my/${scheduleNo}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     scheduleDetail.value = data;
@@ -186,10 +186,6 @@ const deleteNightbotMessage = async (no) => {
   }
 };
 
-
-function goToLawyerLive() {
-  window.location.href = 'http://localhost:5173/lawyer/broadcasts/live?scheduleNo=1';
-}
 </script>
 
 

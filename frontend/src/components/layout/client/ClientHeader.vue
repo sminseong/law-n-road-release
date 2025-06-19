@@ -379,7 +379,7 @@ const logout = () => {
                   <a class="nav-link" href="/">홈</a>
                 </li>
                 <li class="nav-item">
-                 <a class="nav-link" href="/client/broadcasts/1">라이브 방송</a>  <!--  세션으로 수정 예정-->
+                 <a class="nav-link" href="/client/broadcasts/list">라이브 방송</a>  <!--  세션으로 수정 예정-->
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="/client/vod/1">방송 다시보기</a>

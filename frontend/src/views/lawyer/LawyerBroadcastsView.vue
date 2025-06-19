@@ -102,6 +102,8 @@ const connectSession = async () => {
 
     const res = await axios.post("/api/lawyer/broadcast/start", {
       scheduleNo: Number(scheduleNo),
+    }, {
+
     });
     const {sessionId, token, broadcastNo: newBroadcastNo, startTime} = res.data;
 

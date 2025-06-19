@@ -28,9 +28,14 @@ const newKeyword = ref('')
 
 onMounted(async () => {
   try {
+    const token = localStorage.getItem('token')
     const [catRes, schedRes] = await Promise.all([
-      axios.get('/api/category/list'),
-      axios.get(`/api/schedule/my/${scheduleNo}`)
+      axios.get('/api/public/category/list'),
+      axios.get(`/api/lawyer/schedule/my/${scheduleNo}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
     ])
     categoryList.value = catRes.data
     const s = schedRes.data
@@ -85,7 +90,12 @@ const deleteSchedule = async () => {
   if (!confirmDelete) return
 
   try {
-    await axios.delete(`/api/schedule/delete/${scheduleNo}`)
+    const token = localStorage.getItem('token')
+    await axios.delete(`/api/lawyer/schedule/delete/${scheduleNo}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
     alert('🗑️ 방송 스케줄이 삭제되었습니다.')
     router.push('/lawyer/broadcasts/schedule')
   } catch (err) {
@@ -110,9 +120,12 @@ const updateSchedule = async () => {
     if (selectedFile.value) {
       form.append('thumbnail', selectedFile.value)
     }
-
-    await axios.post('/api/schedule/update?_method=PUT', form, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+    const token = localStorage.getItem('token')
+    await axios.post('/api/lawyer/schedule/update?_method=PUT', form, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`
+      }
     })
 
     alert('✅ 방송 스케줄 수정 완료')
