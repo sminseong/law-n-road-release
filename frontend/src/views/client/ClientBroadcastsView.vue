@@ -1,5 +1,5 @@
 <script>
-import {defineComponent, ref, onMounted, onBeforeUnmount, nextTick} from "vue";
+import {defineComponent, ref, onMounted, onBeforeUnmount, nextTick, watch} from "vue";
 import SockJS from "sockjs-client";
 import {Client} from "@stomp/stompjs";
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
@@ -137,12 +137,12 @@ export default defineComponent({
       try {
         const jwtToken = localStorage.getItem("authToken");
         await axios.post('/api/client/broadcast/report', {
-          broadcastNo: broadcastNo.value,  // 이미 정의되어 있어야 함
+          broadcastNo: broadcastNo.value,
           reasonCode: reportReasonCode.value,
           detailReason: reportDetail.value
         }, {
           headers: {
-            Authorization: `Bearer ${jwtToken}` // ✅ 여기만 넘김
+            Authorization: `Bearer ${jwtToken}`
           }
         });
 
@@ -164,6 +164,8 @@ export default defineComponent({
       if (timerInterval) clearInterval(timerInterval);
       stompClient.value?.deactivate?.();
       closeDropdown();
+      window.removeEventListener('mousedown', handlePreQClickOutside);
+
     });
 
     onMounted(() => {
@@ -357,6 +359,54 @@ export default defineComponent({
       isCompleteModal.value = false;
     };
 
+
+// 사전 질문 표시
+    const showPreQDropdown = ref(false);
+    const preQuestions = ref([]);
+    const isPreQLoading = ref(false);
+    const preQBtnRef = ref(null);
+    const preQDropdownRef = ref(null);
+
+    // API 호출
+    const fetchPreQuestions = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`/api/client/broadcasts/schedule/${broadcastNo.value}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = Array.isArray(res.data) ? res.data : res.data.data;
+        preQuestions.value = data.map(q => ({
+          ...q,
+          checked: false
+        }));
+      } catch (e) {
+        console.error("사전 질문 불러오기 실패:", e);
+      }
+    };
+
+    const togglePreQDropdown = async () => {
+      showPreQDropdown.value = !showPreQDropdown.value;
+      if (showPreQDropdown.value) {
+        await fetchPreQuestions();
+        // 클릭 바깥 감지
+        nextTick(() => window.addEventListener('mousedown', handlePreQClickOutside));
+      } else {
+        window.removeEventListener('mousedown', handlePreQClickOutside);
+      }
+    };
+
+    const handlePreQClickOutside = (e) => {
+      // 드롭다운과 버튼 바깥 클릭시 닫힘
+      if (
+          preQDropdownRef.value && !preQDropdownRef.value.contains(e.target) &&
+          preQBtnRef.value && !preQBtnRef.value.contains(e.target)
+      ) {
+        showPreQDropdown.value = false;
+        window.removeEventListener('mousedown', handlePreQClickOutside);
+      }
+    };
+
+
     return {
       videoContainer,
       broadcastInfo,
@@ -384,6 +434,8 @@ export default defineComponent({
       reportReasonOptions,
       submitReport,
       myNo,
+      showPreQDropdown, preQuestions, isPreQLoading,
+      togglePreQDropdown, preQBtnRef, preQDropdownRef,
     };
   }
 });
@@ -543,12 +595,45 @@ export default defineComponent({
 
       <!-- 채팅 영역 -->
       <div class="position-absolute border rounded shadow p-4 d-flex flex-column bg-white"
-           style="width: 400px; height: 700px; top: 2rem; right: 2rem;">
+           style="width: 400px; height: 715px; top: 2rem; right: 2rem;">
 
         <!-- 채팅 상단 제목 및 아이콘 -->
-        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom position-relative">
+          <!-- 왼쪽: 채팅 타이틀 -->
           <div class="fw-bold fs-5">채팅</div>
+          <!-- 오른쪽: 사전질문 버튼 -->
+          <div>
+            <button class="btn btn-link px-1 py-0 text-decoration-none"
+                    style="font-size:1.23rem;"
+                    @click="togglePreQDropdown"
+                    ref="preQBtnRef"
+                    title="사전질문 보기">📝
+            </button>
+          </div>
+          <!-- 드롭다운(채팅 상단 전체 너비) -->
+          <div v-if="showPreQDropdown"
+               class="preq-dropdown"
+               ref="preQDropdownRef"
+               style="position:absolute; top:110%; left:0; right:0; width:100%; min-width:0; max-width:none; z-index:1000;">
+            <div class="preq-dropdown-inner">
+              <div class="fw-bold px-2 pt-2 pb-1" style="font-size:1.05rem;">사전 질문 목록</div>
+              <div v-if="isPreQLoading" class="px-3 py-3 text-muted small">불러오는 중...</div>
+              <div v-else-if="preQuestions.length === 0" class="px-3 py-3 text-muted small">등록된 사전 질문이 없습니다.</div>
+              <ul v-else class="list-group preq-scroll" style="max-height:220px; overflow:auto;">
+                <li v-for="q in preQuestions" :key="q.no"
+                    class="border rounded-2 my-2 mx-2 shadow-sm px-3 py-2"
+                    style="font-size:0.99rem; background: #fff;">
+                  <div class="fw-semibold mb-1" style="color:#3180e3">{{ q.nickname }}</div>
+                  <div style="color:#222">{{ q.content }}</div>
+                </li>
+              </ul>
+
+
+            </div>
+          </div>
         </div>
+
+
 
         <!-- 메시지 출력 -->
         <div ref="messageContainer"
@@ -562,15 +647,15 @@ export default defineComponent({
             </div>
             <div v-else-if="msg.type === 'WELCOME'"
                  class="w-100 text-center"
-                 style="color: rgb(120,118,118); background: #e4e4e4; border-radius: 12px; font-size: 0.84rem; padding: 9px 1px;">
+                 style="color: rgb(120,118,118); background: #e4e4e4; border-radius: 12px; font-size: 0.84rem; padding: 9px 2px;">
               {{ msg.message }}
             </div>
             <div v-else-if="msg.type === 'Lawyer'"
                  style="font-size: 0.90rem; display: flex; align-items: center;">
               <!-- 닉네임: 검정색 고정 + 클릭 가능 -->
               <span
-                @click.stop="Number(msg.no) !== Number(myNo) && openDropdown(index, msg)"
-                :style="{
+                  @click.stop="Number(msg.no) !== Number(myNo) && openDropdown(index, msg)"
+                  :style="{
                     color: '#222',
                     userSelect: 'text',
                     cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
@@ -804,4 +889,40 @@ export default defineComponent({
     opacity: 0.3;
   }
 }
+
+
+.preq-dropdown {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(24, 36, 72, 0.12);
+  border: 1px solid #e4e4e7;
+  animation: preq-drop-in 0.17s;
+}
+
+.preq-dropdown-inner {
+  padding: 0 18px 10px 18px;
+}
+
+
+.preq-scroll::-webkit-scrollbar {
+  width: 5px;
+  background: #eee;
+}
+
+.preq-scroll::-webkit-scrollbar-thumb {
+  background: #d3d3d3;
+  border-radius: 5px;
+}
+
+@keyframes preq-drop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 </style>

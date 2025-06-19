@@ -36,9 +36,15 @@ public class PreQuestionServiceImpl implements PreQuestionService {
     }
 
     @Override
+    public List<LawyerPreQuestion> findByBroadcastPreQuestion(Long broadcastNo) {
+        return preQuestionMapper.findByBroadcastPreQuestion(broadcastNo);
+    }
+
+    @Override
     public void deleteLawyerPreQuestion (List<Long> preQuestionNo) {
         preQuestionMapper.deleteLawyerPreQuestion(preQuestionNo);
     }
+
 
 
 

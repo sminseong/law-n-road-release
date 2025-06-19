@@ -65,7 +65,15 @@ public class PreQuestionController {
         preQuestionService.deletePreQuestionByUser(scheduleNo, questionNo, userNo);
     }
 
+    @GetMapping("/api/client/broadcasts/schedule/{broadcastNo}")
+    public List<LawyerPreQuestion> broadcastPreQuestion(@PathVariable Long broadcastNo) {
+        return preQuestionService.findByBroadcastPreQuestion(broadcastNo);
+    }
 
+    @GetMapping("/api/Lawyer/broadcasts/schedule/{broadcastNo}")
+    public List<LawyerPreQuestion> broadcastPreQuestionLawyer(@PathVariable Long broadcastNo) {
+        return preQuestionService.findByBroadcastPreQuestion(broadcastNo);
+    }
 
 
 
