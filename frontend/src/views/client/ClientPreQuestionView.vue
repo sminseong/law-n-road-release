@@ -1,18 +1,67 @@
 <script setup>
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
-import { onMounted, ref } from "vue";
+import { nextTick, onMounted, ref, watch, computed } from "vue";
 import axios from "axios";
 import { useRoute } from "vue-router";
 
-const nickname = ref('홍길동');
+const nickname = ref('');
 const inputContent = ref('');
 const preQuestion = ref({});
 const route = useRoute();
 const scheduleNo = route.params.scheduleNo;
 const myUserNo = ref(null);
+const preQuestionList = ref(null);
+
+// 스크롤 하단 이동 함수
+const scrollToPreQuestionBottom = () => {
+  nextTick(() => {
+    if (preQuestionList.value) {
+      preQuestionList.value.scrollTop = preQuestionList.value.scrollHeight;
+    }
+  });
+};
+
+// preQuestions가 바뀔 때마다 스크롤 맨 아래로
+watch(
+    () => preQuestion.value.preQuestions,
+    scrollToPreQuestionBottom,
+    { deep: true }
+);
+
+// 이미 질문 등록 여부
+const alreadyAsked = computed(() => {
+  if (!preQuestion.value.preQuestions || !myUserNo.value) return false;
+  return preQuestion.value.preQuestions.some(
+      q => q.userNo === myUserNo.value
+  );
+});
+
+// 방송 시작 시간 기준 사전질문 입력 가능 여부
+const canAskPreQuestion = computed(() => {
+  if (!preQuestion.value.startTime) return false;
+  const start = new Date(preQuestion.value.startTime);
+  const now = new Date();
+  return (start - now) > 10 * 60 * 1000;
+});
+
+// 방송 시작 10분 전 자동 새로고침
+function getMsToStart() {
+  if (!preQuestion.value.startTime) return null;
+  return new Date(preQuestion.value.startTime) - new Date();
+}
+function autoReloadWhenNeeded() {
+  const msLeft = getMsToStart();
+  // startTime이 없는 경우 패스
+  if (msLeft === null) return;
+  // 이미 10분 이내라면(입력창 애초에 안보임): 새로고침 예약 X
+  if (msLeft <= 10 * 60 * 1000) return;
+  // 10분 전에 들어온 경우 → 10분 남았을 때 새로고침 딱 한 번만 예약
+  setTimeout(() => {
+    location.reload();
+  }, msLeft - 10 * 60 * 1000);
+}
 
 
-// 방송 정보 + 사전 질문 불러오기 (GET, 토큰 없이)
 onMounted(async () => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -21,9 +70,21 @@ onMounted(async () => {
   }
 
   const preQRes = await axios.get(`/api/broadcasts/schedule/${scheduleNo}/preQuestion`);
-  preQuestion.value = preQRes.data;
+  const data = preQRes.data;
 
+  if (Array.isArray(data.preQuestions)) {
+    data.preQuestions = data.preQuestions.filter(
+        q =>
+            q && typeof q === 'object' && !Array.isArray(q) &&
+            Object.keys(q).length > 0 &&
+            q.nickname &&
+            q.preQuestionContent
+    );
+  }
 
+  preQuestion.value = data;
+  scrollToPreQuestionBottom();
+  autoReloadWhenNeeded();
 });
 
 const submitQuestion = async () => {
@@ -52,9 +113,10 @@ const submitQuestion = async () => {
     );
     inputContent.value = '';
     alert('질문이 등록되었습니다.');
-    // 등록 후 리스트 갱신
     const preQRes = await axios.get(`/api/broadcasts/schedule/${scheduleNo}/preQuestion`);
     preQuestion.value = preQRes.data;
+    scrollToPreQuestionBottom();
+    autoReloadWhenNeeded();
   } catch (e) {
     alert('등록에 실패했습니다.');
   }
@@ -69,10 +131,9 @@ const deleteQuestion = async (q) => {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         }
     );
-
-    // 삭제 후 목록 갱신
-    const preQRes = await axios.get(`/api/broadcasts/schedule/${scheduleNo}/preQuestion`);
-    preQuestion.value = preQRes.data;
+    location.reload();
+    // 아래 코드는 실제로는 필요 없음 (새로고침됨)
+    // scrollToPreQuestionBottom();
   } catch (e) {
     alert('삭제에 실패했습니다.');
   }
@@ -87,9 +148,7 @@ function getTextColorClass(index) {
   const colors = ['text-success', 'text-warning', 'text-danger'];
   return colors[index % colors.length];
 }
-
 </script>
-
 
 <template>
   <ClientFrame>
@@ -99,31 +158,35 @@ function getTextColorClass(index) {
           <!-- 왼쪽: 방송 정보 -->
           <div class="col-md-7 d-flex flex-column justify-content-center align-items-center" style="min-height: 70vh;">
             <!-- 상단 이미지 -->
-            <div class="w-100 d-flex justify-content-center" style="margin-top: 45px; margin-bottom: 48px;">
-              <img :src="preQuestion.thumbnailPath || '/img/ads/slider-image-1.jpg'" alt="방송 이미지"
-                   style="max-width: 100%; height: auto; border-radius: 18px;">
+            <div class="w-100 d-flex justify-content-center mb-4 mt-3">
+              <img :src="preQuestion.thumbnailPath" alt="방송 이미지"
+                   style="max-width: 100%; height: 100%; border-radius: 18px;">
             </div>
-
-            <!-- 방송 상세 정보 -->
-            <div class="bg-light rounded-3 p-4 w-100 d-flex flex-row align-items-center" style="gap: 10px; min-height: 220px;">
-              <!-- 프로필 이미지 -->
-              <div class="position-relative d-flex justify-content-center align-items-center" style="min-width: 170px;">
-                <img src="/img/profiles/kim.png" alt="프로필" class="rounded-circle border border-2"
-                     style="width: 96px; height: 96px;" />
+            <!-- 방송 상세 카드 -->
+            <div class="bg-white border rounded-4 shadow p-4 w-100 d-flex flex-row align-items-center gap-4" style="min-height: 230px;">
+              <div class="d-flex flex-column align-items-center" style="min-width: 130px;">
+                <img
+                    src="/img/profiles/kim.png"
+                    alt="프로필"
+                    class="rounded-circle border border-2 shadow-sm"
+                    style="width: 108px; height: 108px; object-fit: cover;"
+                />
+                <span class="mt-3 fw-semibold fs-5 text-primary text-center" style="letter-spacing:0.03em;">
+                  {{ preQuestion.lawyerName }} 변호사
+                </span>
               </div>
-
               <!-- 방송 정보 텍스트 -->
               <div class="text-start flex-grow-1">
-                <div class="fw-semibold mb-1 fs-2">{{ preQuestion.name }}</div>
-                <div class="fw-bold fs-5 mb-1">{{ preQuestion.scheduleContent }}</div>
-                <div class="fw-bold fs-5 mb-1">
-                  {{ preQuestion.date }}　　
-                  {{ preQuestion.startTime?.slice(11, 16) }} ~ {{ preQuestion.endTime?.slice(11, 16) }}
+                <div class="fw-bold fs-2 mb-2">{{ preQuestion.name }}</div>
+                <div class="text-muted fs-5 mb-2">{{ preQuestion.scheduleContent }}</div>
+                <div class="fs-5 mb-1">
+                  <i class="bi bi-calendar2-week text-primary me-1"></i>
+                  {{ preQuestion.date }}
+                  <span v-if="preQuestion.startTime">｜{{ preQuestion.startTime?.slice(11, 16) }} ~ {{ preQuestion.endTime?.slice(11, 16) }}</span>
                 </div>
-                <div class="text-secondary mb-2">- {{ preQuestion.lawyerName }} 변호사 -</div>
                 <div class="mt-2">
-                  <span class="badge bg-primary me-1" v-for="(kw, idx) in preQuestion.keywords" :key="idx">
-                    # {{ kw }}
+                  <span class="badge bg-primary-100 text-primary me-1" v-for="(kw, idx) in preQuestion.keywords" :key="idx" style="font-size:1.07em;">
+                    #{{ kw }}
                   </span>
                 </div>
               </div>
@@ -135,35 +198,38 @@ function getTextColorClass(index) {
             <div class="mb-3">
               <span class="fs-4 fw-bold text-dark">사전 질문 등록</span>
             </div>
-
             <!-- 사전 질문 목록 -->
-            <div
-                class="flex-grow-1 overflow-auto"
-                style="min-height: 0; max-height: 900px;"
-            >
-              <div
-                  v-for="(q, index) in preQuestion.preQuestions"
-                  :key="index"
-                  class="rounded-3 p-3 mb-2"
-                  :class="getQuestionStyle(index)">
-                <div class="d-flex align-items-center justify-content-between">
-                  <span class="fw-bold" :class="getTextColorClass(index)">[{{ q.nickname }}]</span>
-                  <button
-                      v-if="q.userNo === myUserNo"
-                      class="btn btn-link btn-sm text-danger px-2"
-                      @click="deleteQuestion(q)"
-                      style="text-decoration: underline;">
-                    삭제
-                  </button>
+            <div ref="preQuestionList" class="flex-grow-1 overflow-auto" style="min-height: 0; max-height: 900px;">
+              <div v-if="preQuestion.preQuestions && preQuestion.preQuestions.length > 0">
+                <div
+                    v-for="(q, index) in preQuestion.preQuestions"
+                    :key="index"
+                    class="rounded-3 p-3 mb-2"
+                    :class="getQuestionStyle(index)">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span class="fw-bold" :class="getTextColorClass(index)">[{{ q.nickname }}]</span>
+                    <button
+                        v-if="q.userNo === myUserNo"
+                        class="btn btn-link btn-sm text-danger px-2"
+                        @click="deleteQuestion(q)"
+                        style="text-decoration: underline;">
+                      삭제
+                    </button>
+                  </div>
+                  <div>{{ q.preQuestionContent }}</div>
                 </div>
-                <div>{{ q.preQuestionContent }}</div>
+              </div>
+              <div v-else class="text-muted text-center py-4">
+                아직 등록된 사전질문이 없습니다.
               </div>
             </div>
-
-            <!-- 질문 입력창 -->
-            <form class="row g-2 align-items-center mt-auto"
-                  style="margin-bottom: 0;"
-                  @submit.prevent="submitQuestion">
+            <!-- 질문 입력창 노출 조건 -->
+            <form
+                class="row g-2 align-items-center mt-auto"
+                style="margin-bottom: 0;"
+                @submit.prevent="submitQuestion"
+                v-if="!alreadyAsked && canAskPreQuestion"
+            >
               <div class="col">
                 <input type="text" class="form-control fs-5" placeholder="사전질문을 등록하세요"
                        v-model="inputContent"/>
@@ -172,6 +238,18 @@ function getTextColorClass(index) {
                 <button type="submit" class="btn btn-primary fs-5 px-4">등록</button>
               </div>
             </form>
+            <!-- 이미 등록 -->
+            <div v-else-if="alreadyAsked" class="text-success text-center py-2">
+              이미 사전질문을 등록하셨습니다.
+            </div>
+            <!-- 시간 제한 -->
+            <div v-else-if="!canAskPreQuestion" class="text-muted text-center py-2">
+              방송 시작 10분 전에는 사전질문 등록이 불가능합니다.
+            </div>
+            <!-- (여분 대비용) -->
+            <div v-else class="text-success text-center py-2">
+              이미 사전질문을 등록하셨습니다.
+            </div>
           </div>
         </div>
       </div>

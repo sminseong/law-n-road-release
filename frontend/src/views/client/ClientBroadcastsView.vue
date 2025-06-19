@@ -1,14 +1,14 @@
 <script>
-import { defineComponent, ref, onMounted, onBeforeUnmount, nextTick } from "vue";
+import {defineComponent, ref, onMounted, onBeforeUnmount, nextTick, watch} from "vue";
 import SockJS from "sockjs-client";
-import { Client } from "@stomp/stompjs";
+import {Client} from "@stomp/stompjs";
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
-import { OpenVidu } from "openvidu-browser";
+import {OpenVidu} from "openvidu-browser";
 import axios from "axios";
-import { useRoute } from "vue-router";
+import {useRoute} from "vue-router";
 
 export default defineComponent({
-  components: { ClientFrame },
+  components: {ClientFrame},
   setup() {
     /** =============== 방송 관련 =============== */
     const videoContainer = ref(null);
@@ -38,7 +38,7 @@ export default defineComponent({
 
     const loadReportReasons = async () => {
       try {
-        const { data } = await axios.get('/api/client/broadcast/report-reasons')
+        const {data} = await axios.get('/api/client/broadcast/report-reasons')
         reportReasonOptions.value = data
         console.log('✅ 신고 사유 목록 로딩 완료:', data)
       } catch (error) {
@@ -60,7 +60,7 @@ export default defineComponent({
 
     const loadBroadcastInfo = async () => {
       try {
-        const { data } = await axios.get(`/api/client/broadcast/view-detail/${broadcastNo.value}`);
+        const {data} = await axios.get(`/api/client/broadcast/view-detail/${broadcastNo.value}`);
         broadcastInfo.value = data;
         console.log("📄 방송 정보 로딩 완료:", data);
       } catch (e) {
@@ -70,8 +70,8 @@ export default defineComponent({
 
     const connectOpenVidu = async () => {
       try {
-        const { data } = await axios.get(`/api/client/broadcast/${broadcastNo.value}/token`);
-        const { sessionId, token, startTime } = data;
+        const {data} = await axios.get(`/api/client/broadcast/${broadcastNo.value}/token`);
+        const {sessionId, token, startTime} = data;
         streamStartTime = new Date(startTime); // 방송 시작 시간 받아서 저장
 
         console.log("👁️ 시청자 sessionId:", sessionId);
@@ -91,7 +91,7 @@ export default defineComponent({
         session.value.on("connectionDestroyed", updateViewerCount);
 
         // 스트림 수신 처리
-        session.value.on("streamCreated", ({ stream }) => {
+        session.value.on("streamCreated", ({stream}) => {
           console.log("📡 시청자: streamCreated 발생");
 
           const subscriber = session.value.subscribe(stream, undefined);
@@ -137,12 +137,12 @@ export default defineComponent({
       try {
         const jwtToken = localStorage.getItem("authToken");
         await axios.post('/api/client/broadcast/report', {
-          broadcastNo: broadcastNo.value,  // 이미 정의되어 있어야 함
+          broadcastNo: broadcastNo.value,
           reasonCode: reportReasonCode.value,
           detailReason: reportDetail.value
-        },{
+        }, {
           headers: {
-            Authorization: `Bearer ${jwtToken}` // ✅ 여기만 넘김
+            Authorization: `Bearer ${jwtToken}`
           }
         });
 
@@ -157,11 +157,6 @@ export default defineComponent({
     };
 
 
-
-
-
-
-
     /** 언마운트 / 마운트 정리 */
     onBeforeUnmount(() => {
       console.log("시청자 페이지 종료 - 세션 종료");
@@ -169,6 +164,8 @@ export default defineComponent({
       if (timerInterval) clearInterval(timerInterval);
       stompClient.value?.deactivate?.();
       closeDropdown();
+      window.removeEventListener('mousedown', handlePreQClickOutside);
+
     });
 
     onMounted(() => {
@@ -177,14 +174,6 @@ export default defineComponent({
       connectOpenVidu();
       loadReportReasons()
     });
-
-
-
-
-
-
-
-
 
 
     /** =============== 채팅 관련 =============== */
@@ -229,7 +218,7 @@ export default defineComponent({
         return false;
       }
       const res = await axios.get("/api/client/my-no", {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: {Authorization: `Bearer ${token}`}
       });
       myNo.value = res.data;
       return true;
@@ -244,41 +233,45 @@ export default defineComponent({
       }
       fetchMyNo().then((ok) => {
         if (!ok) return;
-      stompClient.value = new Client({
-        webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
-        reconnectDelay: 5000,
-        connectHeaders: {
-          Authorization: `Bearer ${token}`,
-        },
-        onConnect: () => {
-          stompClient.value.subscribe(
-              `/topic/${broadcastNo.value}`,
-              (msg) => {
-                const data = JSON.parse(msg.body);
-                messages.value.push(data);
-                scrollToBottom();
-              }
-          );
-          //입장 시 type: "ENTER"만 전달
-          stompClient.value.publish({
-            destination: "/app/chat.addUser",
-            body: JSON.stringify({ broadcastNo: broadcastNo.value }),
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-        },
-        onStompError: (frame) => {
-          if (frame.body && frame.body.includes("expired")) {
-            alert("로그인이 만료되었습니다. 다시 로그인 해주세요.");
-            localStorage.removeItem('token');
-            location.href = "/login";
-          } else {
-            console.error("STOMP error:", frame);
-          }
-        },
-      });
-      stompClient.value.activate();
+        stompClient.value = new Client({
+          webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+          reconnectDelay: 5000,
+          connectHeaders: {
+            Authorization: `Bearer ${token}`,
+          },
+          onConnect: () => {
+            stompClient.value.subscribe(
+                `/topic/${broadcastNo.value}`,
+                (msg) => {
+                  const data = JSON.parse(msg.body);
+                  messages.value.push(data);
+                  scrollToBottom();
+                }
+            );
+            //입장
+            stompClient.value.publish({
+              destination: "/app/chat.addUser",
+              body: JSON.stringify({broadcastNo: broadcastNo.value}),
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            messages.value.push({
+              type: "WELCOME",
+              message: "📢 도로 위 질서만큼이나 채팅 예절도 중요합니다. 부적절한 내용은 전송이 제한되니 모두가 함께 즐기는 방송을 만들어주세요. 😊"
+            });
+          },
+          onStompError: (frame) => {
+            if (frame.body && frame.body.includes("expired")) {
+              alert("로그인이 만료되었습니다. 다시 로그인 해주세요.");
+              localStorage.removeItem('token');
+              location.href = "/login";
+            } else {
+              console.error("STOMP error:", frame);
+            }
+          },
+        });
+        stompClient.value.activate();
       });
     };
 
@@ -293,8 +286,9 @@ export default defineComponent({
       }
       stompClient.value.publish({
         destination: "/app/chat.sendMessage",
-        body: JSON.stringify({ broadcastNo: broadcastNo.value,
-            message: trimmed,
+        body: JSON.stringify({
+          broadcastNo: broadcastNo.value,
+          message: trimmed,
         }),
         headers: {
           Authorization: `Bearer ${token}`,
@@ -346,15 +340,16 @@ export default defineComponent({
             "/api/client/chat/report",
             {
               userNo: selectedUserNo.value,
-              reportedUserNo : myNo.value,
+              reportedUserNo: myNo.value,
               nickname: selectedUser.value,
               message: selectedMessage.value,
             },
-        {
-              headers: { Authorization: `Bearer ${token}` }
+            {
+              headers: {Authorization: `Bearer ${token}`}
             },
         );
-      } catch (e) {}
+      } catch (e) {
+      }
       isConfirmModal.value = false;
       isCompleteModal.value = true;
 
@@ -363,6 +358,54 @@ export default defineComponent({
     const closeCompleteModal = () => {
       isCompleteModal.value = false;
     };
+
+
+// 사전 질문 표시
+    const showPreQDropdown = ref(false);
+    const preQuestions = ref([]);
+    const isPreQLoading = ref(false);
+    const preQBtnRef = ref(null);
+    const preQDropdownRef = ref(null);
+
+    // API 호출
+    const fetchPreQuestions = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`/api/client/broadcasts/schedule/${broadcastNo.value}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = Array.isArray(res.data) ? res.data : res.data.data;
+        preQuestions.value = data.map(q => ({
+          ...q,
+          checked: false
+        }));
+      } catch (e) {
+        console.error("사전 질문 불러오기 실패:", e);
+      }
+    };
+
+    const togglePreQDropdown = async () => {
+      showPreQDropdown.value = !showPreQDropdown.value;
+      if (showPreQDropdown.value) {
+        await fetchPreQuestions();
+        // 클릭 바깥 감지
+        nextTick(() => window.addEventListener('mousedown', handlePreQClickOutside));
+      } else {
+        window.removeEventListener('mousedown', handlePreQClickOutside);
+      }
+    };
+
+    const handlePreQClickOutside = (e) => {
+      // 드롭다운과 버튼 바깥 클릭시 닫힘
+      if (
+          preQDropdownRef.value && !preQDropdownRef.value.contains(e.target) &&
+          preQBtnRef.value && !preQBtnRef.value.contains(e.target)
+      ) {
+        showPreQDropdown.value = false;
+        window.removeEventListener('mousedown', handlePreQClickOutside);
+      }
+    };
+
 
     return {
       videoContainer,
@@ -391,6 +434,8 @@ export default defineComponent({
       reportReasonOptions,
       submitReport,
       myNo,
+      showPreQDropdown, preQuestions, isPreQLoading,
+      togglePreQDropdown, preQBtnRef, preQDropdownRef,
     };
   }
 });
@@ -475,9 +520,10 @@ export default defineComponent({
       </div>
 
 
-
       <!-- 신고 모달 -->
-      <div v-if="showReportModal" class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center" style="z-index: 1050;">
+      <div v-if="showReportModal"
+           class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center"
+           style="z-index: 1050;">
         <div class="bg-white p-4 rounded shadow" style="width: 480px;">
 
           <!-- 제목 -->
@@ -488,7 +534,7 @@ export default defineComponent({
             {{ broadcastInfo.title }}
           </div>
 
-          <hr class="my-3" />
+          <hr class="my-3"/>
 
           <!-- 신고 사유 라디오 버튼 목록 -->
           <div class="mb-4">
@@ -525,7 +571,7 @@ export default defineComponent({
             </div>
           </div>
 
-          <hr class="my-3" />
+          <hr class="my-3"/>
 
           <!-- 상세 입력 -->
           <div class="mb-4">
@@ -547,19 +593,47 @@ export default defineComponent({
       </div>
 
 
-
-
-
-
-
       <!-- 채팅 영역 -->
       <div class="position-absolute border rounded shadow p-4 d-flex flex-column bg-white"
-           style="width: 400px; height: 700px; top: 2rem; right: 2rem;">
+           style="width: 400px; height: 715px; top: 2rem; right: 2rem;">
 
         <!-- 채팅 상단 제목 및 아이콘 -->
-        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom position-relative">
+          <!-- 왼쪽: 채팅 타이틀 -->
           <div class="fw-bold fs-5">채팅</div>
+          <!-- 오른쪽: 사전질문 버튼 -->
+          <div>
+            <button class="btn btn-link px-1 py-0 text-decoration-none"
+                    style="font-size:1.23rem;"
+                    @click="togglePreQDropdown"
+                    ref="preQBtnRef"
+                    title="사전질문 보기">📝
+            </button>
+          </div>
+          <!-- 드롭다운(채팅 상단 전체 너비) -->
+          <div v-if="showPreQDropdown"
+               class="preq-dropdown"
+               ref="preQDropdownRef"
+               style="position:absolute; top:110%; left:0; right:0; width:100%; min-width:0; max-width:none; z-index:1000;">
+            <div class="preq-dropdown-inner">
+              <div class="fw-bold px-2 pt-2 pb-1" style="font-size:1.05rem;">사전 질문 목록</div>
+              <div v-if="isPreQLoading" class="px-3 py-3 text-muted small">불러오는 중...</div>
+              <div v-else-if="preQuestions.length === 0" class="px-3 py-3 text-muted small">등록된 사전 질문이 없습니다.</div>
+              <ul v-else class="list-group preq-scroll" style="max-height:220px; overflow:auto;">
+                <li v-for="q in preQuestions" :key="q.no"
+                    class="border rounded-2 my-2 mx-2 shadow-sm px-3 py-2"
+                    style="font-size:0.99rem; background: #fff;">
+                  <div class="fw-semibold mb-1" style="color:#3180e3">{{ q.nickname }}</div>
+                  <div style="color:#222">{{ q.content }}</div>
+                </li>
+              </ul>
+
+
+            </div>
+          </div>
         </div>
+
+
 
         <!-- 메시지 출력 -->
         <div ref="messageContainer"
@@ -571,32 +645,34 @@ export default defineComponent({
                  style="color: #435879; font-size: 0.75rem;">
               {{ msg.message }}
             </div>
+            <div v-else-if="msg.type === 'WELCOME'"
+                 class="w-100 text-center"
+                 style="color: rgb(120,118,118); background: #e4e4e4; border-radius: 12px; font-size: 0.84rem; padding: 9px 2px;">
+              {{ msg.message }}
+            </div>
             <div v-else-if="msg.type === 'Lawyer'"
                  style="font-size: 0.90rem; display: flex; align-items: center;">
               <!-- 닉네임: 검정색 고정 + 클릭 가능 -->
               <span
                   @click.stop="Number(msg.no) !== Number(myNo) && openDropdown(index, msg)"
                   :style="{
-      color: '#222',
-      userSelect: 'text',
-      cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
-      fontWeight: 'bold'
-    }"
-              >
-    👑 {{ msg.nickname }} 변호사
-    <span
-        v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
-        class="nickname-dropdown"
-        style="position:absolute;top:120%;left:0;z-index:10000;">
-      <ul class="dropdown-custom-menu">
-        <li class="menu-report" @click.stop="onReportClick">🚨 메시지 신고 🚨</li>
-      </ul>
-    </span>
-  </span>
+                    color: '#222',
+                    userSelect: 'text',
+                    cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
+                    fontWeight: 'bold'
+                    }">👑 {{ msg.nickname }} 변호사
+                <span v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
+                      class="nickname-dropdown"
+                      style="position:absolute;top:120%;left:0;z-index:10000;">
+                  <ul class="dropdown-custom-menu">
+                    <li class="menu-report" @click.stop="onReportClick">🚨 메시지 신고 🚨</li>
+                </ul>
+              </span>
+            </span>
               <!-- 메시지: 빨간색 -->
               <span style="color: #fd1900; margin-left: 0.6em;">
-    {{ msg.message }}
-  </span>
+              {{ msg.message }}
+            </span>
             </div>
 
             <div v-else style="font-size: 0.90rem; display:flex; align-items:center;">
@@ -630,7 +706,7 @@ export default defineComponent({
                  type="text"
                  class="form-control bg-body-secondary text-dark border-0 rounded-pill px-3 py-2"
                  placeholder="채팅을 입력해 주세요."
-                 @keyup.enter="sendMessage" />
+                 @keyup.enter="sendMessage"/>
         </div>
       </div>
 
@@ -640,7 +716,7 @@ export default defineComponent({
           <div class="modal-custom-content">
             <div class="modal-custom-msg">
               <div class="modal-custom-text">
-                <strong>{{ selectedUser }}</strong>님의 메시지를 신고하시겠습니까?<br />
+                <strong>{{ selectedUser }}</strong>님의 메시지를 신고하시겠습니까?<br/>
                 <p class="fw-light">신고된 메시지는 처리를 위해 수집됩니다.</p>
                 <span style="font-size:0.85rem; color:#888;">"{{ selectedMessage }}"</span>
               </div>
@@ -659,8 +735,8 @@ export default defineComponent({
           <div class="modal-custom-content">
             <div class="modal-custom-msg">
               <div class="modal-custom-text" style="text-align:center;">
-                메시지 신고가 정상 접수되었습니다.<br />
-                가이드 위반 여부 검토 후 조치 예정입니다.<br />
+                메시지 신고가 정상 접수되었습니다.<br/>
+                가이드 위반 여부 검토 후 조치 예정입니다.<br/>
                 감사합니다.
               </div>
             </div>
@@ -675,13 +751,19 @@ export default defineComponent({
 </template>
 
 <style scoped>
-.scroll-hidden::-webkit-scrollbar { display: none; }
-.scroll-hidden { -ms-overflow-style: none; }
+.scroll-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-hidden {
+  -ms-overflow-style: none;
+}
+
 .dropdown-custom-menu {
   background: #232428;
   color: #dedede;
   border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.24);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.24);
   min-width: 190px;
   padding: 8px 0;
   margin: 0;
@@ -689,6 +771,7 @@ export default defineComponent({
   border: 1px solid #282a30;
   font-size: 1.07rem;
 }
+
 .dropdown-custom-menu li {
   display: flex;
   align-items: center;
@@ -698,36 +781,64 @@ export default defineComponent({
   gap: 10px;
   font-weight: 500;
 }
-.dropdown-custom-menu li:hover { background: #2d2f34; }
-.dropdown-custom-menu .menu-report { color: #fd6262; background: #26272b; }
-.dropdown-custom-menu .menu-report:hover { background: #33292c; }
+
+.dropdown-custom-menu li:hover {
+  background: #2d2f34;
+}
+
+.dropdown-custom-menu .menu-report {
+  color: #fd6262;
+  background: #26272b;
+}
+
+.dropdown-custom-menu .menu-report:hover {
+  background: #33292c;
+}
 
 .modal-overlay-dark {
-  position: fixed; top:0; left:0; width:100vw; height:100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(18, 19, 21, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
 }
+
 .modal-custom-box {
   background: white;
   border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.28);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
   min-width: 360px;
   padding: 0;
   overflow: hidden;
   color: black;
 }
-.modal-custom-content { padding: 36px 36px 24px 36px; }
-.modal-custom-msg { margin-bottom: 34px; }
-.modal-custom-text { font-size: 1.14rem; line-height: 1.7; font-weight: 600; }
+
+.modal-custom-content {
+  padding: 36px 36px 24px 36px;
+}
+
+.modal-custom-msg {
+  margin-bottom: 34px;
+}
+
+.modal-custom-text {
+  font-size: 1.14rem;
+  line-height: 1.7;
+  font-weight: 600;
+}
+
 .modal-custom-btns {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 18px;
 }
+
 .modal-btn-cancel, .modal-btn-ok {
   padding: 0 0;
   border: none;
@@ -740,10 +851,24 @@ export default defineComponent({
   cursor: pointer;
   transition: background 0.13s, color 0.12s;
 }
-.modal-btn-cancel { background: #f47e4a; color: #ffffff; }
-.modal-btn-cancel:hover { background: #efb485; }
-.modal-btn-ok { background: #435879; color: #ffffff; }
-.modal-btn-ok:hover { background: #7d8bbd; }
+
+.modal-btn-cancel {
+  background: #f47e4a;
+  color: #ffffff;
+}
+
+.modal-btn-cancel:hover {
+  background: #efb485;
+}
+
+.modal-btn-ok {
+  background: #435879;
+  color: #ffffff;
+}
+
+.modal-btn-ok:hover {
+  background: #7d8bbd;
+}
 
 .blinking-dot {
   width: 10px;
@@ -764,4 +889,40 @@ export default defineComponent({
     opacity: 0.3;
   }
 }
+
+
+.preq-dropdown {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(24, 36, 72, 0.12);
+  border: 1px solid #e4e4e7;
+  animation: preq-drop-in 0.17s;
+}
+
+.preq-dropdown-inner {
+  padding: 0 18px 10px 18px;
+}
+
+
+.preq-scroll::-webkit-scrollbar {
+  width: 5px;
+  background: #eee;
+}
+
+.preq-scroll::-webkit-scrollbar-thumb {
+  background: #d3d3d3;
+  border-radius: 5px;
+}
+
+@keyframes preq-drop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 </style>

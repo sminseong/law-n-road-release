@@ -152,6 +152,15 @@ const addNightbotMessage = async () => {
     alert("트리거와 메시지를 모두 입력해주세요.");
     return;
   }
+
+  const isDuplicate = nightbotMessages.value.some(msg =>
+      msg.keyword.trim().toLowerCase() === newKeyword.value.trim().toLowerCase()
+  );
+  if (isDuplicate) {
+    alert("이미 등록된 키워드입니다. 다른 키워드를 입력해주세요.");
+    return;
+  }
+
   try {
     const token = localStorage.getItem('token');
     const scheduleNo = route.params.scheduleNo;
@@ -192,7 +201,7 @@ const deleteNightbotMessage = async (no) => {
 <template>
   <LawyerFrame>
     <div class="container-fluid my-5 d-flex justify-content-center">
-      <div class="bg-white border border-2 rounded-4 shadow px-5 py-4 w-100" style="min-height: 120vh; max-width: 1600px;">
+      <div class="bg-white border border-2 rounded-4 shadow px-5 py-4 w-100" style="min-height: 80vh; max-width: 1600px;">
         <div class="row w-100 align-items-start">
           <!-- 왼쪽: 방송 콘텐츠 영역 (수정 불가 보기 전용) -->
           <div class="col-md-7 d-flex flex-column justify-content-start align-items-start pe-5">
@@ -245,6 +254,9 @@ const deleteNightbotMessage = async (no) => {
             </div>
           </div>
 
+
+
+
           <!-- 오른쪽: 사전 질문 + 나이트봇 -->
           <div class="col-md-5 d-flex flex-column justify-content-between">
             <div>
@@ -272,27 +284,34 @@ const deleteNightbotMessage = async (no) => {
                 </div>
               </div>
 
-              <div class="border rounded-3 p-3 shadow-sm">
+              <div class="border rounded-3 p-3 shadow-sm flex-grow-1 d-flex flex-column"
+                   style="min-height: 395px; max-height: 395px; overflow: hidden;">
                 <div class="mb-3">
                   <span class="fs-4 fw-bold text-dark">나이트봇 자동응답 설정</span>
                 </div>
+                <!-- 입력 영역 ... -->
                 <div class="position-relative mb-2">
-                  <input v-model="newKeyword" type="text" class="form-control mb-2" placeholder="ex) !상담" />
+                  <input v-model="newKeyword" type="text" class="form-control mb-2" placeholder="ex) 상담" />
                   <textarea v-model="newMessage" class="form-control mb-2" rows="2" placeholder="내용"></textarea>
                   <button class="btn btn-primary position-absolute" style="top:0; right:0; height:38px; z-index:2" @click="addNightbotMessage">
                     등록
                   </button>
                 </div>
-                <li v-for="msg in nightbotMessages" :key="msg.no" class="list-group-item d-flex align-items-center border-0 px-0 py-2">
-                  <span class="fw-bold me-1">{{ msg.keyword }}</span>
-                  <span class="fw-bold me-1">:</span>
-                  <span class="text-muted small flex-grow-1 text-truncate">
-                    {{ msg.message.length > 28 ? msg.message.slice(0, 28) + " ..." : msg.message }}
-                  </span>
-                  <button class="btn btn-sm btn-danger ms-2" @click="deleteNightbotMessage(msg.no)">삭제</button>
-                </li>
+                <!-- 자동응답 리스트 스크롤 영역 -->
+                <div class="flex-grow-1 overflow-auto" style="min-height: 0;">
+                  <ul class="list-group">
+                    <li v-for="msg in nightbotMessages" :key="msg.no" class="list-group-item d-flex align-items-center border-0 px-0 py-2">
+                      <span class="fw-bold me-1">{{ msg.keyword }}</span>
+                      <span class="fw-bold me-1">:</span>
+                      <span class="text-muted small flex-grow-1 text-truncate">
+            {{ msg.message.length > 28 ? msg.message.slice(0, 28) + " ..." : msg.message }}
+          </span>
+                      <button class="btn btn-sm btn-danger ms-2" @click="deleteNightbotMessage(msg.no)">삭제</button>
+                    </li>
+                  </ul>
+                </div>
               </div>
-            </div>
+              </div>
           </div>
 
           <!-- 하단 버튼 영역: 목록/방송시작 같이 위치 -->
