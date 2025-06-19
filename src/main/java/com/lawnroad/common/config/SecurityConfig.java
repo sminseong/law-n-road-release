@@ -45,14 +45,12 @@ public class SecurityConfig {
                                 "/api/webhook/**"
                         ).permitAll()
 
-                        .requestMatchers(HttpMethod.POST,"/api/confirm/payment", "/api/confirm/cancel").permitAll()
-
                         // 2) AI 및 슬롯 조회는 CLIENT 또는 LAWYER 권한 모두 허용
                         .requestMatchers("/api/ai/**", "/api/lawyer/*/slots")
                         .hasAnyRole("CLIENT", "LAWYER")
 
                         // 3) 클라이언트 전용 API
-                        .requestMatchers("/api/client/**")
+                        .requestMatchers("/api/client/**", "/api/confirm/payment","/api/confirm/cancel")
                         .hasRole("CLIENT")
 
                         // 4) 변호사 전용 API

@@ -14,87 +14,132 @@
         </button>
       </div>
 
-      <button class="button" @click="requestPayment">결제하기</button>
+      <button
+          class="button"
+          @click="requestPayment"
+          :disabled="!selectedPaymentMethod || isProcessing"
+      >
+        {{ isProcessing ? '처리 중...' : '결제하기' }}
+      </button>
     </div>
   </div>
 </template>
 
 <script>
-import { loadTossPayments } from "@tosspayments/tosspayments-sdk";
+import { loadTossPayments } from '@tosspayments/tosspayments-sdk'
+import axios from 'axios'
 
-const clientKey = "test_ck_d46qopOB89dkZvqg40zOrZmM75y0";
-const customerKey = 6;
-const amount = {
-  currency: "KRW",
-  value: 1,
-};
+const clientKey = 'test_ck_d46qopOB89dkZvqg40zOrZmM75y0'
+const amount = { currency: 'KRW', value: 1 }
 
 export default {
   data() {
     return {
       payment: null,
       selectedPaymentMethod: null,
-    };
+      isProcessing: false
+    }
   },
   methods: {
     async fetchPayment() {
       try {
-        const tossPayments = await loadTossPayments(clientKey);
-        this.payment = tossPayments.payment({ customerKey });
+        this.payment = await loadTossPayments(clientKey)
       } catch (error) {
-        console.error("Error initializing TossPayments:", error);
+        console.error('Error initializing TossPayments:', error)
+        alert('결제 기능을 초기화하는 데 실패했습니다.')
       }
     },
     async requestPayment() {
+      if (!this.selectedPaymentMethod) {
+        alert('결제 수단을 선택해주세요.')
+        return
+      }
+
+      this.isProcessing = true
       try {
-        if (!this.selectedPaymentMethod) {
-          alert("결제 수단을 선택해주세요.");
-          return;
-        }
+        // 1) 주문 생성
+        const token = localStorage.getItem('accessToken')
+        const createRes = await axios.post(
+            '/api/orders',
+            {
+              userNo: /* 실제 로그인된 사용자 ID */, // 필요 시 교체
+              totalAmount: amount.value,
+              status: 'ORDERED',
+              orderType: 'RESERVATION'
+            },
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+              }
+            }
+        )
+        const orderNo = createRes.data
 
-        // [1] 주문 생성
-        const createRes = await fetch("/api/orders", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userNo: customerKey, // 실제 사용자 ID로 교체
-            totalAmount: amount.value,
-            status: "ORDERED",
-            orderType: "RESERVATION",
-          }),
-        });
+        // 2) 주문 조회 → orderCode 확보
+        const orderDetailRes = await axios.get(
+            `/api/orders/${orderNo}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+        )
+        const order = orderDetailRes.data
+        const orderCode = order.orderCode
 
-        const orderNo = await createRes.json();
-
-        // [2] 주문 조회 → orderCode 확보
-        const orderDetailRes = await fetch(`/api/orders/${orderNo}`);
-        const order = await orderDetailRes.json();
-        const orderCode = order.orderCode;
-
-        // [3] Toss 결제 요청
+        // 3) Toss 결제 요청
         await this.payment.requestPayment({
           method: this.selectedPaymentMethod,
           amount,
           orderId: orderCode,
-          orderName: "토스 티셔츠 외 2건",
-          successUrl: window.location.origin + "/payment/success",
-          failUrl: window.location.origin + "/fail",
-          customerEmail: "customer123@gmail.com",
-          customerName: "김토스",
+          orderName: '상담 예약',
+          successUrl: window.location.origin +
+              `/payment/success?orderCode=${encodeURIComponent(orderCode)}`,
+          failUrl: window.location.origin +
+              `/payment/fail?orderCode=${encodeURIComponent(orderCode)}`,
+          customerEmail: order.customerEmail || '',
+          customerName: order.customerName || '',
           card: {
             useEscrow: false,
-            flowMode: "DEFAULT",
+            flowMode: 'DEFAULT',
             useCardPoint: false,
-            useAppCardOnly: false,
-          },
-        });
+            useAppCardOnly: false
+          }
+        })
       } catch (error) {
-        console.error("결제 요청 실패:", error);
+        console.error('결제 요청 실패:', error)
+        alert('결제 요청에 실패했습니다.')
+      } finally {
+        this.isProcessing = false
       }
-    },
+    }
   },
   mounted() {
-    this.fetchPayment();
-  },
-};
+    this.fetchPayment()
+  }
+}
 </script>
+
+<style scoped>
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+.box_section {
+  width: 600px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  text-align: center;
+}
+.button2 {
+  margin-right: 8px;
+}
+.button2.active {
+  background-color: #007aff;
+  color: white;
+}
+.button {
+  margin-top: 16px;
+  width: 100%;
+}
+</style>

@@ -5,7 +5,7 @@
         class="flex justify-center items-center"
         style="min-height: 100vh; padding: 20px;"
     >
-      <!-- 기존 성공 메시지 박스 -->
+      <!-- 성공 메시지 박스 -->
       <div class="box_section" style="width: 600px; text-align: center;">
         <img
             width="100px"
@@ -31,9 +31,7 @@
 
         <div class="p-grid typography--p" style="margin-top: 10px">
           <div class="p-grid-col text--left"><b>paymentKey</b></div>
-          <div
-              class="p-grid-col text--right"
-              id="paymentKey">
+          <div class="p-grid-col text--right" id="paymentKey">
             {{ paymentKey }}
           </div>
         </div>
@@ -45,71 +43,62 @@
         </div>
       </div>
     </div>
-
-    <!-- 응답 데이터 디버그용 -->
-    <!--    <div-->
-    <!--        class="box_section"-->
-    <!--        style="width: 600px; text-align: left; margin: 40px auto 0;"-->
-    <!--        v-if="responseData"-->
-    <!--    >-->
-    <!--      <b>Response Data :</b>-->
-    <!--      <pre style="white-space: pre-wrap">{{ JSON.stringify(responseData, null, 2) }}</pre>-->
-    <!--    </div>-->
   </ClientFrame>
 </template>
 
-
 <script setup>
-import {ref, computed} from 'vue'
-import {useRoute, useRouter} from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 
-const route = useRoute()
-const router = useRouter()
+const route     = useRoute()
+const router    = useRouter()
 
 // 쿼리 파라미터 추출 + 기본값
-const orderId = route.query.orderId || ''
-const rawAmount = Number(route.query.amount || 0)
-const paymentKey = route.query.paymentKey || ''
+const orderId     = route.query.orderId    || ''
+const rawAmount   = Number(route.query.amount   || 0)
+const paymentKey  = route.query.paymentKey || ''
 
 // 통화 포맷
 const formattedAmount = computed(() =>
     rawAmount.toLocaleString() + '원'
 )
 
+// 서버 응답 저장 (디버그용)
 const responseData = ref(null)
 
 async function confirmPayment() {
-  const payload = {
-    orderId,
-    amount: rawAmount,
-    paymentKey
-  }
-
+  const payload = { orderId, amount: rawAmount, paymentKey }
   try {
-    const res = await fetch('/api/confirm/payment', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(payload)
-    })
-
-    const json = await res.json()
-    if (!res.ok) {
-      // 서버가 { message, code } 형태로 에러를 던진다고 가정
-      const code = json.code || 'UNKNOWN'
-      const message = json.message || '결제 승인 중 오류가 발생했습니다.'
-      throw {code, message}
-    }
-
-    responseData.value = json
+    const token = localStorage.getItem('token')
+    const res = await axios.post(
+        '/api/confirm/payment',
+        payload,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        }
+    )
+    responseData.value = res.data
   } catch (err) {
-    // 실패 시 /payment/fail 로 이동
+    // 실패 시 /payment/fail 로 이동, 에러 메시지 쿼리로 전달
+    const code    = err.response?.data?.code    || 'UNKNOWN'
+    const message = err.response?.data?.message || '결제 승인 중 오류가 발생했습니다.'
     router.replace(
-        `/payment/fail?code=${encodeURIComponent(err.code)}&message=${encodeURIComponent(err.message)}`
+        `/payment/fail?code=${encodeURIComponent(code)}&message=${encodeURIComponent(message)}`
     )
   }
 }
 
-// 마운트되면 바로 승인 요청
-confirmPayment()
+// 컴포넌트가 마운트되면 바로 승인 요청
+onMounted(confirmPayment)
 </script>
+
+<style scoped>
+.container {
+  max-width: 600px;
+}
+</style>

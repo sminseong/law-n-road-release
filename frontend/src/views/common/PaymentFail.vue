@@ -17,14 +17,21 @@
         <div class="p-grid typography--p" style="margin-top: 50px">
           <div class="p-grid-col text--left"><b>에러메시지</b></div>
           <div class="p-grid-col text--right" id="message">
-            {{ message }}
+            {{ externalMessage }}
           </div>
         </div>
 
         <div class="p-grid typography--p" style="margin-top: 10px">
           <div class="p-grid-col text--left"><b>에러코드</b></div>
           <div class="p-grid-col text--right" id="code">
-            {{ code }}
+            {{ externalCode }}
+          </div>
+        </div>
+
+        <div class="p-grid typography--p" style="margin-top: 10px">
+          <div class="p-grid-col text--left"><b>주문번호</b></div>
+          <div class="p-grid-col text--right" id="orderId">
+            {{ orderId }}
           </div>
         </div>
 
@@ -39,11 +46,53 @@
 </template>
 
 <script setup>
-import {useRoute} from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
 import ClientFrame from "@/components/layout/client/ClientFrame.vue"
 
 const route = useRoute()
+const router = useRouter()
 
-const code = route.query.code || 'UNKNOWN'
-const message = route.query.message || '알 수 없는 오류가 발생했습니다.'
+// 쿼리 파라미터 추출
+const orderId         = route.query.orderCode || route.query.orderId || ''
+const externalCode    = route.query.code    || 'UNKNOWN'
+const externalMessage = route.query.message || '알 수 없는 오류가 발생했습니다.'
+
+// 내부 에러 상태
+const cancelError = ref(null)
+
+async function cancelPayment() {
+  if (!orderId) return
+
+  const token = localStorage.getItem('token')
+  try {
+    await axios.post(
+        '/api/confirm/cancel',
+        { orderId },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        }
+    )
+  } catch (err) {
+    // 백엔드 호출 실패 시 에러 저장 후 콘솔 출력
+    cancelError.value = err.response?.data?.message || err.message
+    console.error('환불 처리 호출 에러', err)
+  }
+}
+
+onMounted(() => {
+  // 토스에서 넘어온 에러 메시지/코드는 외부 값으로 표시하고,
+  // 동시에 백엔드에 cancel 요청을 보내서 환불 기록을 남깁니다.
+  cancelPayment()
+})
 </script>
+
+<style scoped>
+.container {
+  max-width: 600px;
+}
+</style>
