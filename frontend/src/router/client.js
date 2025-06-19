@@ -23,12 +23,18 @@ export default [
     {
         path: '/client/reservations/:lawyerNo/:lawyerName',
         name: 'ClientReservations',
-        component: () => import('@/views/client/ClientReservationsView.vue')
+        component: () => import('@/views/client/ClientReservationsView.vue'),
+        props: true
     },
     {
-        path: '/client/reservations/:clientNo',
+        path: '/client/reservations/list',
         name: 'ClientReservationsList',
         component: () => import('@/views/client/ClientReservationsList.vue')
+    },
+    {
+        path: '/client/reservations/payment',
+        name: 'ClientReservationsPayment',
+        component: () => import('@/views/client/ClientReservationsPayment.vue')
     },
 
     // ---------- 방송 ----------

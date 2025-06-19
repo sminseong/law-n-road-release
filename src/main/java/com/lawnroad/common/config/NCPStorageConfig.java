@@ -11,25 +11,25 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class NCPStorageConfig {
-  
+
   @Value("${ncp.storage.region}")
   private String region;
-  
+
   @Value("${ncp.storage.endpoint}")
   private String endpoint;
-  
+
   @Value("${ncp.storage.accessKey}")
   private String accessKey;
-  
+
   @Value("${ncp.storage.secretKey}")
   private String secretKey;
-  
+
   @Bean
   public AmazonS3 amazonS3() {
     return AmazonS3ClientBuilder.standard()
-        .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, region))
-        .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
-        .enablePathStyleAccess()  // 중요: NCP는 path-style로 작동해야 함
-        .build();
+            .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endpoint, region))
+            .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
+            .enablePathStyleAccess()  // 중요: NCP는 path-style로 작동해야 함
+            .build();
   }
 }
