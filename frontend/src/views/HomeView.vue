@@ -364,15 +364,6 @@ const loadFn = async ({ page, size }) => {
   <!-- 의뢰인 타입 본문 콘텐츠 -->
   <ClientFrame>
     <p>
-      <a href="/lawyer">변호사 대시보드 이동하기</a>
-    </p>
-    <p>
-      <a href="/client/mypage">의뢰인 대시보드 이동하기</a>
-    </p>
-    <p>
-      <a href="/client/broadcasts/schedule/3/preQuestion">사전질문 등록하기</a>
-    </p>
-    <p>
       <a href="/client/broadcasts/schedule">의뢰인 방송 스케줄 보기 이동</a>
     </p>
 
