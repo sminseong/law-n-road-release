@@ -32,8 +32,6 @@ public class LawyerService {
         this.lawyerMapper = lawyerMapper;
         this.passwordEncoder = passwordEncoder;
         this.timeSlotService = timeSlotService;
-
-
     }
 
 
