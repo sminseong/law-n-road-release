@@ -27,13 +27,25 @@
   })
 
   // 로그아웃 처리
-  const logout = () => {
+  const logout = async () => {
+    const userNo = localStorage.getItem('no')
+
+    try {
+      // ✅ 0. 백엔드에 로그아웃 요청 → RefreshToken 삭제
+      if (userNo) {
+        await axios.post('/api/auth/logout', { userNo: Number(userNo) })
+      }
+    } catch (err) {
+      console.error('🔴 로그아웃 요청 실패:', err)
+    }
+
     // ✅ 1. 로컬스토리지 항목 삭제
     localStorage.removeItem('token')
     localStorage.removeItem('refreshToken')
     localStorage.removeItem('accountType')
     localStorage.removeItem('name')
     localStorage.removeItem('nickname')
+    localStorage.removeItem('no')
 
     // ✅ 2. Axios 인증 헤더 제거
     delete axios.defaults.headers.common['Authorization']
@@ -52,13 +64,7 @@
 
     // ✅ 5. 로그인 페이지로 이동 + 새로고침
     router.push('/login')
-    setTimeout(() => location.reload(), 300) // 새로고침으로 컴포넌트 초기화
-    console.log('[로그아웃 완료] localStorage 상태 확인:')
-    console.log('token:', localStorage.getItem('token'))
-    console.log('refreshToken:', localStorage.getItem('refreshToken'))
-    console.log('accountType:', localStorage.getItem('accountType'))
-    console.log('name:', localStorage.getItem('name'))
-    console.log('nickname:', localStorage.getItem('nickname'))
+    setTimeout(() => location.reload(), 300)
   }
 
   // 메인 베너

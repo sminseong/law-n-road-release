@@ -4,6 +4,9 @@ import { fetchBoardList } from '@/service/boardService.js'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import { ref ,watch ,onMounted, computed} from 'vue'
 import { useRouter } from 'vue-router'
+import { makeApiRequest, refreshAccessToken } from '@/libs/axios-auth.js'  // ✅ 전역 유틸 import
+
+
 
 const router = useRouter()
 

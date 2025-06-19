@@ -34,7 +34,7 @@ public class UserController {
 
             String clientId = claims.getSubject(); // sub → clientId
             String nickname = claims.get("nickname", String.class);
-            String no = claims.get("no", String.class);
+            long no = claims.get("no", Long.class);
             System.out.println(no);
 
 
@@ -86,16 +86,6 @@ public class UserController {
             return ResponseEntity.status(401).body("토큰 파싱 실패: " + e.getMessage());
         }
     }
-
-
-
-
-
-
-
-
-
-
 
 
 }

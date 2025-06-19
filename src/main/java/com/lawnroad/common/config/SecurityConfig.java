@@ -11,6 +11,8 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -21,15 +23,42 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     private final JwtTokenUtil jwtTokenUtil;
 
+    // ✅ JwtAuthenticationFilter를 Bean으로 등록
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter(jwtTokenUtil);
     }
 
+
+
+
+
+
+
+
+//  private final JwtAuthenticationFilter jwtAuthenticationFilter;
+//  @Bean
+//  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//    http
+//        .csrf().disable()
+//        .authorizeHttpRequests(auth -> auth
+//            // 비회원도 접근 허용
+//            .requestMatchers("/api/public/**").permitAll()
+//            // /api/client/** 경로는 ROLE_CLIENT 권한을 가진 사용자만 접근 가능
+//            .requestMatchers("/api/client/**").hasRole("CLIENT")
+//            // /api/lawyer/** 경로는 ROLE_LAWYER 권한을 가진 사용자만 접근 가능
+//            .requestMatchers("/api/lawyer/**").hasRole("LAWYER")
+//            .anyRequest().permitAll()
+//        )
+//        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+//
+//    return http.build();
+//  }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
+
+        http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         // 1) 비회원에게 허용
                         .requestMatchers(
@@ -42,7 +71,8 @@ public class SecurityConfig {
                                 "/api/auth/nickname",
                                 "/api/notification/**",
                                 "/uploads/**",
-                                "/api/webhook/**"
+                                "/api/webhook/**",
+                                "/api/signuplawyer" ,"/api/refresh"   // ← 여기에 추가
                         ).permitAll()
 
                         // 2) AI 및 슬롯 조회는 CLIENT 또는 LAWYER 권한 모두 허용
@@ -65,8 +95,12 @@ public class SecurityConfig {
         return http.build();
     }
 
+
+
+    // ✅ AuthenticationManager Bean (필요한 경우 로그인 처리용)
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
+
 }
