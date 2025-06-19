@@ -9,10 +9,13 @@ import com.lawnroad.account.entity.UserEntity;
 import com.lawnroad.account.mapper.ClientMapper;
 import com.lawnroad.account.mapper.LawyerMapper;
 import com.lawnroad.account.mapper.UserMapper;
+import com.lawnroad.reservation.service.TimeSlotService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static java.time.LocalDate.now;
 
 @Service
 public class LawyerService {
@@ -22,11 +25,13 @@ public class LawyerService {
     private LawyerMapper lawyerMapper;
     private UserMapper userMapper;
     private PasswordEncoder passwordEncoder;
+    private TimeSlotService timeSlotService;
 
-    public LawyerService(UserMapper userMapper, LawyerMapper lawyerMapper, PasswordEncoder passwordEncoder) {
+    public LawyerService(UserMapper userMapper, LawyerMapper lawyerMapper, PasswordEncoder passwordEncoder, TimeSlotService timeSlotService) {
         this.userMapper = userMapper;
         this.lawyerMapper = lawyerMapper;
         this.passwordEncoder = passwordEncoder;
+        this.timeSlotService = timeSlotService;
 
 
     }
@@ -69,6 +74,9 @@ public class LawyerService {
         lawyer.setLawyerIntro(request.getLawyerIntro());
         lawyer.setIntroDetail(request.getIntroDetail());
         lawyerMapper.insertLawyer(lawyer);
+        
+        // 회원가입을 하게 된 변호사의 일주일간의 주간 슬롯 생성
+        timeSlotService.generateWeeklyTimeSlots(user.getNo(),now());
     }
 
 

@@ -3,6 +3,15 @@ import {useAccountStore} from "@/stores/account";
 
 const instance = axios.create();
 
+// interceptor는 이 인스턴스에 붙여야 동작함
+instance.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
 // HTTP 요청 설정 생성
 const generateConfig = () => {
     // 계정 스토어

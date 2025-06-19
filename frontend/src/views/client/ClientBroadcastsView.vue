@@ -1,5 +1,5 @@
 <script>
-import {defineComponent, ref, onMounted, onBeforeUnmount, nextTick, watch} from "vue";
+import {defineComponent, ref, onMounted, onBeforeUnmount, nextTick} from "vue";
 import SockJS from "sockjs-client";
 import {Client} from "@stomp/stompjs";
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";

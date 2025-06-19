@@ -5,8 +5,6 @@ import com.lawnroad.payment.model.OrdersVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
-
 @Mapper
 public interface OrdersMapper {
 
@@ -16,4 +14,5 @@ public interface OrdersMapper {
                            @Param("status") String status);
 
     OrdersVO selectOrder(@Param("orderNo") Long orderNo);
+    OrdersVO selectByOrderCode(String orderCode);
 }

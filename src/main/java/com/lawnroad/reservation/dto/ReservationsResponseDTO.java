@@ -14,10 +14,13 @@ public class ReservationsResponseDTO {
     private Long userNo;
     private String userName;     // 화면에 보여줄 사용자 이름 (JOIN)
     private Long slotNo;
+    private String orderCode;
     private LocalDate slotDate;     // 화면에 보여줄 예약 날짜 (JOIN)
     private LocalTime slotTime;     // 화면에 보여줄 예약 시간 (JOIN)
     private Status status;
     private String content;
     private Long amount; // 화면에 보여줄 금액 (JOIN)
+    private Long lawyerNo;
+    private String lawyerName;
 }
 
