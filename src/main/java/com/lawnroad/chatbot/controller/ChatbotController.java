@@ -21,13 +21,13 @@ public class ChatbotController {
 
     private final ChatbotConfig chatbotConfig;
 
-    // 1. open 이벤트
+    // open 이벤트
     @PostMapping("/open")
     public ResponseEntity<String> openChatbot() {
         return transmitMessage("", true);
     }
 
-    // 2. send 이벤트
+    // send 이벤트
     @PostMapping("/send")
     public ResponseEntity<String> sendChatbot(@RequestBody Map<String, String> body) {
         String question = body.get("question");
