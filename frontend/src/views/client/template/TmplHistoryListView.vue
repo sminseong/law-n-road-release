@@ -24,6 +24,7 @@ const isDownloaded = ref(false)
 async function fetchOrders(page = 1, query = {}) {
   const params = { page, limit: 10, ...query }
   const res = await http.get('/api/client/templates/orders', params)
+  console.log(res)
 
   rows.value = res.data.orders
   totalPages.value = res.data.totalPages
@@ -69,7 +70,7 @@ onMounted(() => fetchOrders())
             },
             {
               label: '총금액',
-              key: 'totalAmount',
+              key: 'amount',
               formatter: (v) => `${v.toLocaleString()}원`
             },
             {
