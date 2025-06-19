@@ -10,7 +10,7 @@ const lawyer = {
   name: '김수영',
   profileImage: '/img/profiles/kim.png',
 }
-const lawyerNo = 1
+const lawyerNo = 3
 const menuItems = [
   { label: '홈 대시보드', icon: 'bi-house-door', path: '/lawyer' },
   { label: '1:1 상담예약', icon: 'bi-chat-dots', path: `/lawyer/${lawyerNo}/reservation` },
