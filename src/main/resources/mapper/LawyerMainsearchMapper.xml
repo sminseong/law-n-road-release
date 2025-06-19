@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lawnroad.mainsearch.mapper.LawyerMainsearchMapper">
+
+    <!-- 변호사 기본 정보 조회 -->
+    <select id="selectLawyerBasicInfoByNo" parameterType="long" resultType="com.lawnroad.mainsearch.dto.LawyerBasicInfoDto">
+        SELECT
+            no AS lawyerNo,
+            name,
+            profile AS profileImagePath
+        FROM lawyer
+        WHERE no = #{lawyerNo}
+    </select>
+
+</mapper>
