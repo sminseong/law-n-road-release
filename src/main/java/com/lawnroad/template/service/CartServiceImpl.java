@@ -61,7 +61,7 @@ public class CartServiceImpl implements CartService {
     // ③ 주문 생성
     OrdersCreateDTO orderDto = new OrdersCreateDTO();
     orderDto.setUserNo(dto.getUserNo());
-    orderDto.setTotalAmount((long) totalAmount);
+    orderDto.setAmount((long) totalAmount);
     orderDto.setStatus("ORDERED");
     orderDto.setOrderType("TEMPLATE");
     Long orderNo = ordersService.createOrder(orderDto);

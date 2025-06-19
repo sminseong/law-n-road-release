@@ -61,4 +61,15 @@ export default [
         component: () => import('@/views/client/template/TemplateDetailView.vue')
     },
 
+    // ---------- 결제 ----------
+    {
+        path: '/payment/success',
+        name: 'PaymentSuccess',
+        component: () => import('@/views/common/PaymentSuccess.vue')
+    },
+    {
+        path: '/payment/fail',
+        name: 'PaymentFail',
+        component: () => import('@/views/common/PaymentFail.vue')
+    }
 ]
