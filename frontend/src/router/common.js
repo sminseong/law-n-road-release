@@ -41,11 +41,23 @@ export default [
         path: '/forgot-password',
         component: () => import('@/views/common/ForgotPasswordView.vue')
     },
+
+
+
+
+
     {
         path: '/user/mypage',
         name: 'UserMypage',
         component: () => import('@/views/common/UserMypageHome.vue')
     },
+    {
+        path: '/client/profile/edit',
+        name: 'ClientProfileEdit',
+        component: () => import('@/views/client/ClientProfileEditView.vue'),
+        meta: { requiresAuth: true }  // ✅ 여기에 로그인 필요 표시
+    },
+
 
 
 
