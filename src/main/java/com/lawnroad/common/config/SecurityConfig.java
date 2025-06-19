@@ -46,11 +46,11 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // 2) AI 및 슬롯 조회는 CLIENT 또는 LAWYER 권한 모두 허용
-                        .requestMatchers("/api/ai/**", "/api/lawyer/*/slots")
+                        .requestMatchers("/api/ai/**", "/api/lawyer/*/slots", "/api/confirm/payment","/api/confirm/cancel")
                         .hasAnyRole("CLIENT", "LAWYER")
 
                         // 3) 클라이언트 전용 API
-                        .requestMatchers("/api/client/**", "/api/confirm/payment","/api/confirm/cancel")
+                        .requestMatchers("/api/client/**")
                         .hasRole("CLIENT")
 
                         // 4) 변호사 전용 API
