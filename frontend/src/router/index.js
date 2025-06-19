@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import commonRoutes from './common'
 import lawyerRoutes from './lawyer'
 import clientRoutes from './client'
+import adminRoutes from './admin'
 
 
 const router = createRouter({
@@ -11,6 +12,7 @@ const router = createRouter({
         ...commonRoutes,
         ...lawyerRoutes,
         ...clientRoutes,
+        ...adminRoutes,
     ]
 })
 

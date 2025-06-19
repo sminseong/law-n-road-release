@@ -36,9 +36,9 @@ onMounted(() => {
     controls: false,
     nav: false,
     autoplay: true,
-    autoplayTimeout: 4000,
+    autoplayTimeout: 6000,
     autoplayButtonOutput: false,
-    speed: 1500
+    speed: 3000
   })
 })
 </script>

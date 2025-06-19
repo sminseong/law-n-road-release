@@ -95,7 +95,7 @@ onMounted(async () => {
       </div>
 
       <div class="mb-4 small text-muted">
-        사건 발생일: {{ qa.incidentDate }}
+        사건 발생일: {{ qa.incidentDate }}  |  작성일: {{ qa.createdAt }}
       </div>
 
       <!-- 제목 -->
@@ -107,11 +107,6 @@ onMounted(async () => {
       <p class="qa-content text-dark">
         {{ qa.content }}
       </p>
-
-      <!-- 날짜 정보 -->
-      <div class="mb-4 small text-muted">
-         작성일: {{ qa.createdAt }}
-      </div>
 
       <!-- 수정/삭제 버튼 -->
       <div class="d-flex justify-content-end mb-4">
