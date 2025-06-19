@@ -28,6 +28,7 @@ public class ClientBoardController {
     @PostMapping
     //@PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<String> register(@RequestBody BoardCreateDto dto) {
+        System.out.println(dto.toString());
         boardService.register(dto);
         return ResponseEntity.ok("게시글이 성공적으로 등록되었습니다.");
     }
