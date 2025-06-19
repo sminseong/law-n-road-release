@@ -15,8 +15,10 @@ public class ChatDTO {
     /** 사용자 번호 (user_no) */
     private Long userNo;
 
-    /** 방송(채팅룸) 번호 (broadcast_no) */
+    /// 방송 번호
     private Long broadcastNo;
+
+    /** 스케줄 번호 */
     private Long scheduleNo;
 
     /** 채팅 보낸 사람 닉네임 */
@@ -33,5 +35,4 @@ public class ChatDTO {
 
     /** 채팅 타입 */
     private String type;
-
 }

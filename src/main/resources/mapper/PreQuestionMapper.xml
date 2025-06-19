@@ -24,7 +24,7 @@
             <result property="scheduleNo" column="schedule_no"/>
             <result property="nickname" column="nickname"/>
             <result property="preQuestionContent" column="pre_question_content"/>
-            <result property="userNo" column="user_no"/> <!-- ⭐ 추가 -->
+            <result property="userNo" column="user_no"/>
         </collection>
     </resultMap>
 
@@ -33,6 +33,19 @@
         <result property="nickname" column="nickname"/>
         <result property="content" column="content"/>
     </resultMap>
+
+
+    <resultMap id="BroadcastScheduleInfoResultMap" type="com.lawnroad.broadcast.live.dto.BroadcastDto">
+        <id property="no" column="no"/>
+        <result property="name" column="name"/>
+        <result property="content" column="content"/>
+        <result property="thumbnailPath" column="thumbnail_path"/>
+        <result property="date" column="date"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+    </resultMap>
+
+
 
     <insert id="insertPreQuestion" parameterType="com.lawnroad.broadcast.chat.dto.PreQuestionItem">
         INSERT INTO pre_question (
@@ -86,5 +99,17 @@
           AND no = #{questionNo}
           AND user_no = #{userNo}
     </delete>
+
+    <select id="findByBroadcastPreQuestion" resultMap="PreQuestionLawyerResultMap">
+        SELECT
+            pq.no,
+            pq.nickname,
+            pq.content
+        FROM broadcast b
+                 JOIN pre_question pq ON b.schedule_no = pq.schedule_no
+        WHERE b.no = #{broadcastNo}
+    </select>
+
+
 
 </mapper>

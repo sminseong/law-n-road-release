@@ -15,6 +15,6 @@ public interface PreQuestionMapper {
     List<LawyerPreQuestion> findByPreQuestionLawyer(@Param("scheduleNo") int scheduleNo);
     void deleteLawyerPreQuestion(@Param("list") List<Long> noList);
     void deletePreQuestionByUser(Long scheduleNo, Long questionNo, Long userNo);
-
+    List<LawyerPreQuestion> findByBroadcastPreQuestion(@Param("broadcastNo") Long broadcastNo);
 
 }
