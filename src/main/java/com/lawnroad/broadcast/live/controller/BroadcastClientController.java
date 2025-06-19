@@ -1,11 +1,10 @@
 package com.lawnroad.broadcast.live.controller;
 
-import com.lawnroad.broadcast.live.dto.BroadcastReportRequestDto;
-import com.lawnroad.broadcast.live.dto.BroadcastStartResponseDto;
-import com.lawnroad.broadcast.live.dto.BroadcastViewDetailDto;
-import com.lawnroad.broadcast.live.dto.ReportReasonDto;
+import com.lawnroad.broadcast.live.dto.*;
 import com.lawnroad.broadcast.live.mapper.BroadcastMapper;
 import com.lawnroad.broadcast.live.service.BroadcastService;
+import com.lawnroad.common.util.JwtTokenUtil;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BroadcastClientController {
 
+    private final JwtTokenUtil jwtTokenUtil;
     private final BroadcastService broadcastService;
     private final BroadcastMapper broadcastMapper;
 
@@ -38,7 +38,16 @@ public class BroadcastClientController {
     }
 
     @PostMapping("/report")
-    public ResponseEntity<String> reportBroadcast(@RequestBody BroadcastReportRequestDto dto) {
+    public ResponseEntity<String> reportBroadcast(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody BroadcastReportRequestDto dto
+    ) {
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtTokenUtil.parseToken(token);
+        Long userNo = claims.get("no", Long.class);
+
+        dto.setUserNo(userNo);
+
         broadcastService.reportBroadcast(dto);
         return ResponseEntity.ok("신고가 정상적으로 접수되었습니다.");
     }
@@ -46,5 +55,11 @@ public class BroadcastClientController {
     @GetMapping("/report-reasons")
     public ResponseEntity<List<ReportReasonDto>> getReportReasons() {
         return ResponseEntity.ok(broadcastMapper.findAllReportReasons());
+    }
+    // 라이브 목록조회
+    @GetMapping("/live")
+    public ResponseEntity<List<BroadcastListDto>> getLiveBroadcasts() {
+        List<BroadcastListDto> liveList = broadcastService.getLiveBroadcasts();
+        return ResponseEntity.ok(liveList);
     }
 }

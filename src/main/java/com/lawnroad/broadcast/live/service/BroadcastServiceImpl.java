@@ -1,13 +1,18 @@
 package com.lawnroad.broadcast.live.service;
 
+import com.amazonaws.services.kms.model.NotFoundException;
 import com.lawnroad.broadcast.live.dto.*;
 import com.lawnroad.broadcast.live.mapper.BroadcastMapper;
+import com.lawnroad.broadcast.live.mapper.ScheduleMapper;
 import com.lawnroad.broadcast.live.model.BroadcastVo;
+import com.lawnroad.common.util.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -16,12 +21,21 @@ public class BroadcastServiceImpl implements BroadcastService {
 
     private final BroadcastMapper broadcastMapper;
     private final OpenViduService openViduService;
+    private final ScheduleMapper scheduleMapper;
 
     /**
      * 방송자 - 방송 시작
      */
     @Override
-    public BroadcastStartResponseDto    startBroadcast(Long userNo, BroadcastStartDto dto) {
+    public BroadcastStartResponseDto startBroadcast(Long userNo, BroadcastStartDto dto) {
+        // schedule 소유자 확인
+        ScheduleDetailDto schedule = scheduleMapper.findByScheduleNo(dto.getScheduleNo());
+        if (schedule == null) {
+            throw new NotFoundException("존재하지 않는 스케줄입니다.");
+        }
+        if (!schedule.getUserNo().equals(userNo)) {
+            throw new AccessDeniedException("자신의 스케줄만 방송 시작이 가능합니다.");
+        }
         BroadcastVo existing = broadcastMapper.findByScheduleNo(dto.getScheduleNo());
 
         // 기존 방송이 있고 세션이 살아있으면 토큰만 새로 생성해서 반환
@@ -97,6 +111,10 @@ public class BroadcastServiceImpl implements BroadcastService {
     public BroadcastViewDetailDto getDetailByBroadcastNo(Long broadcastNo) {
         BroadcastViewDetailDto dto = broadcastMapper.findDetailByBroadcastNo(broadcastNo);
 
+        if (dto == null) {
+            throw new RuntimeException("❌ 방송 상세 정보를 찾을 수 없습니다. broadcastNo = " + broadcastNo);
+        }
+
         Long scheduleNo = broadcastMapper.findScheduleNoByBroadcastNo(broadcastNo);
         dto.setKeywords(broadcastMapper.findKeywordsByScheduleNo(scheduleNo));
 
@@ -116,5 +134,18 @@ public class BroadcastServiceImpl implements BroadcastService {
         if (result != 1) {
             throw new RuntimeException("방송 신고 등록 실패");
         }
+    }
+
+    @Override
+    public List<BroadcastListDto> getLiveBroadcasts() {
+        List<BroadcastListDto> list = broadcastMapper.selectLiveBroadcasts();
+
+        for (BroadcastListDto dto : list) {
+            // OpenViduService에서 broadcastNo 기반으로 sessionId 조회 후 시청자 수 반환
+            int viewerCount = openViduService.getViewerCountByBroadcastNo(dto.getBroadcastNo());
+            dto.setViewerCount(viewerCount);
+        }
+
+        return list;
     }
 }

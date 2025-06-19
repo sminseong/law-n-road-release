@@ -74,7 +74,7 @@ const fetchMonthlySchedule = async () => {
   try {
     const now = new Date()
     const month = now.toISOString().slice(0, 7)
-    const res = await axios.get(`/api/schedule/month?month=${month}`)
+    const res = await axios.get(`/api/client/schedule/month?month=${month}`)
     events.value = res.data.map((ev, index) => {
       const startDateOnly = ev.startTime.slice(0, 10)
       return {

@@ -6,6 +6,8 @@ import com.lawnroad.broadcast.live.dto.BroadcastViewDetailDto;
 import com.lawnroad.broadcast.live.dto.ScheduleDetailDto;
 import com.lawnroad.broadcast.live.service.BroadcastService;
 import com.lawnroad.broadcast.live.service.ScheduleService;
+import com.lawnroad.common.util.JwtTokenUtil;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,27 +17,29 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class BroadcastLawyerController {
 
+    private final JwtTokenUtil jwtTokenUtil;
     private final BroadcastService broadcastService;
     private final ScheduleService scheduleService;
 
     @PostMapping("/start")
-    public BroadcastStartResponseDto startBroadcast(
-            @RequestBody BroadcastStartDto dto,
-            @SessionAttribute(name = "userNo", required = false) Long userNo
+    public ResponseEntity<BroadcastStartResponseDto> startBroadcast(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody BroadcastStartDto dto
     ) {
-        // 세션이 아직 구현되지 않았으면 임시 하드코딩
-        if (userNo == null) {
-            userNo = 1L;
-        }
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtTokenUtil.parseToken(token);
+        Long userNo = claims.get("no", Long.class);
 
-        return broadcastService.startBroadcast(userNo, dto);
+        BroadcastStartResponseDto response = broadcastService.startBroadcast(userNo, dto);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/reconnect/{sessionId}")
     public ResponseEntity<BroadcastStartResponseDto> reconnect(
-            @PathVariable String sessionId) {
-
+            @PathVariable String sessionId
+    ) {
         BroadcastStartResponseDto response = broadcastService.reconnectBroadcast(sessionId);
+
         return ResponseEntity.ok(response);
     }
 
