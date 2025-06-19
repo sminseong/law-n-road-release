@@ -3,6 +3,10 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.lawnroad.account.mapper.ClientMapper">
+
+
+
+
     <select id="countByClientId1" resultType="int">
         SELECT COUNT(*)
         FROM client
@@ -14,6 +18,15 @@
         FROM lawyer
         WHERE lawyer_id = #{clientId}
     </select>
+
+    <select id="selectProfileByClientId"
+            parameterType="string"
+            resultType="ClientProfileDTO">
+        SELECT nickname, email, phone
+        FROM client
+        WHERE client_id = #{clientId}
+    </select>
+
 
 
 
@@ -35,18 +48,23 @@
 <!--    </select>-->
 
     <select id="findByClientId" resultType="ClientEntity">
-        SELECT * FROM client WHERE client_id = #{clientId}
+        SELECT * FROM client WHERE client_id = #{clientId} and withdrawal_at is null
     </select>
 
     <select id="countByEmail" resultType="int">
         SELECT COUNT(*) FROM client WHERE email = #{email}
     </select>
 
+
+
+
     <update id="updateNicknameByClientId">
         UPDATE client
         SET nickname = #{nickname}
         WHERE client_id = #{clientId}
     </update>
+
+
 
     <update id="updateClientProfile">
         UPDATE client
@@ -56,6 +74,16 @@
             phone = #{phone}
         WHERE client_id = #{clientId}
     </update>
+
+
+    <update id="updateWithdrawalAtNow">
+        UPDATE client
+        SET withdrawal_at = NOW()
+        WHERE client_id = #{clientId}
+    </update>
+
+
+
 
 
 
