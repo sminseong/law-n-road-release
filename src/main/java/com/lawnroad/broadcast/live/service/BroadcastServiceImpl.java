@@ -39,10 +39,19 @@ public class BroadcastServiceImpl implements BroadcastService {
         BroadcastVo existing = broadcastMapper.findByScheduleNo(dto.getScheduleNo());
 
         // 기존 방송이 있고 세션이 살아있으면 토큰만 새로 생성해서 반환
-        if (existing != null && openViduService.isSessionActive(existing.getSessionId())) {
-            String token = openViduService.createTokenForExistingSession(existing.getSessionId());
-            System.out.println("♻️ 방송자 기존 세션 재사용: " + existing.getSessionId());
-            return new BroadcastStartResponseDto(existing.getSessionId(), token, existing.getNo(), existing.getStartTime());
+        if (existing != null) {
+            if ("DONE".equals(existing.getStatus())) {
+                throw new RuntimeException("이미 종료된 방송입니다.");
+            }
+
+            if (openViduService.isSessionActive(existing.getSessionId())) {
+                String token = openViduService.createTokenForExistingSession(existing.getSessionId());
+                System.out.println("♻️ 방송자 기존 세션 재사용: " + existing.getSessionId());
+                return new BroadcastStartResponseDto(existing.getSessionId(), token, existing.getNo(), existing.getStartTime());
+            }
+
+            // 세션이 만료된 경우, 방송 불가
+            throw new RuntimeException("세션이 만료되어 더 이상 방송을 시작할 수 없습니다.");
         }
 
         // 신규 세션 생성
@@ -65,6 +74,25 @@ public class BroadcastServiceImpl implements BroadcastService {
     }
 
     /**
+     * 방송자 - 새로고침 시 재접속을 위한 세션 재사용
+     */
+    @Override
+    public BroadcastStartResponseDto reconnectBroadcast(String sessionId) {
+        BroadcastVo vo = broadcastMapper.findBySessionId(sessionId);
+        if (vo == null) {
+            throw new RuntimeException("해당 세션의 방송이 존재하지 않습니다.");
+        }
+
+        if (!openViduService.isSessionActive(sessionId)) {
+            throw new RuntimeException("세션이 만료되어 접속할 수 없습니다.");
+        }
+
+        System.out.println("♻️ 방송자 세션 재연결: " + sessionId);
+        String token = openViduService.createTokenForExistingSession(sessionId);
+        return new BroadcastStartResponseDto(sessionId, token, vo.getNo(), vo.getStartTime());
+    }
+
+    /**
      * 시청자 - 방송 입장 토큰 요청
      */
     @Override
@@ -79,25 +107,6 @@ public class BroadcastServiceImpl implements BroadcastService {
 
         String token = openViduService.createTokenForClient(dto.getSessionId());
         return new BroadcastStartResponseDto(dto.getSessionId(), token, broadcastNo, dto.getStartTime());
-    }
-
-    /**
-     * 방송자 - 새로고침 시 재접속을 위한 세션 재사용
-     */
-    @Override
-    public BroadcastStartResponseDto reconnectBroadcast(String sessionId) {
-        BroadcastVo vo = broadcastMapper.findBySessionId(sessionId);
-        if (vo == null) {
-            throw new RuntimeException("해당 세션의 방송이 존재하지 않습니다.");
-        }
-
-        if (!openViduService.isSessionActive(sessionId)) {
-            throw new RuntimeException("세션이 만료되었거나 존재하지 않습니다.");
-        }
-
-        System.out.println("♻️ 방송자 세션 재연결: " + sessionId);
-        String token = openViduService.createTokenForExistingSession(sessionId);
-        return new BroadcastStartResponseDto(sessionId, token, vo.getNo(), vo.getStartTime());
     }
 
     @Override
