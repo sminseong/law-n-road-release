@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router'
 import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 import AiTemplateEditor from '@/components/template/AiTemplateEditor.vue'
 import http from '@/libs/HttpRequester'
+import {getValidToken} from "@/libs/axios-auth.js";
 
 // 라우터
 const router     = useRouter()
@@ -61,6 +62,12 @@ async function handleDelete() {
 
 onMounted(async () => {
   try {
+    const token = await getValidToken()
+    if (!token) {
+      alert('로그인이 필요합니다.')
+      return
+    }
+
     const { data } = await http.get(
         `/api/lawyer/templates/${templateNo}`,
         { type: templateType }
