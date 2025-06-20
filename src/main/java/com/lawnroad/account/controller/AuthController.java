@@ -233,6 +233,7 @@ public ResponseEntity<?> lawyerSignup(
     @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         String type = request.getType();
+        System.out.println(type);
         if (type == null) {
             return ResponseEntity.badRequest().body("사용자 유형이 지정되지 않았습니다.");
         }
@@ -247,6 +248,7 @@ public ResponseEntity<?> lawyerSignup(
             ClientEntity client = clientService.login(request.getClientId(), request.getPassword());
             userNo   = client.getNo();
             clientId = client.getClientId();
+            System.out.println(userNo);
 
             accessToken  = jwtTokenUtil.generateAccessToken(clientId,  userNo, /*role*/"CLIENT", client.getNickname());
             refreshToken = jwtTokenUtil.generateRefreshToken(clientId);

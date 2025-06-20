@@ -6,7 +6,7 @@ import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import {OpenVidu} from "openvidu-browser";
 import axios from "axios";
 import {useRoute} from "vue-router";
-import { makeApiRequest } from '@/libs/axios-auth.js';
+import { makeApiRequest , refreshAccessToken} from '@/libs/axios-auth.js';
 
 export default defineComponent({
   components: {ClientFrame},
@@ -139,9 +139,8 @@ export default defineComponent({
         reasonCode: reportReasonCode.value,
         detailReason: reportDetail.value
       }
-
       try {
-        const reponse = await makeApiRequest({
+        await makeApiRequest({
           method: 'post',
           url: '/api/client/broadcast/report',
           data: reportData
