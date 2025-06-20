@@ -29,7 +29,7 @@ public class  JwtTokenUtil {
                 .claim("role",role)
                 .claim("nickname", nickname)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 1))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 10))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
