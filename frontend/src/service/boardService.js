@@ -26,7 +26,12 @@ export async function updateQna(id, payload) {
 export async function deleteQna(id) {
     return await httpRequester.delete(`/api/client/qna/${id}`)
 }
-
+// [Lawyer] 답변 등록
 export const registerComment = (payload) => {
     return httpRequester.post('/api/lawyer/comment', payload)
+}
+
+// [Lawyer] 내가 쓴 답변 목록 조회
+export async function fetchMyAnswers(page = 1, size = 10) {
+    return await httpRequester.get('/api/lawyer/comment/answers', { page, size })
 }

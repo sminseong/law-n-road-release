@@ -1,11 +1,15 @@
 package com.lawnroad.board.service;
 
-import com.lawnroad.board.dto.AnswerRegisterDto;
-import com.lawnroad.board.mapper.CommentMapper;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import com.lawnroad.board.dto.CommentRegisterDto;
+import com.lawnroad.board.dto.CommentResponse;
+import com.lawnroad.board.dto.MyCommentResponseDto;
+import org.springframework.data.domain.Page;
+
+import java.util.List;
 
 public interface CommentService {
     // 답변 등록
-    void registerAnswer(AnswerRegisterDto dto);
+    void registerComment(CommentRegisterDto dto);
+    List<CommentResponse> getCommentsByBoardNo(Long boardNo);
+    Page<MyCommentResponseDto> getMyComments(Long userNo, int page, int size);
 }
