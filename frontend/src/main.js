@@ -3,12 +3,14 @@ import './assets/styles/theme.min.css'  // 부트스트랩 테마 (선택)
 import './assets/styles/main.css'       // 커스텀 CSS
 import 'bootstrap'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+import { setRouter } from '@/libs/routerService'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
+setRouter(router)
 
 // ✅ axios import 먼저 해줘야 함
 import axios from 'axios'

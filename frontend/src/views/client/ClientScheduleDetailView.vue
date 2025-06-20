@@ -1,8 +1,8 @@
 <script setup>
-import { onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
+import {onMounted, ref} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
+import {makeApiRequest} from "@/libs/axios-auth.js";
 
 const route = useRoute()
 const router = useRouter()
@@ -18,13 +18,19 @@ const colors = [
 
 onMounted(async () => {
   try {
-    const res = await axios.get(`/api/client/schedule/${dateStr}`)
-    const arranged = arrangeSchedulePositions(res.data)
-    schedules.value = arranged
+    const res = await makeApiRequest({
+      method: 'get',
+      url: `/api/client/schedule/${dateStr}`
+    })
+
+    if (res?.data) {
+      schedules.value = arrangeSchedulePositions(res.data)
+    }
   } catch (e) {
     console.error('스케줄 불러오기 실패:', e)
   }
 })
+
 
 const getMinutes = (timeStr) => {
   const [h, m] = timeStr.split(':').map(Number)

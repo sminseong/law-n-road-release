@@ -1,14 +1,40 @@
 // src/libs/axios-auth.js
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import { getRouter } from './routerService'
+
+export const getValidToken = async () => {
+    let token = localStorage.getItem('token')
+    let expired = false
+
+    if (token) {
+        try {
+            const decoded = jwt_decode(token)
+            const now = Math.floor(Date.now() / 1000)
+            // 60초 이내 만료될 예정이면 미리 갱신
+            if (decoded.exp && decoded.exp - now < 60) expired = true
+        } catch {
+            expired = true
+        }
+    } else {
+        expired = true
+    }
+
+    if (expired) {
+        token = await refreshAccessToken()
+        if (!token) return null
+    }
+    return token
+}
 
 export const refreshAccessToken = async () => {
-    const router = useRouter() // Composition API 훅 내부에서 호출
+    const router2 = getRouter()
+    // const router = useRouter() // Composition API 훅 내부에서 호출
     const userNo = localStorage.getItem('no')
     if (!userNo) {
         alert('죄송합니다! 다시 로그인해주세요')
         localStorage.clear()
-        router.push('/login')
+        router2.push('/login')
         return null
     }
 
@@ -21,7 +47,7 @@ export const refreshAccessToken = async () => {
     } catch (err) {
         console.error('❌ 액세스 토큰 재발급 실패:', err)
         localStorage.clear()
-        router.push('/login')
+        router2.push('/login')
         return null
     }
 }

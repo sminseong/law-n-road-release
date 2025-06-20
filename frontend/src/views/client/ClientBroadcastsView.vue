@@ -40,13 +40,19 @@ export default defineComponent({
 
     const loadReportReasons = async () => {
       try {
-        const {data} = await axios.get('/api/client/broadcast/report-reasons')
-        reportReasonOptions.value = data
-        console.log('✅ 신고 사유 목록 로딩 완료:', data)
+        const res = await makeApiRequest({
+          method: 'get',
+          url: '/api/client/broadcast/report-reasons'
+        })
+        if (res?.data) {
+          reportReasonOptions.value = res.data
+          console.log('✅ 신고 사유 목록 로딩 완료:', res.data)
+        }
       } catch (error) {
         console.error('❌ 신고 사유 목록 로딩 실패:', error)
       }
     }
+
 
     // 시간 계산
     const startTimer = () => {
@@ -62,85 +68,102 @@ export default defineComponent({
 
     const loadBroadcastInfo = async () => {
       try {
-        const {data} = await axios.get(`/api/client/broadcast/view-detail/${broadcastNo.value}`);
-        broadcastInfo.value = data;
-        console.log("📄 방송 정보 로딩 완료:", data);
+        const res = await makeApiRequest({
+          method: 'get',
+          url: `/api/client/broadcast/view-detail/${broadcastNo.value}`
+        })
+        if (res?.data) {
+          broadcastInfo.value = res.data
+          console.log("📄 방송 정보 로딩 완료:", res.data)
+        }
       } catch (e) {
-        console.error("❌ 방송 정보 조회 실패:", e);
+        console.error("❌ 방송 정보 조회 실패:", e)
       }
-    };
+    }
+
 
     const connectOpenVidu = async () => {
       try {
-        const {data} = await axios.get(`/api/client/broadcast/${broadcastNo.value}/token`);
-        const {sessionId, token, startTime} = data;
-        streamStartTime = new Date(startTime); // 방송 시작 시간 받아서 저장
+        const res = await makeApiRequest({
+          method: 'get',
+          url: `/api/client/broadcast/${broadcastNo.value}/token`
+        })
 
-        console.log("👁️ 시청자 sessionId:", sessionId);
-        console.log("🔑 시청자 token:", token);
+        if (res?.data) {
+          const { sessionId, token, startTime } = res.data
+          streamStartTime = new Date(startTime) // 방송 시작 시간 저장
 
-        const OV = new OpenVidu();
-        session.value = OV.initSession();
+          console.log("👁️ 시청자 sessionId:", sessionId)
+          console.log("🔑 시청자 token:", token)
 
-        // 시청자 수 업데이트 함수
-        const updateViewerCount = () => {
-          if (!session.value) return;
-          viewerCount.value = session.value.remoteConnections.size;
-        };
+          const OV = new OpenVidu()
+          session.value = OV.initSession()
 
-        // 시청자 수 동기화 이벤트 (모든 사용자에게 적용됨)
-        session.value.on("connectionCreated", updateViewerCount);
-        session.value.on("connectionDestroyed", updateViewerCount);
+          // 시청자 수 업데이트 함수
+          const updateViewerCount = () => {
+            if (!session.value) return
+            viewerCount.value = session.value.remoteConnections.size
+          }
 
-        // 스트림 수신 처리
-        session.value.on("streamCreated", ({stream}) => {
-          console.log("📡 시청자: streamCreated 발생");
+          // 시청자 수 동기화 이벤트
+          session.value.on("connectionCreated", updateViewerCount)
+          session.value.on("connectionDestroyed", updateViewerCount)
 
-          const subscriber = session.value.subscribe(stream, undefined);
-          console.log("Subscribing to", stream.connection.connectionId);
+          // 스트림 수신 처리
+          session.value.on("streamCreated", ({ stream }) => {
+            console.log("📡 시청자: streamCreated 발생")
 
-          // 방송 시간 시작
-          startTimer();
+            const subscriber = session.value.subscribe(stream, undefined)
+            console.log("Subscribing to", stream.connection.connectionId)
 
-          nextTick(() => {
-            const video = document.createElement("video");
-            video.autoplay = true;
-            video.playsInline = true;
-            video.muted = true;
-            video.style.width = "100%";
-            video.style.height = "100%";
-            video.style.objectFit = "cover";
+            // 방송 시간 타이머 시작
+            startTimer()
 
-            subscriber.addVideoElement(video);
+            nextTick(() => {
+              const video = document.createElement("video")
+              video.autoplay = true
+              video.playsInline = true
+              video.muted = true
+              video.style.width = "100%"
+              video.style.height = "100%"
+              video.style.objectFit = "cover"
 
-            if (videoContainer.value) {
-              videoContainer.value.innerHTML = "";
-              videoContainer.value.appendChild(video);
-              console.log("✅ [시청자] video element append 완료");
-            } else {
-              console.warn("❌ videoContainer is null");
-            }
-          });
-        });
+              subscriber.addVideoElement(video)
 
-        await session.value.connect(token);
-        console.log("✅ [시청자] 방송 연결 완료");
+              if (videoContainer.value) {
+                videoContainer.value.innerHTML = ""
+                videoContainer.value.appendChild(video)
+                console.log("✅ [시청자] video element append 완료")
+              } else {
+                console.warn("❌ videoContainer is null")
+              }
+            })
+          })
+
+          await session.value.connect(token)
+          console.log("✅ [시청자] 방송 연결 완료")
+        }
       } catch (err) {
-        console.error("❌ [시청자] 방송 연결 실패:", err);
+        console.error("❌ [시청자] 방송 연결 실패:", err)
       }
-    };
+    }
+
 
     const submitReport = async () => {
       if (!reportReasonCode.value) {
         alert('신고 사유를 선택해주세요.');
         return;
       }
-
+      const reportData = {
+        broadcastNo: broadcastNo.value,
+        reasonCode: reportReasonCode.value,
+        detailReason: reportDetail.value
+      }
       try {
-        await axios.post('/api/client/broadcast/report', {
-          broadcastNo: broadcastNo.value,
-          reasonCode: reportReasonCode.value,
-          detailReason: reportDetail.value
+        await makeApiRequest({
+          method: 'post',
+          url: '/api/client/broadcast/report',
+          data: reportData
         });
 
         alert('신고가 정상적으로 접수되었습니다.');

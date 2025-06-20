@@ -3,6 +3,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 import axios from 'axios'
+import {getValidToken, makeApiRequest} from "@/libs/axios-auth.js";
 
 const router = useRouter()
 
@@ -23,17 +24,18 @@ const categoryList = ref([])
 
 onMounted(async () => {
   try {
-    const token = localStorage.getItem('token')
-    const response = await axios.get('/api/public/category/list', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+    const res = await makeApiRequest({
+      method: 'get',
+      url: '/api/public/category/list'
     })
-    categoryList.value = response.data
+    if (res?.data) {
+      categoryList.value = res.data
+    }
   } catch (e) {
     console.error('카테고리 불러오기 실패', e)
   }
 })
+
 
 watch(date, (newDate) => {
   if (newDate) endDate.value = newDate
@@ -126,8 +128,13 @@ const submitSchedule = async () => {
     formData.append('thumbnail', selectedFile.value)
     formData.append('keywords', JSON.stringify(keywords.value))
 
+    const token = await getValidToken()
+
     await axios.post('/api/lawyer/schedule/register', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`
+      }
     })
 
     alert('✅ 방송 스케줄 등록 성공!')
