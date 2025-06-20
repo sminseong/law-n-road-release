@@ -53,6 +53,8 @@ const submitLogin = async () => {
     localStorage.setItem('no', no)
 
 
+
+
     console.log('🚨🚨🚨 localStorage 저장 완료! 🚨🚨🚨')
     console.log('TOKEN:', localStorage.getItem('token'))
     console.log('ACCOUNT TYPE:', localStorage.getItem('accountType'))
