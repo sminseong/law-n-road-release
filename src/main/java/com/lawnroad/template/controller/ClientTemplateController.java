@@ -68,16 +68,17 @@ public class ClientTemplateController {
       @RequestParam(required = false) String type,
       @RequestParam(required = false) Long categoryNo,
       @RequestParam(required = false) Integer isDownloaded,
+      @RequestParam(required = false) String keyword,
       @RequestParam(defaultValue = "1") int page,
       @RequestParam(defaultValue = "10") int limit
   ) {
     // 목록 조회
     List<ClientOrderTemplateDto> list =
-        clientTemplateService.findTemplatesByOrder(orderNo, type, categoryNo, isDownloaded);
+        clientTemplateService.findTemplatesByOrder(orderNo, type, categoryNo, isDownloaded, keyword);
     
     // 개수 조회
     int totalCount =
-        clientTemplateService.countTemplatesByOrder(orderNo, type, categoryNo, isDownloaded);
+        clientTemplateService.countTemplatesByOrder(orderNo, type, categoryNo, isDownloaded, keyword);
     
     // 페이지 수 계산
     int totalPages = (int) Math.ceil((double) totalCount / limit);

@@ -164,12 +164,12 @@
     <select id="selectTemplatesByOrderNo" resultType="com.lawnroad.template.dto.order.ClientOrderTemplateDto">
         SELECT
         t.no               AS tmpl_no,
-        t.name            AS template_name,
-        t.type            AS template_type,
-        c.name            AS category_name,
-        toh.price         AS price,
-        toh.is_downloaded AS is_downloaded,
-        t.thumbnail_path  AS thumbnail_path
+        t.name             AS template_name,
+        t.type             AS template_type,
+        c.name             AS category_name,
+        toh.price          AS price,
+        toh.is_downloaded  AS is_downloaded,
+        t.thumbnail_path   AS thumbnail_path
         FROM tmpl_orders_history toh
         JOIN template t ON toh.tmpl_no = t.no
         JOIN category c ON t.category_no = c.no
@@ -177,6 +177,9 @@
         <if test="type != null and type != ''">AND t.type = #{type}</if>
         <if test="categoryNo != null">AND t.category_no = #{categoryNo}</if>
         <if test="isDownloaded != null">AND toh.is_downloaded = #{isDownloaded}</if>
+        <if test="keyword != null and keyword != ''">
+            AND t.name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
     </select>
 
     <!--
@@ -192,6 +195,9 @@
         <if test="type != null and type != ''">AND t.type = #{type}</if>
         <if test="categoryNo != null">AND t.category_no = #{categoryNo}</if>
         <if test="isDownloaded != null">AND toh.is_downloaded = #{isDownloaded}</if>
+        <if test="keyword != null and keyword != ''">
+            AND t.name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
     </select>
 
     <!-- Editor 기반 템플릿 상세 조회 -->

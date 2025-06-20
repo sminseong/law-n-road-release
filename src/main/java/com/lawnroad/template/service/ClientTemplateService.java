@@ -56,7 +56,9 @@ public interface ClientTemplateService {
    * @param isDownloaded 다운로드 여부 (0, 1) - 선택
    * @return 템플릿 상세 DTO 리스트
    */
-  List<ClientOrderTemplateDto> findTemplatesByOrder(Long orderNo, String type, Long categoryNo, Integer isDownloaded);
+  List<ClientOrderTemplateDto> findTemplatesByOrder(
+      Long orderNo, String type, Long categoryNo, Integer isDownloaded, String keyword
+  );
   
   /**
    * 특정 주문의 템플릿 개수를 조회합니다. (페이징용)
@@ -67,7 +69,9 @@ public interface ClientTemplateService {
    * @param isDownloaded 다운로드 여부 - 선택
    * @return 템플릿 개수
    */
-  int countTemplatesByOrder(Long orderNo, String type, Long categoryNo, Integer isDownloaded);
+  int countTemplatesByOrder(
+      Long orderNo, String type, Long categoryNo, Integer isDownloaded, String keyword
+  );
   
   /**
    * 에디터 기반 템플릿 상세 조회

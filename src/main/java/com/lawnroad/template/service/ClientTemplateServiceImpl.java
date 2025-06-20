@@ -119,8 +119,10 @@ public class ClientTemplateServiceImpl implements ClientTemplateService {
    * @return 템플릿 상세 DTO 리스트
    */
   @Override
-  public List<ClientOrderTemplateDto> findTemplatesByOrder(Long orderNo, String type, Long categoryNo, Integer isDownloaded) {
-    return clientTemplateMapper.selectTemplatesByOrderNo(orderNo, type, categoryNo, isDownloaded);
+  public List<ClientOrderTemplateDto> findTemplatesByOrder(
+      Long orderNo, String type, Long categoryNo, Integer isDownloaded, String keyword
+  ) {
+    return clientTemplateMapper.selectTemplatesByOrderNo(orderNo, type, categoryNo, isDownloaded, keyword);
   }
   
   /**
@@ -133,8 +135,10 @@ public class ClientTemplateServiceImpl implements ClientTemplateService {
    * @return 템플릿 개수
    */
   @Override
-  public int countTemplatesByOrder(Long orderNo, String type, Long categoryNo, Integer isDownloaded) {
-    return clientTemplateMapper.countTemplatesByOrderNo(orderNo, type, categoryNo, isDownloaded);
+  public int countTemplatesByOrder(
+      Long orderNo, String type, Long categoryNo, Integer isDownloaded, String keyword
+  ) {
+    return clientTemplateMapper.countTemplatesByOrderNo(orderNo, type, categoryNo, isDownloaded, keyword);
   }
   
   // 에디터 기반 템플릿 상세 조회
