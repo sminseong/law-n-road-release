@@ -3,7 +3,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 import axios from 'axios'
-import {makeApiRequest} from "@/libs/axios-auth.js";
+import {getValidToken, makeApiRequest} from "@/libs/axios-auth.js";
 
 const router = useRouter()
 
@@ -128,12 +128,12 @@ const submitSchedule = async () => {
     formData.append('thumbnail', selectedFile.value)
     formData.append('keywords', JSON.stringify(keywords.value))
 
-    await makeApiRequest({
-      method: 'post',
-      url: '/api/lawyer/schedule/register',
-      data: formData,
+    const token = await getValidToken()
+
+    await axios.post('/api/lawyer/schedule/register', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`
       }
     })
 

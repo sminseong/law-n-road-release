@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 import axios from 'axios'
-import {makeApiRequest} from "@/libs/axios-auth.js";
+import {getValidToken, makeApiRequest} from "@/libs/axios-auth.js";
 
 const route = useRoute()
 const router = useRouter()
@@ -126,12 +126,11 @@ const updateSchedule = async () => {
       form.append('thumbnail', selectedFile.value)
     }
 
-    await makeApiRequest({
-      method: 'post',
-      url: '/api/lawyer/schedule/update?_method=PUT',
-      data: form,
+    const token = await getValidToken()
+    await axios.post('/api/lawyer/schedule/update?_method=PUT', form, {
       headers: {
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`
       }
     })
 
