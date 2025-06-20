@@ -7,7 +7,7 @@ const instance = axios.create({
     withCredentials: true // 💥 쿠키 기반 인증 대응 (선택)
 })
 
-// ✅ 요청 시 토큰 자동 삽입
+// 요청 시 토큰 자동 삽입
 instance.interceptors.request.use((config) => {
     const token = localStorage.getItem('token')
     if (token) {
@@ -16,7 +16,7 @@ instance.interceptors.request.use((config) => {
     return config
 })
 
-// ✅ 응답 시 토큰 만료 대응 (재발급 → 재시도)
+// 응답 시 토큰 만료 대응 (재발급 → 재시도)
 instance.interceptors.response.use(
     response => response,
     async error => {
@@ -37,10 +37,10 @@ instance.interceptors.response.use(
                 const res = await axios.post('/api/refresh', { no: Number(userNo) })
                 const newToken = res.data.accessToken
 
-                // ✅ 저장
+                // 저장
                 localStorage.setItem('token', newToken)
 
-                // ✅ 재시도
+                // 재시도
                 originalRequest.headers['Authorization'] = `Bearer ${newToken}`
                 console.log(originalRequest.FormData)
                 if (originalRequest.data instanceof FormData) {
@@ -62,7 +62,7 @@ instance.interceptors.response.use(
     }
 )
 
-// ✅ 공통 래퍼
+// 요청 전 사전 토큰 재발급을 위한 공통 래퍼
 async function withToken(requestFn) {
     const token = await getValidToken()
     if (!token) {
@@ -73,7 +73,7 @@ async function withToken(requestFn) {
     return await requestFn()
 }
 
-// ✅ 실제로 요청 보내는 함수들
+// 실제로 요청 보내는 함수들
 export default {
     get(url, queryParams = {}) {
         return withToken(() => instance.get(url, { params: queryParams }))
