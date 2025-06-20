@@ -6,7 +6,7 @@ import {OpenVidu} from "openvidu-browser";
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import axios from "axios";
 import {useRoute, useRouter} from "vue-router";
-import {makeApiRequest} from "@/libs/axios-auth.js";
+import {getValidToken, makeApiRequest} from "@/libs/axios-auth.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -245,6 +245,7 @@ const messageContainer = ref(null);
 const nicknameColors = ref({});
 const myNo = ref(null);
 
+
 //드롭다운/신고 모달 상태
 const dropdownIdx = ref(null);
 const selectedUser = ref(null);
@@ -273,7 +274,7 @@ function getNicknameColor(nick) {
 }
 
 async function fetchMyNo() {
-  const token = localStorage.getItem("token");
+  const token = await getValidToken();
   if (!token) {
     alert("로그인이 필요합니다!");
     return false;
@@ -312,7 +313,9 @@ const connect = () => {
         //입장 시 type: "ENTER"만 전달
         stompClient.value.publish({
           destination: "/app/chat.addUser",
-          body: JSON.stringify({broadcastNo: broadcastNo.value}),
+          body: JSON.stringify({broadcastNo: broadcastNo.value,
+          name: broadcastInfo.value.lawyerName}),
+
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -333,9 +336,9 @@ const connect = () => {
 };
 
 // 채팅 메시지 전송 (type: "CHAT"만 전달)
-const sendMessage = () => {
+const sendMessage = async () => {
   const trimmed = message.value.trim();
-  const token = localStorage.getItem('token');
+  const token = await getValidToken();
   if (!trimmed || !stompClient.value?.connected) return;
   if (!token) {
     alert("로그인이 필요합니다!");
@@ -394,7 +397,7 @@ const onReportClick = () => {
 
 const confirmReport = async () => {
   try {
-    const token = localStorage.getItem('token');
+    const token = await getValidToken();
     await axios.post(
         "/api/Lawyer/chat/report",
         {
@@ -429,7 +432,7 @@ const preQDropdownRef = ref(null);
 // API 호출
 const fetchPreQuestions = async () => {
   try {
-    const token = localStorage.getItem('token');
+    const token = await getValidToken();
     const res = await axios.get(`/api/Lawyer/broadcasts/schedule/${broadcastNo.value}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -584,8 +587,6 @@ const handlePreQClickOutside = (e) => {
                   <div style="color:#222">{{ q.content }}</div>
                 </li>
               </ul>
-
-
             </div>
           </div>
         </div>
@@ -605,7 +606,7 @@ const handlePreQClickOutside = (e) => {
                  style="font-size: 0.95rem; display: flex; align-items: center;">
               <!-- 닉네임: 검정색 고정 -->
               <span style="color: #222; user-select: text;">
-       👑 {{ msg.nickname }} 변호사
+       👑 {{ broadcastInfo.lawyerName }} 변호사
       </span>
               <!-- 메시지: 빨간색 -->
               <span style="color: #fd1900; margin-left: 0.6em;">

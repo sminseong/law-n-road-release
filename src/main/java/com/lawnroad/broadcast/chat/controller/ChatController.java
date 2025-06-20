@@ -1,36 +1,20 @@
 package com.lawnroad.broadcast.chat.controller;
 
-import com.lawnroad.account.dto.LoginRequest;
-import com.lawnroad.account.entity.ClientEntity;
-import com.lawnroad.account.entity.UserEntity;
-import com.lawnroad.account.mapper.UserMapper;
-import com.lawnroad.account.service.ClientService;
+
 import com.lawnroad.broadcast.chat.dto.ChatDTO;
 import com.lawnroad.broadcast.chat.service.AutoReplyService;
 import com.lawnroad.broadcast.chat.service.ChatRedisSaveServiceImpl;
 import com.lawnroad.common.util.JwtTokenUtil;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.Message;
+import org.springframework.http.*;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.messaging.support.MessageHeaderAccessor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
-
-
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+
 @RequiredArgsConstructor
 @Controller
 public class ChatController {
@@ -47,6 +31,9 @@ public class ChatController {
         Claims claims = jwtTokenUtil.parseToken(token);
 
         String nickname = claims.get("nickname", String.class);
+        if (nickname == null || nickname.trim().isEmpty()) {
+            nickname = chatDTO.getName();
+        }
         chatDTO.setNickname(nickname);
         chatDTO.setType("ENTER");
         chatDTO.setMessage(nickname + " 님이 접속했습니다.");
@@ -54,6 +41,7 @@ public class ChatController {
 
         messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), chatDTO);
     }
+
 
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload ChatDTO chatDTO, @Header("Authorization") String authHeader) {
@@ -111,3 +99,5 @@ public class ChatController {
     }
 
 }
+
+

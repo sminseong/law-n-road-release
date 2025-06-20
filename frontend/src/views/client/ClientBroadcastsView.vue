@@ -7,7 +7,6 @@ import {OpenVidu} from "openvidu-browser";
 import axios from "axios";
 import {useRoute} from "vue-router";
 import {getValidToken, makeApiRequest} from "@/libs/axios-auth.js";
-import HttpRequester from "@/libs/HttpRequester.js";
 
 export default defineComponent({
   components: {ClientFrame},
@@ -231,23 +230,8 @@ export default defineComponent({
       return nicknameColors.value[nick];
     }
 
-    //  const fetchMyNo = async () => {
-    //   try {
-    //     const res = await makeApiRequest({method: 'get', url: "/api/client/my-no",})
-    //     if (res?.data) {
-    //       myNo.value = res.data
-    //     }
-    //   } catch (err) {
-    //     console.error('프로필 조회 실패:', err)
-    //   }
-    // }
-
-    //
-
-
-
     async function fetchMyNo() {
-      const token = localStorage.getItem("token");
+      const token = await getValidToken();
       if (!token) {
         alert("로그인이 필요합니다!");
         return false;
@@ -259,12 +243,9 @@ export default defineComponent({
       return true;
     }
 
-
-
-
     // STOMP 연결 및 입장 메시지 전송
     const connect = () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
         alert("로그인이 필요합니다!");
         return;
@@ -313,30 +294,6 @@ export default defineComponent({
       });
     };
 
-    // 채팅 메시지 전송 (type: "CHAT"만 전달)
-    // const sendMessage = () => {
-    //   const trimmed = message.value.trim();
-    //   const token = localStorage.getItem('token');
-    //   if (!trimmed || !stompClient.value?.connected) return;
-    //   if (!token) {
-    //     alert("로그인이 필요합니다!");
-    //     return;
-    //   }
-    //   stompClient.value.publish({
-    //     destination: "/app/chat.sendMessage",
-    //     body: JSON.stringify({
-    //       broadcastNo: broadcastNo.value,
-    //       message: trimmed,
-    //     }),
-    //     headers: {
-    //       Authorization: `Bearer ${token}`,
-    //     },
-    //   });
-    //   message.value = "";
-    //   scrollToBottom();
-    // };
-
-
     const sendMessage = async () => {
       const trimmed = message.value.trim();
       if (!trimmed || !stompClient.value?.connected) return;
@@ -366,9 +323,6 @@ export default defineComponent({
         alert('메시지 전송 중 오류가 발생했습니다.');
       }
     }
-
-
-
 
     // 스크롤 자동 하단 이동
     const scrollToBottom = () => {
@@ -407,7 +361,7 @@ export default defineComponent({
 
     const confirmReport = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = await getValidToken();
         await axios.post(
             "/api/client/chat/report",
             {
@@ -442,7 +396,7 @@ export default defineComponent({
     // API 호출
     const fetchPreQuestions = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = await getValidToken();
         const res = await axios.get(`/api/client/broadcasts/schedule/${broadcastNo.value}`, {
           headers: {Authorization: `Bearer ${token}`}
         });
@@ -477,6 +431,7 @@ export default defineComponent({
         window.removeEventListener('mousedown', handlePreQClickOutside);
       }
     };
+
 
 
     return {
@@ -731,7 +686,7 @@ export default defineComponent({
                     userSelect: 'text',
                     cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
                     fontWeight: 'bold'
-                    }">👑 {{ msg.nickname }} 변호사
+                    }">👑 {{ broadcastInfo.lawyerName }} 변호사
                 <span v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
                       class="nickname-dropdown"
                       style="position:absolute;top:120%;left:0;z-index:10000;">
