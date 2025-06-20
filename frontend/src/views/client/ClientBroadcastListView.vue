@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
+import { makeApiRequest   } from "@/libs/axios-auth.js";
 
 const router = useRouter()
 const broadcasts = ref([])
@@ -10,12 +11,18 @@ const hoveredCard = ref(null)
 
 const fetchLiveBroadcasts = async () => {
   try {
-    const res = await axios.get('/api/client/broadcast/live')
-    broadcasts.value = res.data
+    const res = await makeApiRequest({
+      method: 'get',
+      url: '/api/client/broadcast/live'
+    })
+    if (res?.data) {
+      broadcasts.value = res.data
+    }
   } catch (err) {
     console.error('❌ 방송 목록 불러오기 실패:', err)
   }
 }
+
 
 const goToBroadcast = (broadcastNo) => {
   router.push(`/client/broadcasts/${broadcastNo}`)
