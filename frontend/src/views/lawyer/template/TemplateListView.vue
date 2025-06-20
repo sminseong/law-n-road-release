@@ -5,6 +5,7 @@ import CustomTable from '@/components/table/CustomTable.vue'
 import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 import http from '@/libs/HttpRequester'
 import {makeApiRequest} from "@/libs/axios-auth.js";
+import { getValidToken } from '@/libs/axios-auth'
 
 // 라우터
 const router = useRouter()
@@ -62,10 +63,17 @@ const filters = [
  */
 async function fetchTemplates(filters, pageNo) {
   try {
+
     const query = {
       ...normalizeFilters(filters),
       page: pageNo,
       limit: 10
+    }
+
+    const token = await getValidToken()
+    if (!token) {
+      alert('로그인이 필요합니다.')
+      return
     }
 
     // 예전 코드

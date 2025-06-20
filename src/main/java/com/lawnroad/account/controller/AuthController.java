@@ -518,13 +518,13 @@ public ResponseEntity<?> lawyerSignup(
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshAccessToken(@RequestBody Map<String, Object> payload) {
         Long no = Long.valueOf(payload.get("no").toString());
-        System.out.println("🔄 [리프레시 요청] 사용자 no: " + no);
+        System.out.println("\n🔄 [리프레시 요청] 사용자 no: " + no);
 
         try {
             // 1. user 테이블에서 type 조회
             String userSql = "SELECT type FROM user WHERE no = ?";
             String role = jdbcTemplate.queryForObject(userSql, String.class, no);
-            System.out.println("✅ 사용자 role: " + role);
+//            System.out.println("✅ 사용자 role: " + role);
 
             String id;
             String nickname = "";  // 기본값 비어있음
@@ -547,11 +547,11 @@ public ResponseEntity<?> lawyerSignup(
                         .body("❌ 지원하지 않는 사용자 유형");
             }
 
-            System.out.println("🎯 사용자 정보: " + id + " / " + role + " / " + nickname);
+//            System.out.println("🎯 사용자 정보: " + id + " / " + role + " / " + nickname);
 
             // 3. accessToken 재발급
             String newAccessToken = jwtTokenUtil.generateAccessToken(id, no, role, nickname);
-            System.out.println("✅ 재발급 완료: " + newAccessToken);
+            System.out.println("재발급 완료: " + newAccessToken + '\n');
 
             return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
         } catch (EmptyResultDataAccessException e) {
