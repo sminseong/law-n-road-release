@@ -29,7 +29,7 @@ function parseJwt(token) {
 
 const token = localStorage.getItem('token')
 const payload = token ? parseJwt(token) : null
-// console.log(payload)
+console.log(parseJwt(token))
 const role = payload?.role
 const lawyerNo = payload?.no
 const store = useLawyerStore()

@@ -72,7 +72,7 @@ public class SecurityConfig {
                                 "/api/notification/**",
                                 "/uploads/**",
                                 "/api/webhook/**",
-                                "/api/signuplawyer" ,"/api/refresh",   // ← 여기에 추가
+                                "/api/signuplawyer" ,"/api/refresh",  // ← 여기에 추가
                                 "/api/webhook/**",
                                 "/ws/**"
                         ).permitAll()

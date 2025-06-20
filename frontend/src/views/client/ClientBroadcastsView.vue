@@ -6,7 +6,8 @@ import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import {OpenVidu} from "openvidu-browser";
 import axios from "axios";
 import {useRoute} from "vue-router";
-import { makeApiRequest } from '@/libs/axios-auth.js';
+import {getValidToken, makeApiRequest} from "@/libs/axios-auth.js";
+import HttpRequester from "@/libs/HttpRequester.js";
 
 export default defineComponent({
   components: {ClientFrame},
@@ -230,6 +231,21 @@ export default defineComponent({
       return nicknameColors.value[nick];
     }
 
+    //  const fetchMyNo = async () => {
+    //   try {
+    //     const res = await makeApiRequest({method: 'get', url: "/api/client/my-no",})
+    //     if (res?.data) {
+    //       myNo.value = res.data
+    //     }
+    //   } catch (err) {
+    //     console.error('프로필 조회 실패:', err)
+    //   }
+    // }
+
+    //
+
+
+
     async function fetchMyNo() {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -242,6 +258,9 @@ export default defineComponent({
       myNo.value = res.data;
       return true;
     }
+
+
+
 
     // STOMP 연결 및 입장 메시지 전송
     const connect = () => {
@@ -295,27 +314,61 @@ export default defineComponent({
     };
 
     // 채팅 메시지 전송 (type: "CHAT"만 전달)
-    const sendMessage = () => {
+    // const sendMessage = () => {
+    //   const trimmed = message.value.trim();
+    //   const token = localStorage.getItem('token');
+    //   if (!trimmed || !stompClient.value?.connected) return;
+    //   if (!token) {
+    //     alert("로그인이 필요합니다!");
+    //     return;
+    //   }
+    //   stompClient.value.publish({
+    //     destination: "/app/chat.sendMessage",
+    //     body: JSON.stringify({
+    //       broadcastNo: broadcastNo.value,
+    //       message: trimmed,
+    //     }),
+    //     headers: {
+    //       Authorization: `Bearer ${token}`,
+    //     },
+    //   });
+    //   message.value = "";
+    //   scrollToBottom();
+    // };
+
+
+    const sendMessage = async () => {
       const trimmed = message.value.trim();
-      const token = localStorage.getItem('token');
       if (!trimmed || !stompClient.value?.connected) return;
-      if (!token) {
-        alert("로그인이 필요합니다!");
-        return;
+
+      try {
+        // 항상 유효한 토큰 가져오기
+        const token = await getValidToken();
+        if (!token) {
+          alert("로그인이 필요합니다!");
+          return;
+        }
+        // publish 자체도 try 안에!
+        stompClient.value.publish({
+          destination: "/app/chat.sendMessage",
+          body: JSON.stringify({
+            broadcastNo: broadcastNo.value,
+            message: trimmed,
+          }),
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        message.value = "";
+        scrollToBottom();
+      } catch (err) {
+        console.error('메시지 전송 실패:', err);
+        alert('메시지 전송 중 오류가 발생했습니다.');
       }
-      stompClient.value.publish({
-        destination: "/app/chat.sendMessage",
-        body: JSON.stringify({
-          broadcastNo: broadcastNo.value,
-          message: trimmed,
-        }),
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      message.value = "";
-      scrollToBottom();
-    };
+    }
+
+
+
 
     // 스크롤 자동 하단 이동
     const scrollToBottom = () => {
@@ -391,7 +444,7 @@ export default defineComponent({
       try {
         const token = localStorage.getItem('token');
         const res = await axios.get(`/api/client/broadcasts/schedule/${broadcastNo.value}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: {Authorization: `Bearer ${token}`}
         });
         const data = Array.isArray(res.data) ? res.data : res.data.data;
         preQuestions.value = data.map(q => ({
@@ -651,7 +704,6 @@ export default defineComponent({
             </div>
           </div>
         </div>
-
 
 
         <!-- 메시지 출력 -->
