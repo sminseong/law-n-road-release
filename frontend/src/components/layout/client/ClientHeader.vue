@@ -84,7 +84,7 @@ const logout = () => {
   console.log('nickname:', localStorage.getItem('nickname'))
 
   // ✅ 5. 로그인 페이지로 이동 + 새로고침
-  setTimeout(() => location.reload(), 300) // 새로고침으로 컴포넌트 초기화
+  setTimeout(() => location.reload(), 100) // 새로고침으로 컴포넌트 초기화
   console.log('[로그아웃 완료] localStorage 상태 확인:')
   console.log('token:', localStorage.getItem('token'))
   console.log('refreshToken:', localStorage.getItem('refreshToken'))
