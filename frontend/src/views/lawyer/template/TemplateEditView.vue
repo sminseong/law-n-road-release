@@ -5,6 +5,7 @@ import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 import AiTemplateEditor from '@/components/template/AiTemplateEditor.vue'
 import UploadTemplateForm from '@/components/template/UploadTemplateForm.vue'
 import http from '@/libs/HttpRequester'
+import {getValidToken} from "@/libs/axios-auth.js";
 
 // 최대 썸네일 용량 (10MB)
 const MAX_THUMBNAIL_SIZE = 10 * 1024 * 1024  // 10MB

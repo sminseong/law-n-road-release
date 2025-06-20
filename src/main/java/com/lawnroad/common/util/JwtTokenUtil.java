@@ -29,7 +29,7 @@ public class  JwtTokenUtil {
                 .claim("role",role)
                 .claim("nickname", nickname)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 30))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 1))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
@@ -80,8 +80,8 @@ public class  JwtTokenUtil {
                 .parseClaimsJws(token)
                 .getBody();
 
-        System.out.println("claims 전체: " + claims);
-        System.out.println("claims.get(\"no\"): " + claims.get("no"));
+//        System.out.println("claims 전체: " + claims);
+//        System.out.println("claims.get(\"no\"): " + claims.get("no"));
         return claims.get("no", Long.class);
     }
 

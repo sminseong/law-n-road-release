@@ -1,6 +1,6 @@
 import axios from 'axios'
 import router from '@/router'
-import { useAccountStore } from '@/stores/account'
+import { getValidToken } from './axios-auth.js'
 
 const instance = axios.create({
     baseURL: '', // 필요하면 설정
@@ -29,7 +29,7 @@ instance.interceptors.response.use(
             const userNo = localStorage.getItem('no')
             if (!userNo) {
                 localStorage.clear()
-                router.push('/login')
+                await router.push('/login')
                 return Promise.reject(error)
             }
 
@@ -42,11 +42,18 @@ instance.interceptors.response.use(
 
                 // ✅ 재시도
                 originalRequest.headers['Authorization'] = `Bearer ${newToken}`
+                console.log(originalRequest.FormData)
+                if (originalRequest.data instanceof FormData) {
+                    console.log('✅ FormData 내용:')
+                    for (const [key, value] of originalRequest.data.entries()) {
+                        console.log(`${key}:`, value)
+                    }
+                }
                 return instance(originalRequest)
             } catch (refreshError) {
                 console.error('🔴 토큰 재발급 실패:', refreshError)
                 localStorage.clear()
-                router.push('/login')
+                await router.push('/login')
                 return Promise.reject(refreshError)
             }
         }
@@ -55,18 +62,29 @@ instance.interceptors.response.use(
     }
 )
 
+// ✅ 공통 래퍼
+async function withToken(requestFn) {
+    const token = await getValidToken()
+    if (!token) {
+        alert('로그인이 필요합니다.')
+        await router.push('/login')
+        return Promise.reject('로그인 필요')
+    }
+    return await requestFn()
+}
+
 // ✅ 실제로 요청 보내는 함수들
 export default {
     get(url, queryParams = {}) {
-        return instance.get(url, { params: queryParams })
+        return withToken(() => instance.get(url, { params: queryParams }))
     },
     post(url, data) {
-        return instance.post(url, data)
+        return withToken(() => instance.post(url, data))
     },
     put(url, data) {
-        return instance.put(url, data)
+        return withToken(() => instance.put(url, data))
     },
     delete(url) {
-        return instance.delete(url)
+        return withToken(() => instance.delete(url))
     }
 }
