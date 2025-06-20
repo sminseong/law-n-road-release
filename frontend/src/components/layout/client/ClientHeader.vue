@@ -244,8 +244,10 @@ const logout = () => {
 
             <!-- 장바구니, 유저정보 등 아이콘 -->
             <div class="col-md-2 col-xxl-1 text-end d-none d-lg-block">
-              <div v-if="isLoggedIn" class="list-inline">
-                {{ nickname }} 님 환영합니다.
+              <div v-if="isLoggedIn" class="d-flex align-items-center justify-content-end gap-2">
+                <span class="text-muted me-1" style="min-width: 150px;">
+                  <strong class="text-primary">{{ nickname }}</strong> 님 환영합니다.
+                </span>
                 <div class="list-inline-item">
                   <!-- 사용자 아이콘: goToMyPage 호출 -->
                   <a
