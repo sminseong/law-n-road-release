@@ -37,8 +37,17 @@ const formatStartTime = (isoString) => {
   return `${MM}-${DD} ${hh}:${mm} 방송시작`
 }
 
-onMounted(() => {
-  fetchLiveBroadcasts()
+onMounted(async () => {
+  try {
+    await makeApiRequest({
+      method: 'get',
+      url: '/api/client/broadcast/expire-overdue'
+    })
+    console.log('⏱ 방송 상태 갱신 완료')
+  } catch (err) {
+    console.warn('방송 만료 처리 실패:', err)
+  }
+  await fetchLiveBroadcasts()
 })
 </script>
 

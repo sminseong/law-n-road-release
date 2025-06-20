@@ -52,30 +52,6 @@ export const refreshAccessToken = async () => {
     }
 }
 
-export const getValidToken = async () => {
-    let token = localStorage.getItem('token')
-    let expired = false
-
-    if (token) {
-        try {
-            const decoded = jwt_decode(token)
-            const now = Math.floor(Date.now() / 1000)
-            // 60초 이내 만료될 예정이면 미리 갱신
-            if (decoded.exp && decoded.exp - now < 60) expired = true
-        } catch {
-            expired = true
-        }
-    } else {
-        expired = true
-    }
-
-    if (expired) {
-        token = await refreshAccessToken()
-        if (!token) return null
-    }
-    return token
-}
-
 export const makeApiRequest = async (config) => {
     let token = localStorage.getItem('token')
     if (!token) {

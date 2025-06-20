@@ -16,6 +16,8 @@ const colors = [
   '#9b7bcc', '#fca344', '#a3a7ff','#8fd565'
 ]
 
+const liveScheduleMap = ref({})
+
 onMounted(async () => {
   try {
     const res = await makeApiRequest({
@@ -24,12 +26,37 @@ onMounted(async () => {
     })
 
     if (res?.data) {
-      schedules.value = arrangeSchedulePositions(res.data)
+      const rawSchedules = res.data
+
+      // 라이브 여부 병렬 조회
+      const liveChecks = await Promise.all(
+          rawSchedules.map(schedule =>
+              makeApiRequest({
+                method: 'get',
+                url: `/api/client/broadcast/live-check/${schedule.no}`
+              }).then(res => ({
+                scheduleNo: schedule.no,
+                live: res.data.live
+              })).catch(() => ({
+                scheduleNo: schedule.no,
+                live: false
+              }))
+          )
+      )
+
+      // liveScheduleMap 업데이트
+      liveScheduleMap.value = Object.fromEntries(
+          liveChecks.map(entry => [entry.scheduleNo, entry.live])
+      )
+
+      // 시간대별 포지션 정리
+      schedules.value = arrangeSchedulePositions(rawSchedules)
     }
   } catch (e) {
     console.error('스케줄 불러오기 실패:', e)
   }
 })
+
 
 
 const getMinutes = (timeStr) => {
@@ -49,8 +76,25 @@ function arrangeSchedulePositions(scheduleList) {
   return hourMap
 }
 
-const goToSchedule = (scheduleNo) => {
-  router.push(`/client/broadcasts/schedule/${scheduleNo}/preQuestion`)
+const goToSchedule = async (scheduleNo) => {
+  try {
+    const res = await makeApiRequest({
+      method: 'get',
+      url: `/api/client/broadcast/live-check/${scheduleNo}`
+    })
+
+    if (res.data.live && res.data.broadcastNo) {
+      // 방송 중이면 방송 보기로 이동
+      router.push(`/client/broadcasts/${res.data.broadcastNo}`)
+    } else {
+      // 방송 전이면 사전 질문 페이지로 이동
+      router.push(`/client/broadcasts/schedule/${scheduleNo}/preQuestion`)
+    }
+  } catch (err) {
+    console.error('방송 상태 확인 실패:', err)
+    // fallback - 기본 이동
+    router.push(`/client/broadcasts/schedule/${scheduleNo}/preQuestion`)
+  }
 }
 
 const goBackToCalendar = () => {
@@ -86,9 +130,15 @@ const goBackToCalendar = () => {
                   v-for="schedule in schedules[hour]"
                   :key="schedule.no"
                   class="schedule-card"
+                  :class="{ 'live-card': liveScheduleMap[schedule.no] }"
                   :style="{ backgroundColor: schedule.color }"
                   @click="goToSchedule(schedule.no)"
               >
+                <span
+                    v-if="liveScheduleMap[schedule.no]"
+                    class="live-badge">
+                  <span class="blink">🔴</span> LIVE 중
+                </span>
                 <div class="fw-semibold text-truncate">📺 {{ schedule.name }}</div>
                 <div class="small text-black-50">{{ schedule.lawyerName }} 변호사</div>
                 <div class="small">🕒 {{ schedule.startTime.slice(11, 16) }} ~ {{ schedule.endTime.slice(11, 16) }}</div>
@@ -128,6 +178,7 @@ const goBackToCalendar = () => {
   transition: transform 0.1s ease, box-shadow 0.1s ease;
   overflow: hidden;
   position: relative;
+  border: 2px solid transparent;
 }
 
 .schedule-card:hover {
@@ -157,4 +208,47 @@ const goBackToCalendar = () => {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* 라이브 중이면 붉은 테두리 */
+.live-card {
+  border: 2px solid red !important;
+}
+
+/* LIVE 뱃지 */
+.live-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: #dc3545;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 6px;
+  z-index: 5;
+  box-shadow: 0 0 5px rgba(0,0,0,0.15);
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+/* 마우스 올리면 뱃지 사라짐 */
+.schedule-card:hover .live-badge {
+  opacity: 0;
+}
+
+/* 빨간 원 깜빡임 */
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.blink {
+  animation: blink 1s infinite;
+}
+
 </style>

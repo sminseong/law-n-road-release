@@ -43,8 +43,26 @@ const groupByDate = (items) => {
   }, {})
 }
 
+const isBroadcastReady = (startTime) => {
+  const now = new Date()
+  const start = new Date(startTime)
+  const tenMinutesBeforeStart = new Date(start.getTime() - 10 * 60 * 1000)
+  return now >= tenMinutesBeforeStart
+}
+
 const goToDetail = (scheduleNo) => {
-  if (scheduleNo) {
+  const schedule = schedules.value.find(s => s.scheduleNo === scheduleNo)
+  if (!schedule) return
+
+  const now = new Date()
+  const start = new Date(schedule.startTime)
+  const tenMinutesBeforeStart = new Date(start.getTime() - 10 * 60 * 1000)
+
+  if (now >= tenMinutesBeforeStart) {
+    // 방송 시작 10분 전 이후면 → 방송 세팅 페이지로 이동
+    router.push({ name: 'LawyerBroadcastSetting', params: { scheduleNo } })
+  } else {
+    // 그 전이면 → 일반 상세 페이지로 이동
     router.push({ name: 'LawyerBroadcastsScheduleDetail', params: { scheduleNo } })
   }
 }
@@ -84,6 +102,11 @@ onMounted(fetchSchedules)
             <div class="text-primary fw-semibold">
               🕒 {{ schedule.startTime.slice(11, 16) }} ~ {{ schedule.endTime.slice(11, 16) }}
               <span class="badge bg-secondary ms-2">{{ schedule.categoryName }}</span>
+              <!-- 방송 시작 가능 여부에 따라 배지 표시 -->
+              <span
+                  v-if="isBroadcastReady(schedule.startTime)"
+                  class="badge bg-danger ms-2"
+              >방송 시작 가능</span>
             </div>
           </div>
           <h5 class="fw-bold mb-1 text-dark">{{ schedule.title }}</h5>
