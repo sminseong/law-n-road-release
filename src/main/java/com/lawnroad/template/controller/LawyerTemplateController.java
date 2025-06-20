@@ -50,6 +50,7 @@ public class LawyerTemplateController {
   public ResponseEntity<String> registerTemplate(@ModelAttribute LawyerTemplateRegisterDto dto) {
     Long lawyerNo = 1L; // TODO: 로그인 연동 후 교체
     String type = dto.getType();
+    // 기본 값
     String thumbnailPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
     List<String> uploadedPaths = new ArrayList<>(); // 실패 시 삭제 대상
     
@@ -139,12 +140,12 @@ public class LawyerTemplateController {
       }
       
       // -----------------------------------
-      // [4] 썸네일 저장 (검증 통과 후)
+      // [4] 썸네일 저장 (검증 통과 후) **
       // -----------------------------------
       if (dto.getFile() != null && !dto.getFile().isEmpty()) {
         thumbnailPath = ncpObjectStorageUtil.save(
             dto.getFile(),
-            "uploads/lawyers/" + lawyerNo + "/thumbnails",
+            "uploads/lawyers/" + lawyerNo + "/thumbnails",  //profile
             null
         );
         uploadedPaths.add(thumbnailPath);
@@ -222,6 +223,8 @@ public class LawyerTemplateController {
       @RequestParam(value = "file", required = false) MultipartFile thumbFile,
       @RequestParam(value = "removeThumbnail", required = false) Integer removeThumbnail
   ) {
+    System.out.println("✅ update-meta 도착!");
+    System.out.println("dto: " + dto);
     Long lawyerNo = 1L; // TODO: 인증 적용 후 교체
     dto.setUserNo(lawyerNo);
     
@@ -265,9 +268,7 @@ public class LawyerTemplateController {
    */
   @PostMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<String> updateTemplate(
-      @ModelAttribute LawyerTemplateUpdateDto dto,
-      @RequestParam(value = "file", required = false) MultipartFile thumbFile,
-      @RequestParam(value = "removeThumbnail", required = false) Integer removeThumbnail
+      @ModelAttribute LawyerTemplateUpdateDto dto
   ) {
     Long lawyerNo = 1L; // TODO: 인증 연동 후 교체
     dto.setUserNo(lawyerNo);
@@ -339,11 +340,11 @@ public class LawyerTemplateController {
       }
       
       // 5. 썸네일 처리
-      if (removeThumbnail != null && removeThumbnail == 1) {
+      if (dto.getRemoveThumbnail() != null && dto.getRemoveThumbnail() == 1) {
         finalThumbPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
-      } else if (thumbFile != null && !thumbFile.isEmpty()) {
+      } else if (dto.getFile() != null && !dto.getFile().isEmpty()) {
         finalThumbPath = ncpObjectStorageUtil.save(
-            thumbFile,
+            dto.getFile(),
             "uploads/lawyers/" + lawyerNo + "/thumbnails",
             null
         );
