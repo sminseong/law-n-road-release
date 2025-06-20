@@ -41,7 +41,8 @@ export const makeApiRequest = async (config) => {
             headers: {
                 ...(config.headers || {}),
                 'Authorization': `Bearer ${token}`,
-                ...(isMultipart ? {} : { 'Content-Type': 'application/json' }) // form 데이터면 생략, 아니면 추가
+                'Content-Type': 'application/json'
+                // ...(isMultipart ? {} : { 'Content-Type': 'application/json' }) // form 데이터면 생략, 아니면 추가
             },
             timeout: 10000
         })
@@ -55,7 +56,8 @@ export const makeApiRequest = async (config) => {
                 headers: {
                     ...(config.headers || {}),
                     'Authorization': `Bearer ${newToken}`,
-                    ...(isMultipart ? {} : { 'Content-Type': 'application/json' })
+                    'Content-Type': 'application/json'
+                    // ...(isMultipart ? {} : { 'Content-Type': 'application/json' })
                 },
                 timeout: 10000
             })
