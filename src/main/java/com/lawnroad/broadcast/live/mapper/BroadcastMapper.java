@@ -29,4 +29,6 @@ public interface BroadcastMapper {
     List<BroadcastListDto> selectLiveBroadcasts();
     // 세션ID 가져오기
     String findSessionIdByBroadcastNo(Long broadcastNo);
+    // 해당 스케줄이 방송중인지
+    Long findLiveBroadcastNoByScheduleNo(Long scheduleNo);
 }

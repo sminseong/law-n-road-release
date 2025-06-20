@@ -146,4 +146,11 @@
     <select id="findSessionIdByBroadcastNo" resultType="String">
         SELECT session_id FROM broadcast WHERE no = #{broadcastNo}
     </select>
+    <!-- 스케줄no가 현재 방송중이면 가져오기 -->
+    <select id="findLiveBroadcastNoByScheduleNo" resultType="java.lang.Long">
+        SELECT no
+        FROM broadcast
+        WHERE schedule_no = #{scheduleNo}
+        AND status = 'RECORD'
+    </select>
 </mapper>

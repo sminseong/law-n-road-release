@@ -1,6 +1,7 @@
 package com.lawnroad.broadcast.live.service;
 
 import com.lawnroad.broadcast.live.dto.*;
+import com.lawnroad.broadcast.live.model.BroadcastVo;
 
 import java.util.List;
 
@@ -17,4 +18,6 @@ public interface BroadcastService {
     void reportBroadcast(BroadcastReportRequestDto dto);
     // 방송 리스트
     List<BroadcastListDto> getLiveBroadcasts();
+    // 해당 스케줄이 방송중인지
+    Long findLiveBroadcastNoByScheduleNo(Long scheduleNo);
 }
