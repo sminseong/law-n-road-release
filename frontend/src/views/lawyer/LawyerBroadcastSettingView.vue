@@ -90,7 +90,7 @@ const saveSelectedQuestions = async () => {
       .map(q => q.no);
 
   try {
-    const token = localStorage.getItem('token');
+    const token = await getValidToken();
     await axios.post("/api/preQuestions/save", selectedNos, {
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -104,7 +104,7 @@ const saveSelectedQuestions = async () => {
 // 사전 질문 데이터 불러오기
 const loadPreQuestions = async () => {
   try {
-    const token = localStorage.getItem('token');
+    const token = await getValidToken();
     const res = await axios.get(`/api/Lawyer/broadcasts/schedule/${scheduleNo}/preQuestion`, {
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -135,7 +135,7 @@ const newMessage = ref('');
 // 자동응답 목록 불러오기
 const loadNightbotMessages = async () => {
   try {
-    const token = localStorage.getItem('token');
+    const token = await getValidToken();
     // scheduleNo를 반드시 쿼리파라미터로 포함!
     const scheduleNo = route.params.scheduleNo;
     const res = await axios.get("/api/Lawyer/nightBot", {
@@ -164,7 +164,7 @@ const addNightbotMessage = async () => {
   }
 
   try {
-    const token = localStorage.getItem('token');
+    const token = await getValidToken();
     const scheduleNo = route.params.scheduleNo;
     await axios.post("/api/Lawyer/nightBot", {
       scheduleNo, // 반드시 포함!
@@ -185,7 +185,7 @@ const addNightbotMessage = async () => {
 // 자동응답 삭제
 const deleteNightbotMessage = async (no) => {
   try {
-    const token = localStorage.getItem('token');
+    const token = await getValidToken();
     await axios.delete(`/api/nightBot/${no}`, {
       headers: { Authorization: `Bearer ${token}` }
     });

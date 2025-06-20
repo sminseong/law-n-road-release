@@ -3,6 +3,7 @@ import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import { nextTick, onMounted, ref, watch, computed } from "vue";
 import axios from "axios";
 import { useRoute } from "vue-router";
+import {getValidToken} from "@/libs/axios-auth.js";
 
 const nickname = ref('');
 const inputContent = ref('');
@@ -63,7 +64,7 @@ function autoReloadWhenNeeded() {
 
 
 onMounted(async () => {
-  const token = localStorage.getItem('token');
+  const token = await getValidToken();
   if (token) {
     const payload = JSON.parse(atob(token.split('.')[1]));
     myUserNo.value = payload.no;
@@ -92,7 +93,7 @@ const submitQuestion = async () => {
     alert('내용을 입력해주세요!');
     return;
   }
-  const token = localStorage.getItem('token');
+  const token = await getValidToken();
   if (!token) {
     alert("로그인이 필요합니다!");
     return;
@@ -128,7 +129,7 @@ const deleteQuestion = async (q) => {
     await axios.delete(
         `/api/broadcasts/schedule/${scheduleNo}/preQuestion/${q.no}`,
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          headers: { Authorization: `Bearer ${await getValidToken()}` }
         }
     );
     location.reload();
