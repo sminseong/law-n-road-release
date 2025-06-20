@@ -30,7 +30,11 @@ public interface ClientTemplateService {
    * @param limit 페이지당 항목 수
    * @return 주문 목록 DTO 리스트
    */
-  List<ClientOrderListDto> findOrders(Long userNo, String status, int page, int limit);
+  List<ClientOrderListDto> findOrders(Long userNo,
+                                      String keyword,
+                                      String status,
+                                      int page,
+                                      int limit);
   
   /**
    * 주문 목록의 총 개수를 조회합니다. (페이징용)
@@ -39,7 +43,9 @@ public interface ClientTemplateService {
    * @param status 주문 상태 (선택)
    * @return 주문 개수
    */
-  int countOrders(Long userNo, String status);
+  int countOrders(Long userNo,
+                  String keyword,
+                  String status);
   
   /**
    * 특정 주문의 템플릿 목록을 조회합니다.
@@ -50,7 +56,9 @@ public interface ClientTemplateService {
    * @param isDownloaded 다운로드 여부 (0, 1) - 선택
    * @return 템플릿 상세 DTO 리스트
    */
-  List<ClientOrderTemplateDto> findTemplatesByOrder(Long orderNo, String type, Long categoryNo, Integer isDownloaded);
+  List<ClientOrderTemplateDto> findTemplatesByOrder(
+      Long orderNo, String type, Long categoryNo, Integer isDownloaded, String keyword
+  );
   
   /**
    * 특정 주문의 템플릿 개수를 조회합니다. (페이징용)
@@ -61,7 +69,9 @@ public interface ClientTemplateService {
    * @param isDownloaded 다운로드 여부 - 선택
    * @return 템플릿 개수
    */
-  int countTemplatesByOrder(Long orderNo, String type, Long categoryNo, Integer isDownloaded);
+  int countTemplatesByOrder(
+      Long orderNo, String type, Long categoryNo, Integer isDownloaded, String keyword
+  );
   
   /**
    * 에디터 기반 템플릿 상세 조회
@@ -86,4 +96,7 @@ public interface ClientTemplateService {
   
   // 개별 템플릿 기준
   boolean checkIsDownloaded(Long orderNo, Long tmplNo);
+  
+  // 사용자 마이페이지 -> 최근 5건의 구매내역
+  List<ClientOrderListDto> findRecentOrders(Long userNo);
 }

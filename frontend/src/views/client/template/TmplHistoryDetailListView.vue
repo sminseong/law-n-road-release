@@ -15,6 +15,7 @@ const isDownloaded = ref(false)
 const rows = ref([])
 const currentPage = ref(1)
 const totalPages = ref(1)
+const currentFilters = ref({})
 
 // 3) 필터 설정
 const filters = ref([
@@ -42,7 +43,6 @@ const filters = ref([
     options: ['전체', '다운로드 완료', '미다운로드']
   }
 ])
-const currentFilters = ref({})
 
 // 4) 매핑 유틸리티들
 // 4.1) 유형
@@ -80,21 +80,28 @@ function mapDownloadedLabelToValue(label) {
   return null
 }
 
+// 4.4. 필터 → API 쿼리 변환
+function normalizeFilters(f) {
+  return {
+    keyword: f.keyword?.trim() || undefined,
+    type: f.type ? typeLabelToCode[f.type] : undefined,
+    categoryNo: f.categoryName ? mapCategoryNameToNo(f.categoryName) : undefined,
+    isDownloaded: f.isDownloaded ? mapDownloadedLabelToValue(f.isDownloaded) : undefined
+  }
+}
+
 // 5) API 호출: 목록 + 페이징
 async function fetchItems(page = 1, query = {}) {
-  const params = { page, limit: 10 }
-  // 필터 한글 → API 파라미터로 변환
-  if (query.type)        params.type        = mapTypeLabelToCode(query.type)
-  if (query.categoryName) params.categoryNo = mapCategoryNameToNo(query.categoryName)
-  if (query.isDownloaded != null)
-    params.isDownloaded = mapDownloadedLabelToValue(query.isDownloaded)
+  const params = {
+    page,
+    limit: 10,
+    ...normalizeFilters(query)
+  }
 
   const res = await http.get(
       `/api/client/templates/orders/${orderNo}/items`,
       params
   )
-  // merged API returns { items, totalPages }
-
   console.log('상세구매내역 (list) res:', res.data)
 
   rows.value       = res.data.templates
@@ -104,18 +111,13 @@ async function fetchItems(page = 1, query = {}) {
 }
 
 // 6) 핸들러들
+function handleFilterChange(newFilters) {
+  currentFilters.value = { ...newFilters }
+  fetchItems(1, currentFilters.value)
+}
+
 function handlePageChange(page) {
   fetchItems(page, currentFilters.value)
-}
-function handleFilterChange(newFilters) {
-  // '전체' 건 필터에서 제외
-  const mapped = { ...newFilters }
-  if (mapped.type === '전체')       delete mapped.type
-  if (mapped.categoryName === '전체') delete mapped.categoryName
-  if (mapped.isDownloaded === '전체') delete mapped.isDownloaded
-
-  currentFilters.value = mapped
-  fetchItems(1, mapped)
 }
 
 // 7) 행 클릭 시 단일 상세 페이지로 이동
@@ -183,6 +185,7 @@ const handleRefund = async () => {
           :filters="filters"
           :current-page="currentPage"
           :total-pages="totalPages"
+          :show-search-input="true"
           @update:filters="handleFilterChange"
           @page-change="handlePageChange"
           @row-click="handleRowClick"

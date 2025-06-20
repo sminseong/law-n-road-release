@@ -70,9 +70,22 @@ public class ClientTemplateServiceImpl implements ClientTemplateService {
    * @return 주문 목록 DTO 리스트
    */
   @Override
-  public List<ClientOrderListDto> findOrders(Long userNo, String status, int page, int limit) {
+  public List<ClientOrderListDto> findOrders(
+      Long userNo,
+      String keyword,
+      String status,
+      int page,
+      int limit
+  ) {
     int offset = (page - 1) * limit;
-    return clientTemplateMapper.selectOrdersByUserNo(userNo, status, limit, offset);
+    // ↕️ 여기서 반드시 status 먼저, 그 다음 keyword
+    return clientTemplateMapper.selectOrdersByUserNo(
+        userNo,    // @Param("userNo")
+        status,    // @Param("status")
+        keyword,   // @Param("keyword")
+        limit,     // @Param("limit")
+        offset     // @Param("offset")
+    );
   }
   
   /**
@@ -83,8 +96,17 @@ public class ClientTemplateServiceImpl implements ClientTemplateService {
    * @return 주문 개수
    */
   @Override
-  public int countOrders(Long userNo, String status) {
-    return clientTemplateMapper.countOrdersByUserNo(userNo, status);
+  public int countOrders(
+      Long userNo,
+      String keyword,
+      String status
+  ) {
+    // ↕️ Mapper 순서(userNo, keyword, status)와 동일
+    return clientTemplateMapper.countOrdersByUserNo(
+        userNo,    // @Param("userNo")
+        keyword,   // @Param("keyword")
+        status     // @Param("status")
+    );
   }
   
   /**
@@ -97,8 +119,10 @@ public class ClientTemplateServiceImpl implements ClientTemplateService {
    * @return 템플릿 상세 DTO 리스트
    */
   @Override
-  public List<ClientOrderTemplateDto> findTemplatesByOrder(Long orderNo, String type, Long categoryNo, Integer isDownloaded) {
-    return clientTemplateMapper.selectTemplatesByOrderNo(orderNo, type, categoryNo, isDownloaded);
+  public List<ClientOrderTemplateDto> findTemplatesByOrder(
+      Long orderNo, String type, Long categoryNo, Integer isDownloaded, String keyword
+  ) {
+    return clientTemplateMapper.selectTemplatesByOrderNo(orderNo, type, categoryNo, isDownloaded, keyword);
   }
   
   /**
@@ -111,8 +135,10 @@ public class ClientTemplateServiceImpl implements ClientTemplateService {
    * @return 템플릿 개수
    */
   @Override
-  public int countTemplatesByOrder(Long orderNo, String type, Long categoryNo, Integer isDownloaded) {
-    return clientTemplateMapper.countTemplatesByOrderNo(orderNo, type, categoryNo, isDownloaded);
+  public int countTemplatesByOrder(
+      Long orderNo, String type, Long categoryNo, Integer isDownloaded, String keyword
+  ) {
+    return clientTemplateMapper.countTemplatesByOrderNo(orderNo, type, categoryNo, isDownloaded, keyword);
   }
   
   // 에디터 기반 템플릿 상세 조회
@@ -145,5 +171,11 @@ public class ClientTemplateServiceImpl implements ClientTemplateService {
   @Override
   public boolean checkIsDownloaded(Long orderNo, Long tmplNo) {
     return clientTemplateMapper.selectIsDownloadedByOrderNoAndTmplNo(orderNo, tmplNo);
+  }
+  
+  // 사용자 마이페이지 -> 최근 5건의 구매내역
+  @Override
+  public List<ClientOrderListDto> findRecentOrders(Long userNo) {
+    return clientTemplateMapper.selectRecentOrders(userNo);
   }
 }

@@ -70,12 +70,6 @@ async function fetchTemplates(filters, pageNo) {
       limit: 10
     }
 
-    const token = await getValidToken()
-    if (!token) {
-      alert('로그인이 필요합니다.')
-      return
-    }
-
     // 예전 코드
     const res = await http.get('/api/lawyer/templates', query)
 

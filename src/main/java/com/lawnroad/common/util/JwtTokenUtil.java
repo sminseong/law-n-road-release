@@ -55,7 +55,7 @@ public class  JwtTokenUtil {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(key).setAllowedClockSkewSeconds(60).build().parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
@@ -66,6 +66,7 @@ public class  JwtTokenUtil {
     public String getClientIdFromToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
+                .setAllowedClockSkewSeconds(60) // ⏱ 허용 시차: 60초
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
@@ -76,6 +77,7 @@ public class  JwtTokenUtil {
     public Long getUserNoFromToken(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
+                .setAllowedClockSkewSeconds(60) // ⏱ 허용 시차: 60초
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
@@ -88,6 +90,7 @@ public class  JwtTokenUtil {
     public void printPayload(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
+                .setAllowedClockSkewSeconds(60) // ⏱ 허용 시차: 60초
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
@@ -102,6 +105,7 @@ public class  JwtTokenUtil {
     public String getRoleFromToken(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
+                .setAllowedClockSkewSeconds(60) // ⏱ 허용 시차: 60초
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
@@ -111,6 +115,7 @@ public class  JwtTokenUtil {
     public String getNicknameFromToken(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
+                .setAllowedClockSkewSeconds(60) // ⏱ 허용 시차: 60초
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
@@ -120,6 +125,7 @@ public class  JwtTokenUtil {
     public Claims parseToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
+                .setAllowedClockSkewSeconds(60) // ⏱ 허용 시차: 60초
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
