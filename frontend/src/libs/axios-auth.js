@@ -33,6 +33,8 @@ export const makeApiRequest = async (config) => {
         if (!token) return null
     }
 
+    const isMultipart = config.data instanceof FormData
+
     try {
         return await axios({
             ...config,
@@ -40,6 +42,7 @@ export const makeApiRequest = async (config) => {
                 ...(config.headers || {}),
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
+                // ...(isMultipart ? {} : { 'Content-Type': 'application/json' }) // form 데이터면 생략, 아니면 추가
             },
             timeout: 10000
         })
@@ -54,6 +57,7 @@ export const makeApiRequest = async (config) => {
                     ...(config.headers || {}),
                     'Authorization': `Bearer ${newToken}`,
                     'Content-Type': 'application/json'
+                    // ...(isMultipart ? {} : { 'Content-Type': 'application/json' })
                 },
                 timeout: 10000
             })
