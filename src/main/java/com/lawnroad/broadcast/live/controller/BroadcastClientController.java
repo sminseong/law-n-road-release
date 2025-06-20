@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/client/broadcast")
@@ -61,5 +62,24 @@ public class BroadcastClientController {
     public ResponseEntity<List<BroadcastListDto>> getLiveBroadcasts() {
         List<BroadcastListDto> liveList = broadcastService.getLiveBroadcasts();
         return ResponseEntity.ok(liveList);
+    }
+    // 라이브 중인지 확인
+    @GetMapping("/live-check/{scheduleNo}")
+    public ResponseEntity<Map<String, Object>> checkLiveBroadcast(@PathVariable Long scheduleNo) {
+        Long broadcastNo = broadcastService.findLiveBroadcastNoByScheduleNo(scheduleNo);
+
+        if (broadcastNo != null) {
+            return ResponseEntity.ok(Map.of(
+                    "live", true,
+                    "broadcastNo", broadcastNo
+            ));
+        } else {
+            return ResponseEntity.ok(Map.of("live", false));
+        }
+    }
+
+    @GetMapping("/expire-overdue")
+    public void expireOverdueBroadcasts() {
+        broadcastService.expireOverdueBroadcasts();
     }
 }

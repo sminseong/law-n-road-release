@@ -58,15 +58,17 @@ const calendarOptions = ref({
     timeRange += `]`
 
     const lawyer = original.lawyerName || ''
+    const isLive = info.event.extendedProps.isLive === true
     const tooltip = `${timeRange} ${title} (${lawyer} 변호사)`
 
     return {
       html: `
-        <div title="${tooltip}" class="fc-custom-event">
-          <div class="fc-event-title text-dark fw-semibold">${title}</div>
-          <div class="fc-lawyer-name text-muted small">${lawyer} 변호사</div>
-        </div>
-      `
+    <div title="${tooltip}" class="fc-custom-event">
+      ${isLive ? '<div class="live-badge">LIVE</div>' : ''}
+      <div class="fc-event-title text-dark fw-semibold">${title}</div>
+      <div class="fc-lawyer-name text-muted small">${lawyer} 변호사</div>
+    </div>
+  `
     }
   }
 })
@@ -82,7 +84,22 @@ const fetchMonthlySchedule = async () => {
     })
 
     if (res?.data) {
-      events.value = res.data.map((ev, index) => {
+      const checkLiveList = await Promise.all(
+          res.data.map(ev =>
+              makeApiRequest({
+                method: 'get',
+                url: `/api/client/broadcast/live-check/${ev.scheduleNo}`
+              }).then(liveRes => ({
+                ...ev,
+                isLive: liveRes.data.live
+              })).catch(() => ({
+                ...ev,
+                isLive: false
+              }))
+          )
+      )
+      console.log("✅ 이벤트 리스트", events.value)
+      events.value = checkLiveList.map((ev, index) => {
         const startDateOnly = ev.startTime.slice(0, 10)
         return {
           title: ev.title,
@@ -92,6 +109,7 @@ const fetchMonthlySchedule = async () => {
           textColor: '#212529',
           extendedProps: {
             lawyerName: ev.lawyerName,
+            isLive: ev.isLive,
             original: ev
           }
         }
@@ -105,7 +123,21 @@ const fetchMonthlySchedule = async () => {
 }
 
 
-onMounted(fetchMonthlySchedule)
+onMounted(async () => {
+  try {
+    // 방송 종료 상태 갱신 먼저 수행
+    await makeApiRequest({
+      method: 'get',
+      url: '/api/client/broadcast/expire-overdue'
+    })
+    console.log('⏱ 방송 상태 갱신 완료')
+  } catch (err) {
+    console.warn('방송 만료 처리 실패:', err)
+  }
+
+  // 갱신 후 스케줄 목록 불러오기
+  await fetchMonthlySchedule()
+})
 </script>
 
 <template>
@@ -187,5 +219,19 @@ onMounted(fetchMonthlySchedule)
 }
 ::v-deep(.fc-day-past .fc-event) {
   opacity: 0.5;
+}
+::v-deep(.live-badge) {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  background-color: #dc3545;
+  color: white;
+  font-size: 7px;
+  font-weight: bold;
+  padding: 2px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+  z-index: 1;
 }
 </style>

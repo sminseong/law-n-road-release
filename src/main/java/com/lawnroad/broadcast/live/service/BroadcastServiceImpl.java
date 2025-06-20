@@ -157,4 +157,15 @@ public class BroadcastServiceImpl implements BroadcastService {
 
         return list;
     }
+
+    @Override
+    public Long findLiveBroadcastNoByScheduleNo(Long scheduleNo) {
+        return broadcastMapper.findLiveBroadcastNoByScheduleNo(scheduleNo);
+    }
+
+    @Override
+    @Transactional
+    public void expireOverdueBroadcasts() {
+        broadcastMapper.expireOverdueBroadcasts();
+    }
 }
