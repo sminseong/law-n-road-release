@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 @Component
-public class JwtTokenUtil {
+public class  JwtTokenUtil {
 //정수만의초강력비밀키정수만의초강력비밀키
     private final String SECRET_KEY = "sdkfjkdljfweifhaghghfkgdjkfhkdsjhfuehfegfdhfgsdhfhjhgshd"; // 최소 256bit
     private final SecretKey key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
