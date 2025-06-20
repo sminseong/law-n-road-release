@@ -33,7 +33,20 @@ async function fetchOrders(filtersObj, pageNo) {
   const res = await http.get('/api/client/templates/orders', params)
   console.log(res)
 
-  rows.value = res.data.orders
+  // 상태 한글 변환 맵
+  const statusLabelMap = {
+    ORDERED: '결제대기',
+    PAID: '결제완료',
+    CANCELED: '환불'
+  }
+
+  // rows에 한글 상태 필드 추가
+  rows.value = res.data.orders.map((o) => ({
+    ...o,
+    status: statusLabelMap[o.status] || o.status
+  }))
+
+  // rows.value = res.data.orders
   totalPages.value = res.data.totalPages
   currentPage.value = pageNo
   isDownloaded.value = res.data.isDownloaded
@@ -92,15 +105,7 @@ onMounted(() => fetchOrders(currentFilters.value, currentPage.value))
             },
             {
               label: '주문상태',
-              key: 'status',
-              formatter: (v) => {
-                const map = {
-                  ORDERED: '결제완료',
-                  CANCELED: '취소',
-                  REFUNDED: '환불'
-                }
-                return map[v] || v
-              }
+              key: 'status'  // fetchOrders 내부에서 매핑 진행
             },
           ]"
           :show-search-input="true"
