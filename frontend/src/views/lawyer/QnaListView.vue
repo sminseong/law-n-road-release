@@ -79,12 +79,6 @@ watch(page, () => loadList())
     </div>
     <!-- 답변 가능한 Q&A 목록 섹션 -->
     <section class="qa-section py-5 px-3 px-lg-5 mt-0">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 class="fw-bold fs-3">답변 가능한 상담글</h2>
-          <p class="text-muted mb-0">답변 가능한 Q&A를 확인하고, 답변을 작성해주세요.</p>
-        </div>
-      </div>
 
       <div v-if="!isLoading && list.length === 0" class="text-center text-muted py-5">
         현재 답변 가능한 글이 없습니다.
