@@ -1,7 +1,5 @@
 package com.lawnroad.broadcast.chat.dto;
-
 import lombok.*;
-
 
 import java.time.LocalDateTime;
 

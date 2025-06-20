@@ -15,6 +15,11 @@ public class ChatReportServiceImpl implements ChatReportService{
 
     @Override
     public void saveChatReport(ChatReportDTO dto) {
+        // nickname이 null이거나 공백이면 no를 nickname에 세팅
+        if (dto.getNickname() == null || dto.getNickname().trim().isEmpty()) {
+            dto.setNickname(String.valueOf(dto.getUserNo()));
+        }
         chatReportMapper.insertChatReport(dto);
     }
+
 }

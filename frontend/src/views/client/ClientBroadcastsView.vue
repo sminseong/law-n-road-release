@@ -6,7 +6,7 @@ import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import {OpenVidu} from "openvidu-browser";
 import axios from "axios";
 import {useRoute} from "vue-router";
-import {getValidToken} from "@/libs/axios-auth.js";
+import {getValidToken, makeApiRequest} from "@/libs/axios-auth.js";
 
 export default defineComponent({
   components: {ClientFrame},
@@ -230,21 +230,6 @@ export default defineComponent({
       return nicknameColors.value[nick];
     }
 
-    //  const fetchMyNo = async () => {
-    //   try {
-    //     const res = await makeApiRequest({method: 'get', url: "/api/client/my-no",})
-    //     if (res?.data) {
-    //       myNo.value = res.data
-    //     }
-    //   } catch (err) {
-    //     console.error('프로필 조회 실패:', err)
-    //   }
-    // }
-
-    //
-
-
-
     async function fetchMyNo() {
       const token = await getValidToken();
       if (!token) {
@@ -257,9 +242,6 @@ export default defineComponent({
       myNo.value = res.data;
       return true;
     }
-
-
-
 
     // STOMP 연결 및 입장 메시지 전송
     const connect = () => {
@@ -312,9 +294,6 @@ export default defineComponent({
       });
     };
 
-
-
-
     const sendMessage = async () => {
       const trimmed = message.value.trim();
       if (!trimmed || !stompClient.value?.connected) return;
@@ -344,9 +323,6 @@ export default defineComponent({
         alert('메시지 전송 중 오류가 발생했습니다.');
       }
     }
-
-
-
 
     // 스크롤 자동 하단 이동
     const scrollToBottom = () => {
@@ -455,6 +431,7 @@ export default defineComponent({
         window.removeEventListener('mousedown', handlePreQClickOutside);
       }
     };
+
 
 
     return {
@@ -709,7 +686,7 @@ export default defineComponent({
                     userSelect: 'text',
                     cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
                     fontWeight: 'bold'
-                    }">👑 {{ msg.nickname }} 변호사
+                    }">👑 {{ broadcastInfo.lawyerName }} 변호사
                 <span v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
                       class="nickname-dropdown"
                       style="position:absolute;top:120%;left:0;z-index:10000;">

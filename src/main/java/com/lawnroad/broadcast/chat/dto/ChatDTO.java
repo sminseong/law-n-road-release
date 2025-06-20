@@ -15,6 +15,7 @@ public class ChatDTO {
     /** 사용자 번호 (user_no) */
     private Long userNo;
 
+    private String name;
     /// 방송 번호
     private Long broadcastNo;
 
