@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
+import {makeApiRequest} from "@/libs/axios-auth.js";
 
 const schedules = ref([])
 const groupedSchedules = ref({})
@@ -10,19 +11,21 @@ const router = useRouter()
 
 const fetchSchedules = async () => {
   try {
-    const token = localStorage.getItem('token')
-    const res = await axios.get('/api/lawyer/schedule/my', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+    const res = await makeApiRequest({
+      method: 'get',
+      url: '/api/lawyer/schedule/my'
     })
-    const futureSchedules = filterFutureSchedules(res.data)
-    schedules.value = futureSchedules
-    groupedSchedules.value = groupByDate(futureSchedules)
+
+    if (res?.data) {
+      const futureSchedules = filterFutureSchedules(res.data)
+      schedules.value = futureSchedules
+      groupedSchedules.value = groupByDate(futureSchedules)
+    }
   } catch (err) {
     console.error('방송 스케줄 로딩 실패:', err)
   }
 }
+
 
 // 현재 시간 이후인 스케줄만 필터링
 const filterFutureSchedules = (items) => {

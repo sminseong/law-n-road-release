@@ -3,6 +3,7 @@ import LawyerFrame from "@/components/layout/lawyer/LawyerFrame.vue";
 import { onMounted, ref, computed } from "vue";
 import axios from "axios";
 import {useRoute, useRouter} from "vue-router";
+import {getValidToken, makeApiRequest} from "@/libs/axios-auth.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -12,10 +13,10 @@ const scheduleDetail = ref(null);
 const isScheduleLoading = ref(true);
 const isScheduleError = ref(false);
 
-// 🔽 스케줄 상세 정보 불러오기
+// 스케줄 상세 정보 불러오기
 const loadScheduleDetail = async () => {
   try {
-    const token = localStorage.getItem('token');
+    const token = await getValidToken()
     const { data } = await axios.get(`/api/lawyer/schedule/my/${scheduleNo}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -28,7 +29,8 @@ const loadScheduleDetail = async () => {
   }
 };
 
-// ⏰ 시간 포맷 도우미
+
+// 시간 포맷 도우미
 const formatTime = (datetime) => {
   if (!datetime) return '';
   const d = new Date(datetime);

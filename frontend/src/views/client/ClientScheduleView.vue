@@ -6,6 +6,7 @@ import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
+import {makeApiRequest} from "@/libs/axios-auth.js";
 
 const router = useRouter()
 const calendarRef = ref(null)
@@ -74,26 +75,35 @@ const fetchMonthlySchedule = async () => {
   try {
     const now = new Date()
     const month = now.toISOString().slice(0, 7)
-    const res = await axios.get(`/api/client/schedule/month?month=${month}`)
-    events.value = res.data.map((ev, index) => {
-      const startDateOnly = ev.startTime.slice(0, 10)
-      return {
-        title: ev.title,
-        start: startDateOnly,
-        backgroundColor: colors[index % colors.length],
-        borderColor: '#dee2e6',
-        textColor: '#212529',
-        extendedProps: {
-          lawyerName: ev.lawyerName,
-          original: ev
-        }
-      }
+
+    const res = await makeApiRequest({
+      method: 'get',
+      url: `/api/client/schedule/month?month=${month}`
     })
-    calendarOptions.value.events = events.value
+
+    if (res?.data) {
+      events.value = res.data.map((ev, index) => {
+        const startDateOnly = ev.startTime.slice(0, 10)
+        return {
+          title: ev.title,
+          start: startDateOnly,
+          backgroundColor: colors[index % colors.length],
+          borderColor: '#dee2e6',
+          textColor: '#212529',
+          extendedProps: {
+            lawyerName: ev.lawyerName,
+            original: ev
+          }
+        }
+      })
+
+      calendarOptions.value.events = events.value
+    }
   } catch (err) {
     console.error('스케줄 로드 실패:', err)
   }
 }
+
 
 onMounted(fetchMonthlySchedule)
 </script>
