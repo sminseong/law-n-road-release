@@ -153,4 +153,15 @@
         WHERE schedule_no = #{scheduleNo}
         AND status = 'RECORD'
     </select>
+    <!-- 스케줄 end_time보다 30분이 지났으나 여전히 RECORD 인 컬럼 찾아서 DONE 처리 -->
+    <update id="expireOverdueBroadcasts">
+        UPDATE broadcast b
+        JOIN broadcast_schedule s ON b.schedule_no = s.no
+        SET
+        b.status = 'DONE',
+        b.end_time = TIMESTAMPADD(MINUTE, 30, s.end_time)
+        WHERE
+        b.status = 'RECORD'
+        AND TIMESTAMPADD(MINUTE, 30, s.end_time) &lt;= NOW()
+    </update>
 </mapper>

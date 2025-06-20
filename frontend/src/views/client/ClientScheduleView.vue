@@ -123,7 +123,21 @@ const fetchMonthlySchedule = async () => {
 }
 
 
-onMounted(fetchMonthlySchedule)
+onMounted(async () => {
+  try {
+    // 방송 종료 상태 갱신 먼저 수행
+    await makeApiRequest({
+      method: 'get',
+      url: '/api/client/broadcast/expire-overdue'
+    })
+    console.log('⏱ 방송 상태 갱신 완료')
+  } catch (err) {
+    console.warn('방송 만료 처리 실패:', err)
+  }
+
+  // 갱신 후 스케줄 목록 불러오기
+  await fetchMonthlySchedule()
+})
 </script>
 
 <template>

@@ -77,4 +77,9 @@ public class BroadcastClientController {
             return ResponseEntity.ok(Map.of("live", false));
         }
     }
+
+    @GetMapping("/expire-overdue")
+    public void expireOverdueBroadcasts() {
+        broadcastService.expireOverdueBroadcasts();
+    }
 }

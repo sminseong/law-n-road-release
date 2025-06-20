@@ -20,4 +20,6 @@ public interface BroadcastService {
     List<BroadcastListDto> getLiveBroadcasts();
     // 해당 스케줄이 방송중인지
     Long findLiveBroadcastNoByScheduleNo(Long scheduleNo);
+    // 방송종료시간 30분 지난방송 자동 종료처리
+    void expireOverdueBroadcasts();
 }
