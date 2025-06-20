@@ -6,8 +6,7 @@ import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import {OpenVidu} from "openvidu-browser";
 import axios from "axios";
 import {useRoute} from "vue-router";
-import {getValidToken, makeApiRequest} from "@/libs/axios-auth.js";
-import HttpRequester from "@/libs/HttpRequester.js";
+import {getValidToken} from "@/libs/axios-auth.js";
 
 export default defineComponent({
   components: {ClientFrame},
@@ -224,7 +223,7 @@ export default defineComponent({
 
 
     async function fetchMyNo() {
-      const token = localStorage.getItem("token");
+      const token = await getValidToken();
       if (!token) {
         alert("로그인이 필요합니다!");
         return false;
@@ -241,7 +240,7 @@ export default defineComponent({
 
     // STOMP 연결 및 입장 메시지 전송
     const connect = () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
         alert("로그인이 필요합니다!");
         return;
@@ -290,28 +289,7 @@ export default defineComponent({
       });
     };
 
-    // 채팅 메시지 전송 (type: "CHAT"만 전달)
-    // const sendMessage = () => {
-    //   const trimmed = message.value.trim();
-    //   const token = localStorage.getItem('token');
-    //   if (!trimmed || !stompClient.value?.connected) return;
-    //   if (!token) {
-    //     alert("로그인이 필요합니다!");
-    //     return;
-    //   }
-    //   stompClient.value.publish({
-    //     destination: "/app/chat.sendMessage",
-    //     body: JSON.stringify({
-    //       broadcastNo: broadcastNo.value,
-    //       message: trimmed,
-    //     }),
-    //     headers: {
-    //       Authorization: `Bearer ${token}`,
-    //     },
-    //   });
-    //   message.value = "";
-    //   scrollToBottom();
-    // };
+
 
 
     const sendMessage = async () => {
@@ -384,7 +362,7 @@ export default defineComponent({
 
     const confirmReport = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = await getValidToken();
         await axios.post(
             "/api/client/chat/report",
             {
@@ -419,7 +397,7 @@ export default defineComponent({
     // API 호출
     const fetchPreQuestions = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = await getValidToken();
         const res = await axios.get(`/api/client/broadcasts/schedule/${broadcastNo.value}`, {
           headers: {Authorization: `Bearer ${token}`}
         });
