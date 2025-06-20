@@ -96,4 +96,7 @@ public interface ClientTemplateService {
   
   // 개별 템플릿 기준
   boolean checkIsDownloaded(Long orderNo, Long tmplNo);
+  
+  // 사용자 마이페이지 -> 최근 5건의 구매내역
+  List<ClientOrderListDto> findRecentOrders(Long userNo);
 }

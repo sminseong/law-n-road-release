@@ -92,4 +92,7 @@ public interface ClientTemplateMapper {
       @Param("orderNo") Long orderNo,
       @Param("tmplNo") Long tmplNo
   );
+  
+  // 사용자 마이페이지 -> 최근 구매내역 5건
+  List<ClientOrderListDto> selectRecentOrders(@Param("userNo") Long userNo);
 }

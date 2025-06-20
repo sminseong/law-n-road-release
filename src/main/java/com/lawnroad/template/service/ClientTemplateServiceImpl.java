@@ -172,4 +172,10 @@ public class ClientTemplateServiceImpl implements ClientTemplateService {
   public boolean checkIsDownloaded(Long orderNo, Long tmplNo) {
     return clientTemplateMapper.selectIsDownloadedByOrderNoAndTmplNo(orderNo, tmplNo);
   }
+  
+  // 사용자 마이페이지 -> 최근 5건의 구매내역
+  @Override
+  public List<ClientOrderListDto> findRecentOrders(Long userNo) {
+    return clientTemplateMapper.selectRecentOrders(userNo);
+  }
 }

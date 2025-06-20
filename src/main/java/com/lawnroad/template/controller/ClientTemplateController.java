@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -136,5 +137,18 @@ public class ClientTemplateController {
     return ResponseEntity.ok(Map.of("isDownloaded", isDownloaded));
   }
   
-  
+  // 사용자 마이페이지 -> 최근 5건의 구매내역
+  @GetMapping("/orders/recent")
+  public ResponseEntity<Map<String, Object>> getRecentOrders() {
+    // System.out.println("test");
+    
+    // TODO : 사용자 NO 하드코딩
+    List<ClientOrderListDto> orders = clientTemplateService.findRecentOrders(1L);
+    // System.out.println(orders);
+    
+    Map<String, Object> result = new HashMap<>();
+    result.put("orders", orders);
+    
+    return ResponseEntity.ok(result);
+  }
 }
