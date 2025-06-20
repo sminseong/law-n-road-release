@@ -26,6 +26,7 @@ public class ClientTemplateController {
    */
   @GetMapping("/orders")
   public ResponseEntity<ClientOrderListResponseDto> getOrders(
+      @RequestParam(required = false) String keyword,
       @RequestParam(required = false) String status,
       @RequestParam(defaultValue = "1") int page,
       @RequestParam(defaultValue = "10") int limit
@@ -33,13 +34,15 @@ public class ClientTemplateController {
     // TODO: 유저 번호는 하드코딩
     Long userNo = 1L;
     
-    // 목록 + 총 개수 조회
-    List<ClientOrderListDto> list = clientTemplateService.findOrders(userNo, status, page, limit);
-    int totalCount = clientTemplateService.countOrders(userNo, status);
+    // System.out.println(keyword +' '+ status+' '+page+' '+limit);
+    
+    // 1) 페이징된 주문 목록(검색어+상태 필터 적용)
+    List<ClientOrderListDto> list = clientTemplateService.findOrders(userNo, keyword, status, page, limit);
+    int totalCount = clientTemplateService.countOrders(userNo, keyword, status);
     
     // System.out.println(list);
     
-    // 총 페이지 계산
+    // 2) 전체 건수(검색어+상태 필터 적용)
     int totalPages = (int) Math.ceil((double) totalCount / limit);
     
     // 응답 객체 구성

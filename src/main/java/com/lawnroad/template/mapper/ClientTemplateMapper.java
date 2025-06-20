@@ -42,14 +42,20 @@ public interface ClientTemplateMapper {
   );
   
   // 주문 목록 조회
-  List<ClientOrderListDto> selectOrdersByUserNo(@Param("userNo") Long userNo,
-                                                @Param("status") String status,
-                                                @Param("limit") int limit,
-                                                @Param("offset") int offset);
+  List<ClientOrderListDto> selectOrdersByUserNo(
+      @Param("userNo")   Long   userNo,
+      @Param("status")   String status,
+      @Param("keyword")  String keyword,
+      @Param("limit")    int    limit,
+      @Param("offset")   int    offset
+  );
   
   // 주문 개수 조회
-  int countOrdersByUserNo(@Param("userNo") Long userNo,
-                          @Param("status") String status);
+  int countOrdersByUserNo(
+      @Param("userNo")   Long   userNo,
+      @Param("keyword")  String keyword,
+      @Param("status")   String status
+  );
   
   // 주문 상세 템플릿 목록
   List<ClientOrderTemplateDto> selectTemplatesByOrderNo(@Param("orderNo") Long orderNo,
