@@ -6,7 +6,7 @@ import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import {OpenVidu} from "openvidu-browser";
 import axios from "axios";
 import {useRoute} from "vue-router";
-import { makeApiRequest , refreshAccessToken} from '@/libs/axios-auth.js';
+import { makeApiRequest } from '@/libs/axios-auth.js';
 
 export default defineComponent({
   components: {ClientFrame},
