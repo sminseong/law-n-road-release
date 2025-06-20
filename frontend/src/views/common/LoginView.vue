@@ -52,14 +52,10 @@ const submitLogin = async () => {
     localStorage.setItem('nickname', nickname)
     localStorage.setItem('no', no)
 
-
-
-
     console.log('🚨🚨🚨 localStorage 저장 완료! 🚨🚨🚨')
     console.log('TOKEN:', localStorage.getItem('token'))
     console.log('ACCOUNT TYPE:', localStorage.getItem('accountType'))
     console.log('no :', localStorage.getItem('no'))
-
 
     // localStorage 저장 확인 로그
     console.log('💾 localStorage 저장된 데이터:', {
@@ -71,8 +67,6 @@ const submitLogin = async () => {
     })
 
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`
-
-
 
     if (tab.value === 'lawyer') {
       try {
@@ -123,22 +117,6 @@ function parseJwt(token) {
     return null
   }
 }
-
-// function parseJwt(token) {
-//   try {
-//     const base64 = token.split('.')[1]
-//     const json = decodeURIComponent(
-//         atob(base64)
-//             .split('')
-//             .map((c) => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'))
-//             .join('')
-//     )
-//     return JSON.parse(json)
-//   } catch (e) {
-//     console.error('❌ JWT 파싱 실패:', e)
-//     return null
-//   }
-// }
 
 </script>
 
