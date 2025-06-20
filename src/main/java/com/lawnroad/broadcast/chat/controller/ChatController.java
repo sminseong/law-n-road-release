@@ -32,7 +32,7 @@ public class ChatController {
 
         String nickname = claims.get("nickname", String.class);
         if (nickname == null || nickname.trim().isEmpty()) {
-            nickname = chatDTO.getName();
+            nickname = chatDTO.getName()+" 변호사";
         }
         chatDTO.setNickname(nickname);
         chatDTO.setType("ENTER");

@@ -7,6 +7,8 @@ import {OpenVidu} from "openvidu-browser";
 import axios from "axios";
 import {useRoute} from "vue-router";
 import {getValidToken, makeApiRequest} from "@/libs/axios-auth.js";
+import { computed } from 'vue';
+
 
 export default defineComponent({
   components: {ClientFrame},
@@ -89,7 +91,7 @@ export default defineComponent({
         })
 
         if (res?.data) {
-          const { sessionId, token, startTime } = res.data
+          const {sessionId, token, startTime} = res.data
           streamStartTime = new Date(startTime) // 방송 시작 시간 저장
 
           console.log("👁️ 시청자 sessionId:", sessionId)
@@ -109,7 +111,7 @@ export default defineComponent({
           session.value.on("connectionDestroyed", updateViewerCount)
 
           // 스트림 수신 처리
-          session.value.on("streamCreated", ({ stream }) => {
+          session.value.on("streamCreated", ({stream}) => {
             console.log("📡 시청자: streamCreated 발생")
 
             const subscriber = session.value.subscribe(stream, undefined)
@@ -431,8 +433,11 @@ export default defineComponent({
         window.removeEventListener('mousedown', handlePreQClickOutside);
       }
     };
-
-
+    const selectedUserToShow = computed(() => {
+      return selectedUser.value && selectedUser.value.trim() !== ''
+          ? selectedUser.value
+          : broadcastInfo.value.lawyerName+" 변호사";
+    });
 
     return {
       videoContainer,
@@ -462,7 +467,7 @@ export default defineComponent({
       submitReport,
       myNo,
       showPreQDropdown, preQuestions, isPreQLoading,
-      togglePreQDropdown, preQBtnRef, preQDropdownRef,
+      togglePreQDropdown, preQBtnRef, preQDropdownRef,selectedUserToShow
     };
   }
 });
@@ -701,27 +706,40 @@ export default defineComponent({
             </span>
             </div>
 
-            <div v-else style="font-size: 0.90rem; display:flex; align-items:center;">
+            <div v-else style="font-size: 0.97rem; display: flex; align-items: center;">
               <!-- 닉네임 드롭다운 & 랜덤 색상 -->
               <span
                   @click.stop="Number(msg.no) !== Number(myNo) && openDropdown(index, msg)"
                   :style="{
                         color: getNicknameColor(msg.nickname),
+                        fontWeight: Number(msg.no) === Number(myNo) ? 700 : 600,
                         cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
                         userSelect: 'text',
-                        position: 'relative'
-                    }">
-                       {{ msg.nickname }}
-              <span
-                  v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
-                  class="nickname-dropdown"
-                  style="position:absolute;top:120%;left:0;z-index:10000;">
-                  <ul class="dropdown-custom-menu">
-                    <li class="menu-report" @click.stop="onReportClick">🚨 메시지 신고 🚨</li>
-                  </ul>
+                        position: 'relative',
+                        padding: '2px 7px',
+                        borderRadius: '7px',
+                        transition: 'background 0.14s'
+                  }"
+                  :class="{'nickname-hoverable': Number(msg.no) !== Number(myNo)}">
+                  {{ msg.nickname }}
+
+                <!-- 드롭다운 메뉴 -->
+                  <span
+                      v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
+                      class="nickname-dropdown"
+                      style="position:absolute;top:120%;left:0;z-index:10000;">
+                    <ul class="dropdown-custom-menu">
+                      <li class="menu-report" @click.stop="onReportClick">
+                        🚨 메시지 신고
+                      </li>
+                    </ul>
+                  </span>
                 </span>
+
+              <!-- 메시지 본문 -->
+              <span style="color:#222; margin-left:0.7em; line-height:1.6; word-break:break-all;">
+              {{ msg.message }}
             </span>
-              <span style="color: #222; margin-left:0.6em;"> {{ msg.message }}</span>
             </div>
 
           </div>
@@ -738,16 +756,19 @@ export default defineComponent({
 
       <!-- 신고 확인 모달 -->
       <div v-if="isConfirmModal" class="modal-overlay-dark">
-        <div class="modal-custom-box">
+        <div class="modal-custom-box shadow">
           <div class="modal-custom-content">
             <div class="modal-custom-msg">
-              <div class="modal-custom-text">
-                <strong>{{ selectedUser }}</strong>님의 메시지를 신고하시겠습니까?<br/>
-                <p class="fw-light">신고된 메시지는 처리를 위해 수집됩니다.</p>
-                <span style="font-size:0.85rem; color:#888;">"{{ selectedMessage }}"</span>
+              <div class="modal-custom-text text-center">
+                <span class="fs-5 fw-bold text-danger">⚠️ 신고 확인</span><br>
+                <span class="d-block mt-2"><strong>{{ selectedUserToShow }}</strong>님의 메시지를 신고하시겠습니까?</span>
+                <span class="d-block mt-2 text-muted small">신고된 메시지는 처리를 위해 수집됩니다.</span>
+                <div class="reported-message-box mt-3 mb-1">
+                  "{{ selectedMessage }}"
+                </div>
               </div>
             </div>
-            <div class="modal-custom-btns">
+            <div class="modal-custom-btns d-flex gap-2 justify-content-center mt-3">
               <button class="modal-btn-cancel" @click="isConfirmModal=false">취소</button>
               <button class="modal-btn-ok" @click="confirmReport">확인</button>
             </div>
@@ -757,16 +778,19 @@ export default defineComponent({
 
       <!-- 신고 완료 모달 -->
       <div v-if="isCompleteModal" class="modal-overlay-dark">
-        <div class="modal-custom-box">
+        <div class="modal-custom-box shadow">
           <div class="modal-custom-content">
             <div class="modal-custom-msg">
-              <div class="modal-custom-text" style="text-align:center;">
-                메시지 신고가 정상 접수되었습니다.<br/>
-                가이드 위반 여부 검토 후 조치 예정입니다.<br/>
-                감사합니다.
+              <div class="modal-custom-text text-center">
+                <span class="fs-5 fw-bold text-success">✔️ 신고 접수 완료</span><br>
+                <span class="d-block mt-2">
+            메시지 신고가 정상 접수되었습니다.<br>
+            가이드 위반 여부 검토 후 조치 예정입니다.<br>
+            감사합니다.
+          </span>
               </div>
             </div>
-            <div class="modal-custom-btns">
+            <div class="modal-custom-btns d-flex justify-content-center mt-3">
               <button class="modal-btn-ok" @click="closeCompleteModal">확인</button>
             </div>
           </div>
@@ -783,117 +807,6 @@ export default defineComponent({
 
 .scroll-hidden {
   -ms-overflow-style: none;
-}
-
-.dropdown-custom-menu {
-  background: #232428;
-  color: #dedede;
-  border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.24);
-  min-width: 190px;
-  padding: 8px 0;
-  margin: 0;
-  list-style: none;
-  border: 1px solid #282a30;
-  font-size: 1.07rem;
-}
-
-.dropdown-custom-menu li {
-  display: flex;
-  align-items: center;
-  padding: 10px 22px;
-  cursor: pointer;
-  transition: background 0.13s;
-  gap: 10px;
-  font-weight: 500;
-}
-
-.dropdown-custom-menu li:hover {
-  background: #2d2f34;
-}
-
-.dropdown-custom-menu .menu-report {
-  color: #fd6262;
-  background: #26272b;
-}
-
-.dropdown-custom-menu .menu-report:hover {
-  background: #33292c;
-}
-
-.modal-overlay-dark {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(18, 19, 21, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.modal-custom-box {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
-  min-width: 360px;
-  padding: 0;
-  overflow: hidden;
-  color: black;
-}
-
-.modal-custom-content {
-  padding: 36px 36px 24px 36px;
-}
-
-.modal-custom-msg {
-  margin-bottom: 34px;
-}
-
-.modal-custom-text {
-  font-size: 1.14rem;
-  line-height: 1.7;
-  font-weight: 600;
-}
-
-.modal-custom-btns {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 18px;
-}
-
-.modal-btn-cancel, .modal-btn-ok {
-  padding: 0 0;
-  border: none;
-  outline: none;
-  border-radius: 8px;
-  font-size: 1.07rem;
-  font-weight: 600;
-  height: 48px;
-  min-width: 128px;
-  cursor: pointer;
-  transition: background 0.13s, color 0.12s;
-}
-
-.modal-btn-cancel {
-  background: #f47e4a;
-  color: #ffffff;
-}
-
-.modal-btn-cancel:hover {
-  background: #efb485;
-}
-
-.modal-btn-ok {
-  background: #435879;
-  color: #ffffff;
-}
-
-.modal-btn-ok:hover {
-  background: #7d8bbd;
 }
 
 .blinking-dot {
@@ -916,9 +829,8 @@ export default defineComponent({
   }
 }
 
-
 .preq-dropdown {
-  background: #fff;
+  background: #000000;
   border-radius: 12px;
   box-shadow: 0 4px 24px rgba(24, 36, 72, 0.12);
   border: 1px solid #e4e4e7;
@@ -948,6 +860,157 @@ export default defineComponent({
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* 닉네임 호버 효과 (본인 제외) */
+.nickname-hoverable:hover {
+  background: #f3f7fe;
+}
+
+/* 드롭다운 전체 영역 */
+.nickname-dropdown {
+  min-width: 140px;
+  background: #c5c5c5;
+  border-radius: 10px;
+  box-shadow: 0 4px 18px 0 rgba(40,55,100,0.12);
+  padding: 2px 0;
+  margin-top: 2px;
+  animation: dropdownPop 0.18s cubic-bezier(.4,1.6,.6,1);
+}
+
+/* 드롭다운 내부 메뉴 */
+.dropdown-custom-menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.menu-report {
+  font-size: 1.03rem;
+  font-weight: 500;
+  color: #d73737;
+  padding: 7px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.11s, color 0.13s;
+  text-align: left;
+}
+.menu-report:hover {
+  background: #a6a4a4;
+  color: #b90000;
+}
+
+/* 드롭다운 애니메이션 */
+@keyframes dropdownPop {
+  0% { transform: translateY(-8px) scale(0.92); opacity: 0;}
+  100% { transform: translateY(0) scale(1); opacity: 1;}
+}
+
+
+/* 모달 전체 어두운 오버레이 */
+.modal-overlay-dark {
+  position: fixed;
+  z-index: 11000;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 모달 컨테이너 */
+.modal-custom-box {
+  background: #fff;
+  border-radius: 18px;
+  min-width: 340px;
+  max-width: 95vw;
+  box-shadow: 0 6px 36px 0 rgba(60, 60, 60, 0.16);
+  padding: 32px 26px 20px 26px;
+  animation: modalPop 0.21s cubic-bezier(.4, 1.6, .6, 1);
+}
+
+/* 모달 내부 컨텐츠 */
+.modal-custom-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 메시지 텍스트 */
+.modal-custom-text {
+  font-size: 1.06rem;
+  color: #242424;
+}
+
+/* 신고 메시지 강조 박스 */
+.reported-message-box {
+  background: #f7f7f8;
+  border: 1px solid #f2b3b3;
+  color: #ce2222;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 0.98rem;
+  font-style: italic;
+  word-break: break-all;
+  margin-top: 0.9em;
+  max-width: 280px;
+}
+
+/* 버튼 컨테이너 */
+.modal-custom-btns {
+  width: 100%;
+  margin-top: 12px;
+}
+
+/* 취소/확인 버튼 공통 */
+.modal-btn-cancel, .modal-btn-ok {
+  min-width: 90px;
+  padding: 8px 0 7px 0;
+  border-radius: 7px;
+  border: none;
+  font-size: 1.07rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background 0.13s;
+}
+
+/* 취소 버튼 */
+.modal-btn-cancel {
+  background: #f7f8fa;
+  color: #555;
+  border: 1px solid #ddd;
+}
+
+.modal-btn-cancel:hover {
+  background: #e4e8eb;
+}
+
+/* 확인 버튼 */
+.modal-btn-ok {
+  background: #347dff;
+  color: #fff;
+  border: 1px solid #2d6bd7;
+  margin-left: 8px;
+}
+
+.modal-btn-ok:hover {
+  background: #1955bf;
+}
+
+/* 애니메이션 */
+@keyframes modalPop {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
