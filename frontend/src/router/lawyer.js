@@ -10,6 +10,11 @@ export default [
         name: 'LawyerProfile',
         component: () => import('@/views/lawyer/ProfileSettingView.vue')
     },
+    {
+        path: '/lawyer/:lawyerNo/homepage',
+        name: 'LawyerHomePage',
+        component: () => import('@/views/lawyer/LawyerHomePageView.vue')
+    },
 
     // ---------- QNA ----------
     {

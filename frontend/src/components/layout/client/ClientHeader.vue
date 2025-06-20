@@ -10,13 +10,24 @@ const route = useRoute()
 // 로그인 관련
 const nickname = ref('')
 const isLoggedIn = ref(false)
+const role = ref('')
 
 function goToMyPage() {
-  const target = '/client/mypage'
+  if (!role.value) {
+    alert('로그인이 필요합니다.')
+    return router.push('/login')
+  }
+
+  const target =
+      role.value === 'client' ? '/client/mypage' :
+          role.value === 'lawyer' ? '/lawyer' :
+              '/'
+
   if (route.path === target) {
     window.location.reload()
     return
   }
+
   router.push(target)
 }
 
@@ -35,11 +46,13 @@ onMounted(() => {
 
   const token = localStorage.getItem('token')
   const nick = localStorage.getItem('nickname')
+  role.value = localStorage.getItem('accountType')
 
   isLoggedIn.value = !!token
   if (nick && nick !== 'null') {
     nickname.value = nick
   }
+
 })
 
 onBeforeUnmount(() => {
@@ -71,7 +84,7 @@ const logout = () => {
   console.log('nickname:', localStorage.getItem('nickname'))
 
   // ✅ 5. 로그인 페이지로 이동 + 새로고침
-  setTimeout(() => location.reload(), 300) // 새로고침으로 컴포넌트 초기화
+  setTimeout(() => location.reload(), 100) // 새로고침으로 컴포넌트 초기화
   console.log('[로그아웃 완료] localStorage 상태 확인:')
   console.log('token:', localStorage.getItem('token'))
   console.log('refreshToken:', localStorage.getItem('refreshToken'))
@@ -231,8 +244,10 @@ const logout = () => {
 
             <!-- 장바구니, 유저정보 등 아이콘 -->
             <div class="col-md-2 col-xxl-1 text-end d-none d-lg-block">
-              <div v-if="isLoggedIn" class="list-inline">
-
+              <div v-if="isLoggedIn" class="d-flex align-items-center justify-content-end gap-2">
+                <span class="text-muted me-1" style="min-width: 150px;">
+                  <strong class="text-primary">{{ nickname }}</strong> 님 환영합니다.
+                </span>
                 <div class="list-inline-item">
                   <!-- 사용자 아이콘: goToMyPage 호출 -->
                   <a
@@ -259,7 +274,7 @@ const logout = () => {
                   </a>
                 </div>
 
-                <div class="list-inline-item">
+                <div v-if="role === 'client'" class="list-inline-item">
                   <!-- 장바구니 아이콘 -->
                   <a
                       class="text-muted position-relative"

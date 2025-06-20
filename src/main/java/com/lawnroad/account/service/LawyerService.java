@@ -10,10 +10,12 @@ import com.lawnroad.account.mapper.ClientMapper;
 import com.lawnroad.account.mapper.LawyerMapper;
 import com.lawnroad.account.mapper.UserMapper;
 import com.lawnroad.reservation.service.TimeSlotService;
+import com.lawnroad.common.util.NcpObjectStorageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import static java.time.LocalDate.now;
 
@@ -22,16 +24,20 @@ public class LawyerService {
 
     @Autowired
 
+
     private LawyerMapper lawyerMapper;
     private UserMapper userMapper;
     private PasswordEncoder passwordEncoder;
     private TimeSlotService timeSlotService;
+    private final NcpObjectStorageUtil ncpObjectStorageUtil;
 
-    public LawyerService(UserMapper userMapper, LawyerMapper lawyerMapper, PasswordEncoder passwordEncoder, TimeSlotService timeSlotService) {
+    public LawyerService(UserMapper userMapper, LawyerMapper lawyerMapper, PasswordEncoder passwordEncoder, TimeSlotService timeSlotService
+    ,NcpObjectStorageUtil ncpObjectStorageUtil) {
         this.userMapper = userMapper;
         this.lawyerMapper = lawyerMapper;
         this.passwordEncoder = passwordEncoder;
         this.timeSlotService = timeSlotService;
+        this.ncpObjectStorageUtil = ncpObjectStorageUtil;
 
 
     }
@@ -44,13 +50,21 @@ public class LawyerService {
     }
 
     @Transactional
-    public void registerLawyer(LawyerSignupRequest request) {
+    public void registerLawyer(LawyerSignupRequest request,
+                               MultipartFile profileImage,
+                               MultipartFile idCardFront,
+                               MultipartFile idCardBack) {
         // 1. user 테이블 삽입
         UserEntity user = new UserEntity();
         user.setType("LAWYER");
         userMapper.insertUser(user);
 
-        // 2. lawyer 테이블 삽입
+        // 2. 이미지 파일 저장
+        String profileImageUrl = ncpObjectStorageUtil.save(profileImage, "uploads/lawyers/" + user.getNo() + "/profile", null);
+        String cardFrontUrl = ncpObjectStorageUtil.save(idCardFront, "uploads/lawyers/" + user.getNo() + "/card/front", null);
+        String cardBackUrl = ncpObjectStorageUtil.save(idCardBack, "uploads/lawyers/" + user.getNo() + "/card/back", null);
+
+        // 3. lawyer 테이블 삽입
         LawyerEntity lawyer = new LawyerEntity();
         lawyer.setNo(user.getNo());
         lawyer.setLawyerId(request.getLawyerId());
@@ -68,13 +82,16 @@ public class LawyerService {
         lawyer.setPoint(0);
         lawyer.setConsultPrice(30000);
         lawyer.setStatus("REJECTED_JOIN");
-        lawyer.setProfile("테스트 중");
-        lawyer.setCardFront(null);
-        lawyer.setCardBack(null);
+
+        // ✅ 이미지 URL 저장
+        lawyer.setProfile(profileImageUrl);
+        lawyer.setCardFront(cardFrontUrl);
+        lawyer.setCardBack(cardBackUrl);
+
         lawyer.setLawyerIntro(request.getLawyerIntro());
         lawyer.setIntroDetail(request.getIntroDetail());
         lawyerMapper.insertLawyer(lawyer);
-        
+
         // 회원가입을 하게 된 변호사의 일주일간의 주간 슬롯 생성
         timeSlotService.generateWeeklyTimeSlots(user.getNo(),now());
     }
