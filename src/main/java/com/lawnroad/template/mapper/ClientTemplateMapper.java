@@ -42,26 +42,38 @@ public interface ClientTemplateMapper {
   );
   
   // 주문 목록 조회
-  List<ClientOrderListDto> selectOrdersByUserNo(@Param("userNo") Long userNo,
-                                                @Param("status") String status,
-                                                @Param("limit") int limit,
-                                                @Param("offset") int offset);
+  List<ClientOrderListDto> selectOrdersByUserNo(
+      @Param("userNo")   Long   userNo,
+      @Param("status")   String status,
+      @Param("keyword")  String keyword,
+      @Param("limit")    int    limit,
+      @Param("offset")   int    offset
+  );
   
   // 주문 개수 조회
-  int countOrdersByUserNo(@Param("userNo") Long userNo,
-                          @Param("status") String status);
+  int countOrdersByUserNo(
+      @Param("userNo")   Long   userNo,
+      @Param("keyword")  String keyword,
+      @Param("status")   String status
+  );
   
   // 주문 상세 템플릿 목록
-  List<ClientOrderTemplateDto> selectTemplatesByOrderNo(@Param("orderNo") Long orderNo,
-                                                        @Param("type") String type,
-                                                        @Param("categoryNo") Long categoryNo,
-                                                        @Param("isDownloaded") Integer isDownloaded);
+  List<ClientOrderTemplateDto> selectTemplatesByOrderNo(
+      @Param("orderNo") Long orderNo,
+      @Param("type") String type,
+      @Param("categoryNo") Long categoryNo,
+      @Param("isDownloaded") Integer isDownloaded,
+      @Param("keyword") String keyword
+  );
   
   // 주문 상세 템플릿 개수
-  int countTemplatesByOrderNo(@Param("orderNo") Long orderNo,
-                              @Param("type") String type,
-                              @Param("categoryNo") Long categoryNo,
-                              @Param("isDownloaded") Integer isDownloaded);
+  int countTemplatesByOrderNo(
+      @Param("orderNo") Long orderNo,
+      @Param("type") String type,
+      @Param("categoryNo") Long categoryNo,
+      @Param("isDownloaded") Integer isDownloaded,
+      @Param("keyword") String keyword
+  );
   
   // 에디터 기반 템플릿 상세 조회
   ClientEditorTemplateDetailDto findEditorTemplateDetail(@Param("templateNo") Long templateNo);
@@ -80,4 +92,7 @@ public interface ClientTemplateMapper {
       @Param("orderNo") Long orderNo,
       @Param("tmplNo") Long tmplNo
   );
+  
+  // 사용자 마이페이지 -> 최근 구매내역 5건
+  List<ClientOrderListDto> selectRecentOrders(@Param("userNo") Long userNo);
 }

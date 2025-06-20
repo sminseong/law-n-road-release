@@ -153,8 +153,8 @@ function changePage(page) {
                 <span
                     class="badge"
                     :class="{
-                      'bg-primary': ['완료', 'PAID', '결제완료'].includes(row[col.key]),
-                      'bg-warning': ['진행 중', 'ORDERED', '결제대기'].includes(row[col.key]),
+                      'bg-success': ['완료', 'PAID', '결제완료'].includes(row[col.key]),
+                      'bg-warning text-dark': ['진행 중', 'ORDERED', '결제대기'].includes(row[col.key]),
                       'bg-danger': ['환불', 'REFUNDED', '환불'].includes(row[col.key])
                   }"
                 >{{ row[col.key] }}</span>

@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +27,7 @@ public class ClientTemplateController {
    */
   @GetMapping("/orders")
   public ResponseEntity<ClientOrderListResponseDto> getOrders(
+      @RequestParam(required = false) String keyword,
       @RequestParam(required = false) String status,
       @RequestParam(defaultValue = "1") int page,
       @RequestParam(defaultValue = "10") int limit
@@ -33,13 +35,15 @@ public class ClientTemplateController {
     // TODO: 유저 번호는 하드코딩
     Long userNo = 1L;
     
-    // 목록 + 총 개수 조회
-    List<ClientOrderListDto> list = clientTemplateService.findOrders(userNo, status, page, limit);
-    int totalCount = clientTemplateService.countOrders(userNo, status);
+    // System.out.println(keyword +' '+ status+' '+page+' '+limit);
+    
+    // 1) 페이징된 주문 목록(검색어+상태 필터 적용)
+    List<ClientOrderListDto> list = clientTemplateService.findOrders(userNo, keyword, status, page, limit);
+    int totalCount = clientTemplateService.countOrders(userNo, keyword, status);
     
     // System.out.println(list);
     
-    // 총 페이지 계산
+    // 2) 전체 건수(검색어+상태 필터 적용)
     int totalPages = (int) Math.ceil((double) totalCount / limit);
     
     // 응답 객체 구성
@@ -65,16 +69,17 @@ public class ClientTemplateController {
       @RequestParam(required = false) String type,
       @RequestParam(required = false) Long categoryNo,
       @RequestParam(required = false) Integer isDownloaded,
+      @RequestParam(required = false) String keyword,
       @RequestParam(defaultValue = "1") int page,
       @RequestParam(defaultValue = "10") int limit
   ) {
     // 목록 조회
     List<ClientOrderTemplateDto> list =
-        clientTemplateService.findTemplatesByOrder(orderNo, type, categoryNo, isDownloaded);
+        clientTemplateService.findTemplatesByOrder(orderNo, type, categoryNo, isDownloaded, keyword);
     
     // 개수 조회
     int totalCount =
-        clientTemplateService.countTemplatesByOrder(orderNo, type, categoryNo, isDownloaded);
+        clientTemplateService.countTemplatesByOrder(orderNo, type, categoryNo, isDownloaded, keyword);
     
     // 페이지 수 계산
     int totalPages = (int) Math.ceil((double) totalCount / limit);
@@ -132,5 +137,18 @@ public class ClientTemplateController {
     return ResponseEntity.ok(Map.of("isDownloaded", isDownloaded));
   }
   
-  
+  // 사용자 마이페이지 -> 최근 5건의 구매내역
+  @GetMapping("/orders/recent")
+  public ResponseEntity<Map<String, Object>> getRecentOrders() {
+    // System.out.println("test");
+    
+    // TODO : 사용자 NO 하드코딩
+    List<ClientOrderListDto> orders = clientTemplateService.findRecentOrders(1L);
+    // System.out.println(orders);
+    
+    Map<String, Object> result = new HashMap<>();
+    result.put("orders", orders);
+    
+    return ResponseEntity.ok(result);
+  }
 }
