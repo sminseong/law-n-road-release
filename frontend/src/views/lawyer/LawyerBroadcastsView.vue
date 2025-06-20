@@ -6,6 +6,7 @@ import {OpenVidu} from "openvidu-browser";
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import axios from "axios";
 import {useRoute, useRouter} from "vue-router";
+import {makeApiRequest} from "@/libs/axios-auth.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -29,13 +30,19 @@ const preventReload = (e) => {
 
 const loadBroadcastInfo = async () => {
   try {
-    const res = await axios.get(`/api/lawyer/broadcast/view-detail/${scheduleNo}`);
-    broadcastInfo.value = res.data;
-    console.log("📺 방송 정보 로딩 성공:", res.data);
+    const res = await makeApiRequest({
+      method: 'get',
+      url: `/api/lawyer/broadcast/view-detail/${scheduleNo}`
+    })
+
+    if (res?.data) {
+      broadcastInfo.value = res.data
+      console.log("📺 방송 정보 로딩 성공:", res.data)
+    }
   } catch (e) {
-    console.error("❌ 방송 정보 조회 실패:", e);
+    console.error("❌ 방송 정보 조회 실패:", e)
   }
-};
+}
 
 const startTimerFrom = (startTime) => {
   timerInterval = setInterval(() => {
@@ -100,11 +107,14 @@ const connectSession = async () => {
       }
     }
 
-    const res = await axios.post("/api/lawyer/broadcast/start", {
-      scheduleNo: Number(scheduleNo),
-    }, {
-
+    const res = await makeApiRequest({
+      method: 'post',
+      url: '/api/lawyer/broadcast/start',
+      data: {
+        scheduleNo: Number(scheduleNo)
+      }
     });
+
     const {sessionId, token, broadcastNo: newBroadcastNo, startTime} = res.data;
 
     console.log("📡 sessionId:", sessionId);
@@ -151,45 +161,58 @@ const connectSession = async () => {
 
 const reconnectBroadcast = async (existingSessionId) => {
   try {
-    const {data} = await axios.get(`/api/lawyer/broadcast/reconnect/${existingSessionId}`);
-    const {token, startTime} = data;
+    const res = await makeApiRequest({
+      method: 'get',
+      url: `/api/lawyer/broadcast/reconnect/${existingSessionId}`
+    })
 
-    OV.value = new OpenVidu();
-    session.value = OV.value.initSession();
+    if (res?.data) {
+      const { token, startTime } = res.data
 
-    session.value.on("exception", (exception) => {
-      console.warn("OpenVidu 예외:", exception);
-    });
+      OV.value = new OpenVidu()
+      session.value = OV.value.initSession()
 
-    await session.value.connect(token);
-    await initPublisherWithDelay();
-    startTimerFrom(startTime);
+      session.value.on("exception", (exception) => {
+        console.warn("OpenVidu 예외:", exception)
+      })
+
+      await session.value.connect(token)
+      await initPublisherWithDelay()
+      startTimerFrom(startTime)
+    }
   } catch (err) {
-    console.error("❌ 재접속 실패:", err);
-    localStorage.removeItem("currentBroadcast");
+    console.error("❌ 재접속 실패:", err)
+    localStorage.removeItem("currentBroadcast")
   }
-};
+}
+
 
 const handleEndBroadcast = async () => {
   if (!broadcastNo.value) {
-    alert("방송 번호가 유효하지 않습니다.");
-    return;
+    alert("방송 번호가 유효하지 않습니다.")
+    return
   }
 
-  const confirmEnd = confirm("정말 방송을 종료하시겠습니까?");
-  if (!confirmEnd) return;
+  const confirmEnd = confirm("정말 방송을 종료하시겠습니까?")
+  if (!confirmEnd) return
 
   try {
-    await axios.post(`/api/lawyer/broadcast/end/${broadcastNo.value}`);
-    alert("✅ 방송이 종료되었습니다.");
-    if (session.value) session.value.disconnect();
-    if (timerInterval) clearInterval(timerInterval);
-    router.push("/lawyer");
+    await makeApiRequest({
+      method: 'post',
+      url: `/api/lawyer/broadcast/end/${broadcastNo.value}`
+    })
+
+    alert("✅ 방송이 종료되었습니다.")
+    if (session.value) session.value.disconnect()
+    if (timerInterval) clearInterval(timerInterval)
+    router.push("/lawyer")
   } catch (e) {
-    console.error("❌ 방송 종료 실패:", e);
-    alert("방송 종료 중 문제가 발생했습니다.");
+    console.error("❌ 방송 종료 실패:", e)
+    alert("방송 종료 중 문제가 발생했습니다.")
   }
 };
+
+
 
 onMounted(async () => {
   window.addEventListener("beforeunload", preventReload);
@@ -199,7 +222,7 @@ onMounted(async () => {
     return;
   }
 
-  loadBroadcastInfo();
+  await loadBroadcastInfo();
   await connectSession();
   connect();
 });
@@ -209,6 +232,8 @@ onBeforeUnmount(() => {
   stompClient.value?.deactivate();
   closeDropdown();
 });
+
+
 
 
 // --- 채팅 WebSocket 관련 ---

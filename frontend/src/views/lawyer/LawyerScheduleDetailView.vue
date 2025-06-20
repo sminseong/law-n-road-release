@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 import axios from 'axios'
+import {makeApiRequest} from "@/libs/axios-auth.js";
 
 const route = useRoute()
 const router = useRouter()
@@ -28,17 +29,20 @@ const newKeyword = ref('')
 
 onMounted(async () => {
   try {
-    const token = localStorage.getItem('token')
     const [catRes, schedRes] = await Promise.all([
-      axios.get('/api/public/category/list'),
-      axios.get(`/api/lawyer/schedule/my/${scheduleNo}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+      makeApiRequest({
+        method: 'get',
+        url: '/api/public/category/list'
+      }),
+      makeApiRequest({
+        method: 'get',
+        url: `/api/lawyer/schedule/my/${scheduleNo}`
       })
     ])
+
     categoryList.value = catRes.data
     const s = schedRes.data
+
     name.value = s.name
     categoryNo.value = s.categoryNo
     content.value = s.content
@@ -54,6 +58,7 @@ onMounted(async () => {
     console.error(e)
   }
 })
+
 
 const addKeyword = () => {
   const val = newKeyword.value.trim()
@@ -90,19 +95,19 @@ const deleteSchedule = async () => {
   if (!confirmDelete) return
 
   try {
-    const token = localStorage.getItem('token')
-    await axios.delete(`/api/lawyer/schedule/delete/${scheduleNo}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+    await makeApiRequest({
+      method: 'delete',
+      url: `/api/lawyer/schedule/delete/${scheduleNo}`
     })
+
     alert('🗑️ 방송 스케줄이 삭제되었습니다.')
-    router.push('/lawyer/broadcasts/schedule')
+    await router.push('/lawyer/broadcasts/schedule')
   } catch (err) {
     alert('⚠️ 삭제 실패')
     console.error(err)
   }
 }
+
 
 const updateSchedule = async () => {
   const confirmUpdate = confirm('✏️ 방송 스케줄을 수정하시겠습니까?')
@@ -120,16 +125,18 @@ const updateSchedule = async () => {
     if (selectedFile.value) {
       form.append('thumbnail', selectedFile.value)
     }
-    const token = localStorage.getItem('token')
-    await axios.post('/api/lawyer/schedule/update?_method=PUT', form, {
+
+    await makeApiRequest({
+      method: 'post',
+      url: '/api/lawyer/schedule/update?_method=PUT',
+      data: form,
       headers: {
-        'Content-Type': 'multipart/form-data',
-        Authorization: `Bearer ${token}`
+        'Content-Type': 'multipart/form-data'
       }
     })
 
     alert('✅ 방송 스케줄 수정 완료')
-    router.push('/lawyer/broadcasts/schedule')
+    await router.push('/lawyer/broadcasts/schedule')
   } catch (err) {
     alert('⚠️ 수정 실패')
     console.error(err)
