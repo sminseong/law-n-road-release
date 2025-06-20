@@ -382,6 +382,9 @@ async function callUpdateMetaAPI() {
 
       <!-- 버튼 -->
       <div class="text-end">
+        <div class="text-muted small mb-2">
+          AI가 문서를 정밀하게 검토합니다. <strong>1~5분 정도 소요</strong>될 수 있어요.
+        </div>
         <button
             class="btn btn-primary"
             :disabled="isSubmitting"
