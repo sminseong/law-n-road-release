@@ -26,3 +26,7 @@ export async function updateQna(id, payload) {
 export async function deleteQna(id) {
     return await httpRequester.delete(`/api/client/qna/${id}`)
 }
+
+export const registerComment = (payload) => {
+    return httpRequester.post('/api/lawyer/comment', payload)
+}

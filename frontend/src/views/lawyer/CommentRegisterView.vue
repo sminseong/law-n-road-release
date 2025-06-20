@@ -2,7 +2,10 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
-import { fetchBoardDetail } from '@/service/boardService.js'
+import { fetchBoardDetail ,registerComment } from '@/service/boardService.js'
+import {useLawyerStore} from "@/stores/lawyer.js";
+
+const store = useLawyerStore()
 
 const route = useRoute()
 const id = route.params.id
@@ -26,6 +29,15 @@ const lawyerIntro = ref(
 )
 
 onMounted(async () => {
+  const lawyerNo = localStorage.getItem('no') // 로그인 시 저장된 번호
+  if (!store.getLawyerNo) {
+    await store.fetchLawyerInfo(lawyerNo)
+
+    // ⭐ 여기서 반드시 wait 후 최신 값 다시 가져오기
+    console.log('🟢 등록 전 최종 userNo:', store.getLawyerNo) // 이걸 찍었을 때 null이면 등록 막아야 함
+  }
+
+  // 이후 게시글 불러오기 진행
   try {
     const data = await fetchBoardDetail(id)
     qa.value = {
@@ -40,6 +52,31 @@ onMounted(async () => {
     alert('질문 정보를 불러올 수 없습니다.')
   }
 })
+
+const register = async () => {
+  if (answerContent.value.trim().length < 100) {
+    alert('답변은 100자 이상 입력해야 합니다.')
+    return
+  }
+
+  const payload = {
+    boardNo: Number(id),
+    userNo: store.getLawyerNo, // 🔥 핵심 확인 대상
+    content: answerContent.value
+  }
+
+  console.log('등록 요청 Payload:', payload)            // 확인 포인트 1
+  console.log('store.getLawyerNo:', store.getLawyerNo) // 확인 포인트 2
+
+  try {
+    await registerComment(payload)
+    alert('답변이 등록되었습니다.')
+    answerContent.value = ''
+  } catch (err) {
+    console.error('❌ 등록 실패:', err)
+    alert('답변 등록에 실패했습니다.')
+  }
+}
 
 const dummyAnswers = ref([
   {
@@ -98,7 +135,8 @@ const dummyAnswers = ref([
       </div>
 
       <div class="text-center">
-        <button class="btn btn-primary px-4" :disabled="!agreed || answerContent.length === 0">
+        <button class="btn btn-primary px-4" :disabled="answerContent.length < 100"
+                @click="register">
           답변 등록하기
         </button>
       </div>

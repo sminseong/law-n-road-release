@@ -89,7 +89,7 @@ watch(page, () => loadList())
             v-for="qa in list"
             :key="qa.no"
             class="qa-card bg-white rounded shadow-sm p-4 mb-3"
-            @click="router.push({ name: 'ReplyRegister', params: { id: qa.no } })"
+            @click="router.push({ name: 'CommentRegister', params: { id: qa.no } })"
             style="cursor: pointer;"
         >
           <small class="badge bg-light text-secondary mb-1">

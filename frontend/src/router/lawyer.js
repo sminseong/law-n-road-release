@@ -23,9 +23,9 @@ export default [
         component: () => import('@/views/lawyer/QnaListView.vue')
     },
     {
-        path: '/lawyer/qna/answer/:id',
-        name: 'ReplyRegister',
-        component: () => import('@/views/lawyer/ReplyRegisterView.vue')
+        path: '/lawyer/qna/comment/:id',
+        name: 'CommentRegister',
+        component: () => import('@/views/lawyer/CommentRegisterView.vue')
     },
 
 
