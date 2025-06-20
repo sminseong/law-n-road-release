@@ -8,6 +8,7 @@
     <resultMap id="BroadcastViewDetailMap" type="com.lawnroad.broadcast.live.dto.BroadcastViewDetailDto">
         <result property="title" column="title"/>
         <result property="categoryName" column="category_name"/>
+        <result property="userNo" column="user_no"/>
         <result property="lawyerName" column="lawyer_name"/>
         <result property="lawyerProfilePath" column="lawyer_profile"/>
     </resultMap>
@@ -63,6 +64,7 @@
         SELECT
         bs.name AS title,
         c.name AS category_name,
+        l.no AS user_no,
         l.name AS lawyer_name,
         l.profile AS lawyer_profile
         FROM broadcast_schedule bs
@@ -77,6 +79,7 @@
         SELECT
         bs.name AS title,
         c.name AS category_name,
+        l.no AS user_no,
         l.name AS lawyer_name,
         l.profile AS lawyer_profile
         FROM broadcast b

@@ -5,7 +5,7 @@ import {Client} from "@stomp/stompjs";
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import {OpenVidu} from "openvidu-browser";
 import axios from "axios";
-import {useRoute} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import {getValidToken, makeApiRequest} from "@/libs/axios-auth.js";
 
 export default defineComponent({
@@ -14,12 +14,14 @@ export default defineComponent({
     /** =============== 방송 관련 =============== */
     const videoContainer = ref(null);
     const route = useRoute();
+    const router = useRouter();
     const broadcastNo = ref(Number(route.params.broadcastNo));
     const session = ref(null);
     const broadcastInfo = ref({
       title: "",
       categoryName: "",
       keywords: [],
+      userNo: 0,
       lawyerName: "",
       lawyerProfilePath: ""
     });
@@ -174,6 +176,15 @@ export default defineComponent({
         alert('신고 처리 중 오류가 발생했습니다.');
       }
     };
+
+    const goToLawyerHomepage = () => {
+      const userNo = broadcastInfo.value.userNo
+      if (!userNo || userNo === 0) {
+        alert('변호사 정보가 없습니다.')
+        return
+      }
+      router.push(`/lawyer/${userNo}/homepage`)
+    }
 
 
     /** 언마운트 / 마운트 정리 */
@@ -463,6 +474,7 @@ export default defineComponent({
       myNo,
       showPreQDropdown, preQuestions, isPreQLoading,
       togglePreQDropdown, preQBtnRef, preQDropdownRef,
+      goToLawyerHomepage,
     };
   }
 });
@@ -512,8 +524,12 @@ export default defineComponent({
             <!-- 프로필 영역 -->
             <div class="d-flex align-items-center">
               <!-- ✅ 초록 원 컨테이너 -->
-              <div class="position-relative d-flex justify-content-center align-items-center"
-                   style="width: 80px; height: 80px; border: 3px solid #15ea7e; border-radius: 50%;">
+              <div
+                  @click="goToLawyerHomepage"
+                  role="button"
+                  class="position-relative d-flex justify-content-center align-items-center"
+                  style="width: 80px; height: 80px; border: 3px solid #15ea7e; border-radius: 50%; cursor: pointer;"
+              >
                 <!-- 프로필 이미지 -->
                 <img
                     :src="broadcastInfo.lawyerProfilePath"
@@ -533,7 +549,14 @@ export default defineComponent({
 
               <!-- 변호사 이름 + 알림신청 -->
               <div class="d-flex align-items-center ms-3">
-                <div class="fs-5 fw-bold me-3">{{ broadcastInfo.lawyerName }} 변호사</div>
+                <span
+                    @click="goToLawyerHomepage"
+                    role="button"
+                    class="fs-5 fw-bold me-3 text-primary text-decoration-none"
+                    style="cursor: pointer;"
+                >
+                  {{ broadcastInfo.lawyerName }} 변호사
+                </span>
                 <button class="btn btn-outline-primary btn-sm">🔔 알림신청</button>
               </div>
             </div>
@@ -543,6 +566,8 @@ export default defineComponent({
               🚨 방송 신고
             </button>
           </div>
+
+
         </div>
       </div>
 
