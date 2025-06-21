@@ -212,6 +212,15 @@ const handleEndBroadcast = async () => {
   }
 };
 
+const goToLawyerHomepage = () => {
+  const userNo = broadcastInfo.value.userNo
+  if (!userNo || userNo === 0) {
+    alert('변호사 정보가 없습니다.')
+    return
+  }
+  router.push(`/lawyer/${userNo}/homepage`)
+}
+
 
 
 onMounted(async () => {
@@ -518,8 +527,11 @@ const handlePreQClickOutside = (e) => {
             <!-- 프로필 영역 -->
             <div class="d-flex align-items-center">
               <!-- ✅ 초록 원 컨테이너 -->
-              <div class="position-relative d-flex justify-content-center align-items-center"
-                   style="width: 80px; height: 80px; border: 3px solid #15ea7e; border-radius: 50%;">
+              <div
+                  @click="goToLawyerHomepage"
+                  role="button"
+                  class="profile-border-hover position-relative d-flex justify-content-center align-items-center"
+              >
                 <!-- 프로필 이미지 -->
                 <img
                     :src="broadcastInfo.lawyerProfilePath"
@@ -538,7 +550,16 @@ const handlePreQClickOutside = (e) => {
               </div>
 
               <!-- 변호사 이름 -->
-              <div class="fs-5 fw-bold ms-3">{{ broadcastInfo.lawyerName }} 변호사</div>
+              <div class="fs-5 fw-bold ms-3">
+                <span
+                    @click="goToLawyerHomepage"
+                    role="button"
+                    class="fs-5 fw-bold me-3 text-primary text-decoration-none"
+                    style="cursor: pointer;"
+                >
+                  {{ broadcastInfo.lawyerName }} 변호사
+                </span>
+              </div>
             </div>
 
             <!-- 방송 종료 버튼 -->
@@ -918,4 +939,16 @@ const handlePreQClickOutside = (e) => {
   }
 }
 
+.profile-border-hover {
+  width: 80px;
+  height: 80px;
+  border: 3px solid #15ea7e;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: border-width 0.2s ease;
+}
+
+.profile-border-hover:hover {
+  border-width: 5px;
+}
 </style>
