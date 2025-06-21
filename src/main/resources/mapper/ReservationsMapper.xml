@@ -9,9 +9,9 @@
             useGeneratedKeys="true"
             keyProperty="no">
         INSERT INTO reservations
-            (order_no, slot_no, user_no, content, status, created_at, updated_at)
+            (order_no, slot_no, user_no, status, created_at, updated_at)
         VALUES
-            (#{orderNo}, #{slotNo}, #{userNo}, #{content}, 'REQUESTED', NOW(), NOW())
+            (#{orderNo}, #{slotNo}, #{userNo}, 'REQUESTED', NOW(), NOW())
     </insert>
 
 <!--    <select id="selectReservationsByUser"-->
@@ -27,7 +27,6 @@
 <!--            w.slot_date     AS slotDate,-->
 <!--            w.slot_time     AS slotTime,-->
 <!--            r.status        AS status,-->
-<!--            r.content       AS content,-->
 <!--            w.amount        AS amount-->
 <!--        FROM reservations r-->
 <!--                 JOIN client u      ON r.user_no  = u.no-->
@@ -85,7 +84,6 @@
             w.slot_date     AS slotDate,
             w.slot_time     AS slotTime,
             r.status        AS status,
-            r.content       AS content,
             w.amount        AS amount
         FROM reservations r
                  JOIN client u         ON r.user_no = u.no
@@ -105,7 +103,6 @@
             ts.slot_date,
             ts.slot_time,
             r.status,
-            r.content,
             ts.amount,
             l.no AS lawyer_no,
             l.name AS lawyer_name

@@ -11,7 +11,6 @@ public class ReservationsCreateDTO {
     private String orderCode;
     private Long slotNo;
     private Long userNo;
-    private String content;
 
     private LocalTime slotTime;
     private Long amount;
