@@ -71,6 +71,9 @@ dependencies {
 
     // pdf
     implementation 'org.apache.pdfbox:pdfbox:2.0.30'
+
+    implementation 'org.json:json:20231013'
+
 }
 
 tasks.named('test') {

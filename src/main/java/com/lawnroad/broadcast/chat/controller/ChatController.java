@@ -1,18 +1,19 @@
 package com.lawnroad.broadcast.chat.controller;
 
-
 import com.lawnroad.broadcast.chat.dto.ChatDTO;
 import com.lawnroad.broadcast.chat.service.AutoReplyService;
 import com.lawnroad.broadcast.chat.service.ChatRedisSaveServiceImpl;
+import com.lawnroad.broadcast.chat.service.ClovaForbiddenService;
 import com.lawnroad.common.util.JwtTokenUtil;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
+
 import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
@@ -23,6 +24,7 @@ public class ChatController {
     private final SimpMessagingTemplate messagingTemplate;
     private final JwtTokenUtil jwtTokenUtil;
     private final AutoReplyService autoReplyService;
+    private final ClovaForbiddenService clovaForbiddenService;
 
 
     @MessageMapping("/chat.addUser")
@@ -42,7 +44,6 @@ public class ChatController {
         messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), chatDTO);
     }
 
-
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload ChatDTO chatDTO, @Header("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
@@ -54,16 +55,29 @@ public class ChatController {
         chatDTO.setCreatedAt(LocalDateTime.now());
         chatDTO.setNo(no);
         if(chatDTO.getType() == null) {
-            chatDTO.setType("CHAT"); // 일반 채팅이면 기본값
+            chatDTO.setType("CHAT"); // 기본값
         }
         chatDTO.setReportStatus(0);
+
+        // ----------------- AI 욕설/금칙어 검사 추가 -----------------
+        String msg = chatDTO.getMessage();
+        boolean hasProhibited = clovaForbiddenService.containsProhibitedWords(msg);
+
+        // 컨트롤러에서 메시지 전송 시
+        if (hasProhibited) {
+            ChatDTO warning = ChatDTO.builder()
+                    .type("WARNING")
+                    .userNo(no)
+                    .message("⚠️ 욕설 또는 금칙어가 포함된 메시지는 전송할 수 없습니다.")
+                    .build();
+            messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), warning);
+            return;
+        }
 
         chatRedisSaveService.saveChatMessage(chatDTO);
         messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), chatDTO);
 
-
         // ------- 자동응답 처리 -------
-        String msg = chatDTO.getMessage();
         if (msg != null && msg.startsWith("!")) {
             String keyword = msg.substring("!".length()).trim();
 
@@ -72,7 +86,7 @@ public class ChatController {
             if (autoReplyMsg != null) {
                 ChatDTO reply = ChatDTO.builder()
                         .broadcastNo(chatDTO.getBroadcastNo())
-                        .nickname("AutoReply") // 또는 "나이트봇" 등
+                        .nickname("AutoReply")
                         .message(autoReplyMsg)
                         .type("AUTO_REPLY")
                         .createdAt(LocalDateTime.now())
@@ -99,5 +113,3 @@ public class ChatController {
     }
 
 }
-
-
