@@ -446,6 +446,7 @@ public ResponseEntity<?> lawyerSignup(
     @PostMapping("/auth/logout")
     public ResponseEntity<?> logout(@RequestBody LogoutRequest request) {
         Long userNo = request.getUserNo(); // 프론트에서 전달받음
+        System.out.println("로그 아웃" + userNo);
         refreshTokenService.deleteByUserNo(userNo);
         return ResponseEntity.ok("로그아웃 완료 (토큰 삭제)");
     }
