@@ -7,6 +7,7 @@ import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import axios from "axios";
 import {useRoute, useRouter} from "vue-router";
 import {getValidToken, makeApiRequest} from "@/libs/axios-auth.js";
+import { onBeforeRouteLeave } from 'vue-router'
 
 const route = useRoute();
 const router = useRouter();
@@ -221,6 +222,15 @@ const goToLawyerHomepage = () => {
   router.push(`/lawyer/${userNo}/homepage`)
 }
 
+onBeforeRouteLeave((to, from, next) => {
+  const confirmed = confirm("⚠️ 방송이 종료되지 않았습니다. 페이지를 떠나시겠습니까?");
+  if (confirmed) {
+    next();
+  } else {
+    next(false);
+  }
+})
+
 
 
 onMounted(async () => {
@@ -237,6 +247,7 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener("beforeunload", preventReload);
   if (timerInterval) clearInterval(timerInterval);
   stompClient.value?.deactivate();
   closeDropdown();
