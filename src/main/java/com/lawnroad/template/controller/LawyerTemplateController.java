@@ -223,6 +223,8 @@ public class LawyerTemplateController {
       @RequestParam(value = "file", required = false) MultipartFile thumbFile,
       @RequestParam(value = "removeThumbnail", required = false) Integer removeThumbnail
   ) {
+    System.out.println("✅ update-meta 도착!");
+    System.out.println("dto: " + dto);
     Long lawyerNo = 1L; // TODO: 인증 적용 후 교체
     dto.setUserNo(lawyerNo);
     
@@ -266,9 +268,7 @@ public class LawyerTemplateController {
    */
   @PostMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<String> updateTemplate(
-      @ModelAttribute LawyerTemplateUpdateDto dto,
-      @RequestParam(value = "file", required = false) MultipartFile thumbFile,
-      @RequestParam(value = "removeThumbnail", required = false) Integer removeThumbnail
+      @ModelAttribute LawyerTemplateUpdateDto dto
   ) {
     Long lawyerNo = 1L; // TODO: 인증 연동 후 교체
     dto.setUserNo(lawyerNo);
@@ -340,11 +340,11 @@ public class LawyerTemplateController {
       }
       
       // 5. 썸네일 처리
-      if (removeThumbnail != null && removeThumbnail == 1) {
+      if (dto.getRemoveThumbnail() != null && dto.getRemoveThumbnail() == 1) {
         finalThumbPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
-      } else if (thumbFile != null && !thumbFile.isEmpty()) {
+      } else if (dto.getFile() != null && !dto.getFile().isEmpty()) {
         finalThumbPath = ncpObjectStorageUtil.save(
-            thumbFile,
+            dto.getFile(),
             "uploads/lawyers/" + lawyerNo + "/thumbnails",
             null
         );

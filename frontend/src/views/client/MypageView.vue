@@ -42,12 +42,18 @@ onMounted(async () => {
   } catch (e) {
     console.error('예약 건수 조회 실패', e)
   }
+
+  const res = await HttpRequester.get('/api/client/templates/orders/recent') // 최근 주문 5개
+  console.log(res.data)
+  orders_rows.value = res.data.orders || []
 })
 
+// 토글 1
 function toggleKeyword() {
   console.log('방송 키워드 알림 수신 여부:', notifyKeywordEnabled.value ? '수신함' : '수신 안 함')
 }
 
+// 토글 2
 function toggleConsultation() {
   console.log('상담 관련 알림 수신 여부:', notifyConsultEnabled.value ? '수신함' : '수신 안 함')
 }
@@ -148,8 +154,25 @@ async function testLawyerReservationCanceled() {
 
 
 
+/* --------------------------- */
+/*      최근 5개 구매내역      */
+/* --------------------------- */
 
+const orders_rows = ref([])
 
+function formatProductLabel(name, count) {
+  return count > 1 ? `${name} 외 ${count - 1}건` : name
+}
+
+const statusLabel = {
+  ORDERED: '결제완료',
+  CANCELED: '취소',
+  REFUNDED: '환불'
+}
+
+function handleRowClick(row) {
+  router.push(`/client/template/orders/${row.orderNo}`)
+}
 
 </script>
 
@@ -191,8 +214,42 @@ async function testLawyerReservationCanceled() {
       <div class="card mb-4 border-light">
         <div class="card-header title-bg-primary text-white">템플릿 구매 내역</div>
         <div class="card-body">
-          <p class="mb-2 text-muted small">최근 구매한 템플릿이 없습니다.</p>
-          <a href="/client/template/orders" class="btn small">구매 내역 보기</a>
+
+          <table class="table table-hover align-middle">
+            <thead class="table">
+            <tr>
+              <th scope="col">주문번호</th>
+              <th scope="col">주문일자</th>
+              <th scope="col">주문상품</th>
+              <th scope="col">총금액</th>
+              <th scope="col">주문상태</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr
+                v-for="row in orders_rows"
+                :key="row.orderNo"
+                style="cursor: pointer"
+                @click="handleRowClick(row)"
+            >
+              <td>{{ row.orderNo }}</td>
+              <td>{{ row.orderDate }}</td>
+              <td>{{ formatProductLabel(row.firstTemplateName, row.templateCount) }}</td>
+              <td>{{ row.amount.toLocaleString() }}원</td>
+              <td>
+            <span class="badge bg-warning text-dark">
+              {{ statusLabel[row.status] || row.status }}
+            </span>
+              </td>
+            </tr>
+            <tr v-if="orders_rows.length === 0">
+              <td colspan="5" class="text-muted text-center">최근 주문 내역이 없습니다.</td>
+            </tr>
+            </tbody>
+          </table>
+
+          <div class="text-center"><a href="/client/template/orders" class="btn small text-decoration-none">구매 내역 더보기</a>
+          </div>
         </div>
       </div>
 

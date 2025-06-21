@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router'
 import CustomTable from '@/components/table/CustomTable.vue'
 import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 import http from '@/libs/HttpRequester'
+import {makeApiRequest} from "@/libs/axios-auth.js";
+import { getValidToken } from '@/libs/axios-auth'
 
 // 라우터
 const router = useRouter()
@@ -61,15 +63,26 @@ const filters = [
  */
 async function fetchTemplates(filters, pageNo) {
   try {
+
     const query = {
       ...normalizeFilters(filters),
       page: pageNo,
       limit: 10
     }
 
+    // 예전 코드
     const res = await http.get('/api/lawyer/templates', query)
 
+    // 수정된 코드
+    // import {makeApiRequest} from "@/libs/axios-auth.js";
+    // const res = await makeApiRequest({
+    //   method: 'get',
+    //   url: '/api/lawyer/templates',
+    //   params: query  // ✅ GET 요청 시 query string으로 전달
+    // })
+
     const { templates, totalPages: tp } = res.data
+
     templateList.value = templates.map(t => ({
       no: t.no,
       type: mapTypeCodeToLabel(t.type),
@@ -82,6 +95,7 @@ async function fetchTemplates(filters, pageNo) {
       createdAt: t.createdAt?.split('T')[0],
       thumbnailPath: t.thumbnailPath
     }))
+
     totalPages.value = tp
   } catch (e) {
     console.error('템플릿 목록 조회 실패:', e)
@@ -177,6 +191,7 @@ function handleRowClick(row) {
 
 // 이벤트 핸들러 :: 수정 버튼 클릭
 function handleEdit(row) {
+  console.log(row)
   router.push({
     path: `/lawyer/templates/edit/${row.no}`,
     query: { type: typeLabelToCode[row.type] } // 예: 'AI 생성형 템플릿' → 'EDITOR'
@@ -188,6 +203,11 @@ async function handleDelete(row) {
   if (!confirm(`'${row?.name}' 템플릿을 삭제하시겠습니까?`)) return
   try {
     await http.delete(`/api/lawyer/templates/${row.no}`)
+    // await makeApiRequest({
+    //   method: 'delete',
+    //   url: `/api/lawyer/templates/${row.no}`
+    // })
+
     await fetchTemplates(currentFilters.value, page.value)
     alert('삭제되었습니다.')
   } catch (e) {

@@ -5,6 +5,7 @@ import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 import AiTemplateEditor from '@/components/template/AiTemplateEditor.vue'
 import UploadTemplateForm from '@/components/template/UploadTemplateForm.vue'
 import http from '@/libs/HttpRequester'
+import {getValidToken} from "@/libs/axios-auth.js";
 
 // 최대 썸네일 용량 (10MB)
 const MAX_THUMBNAIL_SIZE = 10 * 1024 * 1024  // 10MB
@@ -48,6 +49,12 @@ const isSubmitting = ref(false)
 onMounted(async () => {
   try {
     const res = await http.get(`/api/lawyer/templates/${templateNo}`, { type: templateType })
+    // const res = await makeApiRequest({
+    //   method: 'get',
+    //   url: `/api/lawyer/templates/${templateNo}`,
+    //   params: { type: templateType }  // GET 쿼리는 params로
+    // })
+
     const data = res.data
 
     console.log(data)
@@ -172,7 +179,7 @@ async function handleUpdate() {
       alert(e.response.data);
     } else {
       console.error(e);
-      alert('❌ 알 수 없는 오류가 발생했습니다.');
+      alert('❌ 알 수 없는 오류가 발생했습니다. 다시 시도해주시기 바랍니다.');
     }
   } finally {
     isSubmitting.value = false
@@ -212,6 +219,11 @@ async function callUpdateCloneAPI() {
 
   // 에러는 handleUpdate()에서 처리됩니다.
   await http.post('/api/lawyer/templates/update', formData)
+  // await makeApiRequest({
+  //   method: 'post',
+  //   url: '/api/lawyer/templates/update',
+  //   data: formData,
+  // })
 }
 
 async function callUpdateMetaAPI() {
@@ -231,6 +243,11 @@ async function callUpdateMetaAPI() {
 
   // Axios(또는 http)로 보내면, 자동으로 Content-Type: multipart/form-data 가 세팅됩니다.
   await http.post('/api/lawyer/templates/update-meta', formData)
+  // await makeApiRequest({
+  //   method: 'post',
+  //   url: '/api/lawyer/templates/update-meta',
+  //   data: formData,
+  // })
 }
 </script>
 
@@ -366,6 +383,9 @@ async function callUpdateMetaAPI() {
 
       <!-- 버튼 -->
       <div class="text-end">
+        <div class="text-muted small mb-2">
+          AI가 문서를 정밀하게 검토합니다. <strong>1~5분 정도 소요</strong>될 수 있어요.
+        </div>
         <button
             class="btn btn-primary"
             :disabled="isSubmitting"
