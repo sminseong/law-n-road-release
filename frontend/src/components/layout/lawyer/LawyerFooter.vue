@@ -38,7 +38,6 @@
 <style scoped>
 .footer {
   font-size: 0.85rem;
-  background-color: #ffffff;
   color: #6c757d;
 }
 a.link-secondary {

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -61,6 +62,7 @@ public class CartServiceImpl implements CartService {
     // ③ 주문 생성
     OrdersCreateDTO orderDto = new OrdersCreateDTO();
     orderDto.setUserNo(dto.getUserNo());
+    orderDto.setOrderCode(UUID.randomUUID().toString());
     orderDto.setAmount((long) totalAmount);
     orderDto.setStatus("ORDERED");
     orderDto.setOrderType("TEMPLATE");

@@ -5,8 +5,9 @@ import { ref, onMounted } from 'vue'
 import http from '@/libs/HttpRequester'
 import { useRouter } from 'vue-router'
 
-// 상태
+// 라우터
 const router = useRouter()
+// 상태
 const rows = ref([])
 const currentPage = ref(1)
 const totalPages = ref(1)
@@ -17,37 +18,67 @@ const filters = ref([
     options: ['전체', 'ORDERED', 'CANCELED', 'REFUNDED']
   }
 ])
+// status + 검색어(keyword) 가 이 오브젝트에 담겨서 넘어옴
 const currentFilters = ref({})
 const isDownloaded = ref(false)
 
 // 템플릿 목록 불러오기
-async function fetchOrders(page = 1, query = {}) {
-  const params = { page, limit: 10, ...query }
-  const res = await http.get('/api/client/templates/orders', params)
+async function fetchOrders(filtersObj, pageNo) {
+  const params = {
+    page: pageNo,
+    limit: 10,
+    ...normalizeFilters(filtersObj)
+  }
 
-  rows.value = res.data.orders
+  const res = await http.get('/api/client/templates/orders', params)
+  console.log(res)
+
+  // 상태 한글 변환 맵
+  const statusLabelMap = {
+    ORDERED: '결제대기',
+    PAID: '결제완료',
+    CANCELED: '환불'
+  }
+
+  // rows에 한글 상태 필드 추가
+  rows.value = res.data.orders.map((o) => ({
+    ...o,
+    status: statusLabelMap[o.status] || o.status
+  }))
+
+  // rows.value = res.data.orders
   totalPages.value = res.data.totalPages
-  currentPage.value = page
+  currentPage.value = pageNo
   isDownloaded.value = res.data.isDownloaded
 }
 
-function handlePageChange(page) {
-  fetchOrders(page, currentFilters.value)
+// 서버에 보낼 쿼리 정리
+function normalizeFilters(f) {
+  return {
+    status: f.status && f.status !== '전체' ? f.status : undefined,
+    keyword: f.keyword?.trim() || undefined
+  }
 }
 
+// 필터(주문상태 + 검색어) 변경 시
 function handleFilterChange(newFilters) {
-  const mapped = { ...newFilters }
-  if (mapped.status === '전체') delete mapped.status
-  currentFilters.value = mapped
-  fetchOrders(1, mapped)
+  currentFilters.value = { ...newFilters }
+  currentPage.value = 1
+  fetchOrders(currentFilters.value, 1)
 }
 
+// 페이지 변경 시
+function handlePageChange(newPage) {
+  fetchOrders(currentFilters.value, newPage)
+}
+
+// 행 클릭
 function handleRowClick(row) {
   router.push(`/client/template/orders/${row.orderNo}`)
 }
 
 // 초기 로딩
-onMounted(() => fetchOrders())
+onMounted(() => fetchOrders(currentFilters.value, currentPage.value))
 </script>
 
 <template>
@@ -69,22 +100,15 @@ onMounted(() => fetchOrders())
             },
             {
               label: '총금액',
-              key: 'totalAmount',
+              key: 'amount',
               formatter: (v) => `${v.toLocaleString()}원`
             },
             {
               label: '주문상태',
-              key: 'status',
-              formatter: (v) => {
-                const map = {
-                  ORDERED: '결제완료',
-                  CANCELED: '취소',
-                  REFUNDED: '환불'
-                }
-                return map[v] || v
-              }
+              key: 'status'  // fetchOrders 내부에서 매핑 진행
             },
           ]"
+          :show-search-input="true"
           :filters="filters"
           :current-page="currentPage"
           :total-pages="totalPages"

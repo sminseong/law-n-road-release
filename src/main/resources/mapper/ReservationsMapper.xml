@@ -14,28 +14,51 @@
             (#{orderNo}, #{slotNo}, #{userNo}, #{content}, 'REQUESTED', NOW(), NOW())
     </insert>
 
+<!--    <select id="selectReservationsByUser"-->
+<!--            resultType="com.lawnroad.reservation.dto.ReservationsResponseDTO"-->
+<!--            parameterType="long">-->
+<!--        SELECT-->
+<!--            r.no,-->
+<!--            r.order_no      AS orderNo,-->
+<!--            o.order_code    AS orderCode,-->
+<!--            r.user_no       AS userNo,-->
+<!--            u.name          AS userName,-->
+<!--            r.slot_no       AS slotNo,-->
+<!--            w.slot_date     AS slotDate,-->
+<!--            w.slot_time     AS slotTime,-->
+<!--            r.status        AS status,-->
+<!--            r.content       AS content,-->
+<!--            w.amount        AS amount-->
+<!--        FROM reservations r-->
+<!--                 JOIN client u      ON r.user_no  = u.no-->
+<!--                 JOIN weekly_time_slots w ON r.slot_no  = w.no-->
+<!--                 JOIN orders o ON r.order_no = o.no-->
+<!--        WHERE r.user_no = #{userNo}-->
+<!--        ORDER BY w.slot_date DESC-->
+<!--    </select>-->
+
     <select id="selectReservationsByUser"
             resultType="com.lawnroad.reservation.dto.ReservationsResponseDTO"
             parameterType="long">
         SELECT
             r.no,
-            r.order_no      AS orderNo,
-            o.order_code    AS orderCode,
-            r.user_no       AS userNo,
-            u.name          AS userName,
-            r.slot_no       AS slotNo,
-            w.slot_date     AS slotDate,
-            w.slot_time     AS slotTime,
-            r.status        AS status,
-            r.content       AS content,
-            w.amount        AS amount
+            r.order_no    AS orderNo,
+            o.order_code  AS orderCode,
+            r.user_no     AS userNo,
+            u.name        AS userName,
+            r.slot_no     AS slotNo,
+            w.slot_date   AS slotDate,
+            w.slot_time   AS slotTime,
+            r.status      AS status,
+            w.amount      AS amount
         FROM reservations r
-                 JOIN client u      ON r.user_no  = u.no
+                 JOIN client u            ON r.user_no  = u.no
                  JOIN weekly_time_slots w ON r.slot_no  = w.no
-                 JOIN orders o ON r.order_no = o.no
+                 JOIN orders o            ON r.order_no = o.no
         WHERE r.user_no = #{userNo}
         ORDER BY r.no DESC, w.slot_date DESC, w.slot_time DESC
     </select>
+
 
     <update id="updateReservationStatus" parameterType="map">
         UPDATE reservations
