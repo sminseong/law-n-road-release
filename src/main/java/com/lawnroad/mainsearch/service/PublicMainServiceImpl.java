@@ -1,6 +1,6 @@
 package com.lawnroad.mainsearch.service;
 
-import com.lawnroad.mainsearch.dto.BoardDto;
+import com.lawnroad.mainsearch.dto.BoardHomepageDto;
 import com.lawnroad.mainsearch.dto.LawyerAdBannerDto;
 import com.lawnroad.mainsearch.mapper.PublicMainMapper;
 import com.lawnroad.template.dto.TemplateDto;
@@ -21,7 +21,7 @@ public class PublicMainServiceImpl implements PublicMainService {
   }
   
   @Override
-  public List<BoardDto> getLatestBoards() {
+  public List<BoardHomepageDto> getLatestBoards() {
     return publicMainMapper.selectLatestBoards();
   }
   

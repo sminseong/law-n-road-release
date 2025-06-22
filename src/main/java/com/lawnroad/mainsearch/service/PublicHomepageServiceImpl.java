@@ -15,7 +15,7 @@ public class PublicHomepageServiceImpl implements PublicHomepageService {
   public LawyerHomepageDto getLawyerHomepage(Long lawyerNo) {
     LawyerHomepageDto dto = publicHomepageMapper.selectLawyerHomepageInfo(lawyerNo);
     dto.setRecentTemplates(publicHomepageMapper.selectRecentTemplatesByLawyerNo(lawyerNo));
-    dto.setRecentBoards(publicHomepageMapper.selectRecentBoardsByLawyerNo(lawyerNo));
+    dto.setRecentBoards(publicHomepageMapper.selectLatestBoardsByLawyer(lawyerNo));
     return dto;
   }
 }

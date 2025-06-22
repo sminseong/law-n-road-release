@@ -26,7 +26,7 @@
     </select>
 
     <!-- 최신 게시글 5개 조회 -->
-    <select id="selectLatestBoards" resultType="com.lawnroad.mainsearch.dto.BoardDto">
+    <select id="selectLatestBoards" resultType="com.lawnroad.mainsearch.dto.BoardHomepageDto">
         SELECT
             no,
             category_no AS categoryNo,

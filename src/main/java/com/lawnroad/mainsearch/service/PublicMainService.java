@@ -1,6 +1,6 @@
 package com.lawnroad.mainsearch.service;
 
-import com.lawnroad.mainsearch.dto.BoardDto;
+import com.lawnroad.mainsearch.dto.BoardHomepageDto;
 import com.lawnroad.mainsearch.dto.LawyerAdBannerDto;
 import com.lawnroad.template.dto.TemplateDto;
 
@@ -11,7 +11,7 @@ public interface PublicMainService {
   List<LawyerAdBannerDto> getActiveMainBanners();
   
   // 메인 페이지 최신 게시글 5개 조회
-  List<BoardDto> getLatestBoards();
+  List<BoardHomepageDto> getLatestBoards();
   
   // 인기 상품 10개 조회
   List<TemplateDto> getPopularTemplates();

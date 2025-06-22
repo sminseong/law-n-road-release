@@ -1,11 +1,10 @@
 package com.lawnroad.mainsearch.controller;
 
-import com.lawnroad.mainsearch.dto.BoardDto;
+import com.lawnroad.mainsearch.dto.BoardHomepageDto;
 import com.lawnroad.mainsearch.dto.LawyerAdBannerDto;
 import com.lawnroad.mainsearch.service.PublicMainService;
 import com.lawnroad.template.dto.TemplateDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,7 +24,7 @@ public class PublicMainController {
   }
   
   @GetMapping("/latest")
-  public List<BoardDto> getLatestBoards() {
+  public List<BoardHomepageDto> getLatestBoards() {
     return publicMainService.getLatestBoards();
   }
   
