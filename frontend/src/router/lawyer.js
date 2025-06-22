@@ -70,7 +70,22 @@ export default [
     // ---------- 광고 ----------
     {
         path: '/lawyer/ads',
-        name: 'LawyerAds',
-        component: () => import('@/views/lawyer/AdManagementView.vue')
+        name: 'AdList',
+        component: () => import('@/views/lawyer/AD/AdListView.vue')
+    },
+    {
+        path: '/lawyer/ads/register',
+        name: 'AdRegister',
+        component: () => import('@/views/lawyer/AD/AdRegisterView.vue')
+    },
+    {
+        path: '/lawyer/ads/:no',
+        name: 'AdDetail',
+        component: () => import('@/views/lawyer/AD/AdDetailView.vue')
+    },
+    {
+        path: '/lawyer/ads/edit/:no',
+        name: 'AdEdit',
+        component: () => import('@/views/lawyer/AD/AdEditView.vue')
     },
 ]
