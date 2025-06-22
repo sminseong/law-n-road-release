@@ -16,7 +16,6 @@ const totalPages = ref(null)   // 전체 페이지 수 (백엔드가 제공하�
 const isLoading = ref(false)   // 로딩 상태
 const error = ref(null)        // 오류 상태
 
-
 // 페이지네이션 그룹 계산 (예: 10개씩 묶음)
 const pagesInGroup = 10
 const startPage = computed(() => Math.floor((page.value - 1) / pagesInGroup) * pagesInGroup + 1)
@@ -75,6 +74,28 @@ async function loadList() {
   }
 }
 
+function onClickWrite() {
+  const accountType = localStorage.getItem('accountType')
+
+  if (!accountType) {
+    alert('로그인이 필요합니다.')
+    return router.push(`/login?redirect=${encodeURIComponent(router.currentRoute.value.fullPath)}`)
+  }
+
+  if (accountType !== 'client' && accountType !== 'lawyer') {
+    alert('접근 권한이 없습니다.')
+    return router.push('/')
+  }
+
+  if (accountType === 'client') {
+    return router.push('/client/qna/register')
+  }
+
+  if (accountType === 'lawyer') {
+    return router.push('/client/qna/register')
+  }
+}
+
 // 페이지 최초 로딩시 -> 데이터 로드
 onMounted(() => {
   loadList()
@@ -92,9 +113,9 @@ watch(page, () => {
     <section class="qa-section py-5 px-3 px-lg-5">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold fs-3">전체 상담사례 목록</h2>
-        <router-link to="/client/qna/register" class="btn btn-outline-primary btn-sm">
+        <button @click="onClickWrite" class="btn btn-outline-primary btn-sm">
           상담글 쓰기
-        </router-link>
+        </button>
       </div>
 
       <!-- 게시글 없을 때 UI 표시 -->

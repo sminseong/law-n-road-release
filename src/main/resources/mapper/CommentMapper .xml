@@ -5,7 +5,7 @@
 
 <mapper namespace="com.lawnroad.board.mapper.CommentMapper">
 
-    <!-- 답변 등록 -->
+    <!-- [답변 등록] -->
     <insert id="insertComment" parameterType="com.lawnroad.board.dto.CommentRegisterDto">
         INSERT INTO comment (board_no, user_no, content, created_at)
         VALUES (#{boardNo}, #{userNo}, #{content}, NOW())
@@ -21,6 +21,7 @@
         <result property="userNo"             column="user_no" />
     </resultMap>
 
+    <!-- [특정 게시글의 모든 답변 조회] : 변호사 정보와 함께 가져옴 -->
     <select id="findByBoardNo" resultMap="CommentResponseMap" parameterType="long">
         SELECT
             l.name AS lawyer_name,
@@ -54,7 +55,7 @@
         SELECT COUNT(*) FROM comment WHERE user_no = #{userNo}
     </select>
 
-    <!-- 특정 댓글 ID로 댓글 상세 조회 -->
+    <!-- [댓글 상세 조회] : 수정 페이지 진입 시 사용 -->
     <select id="findById" resultType="com.lawnroad.board.dto.CommentDetailDto">
         SELECT
             c.no AS commentId,
@@ -69,6 +70,7 @@
         WHERE c.no = #{commentId}
     </select>
 
+    <!--  [답변 수정] -->
     <update id="updateComment">
         UPDATE comment
         SET content = #{dto.content},
@@ -76,11 +78,13 @@
         WHERE no = #{commentId}
     </update>
 
+    <!-- [답변 삭제] -->
     <delete id="deleteComment" parameterType="long">
         DELETE FROM comment
         WHERE no = #{commentId}
     </delete>
 
+    <!-- [해당 게시글에 내가 이미 답변했는지 확인] : 중복 등록 방지용 -->
     <select id="existsByBoardNoAndUserNo" resultType="boolean">
         SELECT EXISTS (
             SELECT 1 FROM comment

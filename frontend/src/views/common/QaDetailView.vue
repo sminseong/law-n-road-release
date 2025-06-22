@@ -9,6 +9,8 @@ const route = useRoute()
 const router = useRouter()
 const id = route.params.id
 
+const isLoggedIn = !!localStorage.getItem('accountType')
+
 // 게시글 상세 데이터
 const qa = ref({
   categoryName: '',
@@ -109,7 +111,7 @@ onMounted(async () => {
       </p>
 
       <!-- 수정/삭제 버튼 -->
-      <div class="d-flex justify-content-end mb-4">
+      <div v-if="isLoggedIn" class="d-flex justify-content-end mb-4">
         <button @click="goEditPage" class="btn btn-link text-secondary p-0 me-2 edit-btn" >
           <i class="fas fa-pencil-alt"></i> 수정하기
         </button>
@@ -226,6 +228,9 @@ onMounted(async () => {
   line-height: 1.75;
   white-space: pre-line;
   padding-right: 0.5rem;
+}
+.custom-backdrop {
+  z-index: 9999; /* 기존 1050보다 훨씬 높게 */
 }
 
 </style>
