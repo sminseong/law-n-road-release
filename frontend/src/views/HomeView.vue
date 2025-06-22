@@ -7,22 +7,40 @@
   import CardTable from '@/components/table/CardTable.vue'
   import ProductCard from '@/components/common/ProductCard.vue'
   import AdBannerPair from '@/components/common/SubBannerSlider.vue'
-
+  import http from '@/libs/HttpRequester'
   import { ref, onMounted } from 'vue'
   import { useRouter } from 'vue-router'
   import axios from 'axios'
+
+
+
   const router = useRouter()
   const nickname = ref('')
   const isLoggedIn = ref(false)
 
 
-  onMounted(() => {
+  // 메인 베너
+  const mainBanners = ref([])
+
+  onMounted(async () => {
     const token = localStorage.getItem('token')
     const nick = localStorage.getItem('nickname')
 
     isLoggedIn.value = !!token
     if (nick && nick !== 'null') {
       nickname.value = nick
+    }
+
+    if (!isLoggedIn.value) {
+      logout()  // await 없이 호출 (백그라운드에서 실행)
+      return
+    }
+
+    try {
+      const res = await http.get('/api/main/main-banners')
+      mainBanners.value = res.data
+    } catch (e) {
+      console.error('배너 조회 실패:', e)
     }
   })
 
@@ -63,40 +81,18 @@
     console.log('nickname:', localStorage.getItem('nickname'))
 
     // ✅ 5. 로그인 페이지로 이동 + 새로고침
-    router.push('/login')
-    setTimeout(() => location.reload(), 300)
+    // router.push('/login')
+    // setTimeout(() => location.reload(), 100)
   }
-
-  // 메인 베너
-  const mainBanners = [
-    {
-      title: '횡단보도 뺑소니 전문<br />김수영 변호사',
-      desc: '전문가와 함께라면 사고 처리도, 합의도<br />더 이상 어렵지 않습니다.',
-      image: '/img/ads/slider-1-1.png',
-      link: '/lawyer.html',
-      lawyerNo:'1',
-      lawyerName: '김수영'
-      // badge 생략 → 본문에서 전달한 defaultBadgeText 사용됨
-    },
-    {
-      title: '교통사고 전문<br />정은혜 변호사',
-      desc: '신속한 대응과 확실한 전략으로<br />당신의 권리를 지켜드립니다.',
-      image: '/img/ads/slider-2-1.png',
-      link: '/lawyer.html',
-      lawyerNo:'2',
-      lawyerName: '정은혜',
-      badge: '교통사고 전문 상담'
-    }
-  ]
 
   // 동그라미 카테고리
   const roundCategories = [
-    { icon: 'fas fa-car-crash', label: '사고 발생/처리', link: '/search.html' },
-    { icon: 'fas fa-balance-scale', label: '중대사고·형사처벌', link: '/search.html' },
-    { icon: 'fas fa-beer', label: '음주·무면허 운전', link: '/search.html' },
-    { icon: 'fas fa-gavel', label: '보험·행정처분', link: '/search.html' },
-    { icon: 'fas fa-search', label: '과실 분쟁', link: '/search.html' },
-    { icon: 'fas fa-bicycle', label: '차량 외 사고', link: '/search.html' }
+    { icon: 'fas fa-car-crash', label: '사고 발생/처리', link: '/search?category=1' },
+    { icon: 'fas fa-balance-scale', label: '중대사고·형사처벌', link: '/search?category=2' },
+    { icon: 'fas fa-beer', label: '음주·무면허 운전', link: '/search?category=3' },
+    { icon: 'fas fa-gavel', label: '보험·행정처분', link: '/search?category=4' },
+    { icon: 'fas fa-search', label: '과실 분쟁', link: '/search?category=5' },
+    { icon: 'fas fa-bicycle', label: '차량 외 사고', link: '/search?category=6' },
   ]
 
   // 라이브 방송박스 (대기화면)
@@ -369,26 +365,12 @@ const loadFn = async ({ page, size }) => {
 <template>
   <!-- 의뢰인 타입 본문 콘텐츠 -->
   <ClientFrame>
-<!--    <p>-->
-<!--      <a href="/lawyer">변호사 대시보드 이동하기</a>-->
-<!--    </p>-->
-
-    <!-- ① 예약 신청 섹션 추가 -->
-<!--    <section class="my-8 p-4 bg-gray-50 rounded">-->
-<!--      <h3 class="text-xl font-semibold mb-2">상담 예약 신청하기</h3>-->
-<!--      <div class="flex space-x-4">-->
-<!--        &lt;!&ndash; 여기에 실제 변호사 리스트를 넣어도 되고, 테스트용으로 하드코딩해도 됩니다. &ndash;&gt;-->
-<!--        <router-link-->
-<!--            :to="{ name: 'ClientReservations', params: { lawyerNo: 1, lawyerName: '김민수' } }"-->
-<!--            class="px-3 py-1 "-->
-<!--        >-->
-<!--          김민수 변호사 예약하기-->
-<!--        </router-link>-->
-<!--      </div>-->
-<!--    </section>-->
-
     <!-- 메인 베너 -->
-    <MainBannerSlider :banners="mainBanners" defaultBadgeText="로앤로드 대표 서비스" />
+    <MainBannerSlider
+        v-if="mainBanners.length > 0"
+        :banners="mainBanners"
+        defaultBadgeText="로앤로드 대표 서비스"
+    />
 
     <!-- 동그라미 카테고리 -->
     <RoundCategory :categories="roundCategories" />

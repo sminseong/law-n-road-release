@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lawnroad.mainsearch.mapper.PublicMainMapper">
+
+    <!-- 메인 페이지 메인 베너 광고 -->
+    <select id="selectActiveMainBanners" resultType="com.lawnroad.mainsearch.dto.LawyerAdBannerDto">
+        SELECT
+            ap.main_text     AS title,
+            ap.detail_text   AS `desc`,
+            ap.ad_path       AS image,
+            CONCAT('/lawyer/', l.no, '/homepage') AS link,
+            l.no             AS lawyerNo,
+            l.name           AS lawyerName,
+            ap.tip_text      AS badge
+        FROM ad_purchase ap
+                 JOIN lawyer l ON ap.user_no = l.no
+        WHERE ap.ad_type = 'MAIN'
+          AND ap.ad_status = 1
+          AND ap.approval_status = 'APPROVED'
+          AND NOW() BETWEEN ap.start_date AND ap.end_date
+        ORDER BY ap.start_date DESC
+    </select>
+
+</mapper>
