@@ -21,7 +21,23 @@
           AND ap.ad_status = 1
           AND ap.approval_status = 'APPROVED'
           AND NOW() BETWEEN ap.start_date AND ap.end_date
-        ORDER BY ap.start_date DESC
+        ORDER BY RAND()
+        LIMIT 6
+    </select>
+
+    <!-- 최신 게시글 5개 조회 -->
+    <select id="selectLatestBoards" resultType="com.lawnroad.mainsearch.dto.BoardDto">
+        SELECT
+            no,
+            category_no AS categoryNo,
+            title,
+            content,
+            incident_date AS incidentDate,
+            created_at AS createdAt,
+            updated_at AS updatedAt
+        FROM board
+        ORDER BY created_at DESC
+        LIMIT 5
     </select>
 
 </mapper>

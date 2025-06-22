@@ -12,15 +12,17 @@
   import { useRouter } from 'vue-router'
   import axios from 'axios'
 
-
-
+  // 변수들
   const router = useRouter()
   const nickname = ref('')
   const isLoggedIn = ref(false)
 
-
   // 메인 베너
   const mainBanners = ref([])
+
+  // qna 테이블
+  const qnaSampleList = ref([])
+
 
   onMounted(async () => {
     const token = localStorage.getItem('token')
@@ -41,6 +43,14 @@
       mainBanners.value = res.data
     } catch (e) {
       console.error('배너 조회 실패:', e)
+    }
+
+    try {
+      const res2 = await http.get('/api/public/main/latest')
+      qnaSampleList.value = res2.data
+      console.log(qnaSampleList.value)
+    } catch (e) {
+      console.error('QNA 상담글 조회 실패:', e)
     }
   })
 
@@ -195,69 +205,6 @@
       link: '/replay.html'
     }
   ]
-
-  // qna 테이블
-  const qnaSampleList = [
-  {
-    no: 1,
-    question: '음주운전 삼진아웃이 세 번까지 봐준다는 말인가요?',
-    answerPreview: '아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며...'
-  },
-  {
-    no: 2,
-    question: '무면허 운전.. 구제 가능한가요...?',
-    answerPreview: '구제 가능 여부는 사안에 따라 다르며, 음주·무면허 사안은...'
-  },
-  {
-    no: 3,
-    question: '음주운전 삼진아웃이 세 번까지 봐준다는 말인가요?',
-    answerPreview: '아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며...'
-  },
-  {
-    no: 4,
-    question: '무면허 운전.. 구제 가능한가요...?',
-    answerPreview: '아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 구제 가능 여부는 사안에 따라 다르며, 음주·무면허 사안은...'
-  },
-  {
-    no: 5,
-    question: '음주운전 삼진아웃이 세 번까지 봐준다는 말인가요?',
-    answerPreview: '아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 .'
-  }
-]
-
-
-
-// 공용 테이블 보기
-const columns = [
-  { label: '이름', key: 'name' },
-  { label: '나이', key: 'age' }
-]
-
-const fullData = Array.from({ length: 300 }, (_, i) => ({
-  no: i + 1,
-  name: `홍길동 ${i + 1}`,
-  age: 20 + (i % 10) // 20~29 반복
-}))
-
-// 더미 fetch 함수 (slice + total info)
-const loadFn = async ({ page, size }) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const start = page * size
-      const content = fullData.slice(start, start + size)
-
-      resolve({
-        status: 200,
-        data: {
-          content,
-          number: page,
-          totalPages: Math.ceil(fullData.length / size),
-          totalElements: fullData.length
-        }
-      })
-    }, 200)
-  })
-}
 
   const productList = [
     {
