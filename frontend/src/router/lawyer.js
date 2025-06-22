@@ -27,6 +27,11 @@ export default [
         name: 'CommentRegister',
         component: () => import('@/views/lawyer/QnaRegisterView.vue')
     },
+    {
+        path: '/lawyer/qna/comment/edit/:id',
+        name: 'CommentEdit',
+        component: () => import('@/views/lawyer/QnaEditView.vue')
+    },
 
 
     // ---------- 예약 ----------

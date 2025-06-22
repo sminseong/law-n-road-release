@@ -1,7 +1,7 @@
 <script setup>
 import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 
-import { fetchBoardList , fetchMyAnswers } from '@/service/boardService.js'
+import { fetchBoardList , fetchMyComment } from '@/service/boardService.js'
 import { ref, watch, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -72,13 +72,14 @@ const loadMyAnswerList = async () => {
   try {
     console.log(page.value)
     console.log(size.value)
-    const res = await fetchMyAnswers(page.value, size.value)
+    const res = await fetchMyComment(page.value, size.value)
     console.log('🔵 내 답변 API 응답:', res)
     console.log('🔵 응답 데이터:', res.data)
     const data = res.data
     console.log('🟢 내 답변 응답:', data)
 
     myAnswers.value = Array.isArray(res.data.content) ? res.data.content : []
+    console.log('🔍 내 답변 목록:', myAnswers.value)
     totalPages.value = data.totalPages || Math.ceil((data.totalElements || 0) / size.value)
   } catch (err) {
     console.error('내 답변 목록 실패', err)
@@ -112,7 +113,7 @@ onMounted(() => {
   <LawyerFrame>
     <div class="container py-0">
       <h2 v-if="selectedTab === 'answer'">Q&A 답변하기</h2>
-      <h2 v-if="selectedTab === 'my'">내 답변한 상담글</h2>
+      <h2 v-if="selectedTab === 'my'">내가 답변한 상담글</h2>
     </div>
 
     <section class="qa-section py-5 px-3 px-lg-5 mt-0">
@@ -131,7 +132,7 @@ onMounted(() => {
               :class="{ active: selectedTab === 'my' }"
               @click="selectedTab = 'my'"
           >
-            내 답변한 상담글
+            내가 답변한 상담글
           </button>
         </div>
       </div>
@@ -169,7 +170,9 @@ onMounted(() => {
           <div
               v-for="ans in myAnswers"
               :key="ans.no"
-              class="qa-card bg-white rounded shadow-sm p-4 mb-3">
+              class="qa-card bg-white rounded shadow-sm p-4 mb-3"
+              @click="router.push({ name: 'CommentEdit', params: { id: ans.commentId } })"
+              style="cursor: pointer;">
             <div class="fw-bold mb-1">{{ ans.boardTitle }}</div>
             <p class="text-muted small mb-1">{{ ans.content }}</p>
             <small class="text-secondary">
