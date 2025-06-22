@@ -33,11 +33,11 @@
 
     if (!isLoggedIn.value) {
       logout()  // await 없이 호출 (백그라운드에서 실행)
-      return
+      // return
     }
 
     try {
-      const res = await http.get('/api/main/main-banners')
+      const res = await http.get('/api/public/main/main-banners')
       mainBanners.value = res.data
     } catch (e) {
       console.error('배너 조회 실패:', e)
