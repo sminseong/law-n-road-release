@@ -50,14 +50,19 @@ async function fetchPage() {
   try {
     const res = await http.get('/api/public/templates', query)
 
+    // 천 단위를 점(.)으로 구분하는 함수
+    const formatPrice = (price) => {
+      return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    }
+
     // 응답 형태: { templates: [...], totalPages: n, totalCount: m }
     pageItems.value = res.data.templates.map(item => ({
       no: item.no,
       imageUrl: item.thumbnailPath,
       title: item.name,
-      originalPrice: item.price,
+      originalPrice: `${formatPrice(item.price)}원`,
       discountPercent: item.discountRate ?? 0,
-      discountedPrice: Math.floor(item.price * (1 - (item.discountRate ?? 0) / 100))
+      discountedPrice: `${formatPrice(Math.floor(item.price * (1 - (item.discountRate ?? 0) / 100)))}원`
     }))
     totalPages.value = res.data.totalPages
   } catch (e) {

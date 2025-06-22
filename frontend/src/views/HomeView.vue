@@ -36,7 +36,7 @@
         title: tmpl.name,
         imageUrl: tmpl.thumbnailPath || 'https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png',
         originalPrice: `${price.toLocaleString()}원`,
-        discountPercent: `${discountRate}%`,
+        discountPercent: `${discountRate}`,
         discountedPrice: `${discountedPrice.toLocaleString()}원`,
       }
     })
