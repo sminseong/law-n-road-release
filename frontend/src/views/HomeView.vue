@@ -8,7 +8,7 @@
   import ProductCard from '@/components/common/ProductCard.vue'
   import AdBannerPair from '@/components/common/SubBannerSlider.vue'
   import http from '@/libs/HttpRequester'
-  import { ref, onMounted } from 'vue'
+  import { ref, onMounted, computed } from 'vue'
   import { useRouter } from 'vue-router'
   import axios from 'axios'
 
@@ -23,6 +23,24 @@
   // qna 테이블
   const qnaSampleList = ref([])
 
+  // 템플릿 10개
+  const rawProductList = ref([])
+  const productList = computed(() => { // 가공된 데이터용
+    return (rawProductList.value || []).map(tmpl => {
+      const price = tmpl.price || 0
+      const discountRate = tmpl.discountRate || 0
+      const discountedPrice = Math.floor(price * (1 - discountRate / 100))
+
+      return {
+        no: tmpl.no,
+        title: tmpl.name,
+        imageUrl: tmpl.thumbnailPath || 'https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png',
+        originalPrice: `${price.toLocaleString()}원`,
+        discountPercent: `${discountRate}%`,
+        discountedPrice: `${discountedPrice.toLocaleString()}원`,
+      }
+    })
+  })
 
   onMounted(async () => {
     const token = localStorage.getItem('token')
@@ -48,9 +66,17 @@
     try {
       const res2 = await http.get('/api/public/main/latest')
       qnaSampleList.value = res2.data
-      console.log(qnaSampleList.value)
+      // console.log(qnaSampleList.value)
     } catch (e) {
       console.error('QNA 상담글 조회 실패:', e)
+    }
+
+    try {
+      const res2 = await http.get('/api/public/main/templates/popular')
+      rawProductList .value = res2.data
+      console.log(rawProductList .value)
+    } catch (e) {
+      console.error('템플릿 top10 조회 실패:', e)
     }
   })
 
@@ -204,89 +230,6 @@
       title: '블랙박스 제출 전략',
       link: '/replay.html'
     }
-  ]
-
-  const productList = [
-    {
-      no: 42,
-      title: '1인 민사소송 키트 음주운전 관련 합의서 포함 설명서 세트',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '20,000원',
-      discountPercent: '44%',
-      discountedPrice: '11,200원',
-    },
-    {
-      no: 108,
-      title: '내용증명 작성 가이드 + 샘플 문서 모음',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '15,000원',
-      discountPercent: '33%',
-      discountedPrice: '10,000원',
-    },
-    {
-      no: 203,
-      title: '임대차 계약서 세트 (상가/주택 전용)',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '25,000원',
-      discountPercent: '40%',
-      discountedPrice: '15,000원',
-    },
-    {
-      no: 304,
-      title: '이혼 합의서 양식 + 재산분할 설명서',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '18,000원',
-      discountPercent: '28%',
-      discountedPrice: '13,000원',
-    },
-    {
-      no: 405,
-      title: '지급명령 신청서 + 설명서 세트',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '17,000원',
-      discountPercent: '30%',
-      discountedPrice: '11,900원',
-    },
-    {
-      no: 506,
-      title: '교통사고 합의서 키트 + 보험사 응대 매뉴얼',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '22,000원',
-      discountPercent: '36%',
-      discountedPrice: '14,000원',
-    },
-    {
-      no: 607,
-      title: '채무 변제 각서 + 확약서 작성 가이드',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '12,000원',
-      discountPercent: '25%',
-      discountedPrice: '9,000원',
-    },
-    {
-      no: 708,
-      title: '고소장 작성 키트 (형사 고소 전용)',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '19,000원',
-      discountPercent: '31%',
-      discountedPrice: '13,100원',
-    },
-    {
-      no: 809,
-      title: '위임장/동의서 통합 세트',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '14,000원',
-      discountPercent: '20%',
-      discountedPrice: '11,200원',
-    },
-    {
-      no: 910,
-      title: '내용증명 반송 대응 키트 + 체크리스트',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '16,000원',
-      discountPercent: '35%',
-      discountedPrice: '10,400원',
-    },
   ]
 
   const banners = [
