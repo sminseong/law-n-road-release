@@ -7,7 +7,6 @@ import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import axios from "axios";
 import {useRoute, useRouter} from "vue-router";
 import {getValidToken, makeApiRequest} from "@/libs/axios-auth.js";
-import { onBeforeRouteLeave } from 'vue-router'
 
 const route = useRoute();
 const router = useRouter();
@@ -23,6 +22,11 @@ const broadcastNo = ref(null);
 const elapsedTime = ref("00:00:00");
 const viewerCount = ref(1);
 let timerInterval = null;
+
+// 방송 녹화 (VOD)
+const mediaRecorder = ref(null)
+const recordedChunks = ref([])
+let startRecordTime = 0;
 
 const preventReload = (e) => {
   e.preventDefault();
@@ -90,6 +94,53 @@ const initPublisherWithDelay = async () => {
   if (publisher.value) {
     await session.value.publish(publisher.value);
     console.log("✅ 방송 송출 시작됨");
+  }
+
+  if (publisher.value && publisher.value.stream) {
+    const mediaStream = publisher.value.stream.getMediaStream()
+    mediaRecorder.value = new MediaRecorder(mediaStream, {
+      mimeType: "video/webm; codecs=vp8"
+    });
+
+    mediaRecorder.value.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        recordedChunks.value.push(event.data);
+      }
+    };
+
+    mediaRecorder.value.onstop = async () => {
+      const blob = new Blob(recordedChunks.value, { type: "video/webm" });
+      const durationSec = Math.floor((performance.now() - startRecordTime) / 1000);
+
+      const formData = new FormData();
+      formData.append("file", blob, `vod-${broadcastNo.value}.webm`);
+      formData.append("duration", durationSec.toString());
+
+      try {
+        const token = await getValidToken();
+        if (!token) {
+          alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+          return;
+        }
+
+        await axios.post(`/api/lawyer/vod/upload/${broadcastNo.value}`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+          timeout: 10000,
+        });
+
+        alert("✅ 녹화 영상 업로드 완료!");
+      } catch (err) {
+        console.error("❌ 녹화 파일 업로드 실패:", err);
+      }
+    };
+
+
+    startRecordTime = performance.now();  // 녹화 시작 시간 기록
+    mediaRecorder.value.start();
+    console.log("🎥 MediaRecorder 녹화 시작됨");
   }
 };
 
@@ -204,6 +255,10 @@ const handleEndBroadcast = async () => {
     })
 
     alert("✅ 방송이 종료되었습니다.")
+
+    if (mediaRecorder.value && mediaRecorder.value.state !== "inactive") {
+      mediaRecorder.value.stop();
+    }
     if (session.value) session.value.disconnect()
     if (timerInterval) clearInterval(timerInterval)
     router.push("/lawyer")
@@ -221,15 +276,6 @@ const goToLawyerHomepage = () => {
   }
   router.push(`/lawyer/${userNo}/homepage`)
 }
-
-onBeforeRouteLeave((to, from, next) => {
-  const confirmed = confirm("⚠️ 방송이 종료되지 않았습니다. 페이지를 떠나시겠습니까?");
-  if (confirmed) {
-    next();
-  } else {
-    next(false);
-  }
-})
 
 
 
