@@ -42,6 +42,9 @@
     })
   })
 
+  // 서브 베너
+  const banners = ref([])
+
   onMounted(async () => {
     const token = localStorage.getItem('token')
     const nick = localStorage.getItem('nickname')
@@ -72,11 +75,19 @@
     }
 
     try {
-      const res2 = await http.get('/api/public/main/templates/popular')
-      rawProductList .value = res2.data
-      console.log(rawProductList .value)
+      const res3 = await http.get('/api/public/main/templates/popular')
+      rawProductList .value = res3.data
+      // console.log(rawProductList .value)
     } catch (e) {
       console.error('템플릿 top10 조회 실패:', e)
+    }
+
+    try {
+      const res4 = await http.get('/api/public/main/sub-banners')
+      console.log(res4.data)
+      banners.value = res4.data;
+    } catch (e) {
+      console.error('서브 베너 조회 실패:', e)
     }
   })
 
@@ -230,25 +241,6 @@
       title: '블랙박스 제출 전략',
       link: '/replay.html'
     }
-  ]
-
-  const banners = [
-    {
-      title: '형사 전문 변호사 이민수',
-      description: '상담시 최대 ',
-      highlight: '30% 할인',
-      image: '/img/ads/slider-image-1.jpg',
-      lawyerNo: 101,
-      lawyerName: '이민수',
-    },
-    {
-      title: '교통사고 합의 전문가 김하늘',
-      description: '첫 의뢰 시 ',
-      highlight: '무료 전화상담 제공',
-      image: '/img/ads/slider-image-3.jpg',
-      lawyerNo: 205,
-      lawyerName: '이민수',
-    },
   ]
 </script>
 

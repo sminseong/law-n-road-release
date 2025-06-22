@@ -30,4 +30,9 @@ public class PublicMainServiceImpl implements PublicMainService {
     return publicMainMapper.selectRecentTemplatesByLawyerNo();
   }
   
+  @Override
+  public List<LawyerAdBannerDto> getActiveSubBanners() {
+    return publicMainMapper.selectActiveSubBanners();
+  }
+  
 }

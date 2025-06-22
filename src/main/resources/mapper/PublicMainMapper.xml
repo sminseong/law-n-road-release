@@ -55,4 +55,24 @@
         LIMIT 10
     </select>
 
+    <!-- SUB 광고 랜덤 2개 조회 -->
+    <select id="selectActiveSubBanners" resultType="com.lawnroad.mainsearch.dto.LawyerAdBannerDto">
+        SELECT
+            ap.main_text     AS title,
+            ap.detail_text   AS `desc`,
+            ap.tip_text      AS badge,
+            ap.ad_path       AS image,
+            CONCAT('/lawyer/', l.no, '/homepage') AS link,
+            l.no             AS lawyerNo,
+            l.name           AS lawyerName
+        FROM ad_purchase ap
+                 JOIN lawyer l ON ap.user_no = l.no
+        WHERE ap.ad_type = 'SUB'
+          AND ap.ad_status = 1
+          AND ap.approval_status = 'APPROVED'
+          AND NOW() BETWEEN ap.start_date AND ap.end_date
+        ORDER BY RAND()
+        LIMIT 2
+    </select>
+
 </mapper>

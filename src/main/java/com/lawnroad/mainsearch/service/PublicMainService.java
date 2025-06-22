@@ -15,4 +15,7 @@ public interface PublicMainService {
   
   // 인기 상품 10개 조회
   List<TemplateDto> getPopularTemplates();
+  
+  // 메인 페이지 서브 베너 조회
+  List<LawyerAdBannerDto> getActiveSubBanners();
 }

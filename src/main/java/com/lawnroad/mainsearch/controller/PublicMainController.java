@@ -33,4 +33,9 @@ public class PublicMainController {
   public List<TemplateDto> getPopularTemplatesForClient() {
     return publicMainService.getPopularTemplates();
   }
+  
+  @GetMapping("/sub-banners")
+  public List<LawyerAdBannerDto> getSubBanners() {
+    return publicMainService.getActiveSubBanners();
+  }
 }

@@ -17,4 +17,7 @@ public interface PublicMainMapper {
   
   // 인기 상품 10개 조회
   List<TemplateDto> selectRecentTemplatesByLawyerNo();
+  
+  // 메인 페이지 서브 베너 조회
+  List<LawyerAdBannerDto> selectActiveSubBanners();
 }
