@@ -25,7 +25,13 @@ const handleAddToCart = async (e) => {
 
   if (!accountType) {
     alert('로그인이 필요합니다.')
-    return router.push(`/login?redirect=${encodeURIComponent(router.currentRoute.value.fullPath)}`)
+    // return router.push(`/login?redirect=${encodeURIComponent(router.currentRoute.value.fullPath)}`)
+    return
+  }
+
+  if (accountType === 'lawyer') {
+    alert('변호사 계정은 장바구니를 이용할 수 없습니다.')
+    return
   }
 
   try {

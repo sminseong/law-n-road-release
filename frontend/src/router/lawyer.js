@@ -70,7 +70,12 @@ export default [
     // ---------- 광고 ----------
     {
         path: '/lawyer/ads',
-        name: 'LawyerAds',
-        component: () => import('@/views/lawyer/AdManagementView.vue')
+        name: 'AdList',
+        component: () => import('@/views/lawyer/AD/AdListView.vue')
+    },
+    {
+        path: '/lawyer/ads/register',
+        name: 'AdRegister',
+        component: () => import('@/views/lawyer/AD/AdRegisterView.vue')
     },
 ]
