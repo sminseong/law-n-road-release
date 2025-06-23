@@ -250,11 +250,7 @@
   <!-- 의뢰인 타입 본문 콘텐츠 -->
   <ClientFrame>
 
-    <div class="text-end p-3">
-      <button @click="logout" class="btn btn-outline-secondary">
-        로그아웃
-      </button>
-    </div>
+
 <!--    <p>-->
 <!--      <a href="/lawyer">변호사 대시보드 이동하기</a>-->
 <!--    </p>-->

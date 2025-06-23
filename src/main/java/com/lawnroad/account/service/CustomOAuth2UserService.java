@@ -34,7 +34,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String naverId = (String) response.get("id");
         String nickname = (String) response.get("nickname");
         String phone = (String) response.get("mobile");
-        System.out.println("서비스");
+
 
 
         if (clientMapper.findBySocialId(naverId) == null) {
