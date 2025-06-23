@@ -1,8 +1,10 @@
 package com.lawnroad.board.controller;
 
+import com.lawnroad.board.dto.BoardCommentResponseDto;
 import com.lawnroad.board.dto.BoardDetailDto;
 import com.lawnroad.board.dto.BoardListDto;
 import com.lawnroad.board.service.BoardService;
+import com.lawnroad.board.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,7 @@ import java.util.Map;
 public class PublicBoardController {
 
     private final BoardService boardService;
+    private final CommentService commentService;
 
     //상담 게시글 목록 조회 (페이징 포함)
     @GetMapping
@@ -55,5 +58,11 @@ public class PublicBoardController {
         //System.out.println(id);
         BoardDetailDto dto = boardService.getBoardDetail(id);
         return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/{boardId}/comments")
+    public ResponseEntity<List<BoardCommentResponseDto>> getBoardComments(@PathVariable Long boardId) {
+        List<BoardCommentResponseDto> comments = commentService.findBoardCommentsByBoardId(boardId);
+        return ResponseEntity.ok(comments);
     }
 }

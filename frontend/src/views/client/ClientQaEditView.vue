@@ -70,7 +70,7 @@ async function onSubmit() {
       categoryNo: categoryNo.value
     });
     alert('수정 완료');
-    router.push('/qna');
+    router.push(`/qna/${id}`);
   } catch (err) {
     console.error('❌ 수정 실패:', err);
   }

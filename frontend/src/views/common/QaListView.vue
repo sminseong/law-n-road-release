@@ -4,12 +4,17 @@ import { fetchBoardList } from '@/service/boardService.js'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import { ref ,watch ,onMounted, computed} from 'vue'
 import { useRouter } from 'vue-router'
-import { makeApiRequest, refreshAccessToken } from '@/libs/axios-auth.js'  // ✅ 전역 유틸 import
-
-
 
 const router = useRouter()
 
+const categoryMap = {
+  1: '사고 발생/처리',
+  2: '중대사고·형사처벌',
+  3: '음주·무면허 운전',
+  4: '보험·행정처분',
+  5: '과실 분쟁',
+  6: '기타'
+}
 
 // 페이징 및 데이터 상태
 const page = ref(1)            // 현재 페이지. 기본 1
@@ -19,7 +24,6 @@ const totalElements = ref(null) // 전체 개수 (백엔드가 제공하면 사�
 const totalPages = ref(null)   // 전체 페이지 수 (백엔드가 제공하거나 계산)
 const isLoading = ref(false)   // 로딩 상태
 const error = ref(null)        // 오류 상태
-
 
 // 페이지네이션 그룹 계산 (예: 10개씩 묶음)
 const pagesInGroup = 10
@@ -40,25 +44,31 @@ function gotoPage(p) {
   if (totalPages.value != null && p > totalPages.value) return
   page.value = p
   window.scrollTo({ top: 0, behavior: 'smooth' })
-  // page ref가 바뀌면 watch에서 loadList() 호출되도록 설정했으면 호출됨
 }
 
 // 데이터 로드 함수
 async function loadList() {
   isLoading.value = true
   error.value = null
+
   try {
     const res  = await fetchBoardList(page.value, size.value) // ← API 호출
     const data = res.data
-    console.log('🟢 게시글 목록 응답:', data)
+    // console.log('🟢 게시글 목록 응답:', data)
+
+    let rawList = []
 
     if (data.content && Array.isArray(data.content)) {
-      list.value = data.content // ← ✅ 바로 여기!
+      rawList = data.content
     } else if (Array.isArray(data)) {
-      list.value = data
-    } else {
-      list.value = []
+      rawList = data
     }
+
+    // 카테고리명 추가해서 가공
+    list.value = rawList.map(item => ({
+      ...item,
+      categoryName: categoryMap[item.categoryNo] || '기타'
+    }))
 
     // 페이지 수 계산
     if (data.totalPages != null) {
@@ -79,6 +89,28 @@ async function loadList() {
   }
 }
 
+function onClickWrite() {
+  const accountType = localStorage.getItem('accountType')
+
+  if (!accountType) {
+    alert('로그인이 필요합니다.')
+    return router.push(`/login?redirect=${encodeURIComponent(router.currentRoute.value.fullPath)}`)
+  }
+
+  if (accountType !== 'client' && accountType !== 'lawyer') {
+    alert('접근 권한이 없습니다.')
+    return router.push('/')
+  }
+
+  if (accountType === 'client') {
+    return router.push('/client/qna/register')
+  }
+
+  if (accountType === 'lawyer') {
+    return router.push('/client/qna/register')
+  }
+}
+
 // 페이지 최초 로딩시 -> 데이터 로드
 onMounted(() => {
   loadList()
@@ -96,9 +128,9 @@ watch(page, () => {
     <section class="qa-section py-5 px-3 px-lg-5">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold fs-3">전체 상담사례 목록</h2>
-        <router-link to="/client/qna/register" class="btn btn-outline-primary btn-sm">
+        <button @click="onClickWrite" class="btn btn-outline-primary btn-sm">
           상담글 쓰기
-        </router-link>
+        </button>
       </div>
 
       <!-- 게시글 없을 때 UI 표시 -->
@@ -108,13 +140,10 @@ watch(page, () => {
 
       <!-- 게시글 리스트 -->
       <div v-else class="qa-list">
-        <div
-            v-for="qa in list"
-            :key="qa.no"
+        <div v-for="qa in list" :key="qa.no"
             class="qa-card bg-white rounded shadow-sm p-4 mb-3"
             @click="router.push({ name: 'QaDetailView', params: { id: qa.no } })"
-            style="cursor: pointer;"
-        >
+            style="cursor: pointer;">
           <small class="text-muted">{{ qa.categoryName || '' }}</small>
           <h5 class="fw-semibold mt-1">{{ qa.title }}</h5>
           <p class="text-muted mb-2">{{ qa.summary || qa.content }}</p>
@@ -129,22 +158,17 @@ watch(page, () => {
         </button>
 
         <div class="pagination-button-wrap">
-          <button
-              v-for="num in pageNumbers"
-              :key="num"
+          <button v-for="num in pageNumbers" :key="num"
               class="pagination-button mx-1 px-2 py-1 border rounded"
               :class="{ on: page === num }"
-              @click="gotoPage(num)"
-          >
+              @click="gotoPage(num)">
             {{ num }}
           </button>
         </div>
 
-        <button
-            v-if="startPage + pagesInGroup <= totalPages"
+        <button v-if="startPage + pagesInGroup <= totalPages"
             class="btn btn-link p-0 ms-3"
-            @click="gotoPage(startPage + pagesInGroup)"
-        >
+            @click="gotoPage(startPage + pagesInGroup)">
           <span class="lt-desktop">다음 {{ pagesInGroup }}페이지</span>
           <i class="lc lc-chevron-right"></i>
         </button>

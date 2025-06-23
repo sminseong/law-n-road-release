@@ -1,16 +1,16 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import {ref, onMounted, computed} from 'vue'
+import {useRoute} from 'vue-router'
 import axios from 'axios'
 import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 
-const route      = useRoute()
-const lawyerNo   = Number(route.params.lawyerNo)
+const route = useRoute()
+const lawyerNo = Number(route.params.lawyerNo)
 
-const loading      = ref(true)
+const loading = ref(true)
 const reservations = ref([])
-const currentPage  = ref(1)
-const perPage      = 5
+const currentPage = ref(1)
+const perPage = 5
 
 const totalPages = computed(() =>
     Math.ceil(reservations.value.length / perPage)
@@ -23,7 +23,14 @@ const paginated = computed(() => {
 
 onMounted(async () => {
   try {
-    const res = await axios.get(`/api/lawyers/${lawyerNo}/reservations`)
+    const token = localStorage.getItem('token')
+
+    const res = await axios.get(`/api/lawyer/${lawyerNo}/reservations`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
     reservations.value = res.data
   } catch (err) {
     console.error('상담 내역 불러오기 실패', err)
@@ -41,8 +48,8 @@ function formatDate(str) {
 
 function statusLabel(code) {
   if (code === 'REQUESTED') return '대기중'
-  if (code === 'DONE')      return '완료'
-  if (code === 'CLOSED')    return '종료'
+  if (code === 'DONE') return '완료'
+  if (code === 'CANCELED') return '취소'
   return code
 }
 
@@ -50,8 +57,8 @@ function statusClass(code) {
   return [
     'font-medium',
     code === 'REQUESTED' ? 'text-yellow-600'
-        : code === 'DONE'    ? 'text-green-600'
-            :                     'text-gray-400'
+        : code === 'DONE' ? 'text-green-600'
+            : 'text-gray-400'
   ]
 }
 
@@ -63,9 +70,13 @@ function truncate(text, maxLen) {
 }
 
 async function closeConsultation(reservationNo) {
+  console.log(reservationNo)
   try {
+    const token = localStorage.getItem('token')
     await axios.patch(
-        `/api/lawyers/${lawyerNo}/reservations/${reservationNo}/status`
+        `/api/lawyer/${lawyerNo}/reservations/${reservationNo}/status`,
+        null,
+        {headers: {Authorization: `Bearer ${token}`}}
     )
     const idx = reservations.value.findIndex(r => r.no === reservationNo)
     if (idx !== -1) reservations.value[idx].status = 'CLOSED'
@@ -76,7 +87,6 @@ async function closeConsultation(reservationNo) {
   }
 }
 </script>
-
 <template>
   <LawyerFrame>
     <a href="/">메인 화면 이동하기</a><br>
@@ -114,7 +124,7 @@ async function closeConsultation(reservationNo) {
               <td class="px-4 py-1 text-[10px] whitespace-nowrap">{{ res.no }}</td>
               <td class="px-4 py-1 text-[10px] whitespace-nowrap">{{ res.userName }}</td>
               <td class="px-4 py-1 text-[10px] whitespace-nowrap">{{ formatDate(res.slotDate) }}</td>
-              <td class="px-4 py-1 text-[10px] whitespace-nowrap">{{ res.slotTime.slice(0,5) }}</td>
+              <td class="px-4 py-1 text-[10px] whitespace-nowrap">{{ res.slotTime.slice(0, 5) }}</td>
               <td class="px-4 py-1 text-[10px] whitespace-nowrap">{{ res.amount.toLocaleString() }}원</td>
               <td class="px-4 py-1 text-[10px] whitespace-nowrap">
                   <span :class="statusClass(res.status)">

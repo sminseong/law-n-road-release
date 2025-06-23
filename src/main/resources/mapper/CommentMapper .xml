@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lawnroad.board.mapper.CommentMapper">
+
+    <!-- [답변 등록] -->
+    <insert id="insertComment" parameterType="com.lawnroad.board.dto.CommentRegisterDto">
+        INSERT INTO comment (board_no, user_no, content, created_at)
+        VALUES (#{boardNo}, #{userNo}, #{content}, NOW())
+    </insert>
+
+
+    <!-- 특정 게시글의 답변 목록 조회 -->
+    <resultMap id="CommentResponseMap" type="com.lawnroad.board.dto.CommentResponse">
+        <result property="lawyerName"         column="lawyer_name" />
+        <result property="lawyerProfileImage" column="lawyer_profile_image" />
+        <result property="content"            column="content" />
+        <result property="createdAt"          column="created_at" />
+        <result property="userNo"             column="user_no" />
+    </resultMap>
+
+    <!-- [특정 게시글의 모든 답변 조회] : 변호사 정보와 함께 가져옴 -->
+    <select id="findByBoardNo" resultMap="CommentResponseMap" parameterType="long">
+        SELECT
+            l.name AS lawyer_name,
+            l.profile AS lawyer_profile_image,
+            c.content,
+            c.created_at,
+            c.user_no AS user_no
+        FROM comment c
+                 JOIN lawyer l ON c.user_no = l.no
+        WHERE c.board_no = #{boardNo}
+        ORDER BY c.created_at ASC
+    </select>
+
+    <!-- 변호사가 작성한 모든 답변 목록 조회 -->
+    <select id="findMyComments" resultType="com.lawnroad.board.dto.MyCommentResponseDto">
+        SELECT
+            c.no             AS commentId,
+            b.no             AS boardNo,
+            b.title          AS boardTitle,
+            c.content        AS content,
+            c.created_at     AS createdAt
+        FROM comment c
+                 JOIN board b ON c.board_no = b.no
+        WHERE c.user_no = #{userNo}
+        ORDER BY c.created_at DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 변호사가 작성한 답변 총 개수 조회 -->
+    <select id="countMyComments" resultType="int">
+        SELECT COUNT(*) FROM comment WHERE user_no = #{userNo}
+    </select>
+
+    <!-- [댓글 상세 조회] : 수정 페이지 진입 시 사용 -->
+    <select id="findById" resultType="com.lawnroad.board.dto.CommentDetailDto">
+        SELECT
+            c.no AS commentId,
+            c.board_no AS boardNo,
+            c.user_no AS userNo,
+            l.name AS lawyerName,
+            l.profile AS lawyerProfileImg,
+            c.content AS content,
+            c.created_at AS createdAt
+        FROM comment c
+                 JOIN lawyer l ON c.user_no = l.no
+        WHERE c.no = #{commentId}
+    </select>
+
+    <!--  [답변 수정] -->
+    <update id="updateComment">
+        UPDATE comment
+        SET content = #{dto.content},
+            updated_at = NOW()
+        WHERE no = #{commentId}
+    </update>
+
+    <!-- [답변 삭제] -->
+    <delete id="deleteComment" parameterType="long">
+        DELETE FROM comment
+        WHERE no = #{commentId}
+    </delete>
+
+    <!-- [해당 게시글에 내가 이미 답변했는지 확인] : 중복 등록 방지용 -->
+    <select id="existsByBoardNoAndUserNo" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1 FROM comment
+            WHERE board_no = #{boardNo}
+              AND user_no = #{userNo}
+        )
+    </select>
+
+    <select id="findBoardCommentsByBoardId" parameterType="long" resultType="com.lawnroad.board.dto.BoardCommentResponseDto">
+        SELECT
+            c.no AS commentId,
+            c.content,
+            c.created_at,
+            c.is_selected,
+            l.name AS lawyerName,
+            l.profile AS lawyerProfileImage
+        FROM comment c
+                 JOIN lawyer l ON c.user_no = l.no
+        WHERE c.board_no = #{boardId}
+    </select>
+</mapper>

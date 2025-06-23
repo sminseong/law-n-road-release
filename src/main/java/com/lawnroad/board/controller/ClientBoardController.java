@@ -26,9 +26,8 @@ public class ClientBoardController {
 
     //게시글 등록
     @PostMapping
-    //@PreAuthorize("hasRole('CLIENT')")
     public ResponseEntity<String> register(@RequestBody BoardCreateDto dto) {
-        System.out.println(dto.toString());
+//        System.out.println(dto.toString());
         boardService.register(dto);
         return ResponseEntity.ok("게시글이 성공적으로 등록되었습니다.");
     }
@@ -36,7 +35,7 @@ public class ClientBoardController {
     //게시글 수정
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateBoard( @PathVariable("id") Long id, @RequestBody BoardUpdateDto dto) {
-        dto.setNo(id); // ID 직접 주입
+        dto.setNo(id);
         boardService.updateBoard(dto);
         return ResponseEntity.ok().build();
     }
@@ -44,7 +43,7 @@ public class ClientBoardController {
     //게시글 삭제
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBoard(@PathVariable Long id) {
-        boardService.deleteBoard(id); // 내부적으로 boardMapper.deleteBoard(id) 호출
-        return ResponseEntity.noContent().build(); // HTTP 204
+        boardService.deleteBoard(id);
+        return ResponseEntity.noContent().build();
     }
 }
