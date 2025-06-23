@@ -131,6 +131,7 @@ function toggleSlot(dayIdx, slotIdx) {
 
 // 업데이트 요청 전송
 async function submitUpdates() {
+  console.log(lawyerNo)
   const updates = weeklySlots.value.flatMap(day =>
       day.slots.map(s => ({
         slotDate: day.date,
