@@ -87,7 +87,6 @@ async function closeConsultation(reservationNo) {
   }
 }
 </script>
-
 <template>
   <LawyerFrame>
     <a href="/">메인 화면 이동하기</a><br>

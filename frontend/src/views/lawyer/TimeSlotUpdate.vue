@@ -108,7 +108,7 @@ async function fetchSlots() {
   try {
     const startDate = new Date().toISOString().slice(0, 10)
     const res = await axios.get(
-        `/api/lawyers/${lawyerNo}/slots`,
+        `/api/lawyer/${lawyerNo}/slots`,
         {params: {startDate}}
     )
     rawSlots.value = res.data
@@ -142,7 +142,7 @@ async function submitUpdates() {
 
   try {
     await axios.put(
-        `/api/lawyers/${lawyerNo}/slots`,
+        `/api/lawyer/${lawyerNo}/slots`,
         updates
     )
     alert('주간 예약 정보가 성공적으로 저장되었습니다.')
