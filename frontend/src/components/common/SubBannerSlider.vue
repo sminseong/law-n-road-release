@@ -29,10 +29,10 @@ defineProps({
               <div>
                 <h3 class="fw-bold mb-1">{{ banner.title }}</h3>
                 <p class="mb-4">
-                  {{ banner.description }}
-                  <span class="fw-bold">{{ banner.highlight }}</span>
+                  {{ banner.desc }}
+                  <span class="fw-bold">{{ banner.badge }}</span>
                 </p>
-                <a :href="`/lawyer/${banner.lawyerNo}`" class="btn btn-dark">
+                <a :href="`${banner.link}`" class="btn btn-dark">
                   변호사 보기
                 </a>
               </div>

@@ -23,6 +23,11 @@ const elapsedTime = ref("00:00:00");
 const viewerCount = ref(1);
 let timerInterval = null;
 
+// 방송 녹화 (VOD)
+const mediaRecorder = ref(null)
+const recordedChunks = ref([])
+let startRecordTime = 0;
+
 const preventReload = (e) => {
   e.preventDefault();
   e.returnValue = "";
@@ -89,6 +94,53 @@ const initPublisherWithDelay = async () => {
   if (publisher.value) {
     await session.value.publish(publisher.value);
     console.log("✅ 방송 송출 시작됨");
+  }
+
+  if (publisher.value && publisher.value.stream) {
+    const mediaStream = publisher.value.stream.getMediaStream()
+    mediaRecorder.value = new MediaRecorder(mediaStream, {
+      mimeType: "video/webm; codecs=vp8"
+    });
+
+    mediaRecorder.value.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        recordedChunks.value.push(event.data);
+      }
+    };
+
+    mediaRecorder.value.onstop = async () => {
+      const blob = new Blob(recordedChunks.value, { type: "video/webm" });
+      const durationSec = Math.floor((performance.now() - startRecordTime) / 1000);
+
+      const formData = new FormData();
+      formData.append("file", blob, `vod-${broadcastNo.value}.webm`);
+      formData.append("duration", durationSec.toString());
+
+      try {
+        const token = await getValidToken();
+        if (!token) {
+          alert("로그인이 만료되었습니다. 다시 로그인해주세요.");
+          return;
+        }
+
+        await axios.post(`/api/lawyer/vod/upload/${broadcastNo.value}`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+          timeout: 10000,
+        });
+
+        alert("✅ 녹화 영상 업로드 완료!");
+      } catch (err) {
+        console.error("❌ 녹화 파일 업로드 실패:", err);
+      }
+    };
+
+
+    startRecordTime = performance.now();  // 녹화 시작 시간 기록
+    mediaRecorder.value.start();
+    console.log("🎥 MediaRecorder 녹화 시작됨");
   }
 };
 
@@ -203,6 +255,10 @@ const handleEndBroadcast = async () => {
     })
 
     alert("✅ 방송이 종료되었습니다.")
+
+    if (mediaRecorder.value && mediaRecorder.value.state !== "inactive") {
+      mediaRecorder.value.stop();
+    }
     if (session.value) session.value.disconnect()
     if (timerInterval) clearInterval(timerInterval)
     router.push("/lawyer")
@@ -211,6 +267,15 @@ const handleEndBroadcast = async () => {
     alert("방송 종료 중 문제가 발생했습니다.")
   }
 };
+
+const goToLawyerHomepage = () => {
+  const userNo = broadcastInfo.value.userNo
+  if (!userNo || userNo === 0) {
+    alert('변호사 정보가 없습니다.')
+    return
+  }
+  router.push(`/lawyer/${userNo}/homepage`)
+}
 
 
 
@@ -228,6 +293,7 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener("beforeunload", preventReload);
   if (timerInterval) clearInterval(timerInterval);
   stompClient.value?.deactivate();
   closeDropdown();
@@ -527,8 +593,11 @@ const handlePreQClickOutside = (e) => {
             <!-- 프로필 영역 -->
             <div class="d-flex align-items-center">
               <!-- ✅ 초록 원 컨테이너 -->
-              <div class="position-relative d-flex justify-content-center align-items-center"
-                   style="width: 80px; height: 80px; border: 3px solid #15ea7e; border-radius: 50%;">
+              <div
+                  @click="goToLawyerHomepage"
+                  role="button"
+                  class="profile-border-hover position-relative d-flex justify-content-center align-items-center"
+              >
                 <!-- 프로필 이미지 -->
                 <img
                     :src="broadcastInfo.lawyerProfilePath"
@@ -547,7 +616,16 @@ const handlePreQClickOutside = (e) => {
               </div>
 
               <!-- 변호사 이름 -->
-              <div class="fs-5 fw-bold ms-3">{{ broadcastInfo.lawyerName }} 변호사</div>
+              <div class="fs-5 fw-bold ms-3">
+                <span
+                    @click="goToLawyerHomepage"
+                    role="button"
+                    class="fs-5 fw-bold me-3 text-primary text-decoration-none"
+                    style="cursor: pointer;"
+                >
+                  {{ broadcastInfo.lawyerName }} 변호사
+                </span>
+              </div>
             </div>
 
             <!-- 방송 종료 버튼 -->
@@ -927,4 +1005,16 @@ const handlePreQClickOutside = (e) => {
   }
 }
 
+.profile-border-hover {
+  width: 80px;
+  height: 80px;
+  border: 3px solid #15ea7e;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: border-width 0.2s ease;
+}
+
+.profile-border-hover:hover {
+  border-width: 5px;
+}
 </style>

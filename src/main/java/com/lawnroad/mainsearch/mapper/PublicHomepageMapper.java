@@ -1,6 +1,6 @@
 package com.lawnroad.mainsearch.mapper;
 
-import com.lawnroad.board.dto.BoardListDto;
+import com.lawnroad.mainsearch.dto.BoardHomepageDto;
 import com.lawnroad.mainsearch.dto.LawyerHomepageDto;
 import com.lawnroad.template.dto.TemplateDto;
 import org.apache.ibatis.annotations.Mapper;
@@ -17,5 +17,5 @@ public interface PublicHomepageMapper {
   List<TemplateDto> selectRecentTemplatesByLawyerNo(@Param("lawyerNo") Long lawyerNo);
   
   // 변호사 홈페이지에 보여질, 그 변호사가 답변한 상담글 (최신순)
-  List<BoardListDto> selectRecentBoardsByLawyerNo(@Param("lawyerNo") Long lawyerNo);
+  List<BoardHomepageDto> selectLatestBoardsByLawyer(@Param("lawyerNo") Long lawyerNo);
 }
