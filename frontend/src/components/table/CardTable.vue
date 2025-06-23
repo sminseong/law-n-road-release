@@ -24,7 +24,7 @@ const lineHeight = 1.4 // em 기준 줄 간격
             <ul class="list-unstyled mb-0">
               <li class="qa-item" v-for="qna in List" :key="qna.no">
                 <RouterLink :to="`/qna/${qna.no}`">
-                  <div class="question">Q. {{ qna.question }}</div>
+                  <div class="question">Q. {{ qna.title }}</div>
                   <div
                     class="answer-preview"
                     :style="{
@@ -32,7 +32,7 @@ const lineHeight = 1.4 // em 기준 줄 간격
                       maxHeight: `${lineHeight * maxLines + 0.6}em`
                     }"
                   >
-                    A. {{ qna.answerPreview }}
+                    A. {{ qna.content }}
                   </div>
                 </RouterLink>
               </li>

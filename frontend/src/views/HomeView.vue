@@ -7,22 +7,87 @@
   import CardTable from '@/components/table/CardTable.vue'
   import ProductCard from '@/components/common/ProductCard.vue'
   import AdBannerPair from '@/components/common/SubBannerSlider.vue'
-
-  import { ref, onMounted } from 'vue'
+  import http from '@/libs/HttpRequester'
+  import { ref, onMounted, computed } from 'vue'
   import { useRouter } from 'vue-router'
   import axios from 'axios'
+
+  // 변수들
   const router = useRouter()
   const nickname = ref('')
   const isLoggedIn = ref(false)
 
+  // 메인 베너
+  const mainBanners = ref([])
 
-  onMounted(() => {
+  // qna 테이블
+  const qnaSampleList = ref([])
+
+  // 템플릿 10개
+  const rawProductList = ref([])
+  const productList = computed(() => { // 가공된 데이터용
+    return (rawProductList.value || []).map(tmpl => {
+      const price = tmpl.price || 0
+      const discountRate = tmpl.discountRate || 0
+      const discountedPrice = Math.floor(price * (1 - discountRate / 100))
+
+      return {
+        no: tmpl.no,
+        title: tmpl.name,
+        imageUrl: tmpl.thumbnailPath || 'https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png',
+        originalPrice: `${price.toLocaleString()}원`,
+        discountPercent: `${discountRate}`,
+        discountedPrice: `${discountedPrice.toLocaleString()}원`,
+      }
+    })
+  })
+
+  // 서브 베너
+  const banners = ref([])
+
+  onMounted(async () => {
     const token = localStorage.getItem('token')
     const nick = localStorage.getItem('nickname')
 
     isLoggedIn.value = !!token
     if (nick && nick !== 'null') {
       nickname.value = nick
+    }
+
+    if (!isLoggedIn.value) {
+      logout()  // await 없이 호출 (백그라운드에서 실행)
+      // return
+    }
+
+    try {
+      const res = await http.get('/api/public/main/main-banners')
+      mainBanners.value = res.data
+    } catch (e) {
+      console.error('배너 조회 실패:', e)
+    }
+
+    try {
+      const res2 = await http.get('/api/public/main/latest')
+      qnaSampleList.value = res2.data
+      // console.log(qnaSampleList.value)
+    } catch (e) {
+      console.error('QNA 상담글 조회 실패:', e)
+    }
+
+    try {
+      const res3 = await http.get('/api/public/main/templates/popular')
+      rawProductList .value = res3.data
+      // console.log(rawProductList .value)
+    } catch (e) {
+      console.error('템플릿 top10 조회 실패:', e)
+    }
+
+    try {
+      const res4 = await http.get('/api/public/main/sub-banners')
+      console.log(res4.data)
+      banners.value = res4.data;
+    } catch (e) {
+      console.error('서브 베너 조회 실패:', e)
     }
   })
 
@@ -63,40 +128,18 @@
     console.log('nickname:', localStorage.getItem('nickname'))
 
     // ✅ 5. 로그인 페이지로 이동 + 새로고침
-    router.push('/login')
-    setTimeout(() => location.reload(), 300)
+    // router.push('/login')
+    // setTimeout(() => location.reload(), 100)
   }
-
-  // 메인 베너
-  const mainBanners = [
-    {
-      title: '횡단보도 뺑소니 전문<br />김수영 변호사',
-      desc: '전문가와 함께라면 사고 처리도, 합의도<br />더 이상 어렵지 않습니다.',
-      image: '/img/ads/slider-1-1.png',
-      link: '/lawyer.html',
-      lawyerNo:'1',
-      lawyerName: '김수영'
-      // badge 생략 → 본문에서 전달한 defaultBadgeText 사용됨
-    },
-    {
-      title: '교통사고 전문<br />정은혜 변호사',
-      desc: '신속한 대응과 확실한 전략으로<br />당신의 권리를 지켜드립니다.',
-      image: '/img/ads/slider-2-1.png',
-      link: '/lawyer.html',
-      lawyerNo:'2',
-      lawyerName: '정은혜',
-      badge: '교통사고 전문 상담'
-    }
-  ]
 
   // 동그라미 카테고리
   const roundCategories = [
-    { icon: 'fas fa-car-crash', label: '사고 발생/처리', link: '/search.html' },
-    { icon: 'fas fa-balance-scale', label: '중대사고·형사처벌', link: '/search.html' },
-    { icon: 'fas fa-beer', label: '음주·무면허 운전', link: '/search.html' },
-    { icon: 'fas fa-gavel', label: '보험·행정처분', link: '/search.html' },
-    { icon: 'fas fa-search', label: '과실 분쟁', link: '/search.html' },
-    { icon: 'fas fa-bicycle', label: '차량 외 사고', link: '/search.html' }
+    { icon: 'fas fa-car-crash', label: '사고 발생/처리', link: '/search?category=1' },
+    { icon: 'fas fa-balance-scale', label: '중대사고·형사처벌', link: '/search?category=2' },
+    { icon: 'fas fa-beer', label: '음주·무면허 운전', link: '/search?category=3' },
+    { icon: 'fas fa-gavel', label: '보험·행정처분', link: '/search?category=4' },
+    { icon: 'fas fa-search', label: '과실 분쟁', link: '/search?category=5' },
+    { icon: 'fas fa-bicycle', label: '차량 외 사고', link: '/search?category=6' },
   ]
 
   // 라이브 방송박스 (대기화면)
@@ -199,196 +242,17 @@
       link: '/replay.html'
     }
   ]
-
-  // qna 테이블
-  const qnaSampleList = [
-  {
-    no: 1,
-    question: '음주운전 삼진아웃이 세 번까지 봐준다는 말인가요?',
-    answerPreview: '아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며...'
-  },
-  {
-    no: 2,
-    question: '무면허 운전.. 구제 가능한가요...?',
-    answerPreview: '구제 가능 여부는 사안에 따라 다르며, 음주·무면허 사안은...'
-  },
-  {
-    no: 3,
-    question: '음주운전 삼진아웃이 세 번까지 봐준다는 말인가요?',
-    answerPreview: '아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며...'
-  },
-  {
-    no: 4,
-    question: '무면허 운전.. 구제 가능한가요...?',
-    answerPreview: '아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 구제 가능 여부는 사안에 따라 다르며, 음주·무면허 사안은...'
-  },
-  {
-    no: 5,
-    question: '음주운전 삼진아웃이 세 번까지 봐준다는 말인가요?',
-    answerPreview: '아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 아닙니다. 삼진아웃은 형벌 경중에 따라 달라지며 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 두줄 .'
-  }
-]
-
-
-
-// 공용 테이블 보기
-const columns = [
-  { label: '이름', key: 'name' },
-  { label: '나이', key: 'age' }
-]
-
-const fullData = Array.from({ length: 300 }, (_, i) => ({
-  no: i + 1,
-  name: `홍길동 ${i + 1}`,
-  age: 20 + (i % 10) // 20~29 반복
-}))
-
-// 더미 fetch 함수 (slice + total info)
-const loadFn = async ({ page, size }) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const start = page * size
-      const content = fullData.slice(start, start + size)
-
-      resolve({
-        status: 200,
-        data: {
-          content,
-          number: page,
-          totalPages: Math.ceil(fullData.length / size),
-          totalElements: fullData.length
-        }
-      })
-    }, 200)
-  })
-}
-
-  const productList = [
-    {
-      no: 42,
-      title: '1인 민사소송 키트 음주운전 관련 합의서 포함 설명서 세트',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '20,000원',
-      discountPercent: '44%',
-      discountedPrice: '11,200원',
-    },
-    {
-      no: 108,
-      title: '내용증명 작성 가이드 + 샘플 문서 모음',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '15,000원',
-      discountPercent: '33%',
-      discountedPrice: '10,000원',
-    },
-    {
-      no: 203,
-      title: '임대차 계약서 세트 (상가/주택 전용)',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '25,000원',
-      discountPercent: '40%',
-      discountedPrice: '15,000원',
-    },
-    {
-      no: 304,
-      title: '이혼 합의서 양식 + 재산분할 설명서',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '18,000원',
-      discountPercent: '28%',
-      discountedPrice: '13,000원',
-    },
-    {
-      no: 405,
-      title: '지급명령 신청서 + 설명서 세트',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '17,000원',
-      discountPercent: '30%',
-      discountedPrice: '11,900원',
-    },
-    {
-      no: 506,
-      title: '교통사고 합의서 키트 + 보험사 응대 매뉴얼',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '22,000원',
-      discountPercent: '36%',
-      discountedPrice: '14,000원',
-    },
-    {
-      no: 607,
-      title: '채무 변제 각서 + 확약서 작성 가이드',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '12,000원',
-      discountPercent: '25%',
-      discountedPrice: '9,000원',
-    },
-    {
-      no: 708,
-      title: '고소장 작성 키트 (형사 고소 전용)',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '19,000원',
-      discountPercent: '31%',
-      discountedPrice: '13,100원',
-    },
-    {
-      no: 809,
-      title: '위임장/동의서 통합 세트',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '14,000원',
-      discountPercent: '20%',
-      discountedPrice: '11,200원',
-    },
-    {
-      no: 910,
-      title: '내용증명 반송 대응 키트 + 체크리스트',
-      imageUrl: '/img/templates/thumbnails/product-img-1.jpg',
-      originalPrice: '16,000원',
-      discountPercent: '35%',
-      discountedPrice: '10,400원',
-    },
-  ]
-
-  const banners = [
-    {
-      title: '형사 전문 변호사 이민수',
-      description: '상담시 최대 ',
-      highlight: '30% 할인',
-      image: '/img/ads/slider-image-1.jpg',
-      lawyerNo: 101,
-      lawyerName: '이민수',
-    },
-    {
-      title: '교통사고 합의 전문가 김하늘',
-      description: '첫 의뢰 시 ',
-      highlight: '무료 전화상담 제공',
-      image: '/img/ads/slider-image-3.jpg',
-      lawyerNo: 205,
-      lawyerName: '이민수',
-    },
-  ]
 </script>
 
 <template>
   <!-- 의뢰인 타입 본문 콘텐츠 -->
   <ClientFrame>
-<!--    <p>-->
-<!--      <a href="/lawyer">변호사 대시보드 이동하기</a>-->
-<!--    </p>-->
-
-    <!-- ① 예약 신청 섹션 추가 -->
-<!--    <section class="my-8 p-4 bg-gray-50 rounded">-->
-<!--      <h3 class="text-xl font-semibold mb-2">상담 예약 신청하기</h3>-->
-<!--      <div class="flex space-x-4">-->
-<!--        &lt;!&ndash; 여기에 실제 변호사 리스트를 넣어도 되고, 테스트용으로 하드코딩해도 됩니다. &ndash;&gt;-->
-<!--        <router-link-->
-<!--            :to="{ name: 'ClientReservations', params: { lawyerNo: 1, lawyerName: '김민수' } }"-->
-<!--            class="px-3 py-1 "-->
-<!--        >-->
-<!--          김민수 변호사 예약하기-->
-<!--        </router-link>-->
-<!--      </div>-->
-<!--    </section>-->
-
     <!-- 메인 베너 -->
-    <MainBannerSlider :banners="mainBanners" defaultBadgeText="로앤로드 대표 서비스" />
+    <MainBannerSlider
+        v-if="mainBanners.length > 0"
+        :banners="mainBanners"
+        defaultBadgeText="로앤로드 대표 서비스"
+    />
 
     <!-- 동그라미 카테고리 -->
     <RoundCategory :categories="roundCategories" />

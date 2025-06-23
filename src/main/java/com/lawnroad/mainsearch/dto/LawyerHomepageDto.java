@@ -1,6 +1,5 @@
 package com.lawnroad.mainsearch.dto;
 
-import com.lawnroad.board.dto.BoardListDto;
 import com.lawnroad.template.dto.TemplateDto;
 import lombok.Data;
 
@@ -27,5 +26,5 @@ public class LawyerHomepageDto {
   private List<TemplateDto> recentTemplates;
   
   // 최근 상담글 (5개만)
-  private List<BoardListDto> recentBoards;
+  private List<BoardHomepageDto> recentBoards;
 }

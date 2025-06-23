@@ -532,8 +532,7 @@ export default defineComponent({
               <div
                   @click="goToLawyerHomepage"
                   role="button"
-                  class="position-relative d-flex justify-content-center align-items-center"
-                  style="width: 80px; height: 80px; border: 3px solid #15ea7e; border-radius: 50%; cursor: pointer;"
+                  class="profile-border-hover position-relative d-flex justify-content-center align-items-center"
               >
                 <!-- 프로필 이미지 -->
                 <img
@@ -1039,4 +1038,16 @@ export default defineComponent({
   }
 }
 
+.profile-border-hover {
+  width: 80px;
+  height: 80px;
+  border: 3px solid #15ea7e;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: border-width 0.2s ease;
+}
+
+.profile-border-hover:hover {
+  border-width: 5px;
+}
 </style>

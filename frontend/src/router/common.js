@@ -24,6 +24,11 @@ export default [
         name: 'ClientSignup',
         component: () => import('@/views/common/ClientSignupView.vue')
     },
+    {
+        path: '/ci',
+        name: 'BrandValue',
+        component: () => import('@/views/common/BrandValueView.vue')
+    },
 
     // ---------- QNA ----------
     {
