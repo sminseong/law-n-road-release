@@ -108,7 +108,6 @@
     // ✅ 1. 로컬스토리지 항목 삭제
     localStorage.removeItem('token')
     localStorage.removeItem('refreshToken')
-    localStorage.removeItem('accessToeken')
     localStorage.removeItem('accountType')
     localStorage.removeItem('name')
     localStorage.removeItem('nickname')
@@ -251,23 +250,6 @@
   <ClientFrame>
 
 
-<!--    <p>-->
-<!--      <a href="/lawyer">변호사 대시보드 이동하기</a>-->
-<!--    </p>-->
-
-    <!-- ① 예약 신청 섹션 추가 -->
-<!--    <section class="my-8 p-4 bg-gray-50 rounded">-->
-<!--      <h3 class="text-xl font-semibold mb-2">상담 예약 신청하기</h3>-->
-<!--      <div class="flex space-x-4">-->
-<!--        &lt;!&ndash; 여기에 실제 변호사 리스트를 넣어도 되고, 테스트용으로 하드코딩해도 됩니다. &ndash;&gt;-->
-<!--        <router-link-->
-<!--            :to="{ name: 'ClientReservations', params: { lawyerNo: 1, lawyerName: '김민수' } }"-->
-<!--            class="px-3 py-1 "-->
-<!--        >-->
-<!--          김민수 변호사 예약하기-->
-<!--        </router-link>-->
-<!--      </div>-->
-<!--    </section>-->
 
     <!-- 메인 베너 -->
     <MainBannerSlider

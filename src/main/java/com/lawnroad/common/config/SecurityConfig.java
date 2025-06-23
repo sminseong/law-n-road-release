@@ -107,7 +107,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                     .hasAnyRole("CLIENT", "LAWYER")
                     .requestMatchers("/api/client/**").hasRole("CLIENT")
                     .requestMatchers("/api/lawyer/**").hasRole("LAWYER")
-                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                    .requestMatchers("/api/admin/**","/api/refresh").hasRole("ADMIN")
                     .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
