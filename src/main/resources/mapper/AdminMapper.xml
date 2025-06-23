@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.lawnroad.admin.mapper.AdminMapper">
+<mapper namespace="com.lawnroad.admin.mapper.AdminPageMapper">
 
     <!-- 검색 조건으로 실제 검색 진행 -->
     <select id="selectAdPurchases"

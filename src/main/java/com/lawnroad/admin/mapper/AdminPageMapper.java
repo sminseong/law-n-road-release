@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
-public interface AdminMapper {
+public interface AdminPageMapper {
   // 광고 관리 조회 등
   List<AdPurchaseDto> selectAdPurchases(AdPurchaseSearchConditionDto cond);
   int                 countAdPurchases(AdPurchaseSearchConditionDto cond);

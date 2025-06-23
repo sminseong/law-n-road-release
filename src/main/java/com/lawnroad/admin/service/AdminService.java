@@ -3,7 +3,7 @@ package com.lawnroad.admin.service;
 import com.lawnroad.admin.dto.AdPurchaseDto;
 import com.lawnroad.admin.dto.AdPurchaseListResponseDto;
 import com.lawnroad.admin.dto.AdPurchaseSearchConditionDto;
-import com.lawnroad.admin.mapper.AdminMapper;
+import com.lawnroad.admin.mapper.AdminPageMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +13,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AdminService {
-  private final AdminMapper mapper;
+  private final AdminPageMapper mapper;
   
   public AdPurchaseListResponseDto getAdPurchases(AdPurchaseSearchConditionDto cond) {
     List<AdPurchaseDto> items = mapper.selectAdPurchases(cond);
