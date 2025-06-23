@@ -283,6 +283,15 @@ export default defineComponent({
                     }
                     return;
                   }
+
+                  if (data.type === "NOTICE") {
+                    messages.value.push({
+                      ...data,
+                      isNotice: true
+                    });
+                    scrollToBottom();
+                    return;
+                  }
                   // 그 외(일반 채팅)는 채팅창에 추가
                   messages.value.push(data);
                   scrollToBottom();
@@ -300,7 +309,7 @@ export default defineComponent({
             messages.value.push({
               type: "WELCOME",
               message:
-                  "📢 도로 위 질서만큼이나 채팅 예절도 중요합니다. 부적절한 내용은 전송이 제한되니 모두가 함께 즐기는 방송을 만들어주세요. 😊",
+                  "📢 도로 위 질서만큼이나 채팅 예절도 중요합니다. 부적절한 내용은 전송이 제한되니 모두가 함께 즐기는 방송을 만들어주세요. 😊"
             });
           },
           onStompError: (frame) => {
@@ -668,12 +677,14 @@ export default defineComponent({
           <!-- 왼쪽: 채팅 타이틀 -->
           <div class="fw-bold fs-5">채팅</div>
           <!-- 오른쪽: 사전질문 버튼 -->
-          <div>
-            <button class="btn btn-link px-1 py-0 text-decoration-none"
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <button class="btn btn-link px-1 py-0 text-decoration-none d-flex flex-column align-items-center"
                     style="font-size:1.23rem;"
                     @click="togglePreQDropdown"
                     ref="preQBtnRef"
-                    title="사전질문 보기">📝
+                    title="사전질문 보기">
+              <span>📝</span>
+              <span style="font-size:0.7rem; color:#222; margin-top:-5px;">사전 질문</span>
             </button>
           </div>
           <!-- 드롭다운(채팅 상단 전체 너비) -->
@@ -739,7 +750,15 @@ export default defineComponent({
               {{ msg.message }}
             </span>
             </div>
-
+                <!--   자동응답 공지-->
+            <div v-else-if="msg.type === 'NOTICE'"
+                 class="w-100 text-center px-2 py-2"
+                 style="background: #ffe89b; color:#d17b00; border-radius:12px; font-size:0.95rem; font-weight:700; letter-spacing:-0.5px; border:1.3px dashed #efd44a; box-shadow:0 2px 10px 0 rgba(255,210,60,0.12);">
+              <span style="margin-right:6px;">📢</span>
+              <span>
+        <b>{{ msg.nickname }}</b> {{ msg.message }}
+      </span>
+            </div>
             <div v-else style="font-size: 0.97rem; display: flex; align-items: center;">
               <!-- 닉네임 드롭다운 & 랜덤 색상 -->
               <span
@@ -777,6 +796,7 @@ export default defineComponent({
             </div>
 
           </div>
+
         </div>
         <!-- 입력창 -->
         <div class="d-flex">
@@ -784,7 +804,8 @@ export default defineComponent({
                  type="text"
                  class="form-control bg-body-secondary text-dark border-0 rounded-pill px-3 py-2"
                  placeholder="채팅을 입력해 주세요."
-                 @keyup.enter="sendMessage"/>
+                 @keyup.enter="sendMessage"
+                 maxlength="100"/>
         </div>
       </div>
 

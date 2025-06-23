@@ -27,28 +27,26 @@ public class ChatMongodbSaveServiceImpl implements ChatMongodbSaveService {
     @Scheduled(fixedDelay = 10000) // 10초마다 백업
     public void backupRedisToMongo() {
         Set<String> keys = redisTemplate.keys("chat:*");
-        if (keys != null) {
-            for (String key : keys) {
-                List<String> jsonList = redisTemplate.opsForList().range(key, 0, -1);
-                if (jsonList != null && !jsonList.isEmpty()) {
-                    List<ChatVO> docs = jsonList.stream()
-                            .map(json -> {
-                                ChatDTO dto = fromJson(json, ChatDTO.class);
-                                return ChatVO.builder()
-                                        .no(dto.getNo())
-                                        .userNo(dto.getUserNo())
-                                        .broadcastNo(dto.getBroadcastNo())
-                                        .nickname(dto.getNickname())
-                                        .message(dto.getMessage())
-                                        .reportStatus(dto.getReportStatus())
-                                        .createdAt(dto.getCreatedAt())
-                                        .build();
-                            })
-                            .collect(Collectors.toList());
+        for (String key : keys) {
+            List<String> jsonList = redisTemplate.opsForList().range(key, 0, -1);
+            if (jsonList != null && !jsonList.isEmpty()) {
+                List<ChatVO> docs = jsonList.stream()
+                        .map(json -> {
+                            ChatDTO dto = fromJson(json, ChatDTO.class);
+                            return ChatVO.builder()
+                                    .no(dto.getNo())
+                                    .userNo(dto.getUserNo())
+                                    .broadcastNo(dto.getBroadcastNo())
+                                    .nickname(dto.getNickname())
+                                    .message(dto.getMessage())
+                                    .reportStatus(dto.getReportStatus())
+                                    .createdAt(dto.getCreatedAt())
+                                    .build();
+                        })
+                        .collect(Collectors.toList());
 
-                    mongoChatRepository.saveAll(docs);
-                    redisTemplate.delete(key); // 저장 후 Redis 삭제
-                }
+                mongoChatRepository.saveAll(docs);
+                redisTemplate.delete(key); // 저장 후 Redis 삭제
             }
         }
     }

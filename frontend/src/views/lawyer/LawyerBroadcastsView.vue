@@ -649,14 +649,18 @@ const handlePreQClickOutside = (e) => {
           <!-- 왼쪽: 채팅 타이틀 -->
           <div class="fw-bold fs-5">채팅</div>
           <!-- 오른쪽: 사전질문 버튼 -->
-          <div>
-            <button class="btn btn-link px-1 py-0 text-decoration-none"
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <button class="btn btn-link px-1 py-0 text-decoration-none d-flex flex-column align-items-center"
                     style="font-size:1.23rem;"
                     @click="togglePreQDropdown"
                     ref="preQBtnRef"
-                    title="사전질문 보기">📝
+                    title="사전질문 보기">
+              <span>📝</span>
+              <span style="font-size:0.7rem; color:#222; margin-top:-5px;">사전 질문</span>
             </button>
+
           </div>
+
           <!-- 드롭다운(채팅 상단 전체 너비) -->
           <div v-if="showPreQDropdown"
                class="preq-dropdown"
@@ -743,7 +747,8 @@ const handlePreQClickOutside = (e) => {
                  type="text"
                  class="form-control bg-body-secondary text-dark border-0 rounded-pill px-3 py-2"
                  placeholder="채팅을 입력해 주세요."
-                 @keyup.enter="sendMessage"/>
+                 @keyup.enter="sendMessage"
+                 maxlength="100"/>
         </div>
       </div>
 

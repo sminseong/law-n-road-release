@@ -204,7 +204,7 @@ const deleteNightbotMessage = async (no) => {
   <LawyerFrame>
     <div class="container-fluid my-5 d-flex justify-content-center">
       <div class="bg-white border border-2 rounded-4 shadow px-5 py-4 w-100" style="min-height: 80vh; max-width: 1600px;">
-        <div class="row w-100 align-items-start">
+        <div class="row w-100 align-items-start" >
           <!-- 왼쪽: 방송 콘텐츠 영역 (수정 불가 보기 전용) -->
           <div class="col-md-7 d-flex flex-column justify-content-start align-items-start pe-5">
             <div class="w-100 border rounded-3 p-4 shadow-sm mb-4" v-if="scheduleDetail">
@@ -239,9 +239,9 @@ const deleteNightbotMessage = async (no) => {
                   <span v-else class="text-muted">이미지 없음</span>
                 </div>
               </div>
-              <div class="mb-3 w-100">
+              <div class="mb-3 w-100" >
                 <label class="form-label fw-bold">방송 설명</label>
-                <textarea :value="scheduleDetail.content" class="form-control bg-light text-dark" rows="4" readonly></textarea>
+                <textarea :value="scheduleDetail.content" class="form-control bg-light text-dark" rows="4" readonly style="min-height: 183px;"></textarea>
               </div>
               <div class="mb-3 w-100">
                 <label class="form-label fw-bold">방송 키워드</label>
@@ -287,14 +287,23 @@ const deleteNightbotMessage = async (no) => {
               </div>
 
               <div class="border rounded-3 p-3 shadow-sm flex-grow-1 d-flex flex-column"
-                   style="min-height: 395px; max-height: 395px; overflow: hidden;">
+                   style="min-height: 470px; max-height: 470px; overflow: hidden;">
                 <div class="mb-3">
                   <span class="fs-4 fw-bold text-dark">나이트봇 자동응답 설정</span>
+                  <!-- 설명 박스 추가 -->
+                  <div class="mt-2 mb-1 p-2 bg-light rounded-2 border text-muted small" style="line-height:1.6;">
+                    <b>사용 방법 안내</b><br>
+                    1. <b>키워드</b> 입력란에 자동응답을 트리거할 단어를 입력하세요.<br>
+                    2. <b>내용</b>에 키워드 입력 시 자동으로 보낼 메시지를 입력하세요.<br>
+                    3. <b>등록</b> 버튼을 클릭하면 아래 리스트에 추가됩니다.<br>
+                    4. 필요 없는 자동응답은 <b>삭제</b> 버튼으로 제거할 수 있습니다.<br>
+                    <span class="text-danger">※ 등록된 키워드가 채팅에 입력되면 자동응답 메시지가 전송됩니다.</span>
+                  </div>
                 </div>
                 <!-- 입력 영역 ... -->
                 <div class="position-relative mb-2">
                   <input v-model="newKeyword" type="text" class="form-control mb-2" placeholder="ex) 상담" />
-                  <textarea v-model="newMessage" class="form-control mb-2" rows="2" placeholder="내용"></textarea>
+                  <textarea v-model="newMessage" class="form-control mb-2" rows="2" placeholder="ex) 상담 신청은 홈페이지에서 가능합니다."></textarea>
                   <button class="btn btn-primary position-absolute" style="top:0; right:0; height:38px; z-index:2" @click="addNightbotMessage">
                     등록
                   </button>

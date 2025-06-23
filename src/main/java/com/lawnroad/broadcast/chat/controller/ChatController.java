@@ -11,8 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
@@ -93,7 +92,9 @@ public class ChatController {
                         .build();
                 messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), reply);
             }
+
         }
+
     }
 
     @GetMapping("/api/client/my-no")
