@@ -44,7 +44,6 @@ function gotoPage(p) {
   if (totalPages.value != null && p > totalPages.value) return
   page.value = p
   window.scrollTo({ top: 0, behavior: 'smooth' })
-  // page ref가 바뀌면 watch에서 loadList() 호출되도록 설정했으면 호출됨
 }
 
 // 데이터 로드 함수
@@ -55,7 +54,7 @@ async function loadList() {
   try {
     const res  = await fetchBoardList(page.value, size.value) // ← API 호출
     const data = res.data
-    console.log('🟢 게시글 목록 응답:', data)
+    // console.log('🟢 게시글 목록 응답:', data)
 
     let rawList = []
 
@@ -141,13 +140,10 @@ watch(page, () => {
 
       <!-- 게시글 리스트 -->
       <div v-else class="qa-list">
-        <div
-            v-for="qa in list"
-            :key="qa.no"
+        <div v-for="qa in list" :key="qa.no"
             class="qa-card bg-white rounded shadow-sm p-4 mb-3"
             @click="router.push({ name: 'QaDetailView', params: { id: qa.no } })"
-            style="cursor: pointer;"
-        >
+            style="cursor: pointer;">
           <small class="text-muted">{{ qa.categoryName || '' }}</small>
           <h5 class="fw-semibold mt-1">{{ qa.title }}</h5>
           <p class="text-muted mb-2">{{ qa.summary || qa.content }}</p>
@@ -162,22 +158,17 @@ watch(page, () => {
         </button>
 
         <div class="pagination-button-wrap">
-          <button
-              v-for="num in pageNumbers"
-              :key="num"
+          <button v-for="num in pageNumbers" :key="num"
               class="pagination-button mx-1 px-2 py-1 border rounded"
               :class="{ on: page === num }"
-              @click="gotoPage(num)"
-          >
+              @click="gotoPage(num)">
             {{ num }}
           </button>
         </div>
 
-        <button
-            v-if="startPage + pagesInGroup <= totalPages"
+        <button v-if="startPage + pagesInGroup <= totalPages"
             class="btn btn-link p-0 ms-3"
-            @click="gotoPage(startPage + pagesInGroup)"
-        >
+            @click="gotoPage(startPage + pagesInGroup)">
           <span class="lt-desktop">다음 {{ pagesInGroup }}페이지</span>
           <i class="lc lc-chevron-right"></i>
         </button>

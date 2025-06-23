@@ -22,7 +22,7 @@ public class LawyerCommentController {
     @PostMapping
     public ResponseEntity<Void> registerComment(@RequestBody CommentRegisterDto dto) {
         commentService.registerComment(dto);
-        return ResponseEntity.status(201).build(); // 201 Created
+        return ResponseEntity.status(201).build();
     }
     // 특정 게시글의 전체 댓글 목록
     @GetMapping("/board/{boardNo}")
@@ -37,8 +37,8 @@ public class LawyerCommentController {
             @RequestParam(defaultValue = "10") int size
     ) {
         Long userNo = 24L; //TODO 나중 하드코딩 바꿔야됨
-        System.out.println(page);
-        System.out.println(size);
+//        System.out.println(page);
+//        System.out.println(size);
         Page<MyCommentResponseDto> result = commentService.getMyComments(userNo, page, size);
         return ResponseEntity.ok(result);
     }
@@ -57,7 +57,6 @@ public class LawyerCommentController {
 
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
-        System.out.println("🧨 DELETE 컨트롤러 진입: " + commentId);
         commentService.deleteComment(commentId);
         return ResponseEntity.noContent().build();
     }

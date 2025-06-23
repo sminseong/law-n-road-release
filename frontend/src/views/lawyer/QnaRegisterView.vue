@@ -22,11 +22,11 @@ const qa = ref({
 const loadCommentList = async () => {
   try {
     const res = await fetchCommentList(route.params.id)
-    console.log('🔁 댓글 API 응답:', res)
-    console.log('🧪 댓글 데이터:', res.data)
+    // console.log('🔁 댓글 API 응답:', res)
+    // console.log('🧪 댓글 데이터:', res.data)
     comments.value = res.data
   } catch (e) {
-    console.error('댓글 목록 불러오기 실패:', e)
+    // console.error('댓글 목록 불러오기 실패:', e)
   }
 }
 
@@ -66,7 +66,7 @@ onMounted(async () => {
       createdAt: res.data.createdAt
     }
   } catch (err) {
-    console.error('🚨 질문 정보 불러오기 실패:', err)
+    // console.error('🚨 질문 정보 불러오기 실패:', err)
     alert('질문 정보를 불러오지 못했습니다.')
   }
 })
@@ -170,8 +170,7 @@ const register = async () => {
       <div class="mt-5">
         <h5>변호사 답변</h5>
         <div v-if="comments.length > 0">
-          <div v-for="(comment, idx) in comments" :key="idx"
-              class="mb-3 p-3 border rounded bg-light">
+          <div v-for="(comment, idx) in comments" :key="idx" class="mb-3 p-3 border rounded bg-light">
             <div class="d-flex align-items-center mb-2">
               <img :src="comment.lawyerProfileImage" class="rounded-circle me-3"
                   width="48" height="48" alt="변호사 프로필"/>

@@ -25,22 +25,22 @@ const submitEdit = async () => {
     await updateComment(commentId, payload)
     alert('답변이 수정되었습니다.')
   } catch (err) {
-    console.error('❌ 수정 실패:', err)
+    // console.error('❌ 수정 실패:', err)
     alert('답변 수정에 실패했습니다.')
   }
 }
 
 const handleDelete = async () => {
   if (!confirm('정말 삭제하시겠습니까?')) return
-  console.log('🧪 삭제 시도 commentId:', commentId)
+  // console.log('🧪 삭제 시도 commentId:', commentId)
   try {
     await deleteComment(commentId)
     alert('삭제가 완료되었습니다.')
     router.push('/lawyer/qna')  // 삭제 후 이동할 경로
   } catch (error) {
-    console.error('삭제 실패:', error)
-    console.error('🧪 error.response:', error?.response)
-    console.error('🧪 error.config:', error?.config)
+    // console.error('삭제 실패:', error)
+    // console.error('🧪 error.response:', error?.response)
+    // console.error('🧪 error.config:', error?.config)
     alert('삭제 중 문제가 발생했습니다.')
   }
 }
@@ -49,7 +49,7 @@ const handleDelete = async () => {
 onMounted(async () => {
   try {
     const commentRes = await fetchCommentDetail(commentId)
-    console.log('💬 댓글 상세 응답:', commentRes.data)
+    // console.log('💬 댓글 상세 응답:', commentRes.data)
 
     answerContent.value = commentRes.data.content
     boardNo.value = commentRes.data.boardNo
@@ -58,7 +58,7 @@ onMounted(async () => {
     const boardRes = await fetchBoardDetail(boardNo.value)
     qa.value = boardRes.data
   } catch (err) {
-    console.error('❌ 불러오기 실패:', err)
+    // console.error('❌ 불러오기 실패:', err)
     alert('데이터를 불러오는 데 실패했습니다.')
   }
 })
@@ -80,13 +80,8 @@ onMounted(async () => {
       <!-- 답변 수정 UI -->
       <div class="mb-4">
         <label class="form-label fw-bold" style="font-size: 1.25rem;">답변 수정</label>
-        <textarea
-            v-model="answerContent"
-            class="form-control"
-            rows="8"
-            :maxlength="maxLength"
-            placeholder="수정할 답변 내용을 입력하세요"
-        ></textarea>
+        <textarea v-model="answerContent" class="form-control" rows="8" :maxlength="maxLength"
+            placeholder="수정할 답변 내용을 입력하세요"></textarea>
         <div class="text-end small text-muted">
           {{ answerContent.length }} / {{ maxLength }}
         </div>

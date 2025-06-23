@@ -11,14 +11,14 @@ const router = useRouter()
 const page = ref(1)
 const size = ref(10)
 const list = ref([])
-const myAnswers = ref([]) //
+const myAnswers = ref([])
 const totalElements = ref(null)
 const totalPages = ref(null)
 const isLoading = ref(false)
 const error = ref(null)
 
 // 탭 상태
-const selectedTab = ref('answer')  // 'answer' | 'my'
+const selectedTab = ref('answer')
 
 // 카테고리 번호 → 이름 매핑
 const categoryMap = {
@@ -58,7 +58,7 @@ const loadAnswerList = async () => {
     list.value = Array.isArray(data.content) ? data.content : []
     totalPages.value = data.totalPages || Math.ceil((data.totalElements || 0) / size.value)
   } catch (err) {
-    console.error('Q&A 목록 실패', err)
+    // console.error('Q&A 목록 실패', err)
     error.value = err
     list.value = []
   } finally {
@@ -70,19 +70,19 @@ const loadMyAnswerList = async () => {
   isLoading.value = true
   error.value = null
   try {
-    console.log(page.value)
-    console.log(size.value)
+    // console.log(page.value)
+    // console.log(size.value)
     const res = await fetchMyComment(page.value, size.value)
-    console.log('🔵 내 답변 API 응답:', res)
-    console.log('🔵 응답 데이터:', res.data)
+    // console.log('🔵 내 답변 API 응답:', res)
+    // console.log('🔵 응답 데이터:', res.data)
     const data = res.data
-    console.log('🟢 내 답변 응답:', data)
+    // console.log('🟢 내 답변 응답:', data)
 
     myAnswers.value = Array.isArray(res.data.content) ? res.data.content : []
-    console.log('🔍 내 답변 목록:', myAnswers.value)
+    // console.log('🔍 내 답변 목록:', myAnswers.value)
     totalPages.value = data.totalPages || Math.ceil((data.totalElements || 0) / size.value)
   } catch (err) {
-    console.error('내 답변 목록 실패', err)
+    // console.error('내 답변 목록 실패', err)
     error.value = err
     myAnswers.value = []
   } finally {
@@ -120,15 +120,11 @@ onMounted(() => {
       <!-- 탭 버튼 - 템플릿 구조처럼 수정 -->
       <div class="mb-4">
         <div class="btn-tab-wrapper d-flex w-100">
-          <button
-              class="btn-tab flex-fill"
-              :class="{ active: selectedTab === 'answer' }"
+          <button class="btn-tab flex-fill" :class="{ active: selectedTab === 'answer' }"
               @click="selectedTab = 'answer'">
             Q&A 답변하기
           </button>
-          <button
-              class="btn-tab flex-fill"
-              :class="{ active: selectedTab === 'my' }"
+          <button class="btn-tab flex-fill" :class="{ active: selectedTab === 'my' }"
               @click="selectedTab = 'my'">
             내가 답변한 상담글
           </button>
@@ -141,12 +137,8 @@ onMounted(() => {
           현재 답변 가능한 글이 없습니다.
         </div>
         <div v-else>
-          <div
-              v-for="qa in list"
-              :key="qa.no"
-              class="qa-card bg-white rounded shadow-sm p-4 mb-3"
-              @click="router.push({ name: 'CommentRegister', params: { id: qa.no } })"
-              style="cursor: pointer;">
+          <div v-for="qa in list" :key="qa.no" class="qa-card bg-white rounded shadow-sm p-4 mb-3"
+              @click="router.push({ name: 'CommentRegister', params: { id: qa.no } })" style="cursor: pointer;">
             <small class="badge bg-light text-secondary mb-1">
               {{ categoryMap[qa.categoryNo] || '미지정' }}
             </small>
@@ -165,12 +157,8 @@ onMounted(() => {
           아직 등록한 답변이 없습니다.
         </div>
         <div v-else>
-          <div
-              v-for="ans in myAnswers"
-              :key="ans.no"
-              class="qa-card bg-white rounded shadow-sm p-4 mb-3"
-              @click="router.push({ name: 'CommentEdit', params: { id: ans.commentId } })"
-              style="cursor: pointer;">
+          <div v-for="ans in myAnswers" :key="ans.no" class="qa-card bg-white rounded shadow-sm p-4 mb-3"
+              @click="router.push({ name: 'CommentEdit', params: { id: ans.commentId } })" style="cursor: pointer;">
             <div class="fw-bold mb-1">{{ ans.boardTitle }}</div>
             <p class="text-muted small mb-1">{{ ans.content }}</p>
             <small class="text-secondary">
@@ -188,8 +176,7 @@ onMounted(() => {
         </button>
 
         <div class="pagination-button-wrap">
-          <button v-for="num in pageNumbers" :key="num"
-              class="pagination-button mx-1 px-2 py-1 border rounded"
+          <button v-for="num in pageNumbers" :key="num" class="pagination-button mx-1 px-2 py-1 border rounded"
               :class="{ on: page === num }" @click="gotoPage(num)">
             {{ num }}
           </button>
@@ -206,14 +193,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.template-wrapper {
-  background-color: #f7f8fb; /* 배경 회색-파랑 */
-  border: 1px solid #d6dbe8;
-  border-radius: 0.5rem;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-}
-
 .btn-tab-wrapper {
   display: flex;
   border: 1px solid #ccc;
