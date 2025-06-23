@@ -1,8 +1,10 @@
 package com.lawnroad.account.controller;
 import com.lawnroad.account.dto.*;
+import com.lawnroad.account.entity.AdminEntity;
 import com.lawnroad.account.entity.ClientEntity;
 import com.lawnroad.account.entity.LawyerEntity;
 import com.lawnroad.account.entity.UserEntity;
+import com.lawnroad.account.mapper.AdminMapper;
 import com.lawnroad.account.mapper.ClientMapper;
 import com.lawnroad.account.mapper.LawyerMapper;
 
@@ -24,6 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -48,6 +51,8 @@ public class AuthController {
     private final ClientMapper clientMapper;
     private final RefreshTokenService refreshTokenService;
     private final JdbcTemplate jdbcTemplate;
+    private final AdminMapper adminMapper;
+    private final PasswordEncoder passwordEncoder;
 
 
     @GetMapping("/auth/check-id")
@@ -446,6 +451,7 @@ public ResponseEntity<?> lawyerSignup(
     @PostMapping("/auth/logout")
     public ResponseEntity<?> logout(@RequestBody LogoutRequest request) {
         Long userNo = request.getUserNo(); // 프론트에서 전달받음
+        System.out.println("로그 아웃" + userNo);
         refreshTokenService.deleteByUserNo(userNo);
         return ResponseEntity.ok("로그아웃 완료 (토큰 삭제)");
     }
@@ -594,5 +600,29 @@ public ResponseEntity<?> lawyerSignup(
         lawyerService.updateLawyerInfo(lawyerId, officeNumber, phone, detailAddress);
         return ResponseEntity.ok().build();
     }
+    //관리자 전용 controller
+    @PostMapping("/auth/admin/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
+        String adminId = request.get("adminId");
+        String password = request.get("password");
+
+        AdminEntity admin = adminMapper.findByAdminId(adminId);
+        if (admin == null || !passwordEncoder.matches(password, admin.getPwHash())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("아이디 또는 비밀번호가 올바르지 않습니다.");
+        }
+
+        String accessToken = jwtTokenUtil.generateAccessToken(adminId,admin.getNo(), "ADMIN", admin.getName());
+        String refreshToken = jwtTokenUtil.generateRefreshToken(adminId);
+
+        refreshTokenService.save(admin.getNo(), refreshToken);
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("accessToken", accessToken);
+        res.put("refreshToken", refreshToken);
+        res.put("name", admin.getName());
+
+        return ResponseEntity.ok(res);
+    }
+
 
 }

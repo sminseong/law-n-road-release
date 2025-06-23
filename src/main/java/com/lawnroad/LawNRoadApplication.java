@@ -13,12 +13,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class LawNRoadApplication {
     public static void main(String[] args) {
 
-        PasswordEncoder encoder = new BCryptPasswordEncoder();
-
-
-
-
-
 
         SpringApplication.run(LawNRoadApplication.class, args);
     }

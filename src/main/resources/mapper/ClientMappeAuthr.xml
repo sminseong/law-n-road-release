@@ -84,6 +84,35 @@
 
 
 
+    <select id="findBySocialId" resultType="com.lawnroad.account.entity.ClientEntity">
+        SELECT * FROM client WHERE social_id = #{socialId}
+    </select>
+
+
+    <insert id="insertClientBySocial" parameterType="com.lawnroad.account.entity.ClientEntity">
+        INSERT INTO client (
+            no,
+            client_id,
+            email,
+            name,
+            nickname,
+            phone,
+            content,
+            alert_content,
+            social_id
+        )
+        VALUES (
+                   #{no},
+                   #{clientId},
+                   #{email},
+                   #{name},
+                   #{nickname},
+                   #{phone},
+                   #{content},
+                   #{alert_content},
+                   #{social_id}
+               )
+    </insert>
 
 
 
