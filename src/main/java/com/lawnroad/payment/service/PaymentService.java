@@ -42,7 +42,6 @@ public class PaymentService {
         // 카드 정보
         JsonNode card = root.path("card");
         if (!card.isMissingNode() && !card.isNull()) {
-            dto.setCardCompany(card.path("company").asText());
             dto.setInstallmentMonth(card.path("installmentPlanMonths").asInt());
         }
 

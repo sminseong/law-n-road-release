@@ -199,6 +199,7 @@ function formatDate(str) {
 function statusLabel(code) {
   if (code === 'REQUESTED') return '대기중'
   if (code === 'DONE')      return '완료'
+  if (code === 'CANCELED') return '취소'
   return code
 }
 </script>
