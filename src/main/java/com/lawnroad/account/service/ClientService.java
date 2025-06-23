@@ -78,6 +78,7 @@ public class ClientService {
         if (client == null) {
             throw new IllegalArgumentException("아이디 존재하지 않음");
         }
+        System.out.println("login진입");
 
         // ✅ 여기에 디버깅 로그 삽입
         System.out.println("입력 비번: " + rawPassword);
