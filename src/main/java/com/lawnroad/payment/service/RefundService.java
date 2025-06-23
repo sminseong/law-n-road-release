@@ -46,10 +46,6 @@ public class RefundService {
         this.secretKey          = secretKey;
     }
 
-    /**
-     * Webhook 또는 Controller 로부터 받은 JsonNode 를
-     * DB 저장 + 예약·슬롯·주문 상태 복원까지 수행
-     */
     @Transactional
     public void saveRefundFromToss(JsonNode root) {
         // (1) 기존 환불 저장 로직
@@ -110,9 +106,6 @@ public class RefundService {
         }
     }
 
-    /**
-     * Controller 로부터 paymentKey, cancelReason 만 받는 경로
-     */
     public void processRefund(RefundRequestDTO req) {
         // 1) Toss 환불 API 호출
         String url = "https://api.tosspayments.com/v1/payments/"
