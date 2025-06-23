@@ -11,8 +11,8 @@
         <div
             v-for="(day, dIdx) in weeklySlots"
             :key="day.date"
-            class="bg-white rounded-lg shadow p-4"
-            style="margin-top: 10px">
+            class="bg-white rounded-lg shadow p-4 mt-2"
+        >
           <h3 class="text-lg font-medium mb-2">
             {{ formatDate(day.date) }}
           </h3>
@@ -25,11 +25,12 @@
             <div class="grid grid-cols-4 gap-2">
               <button
                   v-for="slot in day.slots.filter(s => +s.slotTime.slice(0,2) < 12)"
-                  :key="slot.slotTime"
-                  @click="toggleSlot(dIdx, day.slots.indexOf(slot))"
-                  :class="slot.status === 1 ? activeClass : inactiveClass"
+                  :key="slot.no"
+                  @click="toggleSlot(dIdx, slot)"
+                  :disabled="slot.status === 0 && slot.requestedCount > 0"
+                  :class="buttonClass(slot)"
               >
-                {{ slot.slotTime.slice(0, 5) }}
+                {{ slot.slotTime.slice(0,5) }}
               </button>
             </div>
           </div>
@@ -42,22 +43,23 @@
             <div class="grid grid-cols-4 gap-2">
               <button
                   v-for="slot in day.slots.filter(s => +s.slotTime.slice(0,2) >= 12)"
-                  :key="slot.slotTime"
-                  @click="toggleSlot(dIdx, day.slots.indexOf(slot))"
-                  :class="slot.status === 1 ? activeClass : inactiveClass"
+                  :key="slot.no"
+                  @click="toggleSlot(dIdx, slot)"
+                  :disabled="slot.status === 0 && slot.requestedCount > 0"
+                  :class="buttonClass(slot)"
               >
-                {{ slot.slotTime.slice(0, 5) }}
+                {{ slot.slotTime.slice(0,5) }}
               </button>
             </div>
           </div>
         </div>
 
         <!-- 확인 버튼 -->
-        <div class="flex justify-end">
+        <div class="flex justify-end mt-4">
           <button
               @click="submitUpdates"
-              class="px-4 py-2 text-white rounded hover:bg-green-700"
-              style="background-color: green; margin-top: 10px">
+              class="px-4 py-2 text-white rounded hover:bg-green-700 bg-green-600"
+          >
             확인
           </button>
         </div>
@@ -67,11 +69,11 @@
 </template>
 
 <script setup>
-import {ref, onMounted} from 'vue'
-import {useRoute, useRouter} from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
-import LawyerFrame from "@/components/layout/lawyer/LawyerFrame.vue";
-import {getValidToken} from "@/libs/axios-auth.js";
+import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
+import { getValidToken } from '@/libs/axios-auth.js'
 
 // route에서 lawyerNo 가져오기
 const route = useRoute()
@@ -79,21 +81,23 @@ const router = useRouter()
 const lawyerNo = route.params.lawyerNo
 
 const loading = ref(true)
-const rawSlots = ref([])
 const weeklySlots = ref([])
 
 // 버튼 스타일 정의
-const activeClass = 'px-3 py-2 text-sm font-medium rounded-lg w-full text-green-800'
-const inactiveClass = 'px-3 py-2 text-sm font-medium rounded-lg w-full text-gray-400'
+const activeClass   = 'px-3 py-2 text-sm font-medium rounded-lg w-full text-green-800 border border-green-800'
+const inactiveClass = 'px-3 py-2 text-sm font-medium rounded-lg w-full text-gray-400 border border-gray-300'
+const reservedClass = 'px-3 py-2 text-sm font-medium rounded-lg w-full opacity-50 cursor-not-allowed border border-red-300'
 
-// DB에서 받아온 예약을 날짜별로 묶기
+// API 호출 및 데이터 가공
 function groupByDate(list) {
   const map = {}
   list.forEach(s => {
     if (!map[s.slotDate]) map[s.slotDate] = []
     map[s.slotDate].push({
-      slotTime: s.slotTime,
-      status: s.status
+      no:             s.no,
+      slotTime:       s.slotTime,
+      status:         s.status,
+      requestedCount: s.requestedCount  // 백엔드에서 내려주는 필드
     })
   })
   return Object.entries(map)
@@ -104,7 +108,6 @@ function groupByDate(list) {
       }))
 }
 
-// API 호출
 async function fetchSlots() {
   const token = await getValidToken()
   if (!token) {
@@ -116,11 +119,9 @@ async function fetchSlots() {
     const startDate = new Date().toISOString().slice(0, 10)
     const res = await axios.get(
         `/api/lawyer/${lawyerNo}/slots`,
-        {params: {startDate}}
+        { params: { startDate } }
     )
-    rawSlots.value = res.data
     weeklySlots.value = groupByDate(res.data)
-
   } catch (err) {
     console.error(err)
     alert('주간 예약 정보를 불러오던 중 오류가 발생했습니다.')
@@ -131,33 +132,49 @@ async function fetchSlots() {
 
 onMounted(fetchSlots)
 
-// 슬롯 클릭 시 0 <-> 1 토글
-function toggleSlot(dayIdx, slotIdx) {
-  const slot = weeklySlots.value[dayIdx].slots[slotIdx]
+// 버튼마다 클래스 분기
+function buttonClass(slot) {
+  if (slot.status === 1) return activeClass
+  if (slot.requestedCount > 0) return reservedClass
+  return inactiveClass
+}
+
+// 슬롯 클릭 시 토글 (0→1 / 1→0), 단 예약된 닫힌 슬롯은 차단
+function toggleSlot(dayIdx, slot) {
+  if (slot.status === 0 && slot.requestedCount > 0) {
+    alert('이미 예약된 슬롯은 활성화할 수 없습니다.')
+    return
+  }
   slot.status = slot.status === 1 ? 0 : 1
 }
 
 // 업데이트 요청 전송
 async function submitUpdates() {
-  console.log(lawyerNo)
   const updates = weeklySlots.value.flatMap(day =>
       day.slots.map(s => ({
+        no:       s.no,
         slotDate: day.date,
         slotTime: s.slotTime,
-        status: s.status
+        status:   s.status
       }))
   )
 
   try {
+    const token = localStorage.getItem('token')
     await axios.put(
         `/api/lawyer/${lawyerNo}/slots`,
-        updates
-     )
+        updates,
+        { headers: { Authorization: `Bearer ${token}` } }
+    )
     alert('주간 예약 정보가 성공적으로 저장되었습니다.')
     router.push('/lawyer')
   } catch (err) {
     console.error(err)
-    alert('저장 중 오류가 발생했습니다.')
+    if (err.response?.status === 409) {
+      alert(err.response.data?.message || '변경할 수 없는 슬롯이 포함되어 있습니다.')
+    } else {
+      alert('저장 중 오류가 발생했습니다.')
+    }
   }
 }
 
