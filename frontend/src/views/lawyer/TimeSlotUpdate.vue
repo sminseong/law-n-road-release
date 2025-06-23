@@ -68,13 +68,14 @@
 
 <script setup>
 import {ref, onMounted} from 'vue'
-import {useRoute} from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
 import axios from 'axios'
 import LawyerFrame from "@/components/layout/lawyer/LawyerFrame.vue";
 import {getValidToken} from "@/libs/axios-auth.js";
 
 // route에서 lawyerNo 가져오기
 const route = useRoute()
+const router = useRouter()
 const lawyerNo = route.params.lawyerNo
 
 const loading = ref(true)
@@ -119,6 +120,7 @@ async function fetchSlots() {
     )
     rawSlots.value = res.data
     weeklySlots.value = groupByDate(res.data)
+
   } catch (err) {
     console.error(err)
     alert('주간 예약 정보를 불러오던 중 오류가 발생했습니다.')
@@ -150,8 +152,9 @@ async function submitUpdates() {
     await axios.put(
         `/api/lawyer/${lawyerNo}/slots`,
         updates
-    )
+     )
     alert('주간 예약 정보가 성공적으로 저장되었습니다.')
+    router.push('/lawyer')
   } catch (err) {
     console.error(err)
     alert('저장 중 오류가 발생했습니다.')
