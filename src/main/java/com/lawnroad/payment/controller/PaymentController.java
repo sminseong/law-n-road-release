@@ -1,16 +1,15 @@
 package com.lawnroad.payment.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lawnroad.payment.dto.PaymentConfirmRequestDTO;
-import com.lawnroad.payment.dto.PaymentResponseDTO;
 import com.lawnroad.payment.dto.RefundRequestDTO;
 import com.lawnroad.payment.dto.OrdersStatusUpdateDTO;
 import com.lawnroad.payment.model.OrdersVO;
 import com.lawnroad.payment.service.OrdersService;
 import com.lawnroad.payment.service.PaymentService;
 import com.lawnroad.payment.service.RefundService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.lawnroad.reservation.mapper.ReservationsMapper;
+import com.lawnroad.payment.mapper.PaymentMapper;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
@@ -25,26 +24,34 @@ import java.util.Map;
 @RequestMapping("/api/confirm")
 public class PaymentController {
 
-    private final OrdersService   ordersService;
-    private final PaymentService  paymentService;
-    private final RefundService   refundService;
+    private final OrdersService        ordersService;
+    private final PaymentService       paymentService;
+    private final RefundService        refundService;
+    private final ReservationsMapper   reservationsMapper;
+    private final PaymentMapper        paymentMapper;
 
-    private static final String SECRET_KEY = "test_sk_4yKeq5bgrpoROnDY0L4XVGX0lzW6";
-    private static final String TOSS_CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
+    private static final String SECRET_KEY        = "test_sk_4yKeq5bgrpoROnDY0L4XVGX0lzW6";
+    private static final String TOSS_CONFIRM_URL  = "https://api.tosspayments.com/v1/payments/confirm";
 
-    public PaymentController(OrdersService ordersService,
-                             PaymentService paymentService,
-                             RefundService refundService) {
-        this.ordersService  = ordersService;
-        this.paymentService = paymentService;
-        this.refundService  = refundService;
+    public PaymentController(
+            OrdersService ordersService,
+            PaymentService paymentService,
+            RefundService refundService,
+            ReservationsMapper reservationsMapper,
+            PaymentMapper paymentMapper
+    ) {
+        this.ordersService       = ordersService;
+        this.paymentService      = paymentService;
+        this.refundService       = refundService;
+        this.reservationsMapper  = reservationsMapper;
+        this.paymentMapper       = paymentMapper;
     }
 
     @PostMapping("/payment")
     public ResponseEntity<?> confirmPayment(@RequestBody PaymentConfirmRequestDTO req) {
+        // (기존 confirmPayment 로직 그대로)
         RestTemplate rt = new RestTemplate();
-        String basic = Base64.getEncoder()
-                .encodeToString((SECRET_KEY + ":").getBytes(StandardCharsets.UTF_8));
+        String basic = Base64.getEncoder().encodeToString((SECRET_KEY + ":").getBytes(StandardCharsets.UTF_8));
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", "Basic " + basic);
@@ -62,9 +69,7 @@ public class PaymentController {
             root = tossResp.getBody();
             if (root == null) throw new IllegalStateException("Empty Toss response");
         } catch (HttpClientErrorException | HttpServerErrorException ex) {
-
             String body = ex.getResponseBodyAsString();
-            // body 예시: {"message":"결제 승인 실패","error":"카드 한도가 초과되었습니다."}
             String msg = "결제 승인 실패";
             int idx = body.indexOf("\"message\"");
             if (idx >= 0) {
@@ -77,7 +82,6 @@ public class PaymentController {
             return ResponseEntity.status(ex.getStatusCode())
                     .body(Map.of("message", msg));
         }
-
 
         // (1) order 조회
         String orderCode = root.path("orderId").asText();
@@ -105,18 +109,33 @@ public class PaymentController {
         return ResponseEntity.ok(root);
     }
 
-
     @PostMapping("/cancel")
     public ResponseEntity<?> cancelPayment(@RequestBody RefundRequestDTO req) {
+        // 1) reservationNo → orderNo 조회
+        Long reservationNo = req.getReservationNo();
+        Long orderNo = reservationsMapper.selectReservationByNo(reservationNo).getOrderNo();
+        Long amount = reservationsMapper.selectReservationByNo(reservationNo).getAmount();
+
+        // 2) orderNo → paymentKey 조회
+        String paymentKey = paymentMapper.findPaymentKeyByOrderNo(orderNo);
+
+        // 3) DTO에 세팅
+        req.setOrderNo(orderNo);
+        req.setPaymentKey(paymentKey);
+        req.setAmount(amount);
+        req.setCancelReason("사용자 취소 요청");
+
         try {
             refundService.processRefund(req);
             return ResponseEntity.ok(Map.of("message","환불 처리 완료"));
         } catch (IllegalArgumentException ie) {
+            String msg = ie.getMessage() != null ? ie.getMessage() : "리소스를 찾을 수 없습니다.";
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", ie.getMessage()));
+                    .body(Map.of("message", msg));
         } catch (Exception e) {
+            String err = e.getMessage() != null ? e.getMessage() : "환불 처리 실패";
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message","환불 처리 실패","error",e.getMessage()));
+                    .body(Map.of("message","환불 처리 실패","error", err));
         }
     }
 }

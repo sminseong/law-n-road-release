@@ -9,9 +9,9 @@
             useGeneratedKeys="true"
             keyProperty="no">
         INSERT INTO reservations
-            (order_no, slot_no, user_no, content, status, created_at, updated_at)
+            (order_no, slot_no, user_no, status, created_at, updated_at)
         VALUES
-            (#{orderNo}, #{slotNo}, #{userNo}, #{content}, 'REQUESTED', NOW(), NOW())
+            (#{orderNo}, #{slotNo}, #{userNo}, 'REQUESTED', NOW(), NOW())
     </insert>
 
 <!--    <select id="selectReservationsByUser"-->
@@ -27,7 +27,6 @@
 <!--            w.slot_date     AS slotDate,-->
 <!--            w.slot_time     AS slotTime,-->
 <!--            r.status        AS status,-->
-<!--            r.content       AS content,-->
 <!--            w.amount        AS amount-->
 <!--        FROM reservations r-->
 <!--                 JOIN client u      ON r.user_no  = u.no-->
@@ -56,7 +55,7 @@
                  JOIN weekly_time_slots w ON r.slot_no  = w.no
                  JOIN orders o            ON r.order_no = o.no
         WHERE r.user_no = #{userNo}
-        ORDER BY w.slot_date DESC
+        ORDER BY r.no DESC, w.slot_date DESC, w.slot_time DESC
     </select>
 
 
@@ -85,7 +84,6 @@
             w.slot_date     AS slotDate,
             w.slot_time     AS slotTime,
             r.status        AS status,
-            r.content       AS content,
             w.amount        AS amount
         FROM reservations r
                  JOIN client u         ON r.user_no = u.no
@@ -105,7 +103,6 @@
             ts.slot_date,
             ts.slot_time,
             r.status,
-            r.content,
             ts.amount,
             l.no AS lawyer_no,
             l.name AS lawyer_name
@@ -117,5 +114,13 @@
                  JOIN lawyer l ON ts.user_no = l.no
         WHERE r.no = #{reservationNo}
     </select>
+    <select id="selectReservationByOrderNo"
+            resultType="com.lawnroad.reservation.dto.ReservationsResponseDTO"
+            parameterType="long">
+        SELECT *
+        FROM reservations
+        WHERE order_no = #{orderNo}
+    </select>
+
 
 </mapper>

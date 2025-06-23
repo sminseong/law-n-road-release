@@ -12,7 +12,6 @@ public class PaymentVO {
     private String orderCode;
     private Long amount;
     private String status;
-    private String cardCompany;
     private Integer installmentMonth;
     private LocalDateTime purchasedAt;
     private String pg;
