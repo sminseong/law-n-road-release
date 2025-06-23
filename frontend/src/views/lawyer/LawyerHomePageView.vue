@@ -4,6 +4,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import http from '@/libs/HttpRequester'
 import ProductCard from "@/components/common/ProductCard.vue";
+import CardTable from "@/components/table/CardTable.vue";
 
 const route = useRoute()
 const data = ref({
@@ -144,7 +145,7 @@ onMounted(async () => {
 
           <div class="card shadow-sm mb-4 p-4 d-flex">
             <h5 class="fw-bold">{{ data.name }} 변호사가 답변한 상담글</h5>
-            <p class="mb-0">{{  }}</p>
+            <CardTable :List="data.recentBoards" :maxLines="4" />
           </div>
         </div>
       </div>

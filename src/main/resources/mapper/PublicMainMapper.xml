@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lawnroad.mainsearch.mapper.PublicMainMapper">
+
+    <!-- 메인 페이지 메인 베너 광고 -->
+    <select id="selectActiveMainBanners" resultType="com.lawnroad.mainsearch.dto.LawyerAdBannerDto">
+        SELECT
+            ap.main_text     AS title,
+            ap.detail_text   AS `desc`,
+            ap.ad_path       AS image,
+            CONCAT('/lawyer/', l.no, '/homepage') AS link,
+            l.no             AS lawyerNo,
+            l.name           AS lawyerName,
+            ap.tip_text      AS badge
+        FROM ad_purchase ap
+                 JOIN lawyer l ON ap.user_no = l.no
+        WHERE ap.ad_type = 'MAIN'
+          AND ap.ad_status = 1
+          AND ap.approval_status = 'APPROVED'
+          AND NOW() BETWEEN ap.start_date AND ap.end_date
+        ORDER BY RAND()
+        LIMIT 6
+    </select>
+
+    <!-- 최신 게시글 5개 조회 -->
+    <select id="selectLatestBoards" resultType="com.lawnroad.mainsearch.dto.BoardHomepageDto">
+        SELECT
+            no,
+            category_no AS categoryNo,
+            title,
+            content,
+            incident_date AS incidentDate,
+            created_at AS createdAt,
+            updated_at AS updatedAt
+        FROM board
+        ORDER BY created_at DESC
+        LIMIT 5
+    </select>
+
+    <!-- 인기 상품 10개 조회 -->
+    <select id="selectRecentTemplatesByLawyerNo" resultType="com.lawnroad.template.dto.TemplateDto">
+        SELECT
+            t.no,
+            t.name,
+            t.price,
+            t.discount_rate AS discountRate,
+            t.thumbnail_path AS thumbnailPath
+        FROM template t
+        WHERE t.user_no = 1
+          AND t.is_deleted = 0
+        ORDER BY t.sales_count DESC, t.created_at DESC
+        LIMIT 10
+    </select>
+
+    <!-- SUB 광고 랜덤 2개 조회 -->
+    <select id="selectActiveSubBanners" resultType="com.lawnroad.mainsearch.dto.LawyerAdBannerDto">
+        SELECT
+            ap.main_text     AS title,
+            ap.detail_text   AS `desc`,
+            ap.tip_text      AS badge,
+            ap.ad_path       AS image,
+            CONCAT('/lawyer/', l.no, '/homepage') AS link,
+            l.no             AS lawyerNo,
+            l.name           AS lawyerName
+        FROM ad_purchase ap
+                 JOIN lawyer l ON ap.user_no = l.no
+        WHERE ap.ad_type = 'SUB'
+          AND ap.ad_status = 1
+          AND ap.approval_status = 'APPROVED'
+          AND NOW() BETWEEN ap.start_date AND ap.end_date
+        ORDER BY RAND()
+        LIMIT 2
+    </select>
+
+    <!-- 랭킹 조회 -->
+    <select id="selectTop3LawyersByViews" resultType="com.lawnroad.mainsearch.dto.TopLawyerDto">
+        SELECT l.no AS lawyerNo,
+               l.name,
+               l.profile AS profileImage
+        FROM lawyer l
+        ORDER BY l.point DESC
+        LIMIT 3
+    </select>
+
+</mapper>

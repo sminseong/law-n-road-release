@@ -46,4 +46,21 @@
         LIMIT 5
     </select>
 
+    <!-- 특정 변호사가 답변한 게시글 최신 5개 조회 -->
+    <select id="selectLatestBoardsByLawyer" resultType="com.lawnroad.mainsearch.dto.BoardHomepageDto" parameterType="long">
+        SELECT DISTINCT
+            b.no,
+            b.category_no AS categoryNo,
+            b.title,
+            b.content,
+            b.incident_date AS incidentDate,
+            b.created_at AS createdAt,
+            b.updated_at AS updatedAt
+        FROM board b
+                 INNER JOIN comment c ON b.no = c.board_no
+        WHERE c.user_no = #{lawyerNo}
+        ORDER BY b.created_at DESC
+        LIMIT 5
+    </select>
+
 </mapper>
