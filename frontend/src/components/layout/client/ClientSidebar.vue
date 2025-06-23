@@ -1,38 +1,41 @@
 <script setup>
+import { ref, onMounted } from 'vue'
+import http from '@/libs/HttpRequester'
+
+const topLawyers = ref([])
+
 const openChatbot = () => {
   window.dispatchEvent(new Event('open-chatbot'))
 }
+
+onMounted(async () => {
+  const res = await http.get('/api/public/main/top-lawyers')
+  console.log(res.data)
+  topLawyers.value = res.data
+})
 </script>
 
 <template>
   <aside class="right-nav">
-    <!-- 사이드 네비게이션 -->
     <div class="right-nav">
       <div class="ranking-box">
         <div class="ranking-title">조회수 랭킹</div>
-
         <div class="lawyer-list collapsed mb-sm-3" id="lawyerList">
-          <div class="lawyer-card" onclick="location.href='/lawyer';">
-            <img src="/img/profiles/kim.png" alt="김수영" />
-            <span>김수영</span>
-          </div>
-          <div class="lawyer-card" onclick="location.href='/lawyer';">
-            <img src="/img/profiles/lee.png" alt="이철민" />
-            <span>이철민</span>
-          </div>
-          <div class="lawyer-card" onclick="location.href='/lawyer';">
-            <img src="/img/profiles/park.png" alt="박하늘" />
-            <span>박하늘</span>
+          <div
+              v-for="lawyer in topLawyers"
+              :key="lawyer.lawyerNo"
+              class="lawyer-card"
+              @click="$router.push(`/lawyer/${lawyer.lawyerNo}/homepage`)"
+          >
+            <img :src="lawyer.profileImage || '/img/default-profile.png'" :alt="lawyer.name" />
+            <span>{{ lawyer.name }}</span>
           </div>
         </div>
-
-        <!-- 더 보기 대신 목록 페이지로 이동 -->
-        <a href="./search.html" class="more-link">더 알아보기 →</a>
+        <a href="/search" class="more-link">더 알아보기 →</a>
       </div>
-
       <div class="chatbots">
         <button @click="openChatbot">과실비율</button>
-        <button onclick="location.href='./chatbot.html'">고객센터</button>
+        <button @click="$router.push('/chatbot')">고객센터</button>
       </div>
     </div>
   </aside>
@@ -51,5 +54,9 @@ const openChatbot = () => {
   .right-nav {
     display: none;
   }
+}
+
+.chatbots {
+  background-color: #fff;
 }
 </style>

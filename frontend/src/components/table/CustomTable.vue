@@ -127,11 +127,13 @@ function changePage(page) {
                 <button
                     v-if="actionButtons.edit"
                     class="btn btn-sm btn-outline-primary"
+                    :disabled="typeof actionButtons.edit === 'function' ? !actionButtons.edit(row) : false"
                     @click.stop.prevent="emit('edit-action', row)"
                 >수정</button>
                 <button
                     v-if="actionButtons.delete"
                     class="btn btn-sm btn-outline-secondary"
+                    :disabled="typeof actionButtons.delete === 'function' ? !actionButtons.delete(row) : false"
                     @click.stop.prevent="emit('delete-action', row)"
                 >삭제</button>
               </div>
