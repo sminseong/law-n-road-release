@@ -101,13 +101,13 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                             "/api/auth/**", "/api/public/**", "/api/find-id", "/api/reset-password",
                             "/mail/**", "/api/user/**", "/api/auth/nickname", "/api/notification/**",
                             "/uploads/**", "/api/webhook/**", "/api/signuplawyer",
-                            "/login/oauth2/**", "/oauth2/**"  ,"/api/admin/**"
+                            "/login/oauth2/**", "/oauth2/**"
                     ).permitAll()
                     .requestMatchers("/api/ai/**", "/api/lawyer/*/slots", "/api/confirm/payment", "/api/confirm/cancel","/api/refresh")
                     .hasAnyRole("CLIENT", "LAWYER")
                     .requestMatchers("/api/client/**").hasRole("CLIENT")
                     .requestMatchers("/api/lawyer/**").hasRole("LAWYER")
-                    //.requestMatchers("/api/admin/**").hasRole("ADMIN")
+                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
             )
             .oauth2Login(oauth2 -> oauth2
