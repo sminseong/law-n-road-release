@@ -3,7 +3,7 @@
 import {ref, computed, onMounted} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
-import { fetchBoardDetail, deleteQna } from '@/service/boardService.js'
+import { fetchBoardDetail, deleteQna ,fetchBoardComments  } from '@/service/boardService.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -20,12 +20,38 @@ const qa = ref({
   createdAt: ''
 })
 
-// 변호사 답변 더미 데이터
-const answers = ref([
-  {no: 1, avatar: '/img/profiles/kim.png', author: '김서연 변호사', content: '첫 번째 답변 예시입니다.', isSelected: false},
-  {no: 2, avatar: '/img/profiles/lee.png', author: '유재석 변호사', content: '두 번째 답변 예시입니다.', isSelected: false},
-  {no: 3, avatar: '/img/profiles/park.png', author: '이재용 변호사', content: '세 번째 답변 예시입니다.', isSelected: false}
-])
+// 변호사 답변
+const answers = ref([])
+
+// 상세 조회
+async function loadDetail() {
+  try {
+    const res = await fetchBoardDetail(id)
+    const data = res.data
+    qa.value = {
+      categoryName: data.categoryName,
+      title: data.title,
+      content: data.content,
+      incidentDate: data.incidentDate,
+      createdAt: data.createdAt
+    }
+  } catch (err) {
+    console.error('게시글 상세 실패:', err)
+    alert('게시글을 불러오지 못했습니다.')
+  }
+}
+
+// 답변 불러오기
+async function loadComments() {
+  try {
+    const res = await fetchBoardComments(id)
+    console.log('📥 답변 API 응답:', res)
+    console.log('📦 데이터:', res.data)
+    answers.value = res.data
+  } catch (err) {
+    console.error('답변 불러오기 실패:', err)
+  }
+}
 
 function goEditPage() {
   router.push(`/client/qna/edit/${id}`)
@@ -57,7 +83,7 @@ const sortedAnswers = computed(() => [
   ...answers.value.filter(a => !a.isSelected)
 ])
 
-// 답변 채택 함수 (하나만 true)
+// 답변 채택 함수 (프론트 임시 처리)
 function selectAnswer(answerNo) {
   answers.value = answers.value.map(a => ({
     ...a,
@@ -66,25 +92,8 @@ function selectAnswer(answerNo) {
 }
 
 onMounted(async () => {
-  console.log('🧩 현재 경로 ID:', route.params.id)
-
-  try {
-    const data = await fetchBoardDetail(id)
-    console.log('✅ 게시글 상세:', data.data)
-
-    //정확한 필드명으로 수정
-    qa.value = {
-      categoryName: data.data.categoryName,
-      title: data.data.title,
-      content: data.data.content,
-      incidentDate: data.data.incidentDate,
-      createdAt: data.data.createdAt
-    }
-
-  } catch (err) {
-    console.error('🚨 게시글 상세 조회 실패:', err.response?.status, err.response?.data)
-    alert('게시글을 불러오지 못했습니다.')
-  }
+  await loadDetail()
+  await loadComments()
 })
 </script>
 <template>
@@ -138,31 +147,25 @@ onMounted(async () => {
       <hr class="my-4">
 
       <!-- 변호사 답변 섹션 -->
-      <div class="answers">
-        <h4 class="fw-semibold mb-3">변호사 답변</h4>
-        <div
-            v-for="ans in sortedAnswers"
-            :key="ans.no"
-            class="answer-card border rounded p-3 mb-3"
-        >
-          <!-- 작성자(이미지+이름) + 채택 버튼 -->
+      <h3 class="fw-bold mt-5 mb-3">변호사 답변</h3>
+
+        <div v-for="ans in sortedAnswers" :key="ans.commentId"
+          class="answer-card border rounded p-3 mb-3">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <div class="d-flex align-items-center">
-              <img v-if="ans.avatar" :src="ans.avatar"
-                  class="rounded-circle me-2" style="width:32px; height:32px;" />
-              <small class="text-secondary">{{ ans.author }}</small>
+              <img v-if="ans.lawyerProfileImage" :src="ans.lawyerProfileImage"
+                 class="rounded-circle me-2" style="width:32px; height:32px;" />
+              <small class="text-secondary">{{ ans.lawyerName }} 변호사 </small>
             </div>
             <div>
-              <button v-if="!ans.isSelected" @click="selectAnswer(ans.no)"
-                  class="btn btn-outline-primary btn-sm"> 채택 </button>
-              <span v-else class="badge bg-primary"> 채택됨 </span>
+            <button v-if="!ans.isSelected" @click="selectAnswer(ans.commentId)"
+                    class="btn btn-outline-primary btn-sm"> 채택 </button>
+            <span v-else class="badge bg-primary"> 채택됨 </span>
             </div>
           </div>
-           <!-- 답변 본문 -->
-           <p class="mb-0">{{ ans.content }}</p>
+        <p class="mb-0">{{ ans.content }}</p>
         </div>
       </div>
-    </div>
   </ClientFrame>
 </template>
 <style scoped>
@@ -232,6 +235,10 @@ onMounted(async () => {
 .custom-backdrop {
   z-index: 9999; /* 기존 1050보다 훨씬 높게 */
 }
+.answer-wrapper {
+  background-color: #f3f6ff;
 
+  border-radius: 1px;
+}
 </style>
 

@@ -19,12 +19,11 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public void registerComment(CommentRegisterDto dto) {
-        // 🔐 중복 작성 방지: 이미 해당 변호사가 이 게시글에 답변을 작성했는지 확인
+        // 댓글(답변 )중복 작성 방지: 이미 해당 변호사가 이 게시글에 답변을 작성했는지 확인
         boolean exists = commentMapper.existsByBoardNoAndUserNo(dto.getBoardNo(), dto.getUserNo());
         if (exists) {
             throw new IllegalStateException("이미 해당 게시글에 답변을 작성하셨습니다.");
         }
-
         // 중복이 아니면 등록 진행
         commentMapper.insertComment(dto);
     }
@@ -60,6 +59,11 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void deleteComment(Long commentId) {
         commentMapper.deleteComment(commentId);
+    }
+
+    @Override
+    public List<BoardCommentResponseDto> findBoardCommentsByBoardId(Long boardId) {
+        return commentMapper.findBoardCommentsByBoardId(boardId);
     }
 
 

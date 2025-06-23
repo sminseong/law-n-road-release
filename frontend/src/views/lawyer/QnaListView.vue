@@ -123,15 +123,13 @@ onMounted(() => {
           <button
               class="btn-tab flex-fill"
               :class="{ active: selectedTab === 'answer' }"
-              @click="selectedTab = 'answer'"
-          >
+              @click="selectedTab = 'answer'">
             Q&A 답변하기
           </button>
           <button
               class="btn-tab flex-fill"
               :class="{ active: selectedTab === 'my' }"
-              @click="selectedTab = 'my'"
-          >
+              @click="selectedTab = 'my'">
             내가 답변한 상담글
           </button>
         </div>
@@ -183,36 +181,22 @@ onMounted(() => {
       </div>
 
       <!-- 페이지네이션 -->
-      <nav
-          v-if="totalPages > 1"
-          class="pagination-wrapper mt-4 d-flex justify-content-center align-items-center"
-      >
-        <button
-            v-if="startPage > 1"
-            class="btn btn-link p-0 me-3"
-            @click="gotoPage(startPage - pagesInGroup)"
-        >
+      <nav v-if="totalPages > 1" class="pagination-wrapper mt-4 d-flex justify-content-center align-items-center">
+        <button v-if="startPage > 1" class="btn btn-link p-0 me-3" @click="gotoPage(startPage - pagesInGroup)">
           <i class="lc lc-chevron-left"></i>
           <span class="lt-desktop">이전 {{ pagesInGroup }}페이지</span>
         </button>
 
         <div class="pagination-button-wrap">
-          <button
-              v-for="num in pageNumbers"
-              :key="num"
+          <button v-for="num in pageNumbers" :key="num"
               class="pagination-button mx-1 px-2 py-1 border rounded"
-              :class="{ on: page === num }"
-              @click="gotoPage(num)"
-          >
+              :class="{ on: page === num }" @click="gotoPage(num)">
             {{ num }}
           </button>
         </div>
 
-        <button
-            v-if="startPage + pagesInGroup <= totalPages"
-            class="btn btn-link p-0 ms-3"
-            @click="gotoPage(startPage + pagesInGroup)"
-        >
+        <button v-if="startPage + pagesInGroup <= totalPages" class="btn btn-link p-0 ms-3"
+            @click="gotoPage(startPage + pagesInGroup)">
           <span class="lt-desktop">다음 {{ pagesInGroup }}페이지</span>
           <i class="lc lc-chevron-right"></i>
         </button>

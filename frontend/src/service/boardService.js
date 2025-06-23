@@ -52,3 +52,7 @@ export async function deleteComment(commentId) {
     console.log('📡 boardService.js - commentId:', commentId)
     return await httpRequester.delete(`/api/lawyer/comment/${commentId}`)
 }
+
+export const fetchBoardComments = (boardId) => {
+    return httpRequester.get(`/api/public/qna/${boardId}/comments`)
+}

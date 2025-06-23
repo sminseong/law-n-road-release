@@ -61,4 +61,5 @@ public class LawyerCommentController {
         commentService.deleteComment(commentId);
         return ResponseEntity.noContent().build();
     }
+
 }

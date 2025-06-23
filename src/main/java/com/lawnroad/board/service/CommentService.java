@@ -1,6 +1,7 @@
 package com.lawnroad.board.service;
 
 import com.lawnroad.board.dto.*;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -23,5 +24,7 @@ public interface CommentService {
 
     //댓글(답변)을 삭제
     void deleteComment(Long commentId);
+
+    List<BoardCommentResponseDto> findBoardCommentsByBoardId(@Param("boardId") Long boardId);
 
 }

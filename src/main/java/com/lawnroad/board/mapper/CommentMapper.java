@@ -29,4 +29,6 @@ public interface CommentMapper {
     void deleteComment(Long commentId);
 
     boolean existsByBoardNoAndUserNo(@Param("boardNo") Long boardNo, @Param("userNo") Long userNo);
+
+    List<BoardCommentResponseDto> findBoardCommentsByBoardId(@Param("boardId") Long boardId);
 }

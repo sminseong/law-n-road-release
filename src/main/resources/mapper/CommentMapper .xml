@@ -92,4 +92,17 @@
               AND user_no = #{userNo}
         )
     </select>
+
+    <select id="findBoardCommentsByBoardId" parameterType="long" resultType="com.lawnroad.board.dto.BoardCommentResponseDto">
+        SELECT
+            c.no AS commentId,
+            c.content,
+            c.created_at,
+            c.is_selected,
+            l.name AS lawyerName,
+            l.profile AS lawyerProfileImage
+        FROM comment c
+                 JOIN lawyer l ON c.user_no = l.no
+        WHERE c.board_no = #{boardId}
+    </select>
 </mapper>

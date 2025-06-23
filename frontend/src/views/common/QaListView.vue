@@ -7,6 +7,15 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
+const categoryMap = {
+  1: '사고 발생/처리',
+  2: '중대사고·형사처벌',
+  3: '음주·무면허 운전',
+  4: '보험·행정처분',
+  5: '과실 분쟁',
+  6: '기타'
+}
+
 // 페이징 및 데이터 상태
 const page = ref(1)            // 현재 페이지. 기본 1
 const size = ref(10)           // 페이지당 항목 수. 기본 10
@@ -42,18 +51,25 @@ function gotoPage(p) {
 async function loadList() {
   isLoading.value = true
   error.value = null
+
   try {
     const res  = await fetchBoardList(page.value, size.value) // ← API 호출
     const data = res.data
     console.log('🟢 게시글 목록 응답:', data)
 
+    let rawList = []
+
     if (data.content && Array.isArray(data.content)) {
-      list.value = data.content // ← ✅ 바로 여기!
+      rawList = data.content
     } else if (Array.isArray(data)) {
-      list.value = data
-    } else {
-      list.value = []
+      rawList = data
     }
+
+    // 카테고리명 추가해서 가공
+    list.value = rawList.map(item => ({
+      ...item,
+      categoryName: categoryMap[item.categoryNo] || '기타'
+    }))
 
     // 페이지 수 계산
     if (data.totalPages != null) {

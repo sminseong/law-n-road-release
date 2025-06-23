@@ -9,5 +9,5 @@ public class CommentResponse {
     private String lawyerProfileImage; //답변 작성자의 프로필 이미지 경로
     private String content; //답변 내용
     private String  createdAt; //답변 작성일
-    private Long userNo; // ✅ 이거 추가!
+    private Long userNo;
 }

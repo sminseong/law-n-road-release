@@ -74,7 +74,7 @@ onMounted(async () => {
 const register = async () => {
   const userNo = store.lawyerInfo?.lawyerNo
 
-  //console.log('🛠️ store.lawyerInfo:', store.lawyerInfo)
+  //console.log(' store.lawyerInfo:', store.lawyerInfo)
 
   if (!userNo) {
     alert('로그인 정보가 확인되지 않아 답변 등록이 불가합니다.')
@@ -92,7 +92,7 @@ const register = async () => {
     content: answerContent.value
   }
 
-  //console.log('✅ 등록 요청 Payload:', payload)
+  //console.log(' 등록 요청 Payload:', payload)
 
   try {
     await registerComment(payload)
@@ -144,13 +144,8 @@ const register = async () => {
         <!-- 답변 작성 영역 -->
         <div class="mb-4">
           <label class="form-label fw-bold" style="font-size: 1.25rem;">상담글 답변</label>
-          <textarea
-              v-model="answerContent"
-              class="form-control"
-              rows="8"
-              :maxlength="maxLength"
-              placeholder="질문에 대한 답변을 입력하세요"
-          ></textarea>
+          <textarea v-model="answerContent" class="form-control" rows="8"
+              :maxlength="maxLength" placeholder="질문에 대한 답변을 입력하세요"></textarea>
 
           <div class="text-end small mt-1">
             <span v-if="showValidationMessage" class="text-danger">
@@ -165,11 +160,7 @@ const register = async () => {
 
         <!-- 등록 버튼 -->
         <div class="text-center">
-          <button
-              class="btn btn-primary px-4"
-              :disabled="answerContent.length < 100"
-              @click="register"
-          >
+          <button class="btn btn-primary px-4" :disabled="answerContent.length < 100" @click="register">
             답변 등록하기
           </button>
         </div>
@@ -179,19 +170,11 @@ const register = async () => {
       <div class="mt-5">
         <h5>변호사 답변</h5>
         <div v-if="comments.length > 0">
-          <div
-              v-for="(comment, idx) in comments"
-              :key="idx"
-              class="mb-3 p-3 border rounded bg-light"
-          >
+          <div v-for="(comment, idx) in comments" :key="idx"
+              class="mb-3 p-3 border rounded bg-light">
             <div class="d-flex align-items-center mb-2">
-              <img
-                  :src="comment.lawyerProfileImage"
-                  class="rounded-circle me-3"
-                  width="48"
-                  height="48"
-                  alt="변호사 프로필"
-              />
+              <img :src="comment.lawyerProfileImage" class="rounded-circle me-3"
+                  width="48" height="48" alt="변호사 프로필"/>
               <div>
                 <div class="fw-bold">{{ comment.lawyerName }}</div>
                 <div class="text-muted small">{{ comment.createdAt }}</div>
