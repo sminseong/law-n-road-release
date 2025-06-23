@@ -7,6 +7,7 @@ import com.lawnroad.broadcast.live.dto.*;
 import com.lawnroad.broadcast.live.service.ScheduleService;
 import com.lawnroad.common.util.FileStorageUtil;
 import com.lawnroad.common.util.JwtTokenUtil;
+import com.lawnroad.common.util.NcpObjectStorageUtil;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,8 @@ public class ScheduleLawyerController {
 
     private final JwtTokenUtil jwtTokenUtil;
     private final ScheduleService scheduleService;
-    private final FileStorageUtil fileStorageUtil;
+    //private final FileStorageUtil fileStorageUtil;
+    private final NcpObjectStorageUtil ncpObjectStorageUtil;
 
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> registerSchedule(
@@ -40,7 +42,11 @@ public class ScheduleLawyerController {
             @RequestParam("thumbnail") MultipartFile thumbnail,
             @RequestParam(value = "keywords", required = false) String keywordsJson
     ) {
-        String path = fileStorageUtil.save(thumbnail, "uploads/images", null);
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtTokenUtil.parseToken(token);
+        Long userNo = claims.get("no", Long.class);
+
+        String path = ncpObjectStorageUtil.save(thumbnail, "uploads/lawyers/" + userNo + "/thumbnail", null);
         if (path == null || path.isEmpty()) {
             throw new IllegalArgumentException("썸네일 파일 경로가 없습니다.");
         }
@@ -56,16 +62,13 @@ public class ScheduleLawyerController {
                 throw new RuntimeException("키워드 파싱 오류", e);
             }
         }
-        String token = authHeader.replace("Bearer ", "");
-        Claims claims = jwtTokenUtil.parseToken(token);
-        Long userNo = claims.get("no", Long.class);
 
         ScheduleRequestDto scheduleRequestDto = ScheduleRequestDto.builder()
                 .userNo(userNo)
                 .categoryNo(categoryNo)
                 .name(name)
                 .content(content)
-                .thumbnailPath("http://localhost:8080" + path)
+                .thumbnailPath(path)
                 .date(LocalDate.parse(date))
                 .startTime(LocalDateTime.parse(startTime))
                 .endTime(LocalDateTime.parse(endTime))
@@ -116,7 +119,7 @@ public class ScheduleLawyerController {
             @RequestParam("content") String content,
             @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
             @RequestParam(value = "keywords", required = false) String keywordsJson,
-            @RequestHeader("Authorization") String authHeader // 👈 토큰 받아오기
+            @RequestHeader("Authorization") String authHeader // 토큰 받아오기
     ) {
         // 사용자 인증
         String token = authHeader.replace("Bearer ", "");
@@ -137,7 +140,10 @@ public class ScheduleLawyerController {
         // 썸네일 처리
         String path = detail.getThumbnailPath(); // 기본값
         if (thumbnail != null && !thumbnail.isEmpty()) {
-            path = "http://localhost:8080" + fileStorageUtil.save(thumbnail, "uploads/images", null);
+            if (path != null && !path.isBlank()) {
+                ncpObjectStorageUtil.delete(path);
+            }
+            path = ncpObjectStorageUtil.save(thumbnail, "uploads/lawyers/" + userNo + "/thumbnail", null);
         }
 
         // 키워드 처리
@@ -183,6 +189,16 @@ public class ScheduleLawyerController {
         if (!detail.getUserNo().equals(userNo)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("본인의 스케줄만 삭제할 수 있습니다.");
+        }
+
+        String thumbnailPath = detail.getThumbnailPath();
+        if (thumbnailPath != null && !thumbnailPath.isBlank()) {
+            try {
+                ncpObjectStorageUtil.delete(thumbnailPath);
+            } catch (Exception e) {
+                e.printStackTrace(); // 삭제 실패 로그 기록
+                // 실패하더라도 계속 진행 (경로가 유효하지 않거나 이미 삭제된 경우도 포함 가능)
+            }
         }
 
         int deletedCount = scheduleService.deleteScheduleByNo(scheduleNo);

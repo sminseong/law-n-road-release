@@ -10,7 +10,6 @@ public class BoardDetailDto {
     private Long no; //게시글 번호
     private Long categoryNo; //카테고리 번호
     private String categoryName; //카테고리 이름
-    private Long userNo; //작성자 번호
     private String title; //제목
     private String content; //내용
     private LocalDate incidentDate; //사건발생일자
