@@ -13,7 +13,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class LawNRoadApplication {
     public static void main(String[] args) {
 
-        PasswordEncoder encoder = new BCryptPasswordEncoder();
+        //PasswordEncoder encoder = new BCryptPasswordEncoder();
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String rawPassword = "admin123";
+        String encodedPassword = encoder.encode(rawPassword);
+        System.out.println("Encoded password: " + encodedPassword);
+        System.out.println("$2a$10$vPt7kcx0P0rAlWJpsqgK1..0bY8bRP60wYUwvkxgbfsNCou9hQkT2");
 
 
 

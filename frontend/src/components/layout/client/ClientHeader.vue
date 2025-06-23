@@ -67,6 +67,8 @@ const logout = () => {
   localStorage.removeItem('accountType')
   localStorage.removeItem('name')
   localStorage.removeItem('nickname')
+  localStorage.removeItem('no')
+
 
   // ✅ 2. Axios 인증 헤더 제거
   delete axios.defaults.headers.common['Authorization']

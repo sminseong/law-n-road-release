@@ -30,7 +30,7 @@ public class  JwtTokenUtil {
                 .claim("nickname", nickname)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 1))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 

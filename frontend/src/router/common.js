@@ -83,5 +83,11 @@ export default [
         path: '/payment/fail',
         name: 'PaymentFail',
         component: () => import('@/views/common/PaymentFail.vue')
+    },
+    {
+        path: '/naver-login',
+        name: 'NaverLoginHandler',
+        component: () => import('@/views/common/NaverLoginHandler.vue')
     }
+
 ]

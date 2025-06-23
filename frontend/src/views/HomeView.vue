@@ -43,6 +43,7 @@
     // ✅ 1. 로컬스토리지 항목 삭제
     localStorage.removeItem('token')
     localStorage.removeItem('refreshToken')
+    localStorage.removeItem('accessToeken')
     localStorage.removeItem('accountType')
     localStorage.removeItem('name')
     localStorage.removeItem('nickname')
@@ -370,6 +371,12 @@ const loadFn = async ({ page, size }) => {
 <template>
   <!-- 의뢰인 타입 본문 콘텐츠 -->
   <ClientFrame>
+
+    <div class="text-end p-3">
+      <button @click="logout" class="btn btn-outline-secondary">
+        로그아웃
+      </button>
+    </div>
 <!--    <p>-->
 <!--      <a href="/lawyer">변호사 대시보드 이동하기</a>-->
 <!--    </p>-->
