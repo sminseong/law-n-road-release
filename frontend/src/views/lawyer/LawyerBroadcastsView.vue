@@ -372,10 +372,19 @@ const connect = () => {
             `/topic/${broadcastNo.value}`,
             (msg) => {
               const data = JSON.parse(msg.body);
+              if (data.type === "WARNING") {
+                // 나의 userNo와 일치할 때만 알림
+                if (data.userNo === myNo.value) {
+                  alert(data.message || "금칙어 또는 욕설이 포함되어 있습니다!");
+                }
+                return;
+              }
+              // 그 외(일반 채팅)는 채팅창에 추가
               messages.value.push(data);
               scrollToBottom();
             }
         );
+
         //입장 시 type: "ENTER"만 전달
         stompClient.value.publish({
           destination: "/app/chat.addUser",

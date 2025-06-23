@@ -276,27 +276,37 @@ export default defineComponent({
                 `/topic/${broadcastNo.value}`,
                 (msg) => {
                   const data = JSON.parse(msg.body);
+                  if (data.type === "WARNING") {
+                    // 나의 userNo와 일치할 때만 알림
+                    if (data.userNo === myNo.value) {
+                      alert(data.message || "🚨욕설 또는 부적절한 내용이 포함되어 있습니다");
+                    }
+                    return;
+                  }
+                  // 그 외(일반 채팅)는 채팅창에 추가
                   messages.value.push(data);
                   scrollToBottom();
                 }
             );
-            //입장
+
+            // 입장
             stompClient.value.publish({
               destination: "/app/chat.addUser",
-              body: JSON.stringify({broadcastNo: broadcastNo.value}),
+              body: JSON.stringify({ broadcastNo: broadcastNo.value }),
               headers: {
                 Authorization: `Bearer ${token}`,
               },
             });
             messages.value.push({
               type: "WELCOME",
-              message: "📢 도로 위 질서만큼이나 채팅 예절도 중요합니다. 부적절한 내용은 전송이 제한되니 모두가 함께 즐기는 방송을 만들어주세요. 😊"
+              message:
+                  "📢 도로 위 질서만큼이나 채팅 예절도 중요합니다. 부적절한 내용은 전송이 제한되니 모두가 함께 즐기는 방송을 만들어주세요. 😊",
             });
           },
           onStompError: (frame) => {
             if (frame.body && frame.body.includes("expired")) {
               alert("로그인이 만료되었습니다. 다시 로그인 해주세요.");
-              localStorage.removeItem('token');
+              localStorage.removeItem("token");
               location.href = "/login";
             } else {
               console.error("STOMP error:", frame);
@@ -854,7 +864,7 @@ export default defineComponent({
 }
 
 .preq-dropdown {
-  background: #000000;
+  background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 24px rgba(24, 36, 72, 0.12);
   border: 1px solid #e4e4e7;
