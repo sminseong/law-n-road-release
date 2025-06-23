@@ -51,6 +51,9 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
+import {
+  sendClientReservationCreatedAlimtalk, sendLawyerReservationCreatedAlimtalk,
+} from "@/service/notification.js"
 
 const route     = useRoute()
 const router    = useRouter()
@@ -67,6 +70,27 @@ const formattedAmount = computed(() =>
 
 // 서버 응답 저장 (디버그용)
 const responseData = ref(null)
+
+onMounted(async () => {
+  try {
+    await sendClientReservationCreatedAlimtalk({
+      to: "01096471213",
+      client: "홍길동",
+      lawyer: "박건희",
+      datetime: "2025-06-05 15:00",
+      summary: "음주운전 벌금 문의"
+    });
+    await sendLawyerReservationCreatedAlimtalk({
+      to: "01081272572",
+      lawyer: "박건희",
+      client: "홍길동",
+      datetime: "2025-06-05 15:00",
+      summary: "음주운전 벌금 문의"
+    });
+  } catch (e) {
+    console.log(e)
+  }
+})
 
 async function confirmPayment() {
   const payload = { orderId, amount: rawAmount, paymentKey }

@@ -71,6 +71,7 @@ import {ref, onMounted} from 'vue'
 import {useRoute} from 'vue-router'
 import axios from 'axios'
 import LawyerFrame from "@/components/layout/lawyer/LawyerFrame.vue";
+import {getValidToken} from "@/libs/axios-auth.js";
 
 // route에서 lawyerNo 가져오기
 const route = useRoute()
@@ -104,6 +105,11 @@ function groupByDate(list) {
 
 // API 호출
 async function fetchSlots() {
+  const token = await getValidToken()
+  if (!token) {
+    alert('로그인이 필요합니다.')
+    return
+  }
   loading.value = true
   try {
     const startDate = new Date().toISOString().slice(0, 10)
