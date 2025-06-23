@@ -257,8 +257,35 @@ function handleRowClick(row) {
       <div class="card mb-4 border-light">
         <div class="card-header title-bg-primary text-white">Q&A 작성한 글 보러가기</div>
         <div class="card-body">
-          <p class="mb-2 text-muted small">작성하신 글이 없습니다.</p>
-          <a href="/client/qna" class="btn small">글 보러가기</a>
+
+          <table class="table table-hover align-middle">
+            <thead class="table">
+            <tr>
+              <th scope="col">글번호</th>
+              <th scope="col">사건발생일</th>
+              <th scope="col">제목</th>
+              <th scope="col">카테고리</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr
+                v-for="row in orders_rows"
+                :key="row.orderNo"
+                style="cursor: pointer"
+                @click="handleRowClick(row)"
+            >
+              <td>{{ row.orderNo }}</td>
+              <td>{{ row.orderDate }}</td>
+              <td>{{ formatProductLabel(row.firstTemplateName, row.templateCount) }}</td>
+              <td>{{ row.amount.toLocaleString() }}원</td>
+            </tr>
+            <tr v-if="orders_rows.length === 0">
+              <td colspan="5" class="text-muted text-center">최근 주문 내역이 없습니다.</td>
+            </tr>
+            </tbody>
+          </table>
+
+          <div class="text-center"><a href="/client/qna" class="btn small text-decoration-none">내 상담글 더보기</a></div>
         </div>
       </div>
 
