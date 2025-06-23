@@ -7,12 +7,11 @@
 
     <insert id="insertPayment" parameterType="com.lawnroad.payment.dto.PaymentSaveDTO">
         INSERT INTO payments (
-            order_no, payment_key, order_code, amount, status,
-            card_company, installment_month, purchased_at, pg, metadata
+            order_no, payment_key, order_code, amount, status, installment_month, purchased_at, pg, metadata
         )
         VALUES (
                    #{orderNo}, #{paymentKey}, #{orderCode}, #{amount}, #{status},
-                   #{cardCompany}, #{installmentMonth}, #{purchasedAt}, #{pg}, #{metadata, jdbcType=VARCHAR}
+                #{installmentMonth}, #{purchasedAt}, #{pg}, #{metadata, jdbcType=VARCHAR}
                )
     </insert>
     <select id="findPaymentNoByPaymentKey" resultType="long">
@@ -36,5 +35,18 @@
         FROM payments
         WHERE payment_key = #{paymentKey}
     </select>
+    <select id="findPaymentKeyByOrderNo"
+            parameterType="long"
+            resultType="string">
+        SELECT payment_key
+        FROM payments
+        WHERE order_no = #{orderNo}
+    </select>
+    <update id="updatePaymentStatus">
+        UPDATE payments
+        SET status = #{status}
+        WHERE order_no = #{orderNo}
+    </update>
+
 
 </mapper>
