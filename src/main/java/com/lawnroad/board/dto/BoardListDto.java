@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 public class BoardListDto{
     private Long no;
     private Long categoryNo;
-    private Long userNo;
     private String title;
     private String summary;
     private LocalDate incidentDate;
