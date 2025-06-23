@@ -56,7 +56,7 @@ function getReservationLink(banner) {
               {{ banner.badge || props.defaultBadgeText }}
             </span>
             <h2 class="text-white display-5 fw-bold mt-4" v-html="banner.title"></h2>
-            <p class="text-white fw-semibold fs-01">{{ banner.lawyerName }} 변호사</p>
+            <p class="text-white fw-semibold fs-1">{{ banner.lawyerName }} 변호사</p>
             <p class="lead text-white" v-html="banner.desc"></p>
             <router-link
                 :to="getReservationLink(banner)"

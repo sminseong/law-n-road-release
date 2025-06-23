@@ -2,6 +2,7 @@ package com.lawnroad.mainsearch.controller;
 
 import com.lawnroad.mainsearch.dto.BoardHomepageDto;
 import com.lawnroad.mainsearch.dto.LawyerAdBannerDto;
+import com.lawnroad.mainsearch.dto.TopLawyerDto;
 import com.lawnroad.mainsearch.service.PublicMainService;
 import com.lawnroad.template.dto.TemplateDto;
 import lombok.RequiredArgsConstructor;
@@ -36,5 +37,10 @@ public class PublicMainController {
   @GetMapping("/sub-banners")
   public List<LawyerAdBannerDto> getSubBanners() {
     return publicMainService.getActiveSubBanners();
+  }
+  
+  @GetMapping("/top-lawyers")
+  public List<TopLawyerDto> getTopLawyers() {
+    return publicMainService.findTop3LawyersByViews();
   }
 }

@@ -78,14 +78,4 @@ export default [
         name: 'AdRegister',
         component: () => import('@/views/lawyer/AD/AdRegisterView.vue')
     },
-    {
-        path: '/lawyer/ads/:no',
-        name: 'AdDetail',
-        component: () => import('@/views/lawyer/AD/AdDetailView.vue')
-    },
-    {
-        path: '/lawyer/ads/edit/:no',
-        name: 'AdEdit',
-        component: () => import('@/views/lawyer/AD/AdEditView.vue')
-    },
 ]

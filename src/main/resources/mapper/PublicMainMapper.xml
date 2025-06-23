@@ -75,4 +75,14 @@
         LIMIT 2
     </select>
 
+    <!-- 랭킹 조회 -->
+    <select id="selectTop3LawyersByViews" resultType="com.lawnroad.mainsearch.dto.TopLawyerDto">
+        SELECT l.no AS lawyerNo,
+               l.name,
+               l.profile AS profileImage
+        FROM lawyer l
+        ORDER BY l.point DESC
+        LIMIT 3
+    </select>
+
 </mapper>

@@ -2,19 +2,13 @@ package com.lawnroad.advertisement.controller;
 
 import com.lawnroad.advertisement.dto.AdRegisterDto;
 import com.lawnroad.advertisement.dto.AdvertisementDetailResponseDto;
-import com.lawnroad.advertisement.dto.AdvertisementListResponseDto;
 import com.lawnroad.advertisement.dto.PagedAdvertisementResponseDto;
 import com.lawnroad.advertisement.service.AdService;
-import com.lawnroad.common.util.NcpObjectStorageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,7 +16,6 @@ import java.util.Map;
 public class AdController {
   
   private final AdService advertisementService;
-  private final NcpObjectStorageUtil ncpObjectStorageUtil;
   
   // 전체 목록 조회
   @GetMapping

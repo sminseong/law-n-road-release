@@ -2,6 +2,7 @@ package com.lawnroad.mainsearch.mapper;
 
 import com.lawnroad.mainsearch.dto.BoardHomepageDto;
 import com.lawnroad.mainsearch.dto.LawyerAdBannerDto;
+import com.lawnroad.mainsearch.dto.TopLawyerDto;
 import com.lawnroad.template.dto.TemplateDto;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -20,4 +21,7 @@ public interface PublicMainMapper {
   
   // 메인 페이지 서브 베너 조회
   List<LawyerAdBannerDto> selectActiveSubBanners();
+  
+  // 랭킹 조회
+  List<TopLawyerDto> selectTop3LawyersByViews();
 }

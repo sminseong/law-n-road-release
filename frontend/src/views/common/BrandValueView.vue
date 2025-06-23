@@ -2,13 +2,13 @@
   <ClientFrame>
     <div class="brand-value">
       <!-- 헤더 섹션 -->
-      <div class="mission-image">
-        <img
-            src="https://kr.object.ncloudstorage.com/law-n-road/uploads/dummy_img/ads/%EC%A0%9C%EB%AA%A9%20%EC%97%86%EC%9D%8C-1296.png"
-            alt="로앤로드 미션 이미지"
-            class="brand-image"
-        >
-      </div>
+<!--      <div class="mission-image">-->
+<!--        <img-->
+<!--            src="https://kr.object.ncloudstorage.com/law-n-road/uploads/dummy_img/ads/%EC%A0%9C%EB%AA%A9%20%EC%97%86%EC%9D%8C-1296.png"-->
+<!--            alt="로앤로드 미션 이미지"-->
+<!--            class="brand-image"-->
+<!--        >-->
+<!--      </div>-->
 
       <section class="hero-section">
         <div class="container">
