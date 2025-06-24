@@ -45,7 +45,7 @@ function getReservationLink(banner) {
             :key="i"
             class="hero-banner"
             :style="`
-            background: url(${banner.image}) no-repeat 80% center / cover;
+            background: url(${banner.image}) no-repeat 90% center / cover;
             border-radius: 0.5rem;
             position: relative;
           `"
@@ -55,9 +55,9 @@ function getReservationLink(banner) {
             <span class="badge text-bg-warning">
               {{ banner.badge || props.defaultBadgeText }}
             </span>
-            <h2 class="text-white display-5 fw-bold mt-4" v-html="banner.title"></h2>
-            <p class="text-white fw-semibold fs-1">{{ banner.lawyerName }} 변호사</p>
-            <p class="lead text-white" v-html="banner.desc"></p>
+            <h2 class="text-white display-5 shadow-text fw-bold mt-4" v-html="banner.title"></h2>
+            <p class="text-white fw-semibold shadow-text fs-1">{{ banner.lawyerName }} 변호사</p>
+            <p class="lead text-white shadow-text " v-html="banner.desc"></p>
             <router-link
                 :to="getReservationLink(banner)"
                 class="btn btn-light mt-3">
@@ -69,3 +69,9 @@ function getReservationLink(banner) {
     </div>
   </section>
 </template>
+
+<style scoped>
+.shadow-text {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+</style>
