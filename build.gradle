@@ -48,6 +48,7 @@ dependencies {
     // MyBatis + DB 드라이버
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
     runtimeOnly 'com.mysql:mysql-connector-j'
+    //implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
@@ -75,6 +76,9 @@ dependencies {
 
     implementation 'org.json:json:20231013'
 
+
+    // 소셜로그인
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 }
 
 tasks.named('test') {
