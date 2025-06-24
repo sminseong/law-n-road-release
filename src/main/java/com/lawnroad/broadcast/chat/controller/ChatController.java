@@ -58,7 +58,7 @@ public class ChatController {
         }
         chatDTO.setReportStatus(0);
 
-        // ----------------- AI 욕설/금칙어 검사 추가 -----------------
+        // ----------------- AI 욕설/금칙어 검사 -----------------
         String msg = chatDTO.getMessage();
         boolean hasProhibited = clovaForbiddenService.containsProhibitedWords(msg);
 
