@@ -11,9 +11,10 @@ import java.nio.charset.StandardCharsets;
 
 @Service
 public class ClovaForbiddenService {
-    @Value("${clova.api-key}")
+//    @Value("${clova.api-key}")
     private String apiKey;
 
+    //155~166 true,false 전부 반대로 바꿀것
     @Value("${clova.api-url}")
     private String apiUrl;
     private final String systemPrompt = """
@@ -54,7 +55,7 @@ public class ClovaForbiddenService {
 
 📌 [반드시 false로 판단해야 하는 경우 (중요!)]
 
-다음 중 하나라도 해당하면 무조건 false로 판단하라.  
+다음 중 하나라도 해당하면 무조건 false로 판단하라.
 절대로 단어 조합만 보고 오판하지 마라:
 
 - 욕설처럼 보이는 단어가 있지만, 전체 문장이 공격 목적이 없을 경우
@@ -75,26 +76,26 @@ public class ClovaForbiddenService {
 
 - 절대 단어나 단어 조합만으로 판단하지 마라.
 - 반드시 문장 전체의 목적, 의도, 감정, 대상에 대한 태도만을 기준으로 판단하라.
-- 조금이라도 공격성, 성적 모욕, 위협의 의도가 명확하지 않으면 반드시 false로 판단하라.  
+- 조금이라도 공격성, 성적 모욕, 위협의 의도가 명확하지 않으면 반드시 false로 판단하라.
 - 과잉 차단(false positive)을 반드시 피하라.
 
 ---
 
 📌 [응답 예시 (실제 응답에 포함하지 않음)]
 
-- "씨X 진짜 짜증나" → true  
-- "수박씨 발라먹어" → false  
-- "아저씨 발 예뻐요" → false  
-- "발 냄새 나요" → false  
-- "시발점은 여기야" → false  
-- "좆같은 상황이다" (개인 감정) → false  
+- "씨X 진짜 짜증나" → true
+- "수박씨 발라먹어" → false
+- "아저씨 발 예뻐요" → false
+- "발 냄새 나요" → false
+- "시발점은 여기야" → false
+- "좆같은 상황이다" (개인 감정) → false
 - "이 XX야 꺼져" → true
 
 ---
 
 📌 [최종 규칙]
 
-- 응답은 반드시 'true' 또는 'false' 중 단 하나의 단어만 출력하라.  
+- 응답은 반드시 'true' 또는 'false' 중 단 하나의 단어만 출력하라.
 - 다른 단어, 문장, 부연, 설명, 기호, 따옴표 등을 절대 추가하지 말 것.
 - 판단이 애매하거나 조금이라도 모호하면 반드시 false로 응답하라.
 """;
@@ -147,7 +148,7 @@ public class ClovaForbiddenService {
                         .toLowerCase();
             } else {
                 System.err.println("CLOVA 알 수 없는 응답: " + resp.toString());
-                return true;
+                return false;
             }
 
             System.out.println("AI 응답: [" + answer + "]");

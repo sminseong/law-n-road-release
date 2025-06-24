@@ -693,6 +693,11 @@ const handlePreQClickOutside = (e) => {
                  style="color: #435879; font-size: 0.80rem;">
               {{ msg.message }}
             </div>
+            <div v-else-if="msg.type === 'AUTO_REPLY'"
+                 class="w-100 text-center"
+                 v-html="msg.message.replace(/\n/g, '<br>')"
+                 style="background: #ffffff; color: #34559c; border-radius: 12px; font-size: 0.85rem; font-weight: 500; padding: 10px 2px; margin: 6px 0;">
+            </div>
             <div v-else-if="msg.type === 'Lawyer'"
                  style="font-size: 0.95rem; display: flex; align-items: center;">
               <!-- 닉네임: 검정색 고정 -->
