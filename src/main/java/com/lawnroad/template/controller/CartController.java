@@ -61,7 +61,6 @@ public class CartController {
   public ResponseEntity<Void> completeOrder(
       @RequestBody OnlyOrderCodeDto req
   ) {
-    System.out.println("😂😂😂😂😂😂orderCode = " + req.getOrderId());
     cartService.completeOrder(1L, req.getOrderId()); // TODO: 인증 정보로 대체 예정
     return ResponseEntity.ok().build();
   }
