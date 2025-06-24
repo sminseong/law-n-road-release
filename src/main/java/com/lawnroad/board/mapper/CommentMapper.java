@@ -31,4 +31,6 @@ public interface CommentMapper {
     boolean existsByBoardNoAndUserNo(@Param("boardNo") Long boardNo, @Param("userNo") Long userNo);
 
     List<BoardCommentResponseDto> findBoardCommentsByBoardId(@Param("boardId") Long boardId);
+
+    void selectComment(@Param("commentId") Long commentId);
 }

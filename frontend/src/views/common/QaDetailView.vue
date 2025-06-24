@@ -3,7 +3,7 @@
 import {ref, computed, onMounted} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
-import { fetchBoardDetail, deleteQna ,fetchBoardComments  } from '@/service/boardService.js'
+import { fetchBoardDetail, deleteQna ,fetchBoardComments } from '@/service/boardService.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -33,7 +33,8 @@ async function loadDetail() {
       title: data.title,
       content: data.content,
       incidentDate: data.incidentDate,
-      createdAt: data.createdAt
+      createdAt: data.createdAt,
+      userNo: data.userNo
     }
   } catch (err) {
     console.error('게시글 상세 실패:', err)
@@ -83,12 +84,22 @@ const sortedAnswers = computed(() => [
   ...answers.value.filter(a => !a.isSelected)
 ])
 
-// 답변 채택 함수 (프론트 임시 처리)
-function selectAnswer(answerNo) {
-  answers.value = answers.value.map(a => ({
-    ...a,
-    isSelected: a.no === answerNo
-  }))
+// 답변 채택 함수
+async function selectAnswer(answerNo) {
+  const myUserNo = localStorage.getItem('no') // 비회원이면 null
+  if (myUserNo != qa.value.userNo) {
+    alert('작성자만 답변을 채택할 수 있습니다.')
+    return
+  }
+
+  try {
+    await selectCommentAnswer(id, answerNo)
+    alert('답변이 채택되었습니다.')
+    await loadComments()
+  } catch (e) {
+    console.error('채택 실패:', e)
+    alert('채택에 실패했습니다.')
+  }
 }
 
 onMounted(async () => {

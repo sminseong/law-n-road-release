@@ -56,3 +56,9 @@ export async function deleteComment(commentId) {
 export const fetchBoardComments = (boardId) => {
     return httpRequester.get(`/api/public/qna/${boardId}/comments`)
 }
+
+// 답변 채택
+export async function selectCommentAnswer(boardId, commentId) {
+    return await httpRequester.post('/api/client/qna/select', {
+        boardId, commentId })
+}

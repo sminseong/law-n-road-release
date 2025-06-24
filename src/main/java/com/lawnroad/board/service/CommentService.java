@@ -27,4 +27,5 @@ public interface CommentService {
 
     List<BoardCommentResponseDto> findBoardCommentsByBoardId(@Param("boardId") Long boardId);
 
+    void selectAnswer(CommentSelectDto dto);
 }

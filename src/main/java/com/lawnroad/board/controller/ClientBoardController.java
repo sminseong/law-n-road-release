@@ -1,10 +1,8 @@
 package com.lawnroad.board.controller;
 
-import com.lawnroad.board.dto.BoardCreateDto;
-import com.lawnroad.board.dto.BoardDetailDto;
-import com.lawnroad.board.dto.BoardListDto;
-import com.lawnroad.board.dto.BoardUpdateDto;
+import com.lawnroad.board.dto.*;
 import com.lawnroad.board.service.BoardService;
+import com.lawnroad.board.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +21,7 @@ import java.util.Map;
 
 public class ClientBoardController {
     private final BoardService boardService;
+    private final CommentService commentService;
 
     //게시글 등록
     @PostMapping
@@ -45,5 +44,12 @@ public class ClientBoardController {
     public ResponseEntity<Void> deleteBoard(@PathVariable Long id) {
         boardService.deleteBoard(id);
         return ResponseEntity.noContent().build();
+    }
+
+    //채택 기능
+    @PostMapping("/select")
+    public ResponseEntity<?> selectAnswer(@RequestBody CommentSelectDto dto) {
+        commentService.selectAnswer(dto);
+        return ResponseEntity.ok().build();
     }
 }

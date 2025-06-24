@@ -1,6 +1,7 @@
 package com.lawnroad.board.service;
 
 import com.lawnroad.board.dto.*;
+import com.lawnroad.board.mapper.BoardMapper;
 import com.lawnroad.board.mapper.CommentMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,6 +17,7 @@ import java.util.List;
 public class CommentServiceImpl implements CommentService {
 
     private final CommentMapper commentMapper;
+    private final BoardMapper boardMapper; // 작성자 확인용
 
     @Override
     public void registerComment(CommentRegisterDto dto) {
@@ -64,6 +66,11 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<BoardCommentResponseDto> findBoardCommentsByBoardId(Long boardId) {
         return commentMapper.findBoardCommentsByBoardId(boardId);
+    }
+
+    @Override
+    public void selectAnswer(CommentSelectDto dto) {
+        commentMapper.selectComment(dto.getCommentId());
     }
 
 

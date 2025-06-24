@@ -20,7 +20,7 @@ function goToProfileEdit() {
 }
 
 // 테스트용 임시 하드 코딩
-const userNo = 6
+const userNo = 4
 const notifyKeywordEnabled = ref(true)
 const notifyConsultEnabled = ref(true)
 const nickname = ref('회원')
@@ -35,7 +35,7 @@ onMounted(async () => {
 
   try {
 
-    const userNo = 6
+    const userNo = 4
     const res = await HttpRequester.get(`/api/client/reservations/counts`)
     requestedCount.value = res.data.requestedCount
     doneCount.value = res.data.doneCount
