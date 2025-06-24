@@ -122,16 +122,6 @@ onMounted(() => {
   fetchAds(page.value)
 })
 
-// 이벤트 핸들러 :: 행 클릭
-function handleRowClick(row) {
-  router.push(`/lawyer/ads/${row.adNo}`)
-}
-
-// 이벤트 핸들러 :: 수정 버튼 클릭
-function handleEdit(row) {
-  router.push(`/lawyer/ads/edit/${row.adNo}`)
-}
-
 // 이벤트 핸들러 :: 삭제 버튼 클릭
 async function handleDelete(row) {
   if (!confirm(`'${row?.mainText}' 광고를 삭제하시겠습니까?`)) return
@@ -173,8 +163,6 @@ function handlePageChange(newPage) {
           }"
           :current-page="page"
           :total-pages="totalPages"
-          @row-click="handleRowClick"
-          @edit-action="handleEdit"
           @delete-action="handleDelete"
           @page-change="handlePageChange"
       />

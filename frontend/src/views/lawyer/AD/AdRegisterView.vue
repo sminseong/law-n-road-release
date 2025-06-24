@@ -115,11 +115,13 @@ async function handleSubmit() {
       <input v-model="tipText" class="form-control" />
     </div>
 
+      <p class="my-0">
+        배너 이미지 권장 사이즈 : 메인 배너: 1265 × 530(px), 서브 배너: 625 × 215(px)
+      </p>
     <div class="preview-box mb-2 border d-flex justify-content-center align-items-center" style="height: 200px;">
       <img v-if="imagePreview" :src="imagePreview" class="img-fluid h-100" style="object-fit: contain" />
       <span v-else class="text-muted">이미지 미리보기</span>
     </div>
-
     <input type="file" accept="image/*" class="form-control mb-3" @change="handleImageChange" />
 
     <div class="text-end">
