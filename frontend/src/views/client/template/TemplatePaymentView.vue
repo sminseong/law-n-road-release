@@ -132,7 +132,7 @@ async function goToCheckout() {
     const token = await getValidToken()
     if (!token) throw new Error('로그인이 필요합니다.')
     const res = await http.post('/api/client/cart/checkout', {
-      userNo: 2
+      userNo: 1
     })
     const {orderCode, amount} = res.data
 

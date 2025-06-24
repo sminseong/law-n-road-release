@@ -21,6 +21,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import http from '@/libs/HttpRequester'   // axios 인스턴스
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
+import axios from "axios";
 
 const error  = ref('')
 const router = useRouter()
@@ -42,8 +43,14 @@ onMounted(async () => {
       orderId,
       amount: Number(amountStr)
     })
-    alert("결제가 완료되었습니다. 메인 페이지로 넘어갑니다.")
-    return window.location.href = `/`
+
+    // 결제 관련 사후 처리
+    await http.post('/api/client/cart/complete', {
+      orderId
+    })
+
+    alert("결제가 완료되었습니다. 주문내역으로 넘어갑니다.")
+    return window.location.href = `/client/template/orders`
   } catch (e) {
     error.value =
         e.response?.data?.message ||

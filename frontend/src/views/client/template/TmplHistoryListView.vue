@@ -74,6 +74,7 @@ function handlePageChange(newPage) {
 
 // 행 클릭
 function handleRowClick(row) {
+  if (!row || row.status === '환불') return
   router.push(`/client/template/orders/${row.orderNo}`)
 }
 

@@ -192,9 +192,9 @@ function formatProductLabel(name, count) {
 }
 
 const statusLabel = {
-  ORDERED: '결제완료',
-  CANCELED: '취소',
-  REFUNDED: '환불'
+  ORDERED: '결제대기',
+  PAID: '결제완료',
+  CANCELED: '환불'
 }
 
 function handleRowClick(row) {

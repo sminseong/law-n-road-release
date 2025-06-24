@@ -24,14 +24,14 @@ public class SchedulerConfig {
 //  }
   
   
-  @Scheduled(cron = "*/1 * * * * ?")
-  public void cleanupOldObjectsDaily() {
-    System.out.println("=== 디버깅 시작 ===");
-    
-    // 실제 버킷에서 로그 prefix 확인
-    ncpObjectStorageUtil.debugLogBucket("law-n-road");
-    
-    // 실제 정리 작업
-    ncpObjectStorageUtil.cleanupUnusedObjectsFromLogs("law-n-road", 100, 1);
-  }
+//  @Scheduled(cron = "*/1 * * * * ?")
+//  public void cleanupOldObjectsDaily() {
+//    System.out.println("=== 디버깅 시작 ===");
+//
+//    // 실제 버킷에서 로그 prefix 확인
+//    ncpObjectStorageUtil.debugLogBucket("law-n-road");
+//
+//    // 실제 정리 작업
+//    ncpObjectStorageUtil.cleanupUnusedObjectsFromLogs("law-n-road", 100, 1);
+//  }
 }
