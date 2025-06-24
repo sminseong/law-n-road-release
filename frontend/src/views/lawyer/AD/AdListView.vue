@@ -122,16 +122,6 @@ onMounted(() => {
   fetchAds(page.value)
 })
 
-// 이벤트 핸들러 :: 행 클릭
-function handleRowClick(row) {
-  router.push(`/lawyer/ads/${row.adNo}`)
-}
-
-// 이벤트 핸들러 :: 수정 버튼 클릭
-function handleEdit(row) {
-  router.push(`/lawyer/ads/edit/${row.adNo}`)
-}
-
 // 이벤트 핸들러 :: 삭제 버튼 클릭
 async function handleDelete(row) {
   if (!confirm(`'${row?.mainText}' 광고를 삭제하시겠습니까?`)) return
@@ -159,7 +149,7 @@ function handlePageChange(newPage) {
     <div class="container py-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="fw-bold">광고 목록</h3>
-        <button class="btn btn-primary" @click="router.push('/lawyer/ads/register')">+ 광고 등록</button>
+        <button class="btn btn-primary" @click="router.push('/lawyer/ads/register')">+ 광고 신청</button>
       </div>
 
       <CustomTable
@@ -173,8 +163,6 @@ function handlePageChange(newPage) {
           }"
           :current-page="page"
           :total-pages="totalPages"
-          @row-click="handleRowClick"
-          @edit-action="handleEdit"
           @delete-action="handleDelete"
           @page-change="handlePageChange"
       />
