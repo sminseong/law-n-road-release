@@ -28,6 +28,13 @@ function handleImageChange(e) {
     alert('이미지 파일만 업로드 가능합니다.')
     return
   }
+
+  const MAX_SIZE_MB = 10 * 1024 * 1024
+  if (file.size > MAX_SIZE_MB) {
+    alert('이미지는 10MB 이하로 업로드해 주세요.')
+    return
+  }
+
   imageFile.value = file
   imagePreview.value = URL.createObjectURL(file)
 }
@@ -41,8 +48,24 @@ function handleStartDateChange() {
 }
 
 async function handleSubmit() {
-  if (!mainText.value || !detailText.value || !startDate.value || !imageFile.value) {
-    alert('필수 항목을 모두 입력해 주세요.')
+  if (!startDate.value) {
+    alert('광고 시작일을 선택해 주세요.')
+    return
+  }
+  if (!mainText.value || mainText.value.length > 20) {
+    alert('광고 문구 1은 필수입니다. 20자 이하로 입력해 주세요.')
+    return
+  }
+  if (!detailText.value || detailText.value.length > 20) {
+    alert('광고 문구 2는 필수입니다. 20자 이하로 입력해 주세요.')
+    return
+  }
+  if (!tipText.value || tipText.value.length > 10) {
+    alert('광고 문구 3은 필수입니다. 10자 이하로 입력해 주세요.')
+    return
+  }
+  if (!imageFile.value) {
+    alert('이미지 파일을 입력해주세요. ')
     return
   }
 
@@ -57,10 +80,10 @@ async function handleSubmit() {
 
   try {
     await http.post('/api/lawyer/ads/register', formData)
-    alert('광고가 등록되었습니다.')
+    alert('광고가 신청되었습니다. 승인되기까지 3~5 영업일이 소요됩니다.')
     router.push('/lawyer/ads')
   } catch (e) {
-    alert('등록 실패: ' + (e.response?.data || '알 수 없는 오류'))
+    alert('신청 실패: ' + (e.response?.data || '알 수 없는 오류'))
   }
 }
 </script>
@@ -68,7 +91,7 @@ async function handleSubmit() {
 <template>
   <lawyer-frame>
     <div class="container py-4">
-      <h3 class="fw-bold mb-3">광고 등록</h3>
+      <h3 class="fw-bold mb-3">광고 신청</h3>
 
       <!-- 설명 -->
       <p class="text-muted small mb-2">
@@ -115,11 +138,13 @@ async function handleSubmit() {
       <input v-model="tipText" class="form-control" />
     </div>
 
+      <p class="my-0">
+        배너 이미지 권장 사이즈 : 메인 배너: 1265 × 530(px), 서브 배너: 625 × 215(px)
+      </p>
     <div class="preview-box mb-2 border d-flex justify-content-center align-items-center" style="height: 200px;">
       <img v-if="imagePreview" :src="imagePreview" class="img-fluid h-100" style="object-fit: contain" />
       <span v-else class="text-muted">이미지 미리보기</span>
     </div>
-
     <input type="file" accept="image/*" class="form-control mb-3" @change="handleImageChange" />
 
     <div class="text-end">

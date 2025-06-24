@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lawnroad.account.mapper.LawyerPointMapper">
+
+    <!-- 포인트 증감 (양수 = 지급, 음수 = 차감) -->
+    <update id="updatePoint">
+        UPDATE lawyer
+        SET point = point + #{amount}
+        WHERE no = #{lawyerNo}
+    </update>
+
+</mapper>
