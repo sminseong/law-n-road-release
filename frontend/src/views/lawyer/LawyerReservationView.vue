@@ -3,6 +3,7 @@ import {ref, onMounted, computed} from 'vue'
 import {useRoute} from 'vue-router'
 import axios from 'axios'
 import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
+import {getValidToken} from '@/libs/axios-auth'
 
 const route = useRoute()
 const lawyerNo = Number(route.params.lawyerNo)
@@ -22,6 +23,11 @@ const paginated = computed(() => {
 })
 
 onMounted(async () => {
+  const token = await getValidToken()
+  if (!token) {
+    alert('로그인이 필요합니다.')
+    return
+  }
   try {
     const token = localStorage.getItem('token')
 
@@ -70,6 +76,11 @@ function truncate(text, maxLen) {
 }
 
 async function closeConsultation(reservationNo) {
+  const token = await getValidToken()
+  if (!token) {
+    alert('로그인이 필요합니다.')
+    return
+  }
   console.log(reservationNo)
   try {
     const token = localStorage.getItem('token')
@@ -79,7 +90,7 @@ async function closeConsultation(reservationNo) {
         {headers: {Authorization: `Bearer ${token}`}}
     )
     const idx = reservations.value.findIndex(r => r.no === reservationNo)
-    if (idx !== -1) reservations.value[idx].status = 'CLOSED'
+    if (idx !== -1) reservations.value[idx].status = 'DONE'
     alert('상담을 종료 처리했습니다.')
   } catch (err) {
     console.error('상담 종료 처리 실패', err)
