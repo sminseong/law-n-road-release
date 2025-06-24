@@ -1,5 +1,8 @@
 package com.lawnroad.broadcast.live.service;
 
+import com.lawnroad.broadcast.live.dto.VodDetailDto;
+import com.lawnroad.broadcast.live.dto.VodListDto;
+import com.lawnroad.broadcast.live.dto.VodListRequestDto;
 import com.lawnroad.broadcast.live.mapper.VodMapper;
 import com.lawnroad.broadcast.live.model.BroadcastVodVo;
 import com.lawnroad.common.util.FileStorageUtil;
@@ -9,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -37,5 +41,20 @@ public class VodServiceImpl implements VodService {
                 .build();
 
         vodMapper.insertVod(vod);
+    }
+
+    @Override
+    public List<VodListDto> getPublicVodList(VodListRequestDto requestDto) {
+        return vodMapper.findVodListPaged(requestDto.getOffset(), requestDto.getSize());
+    }
+
+    @Override
+    public void increaseViewCount(Long vodNo) {
+        vodMapper.increaseViewCount(vodNo);
+    }
+
+    @Override
+    public VodDetailDto getVodDetailByBroadcastNo(Long broadcastNo) {
+        return vodMapper.findVodDetailByBroadcastNo(broadcastNo);
     }
 }
