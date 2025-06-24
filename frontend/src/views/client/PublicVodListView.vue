@@ -23,18 +23,18 @@ const fetchVodList = async () => {
   }
 };
 
-const goToVod = async (vodNo) => {
+const goToVod = async (vod) => {
   try {
-    await axios.put(`/api/public/vod/${vodNo}`); // 조회수 증가
-    router.push(`/vod/${vodNo}`); // 상세 페이지 이동
+    await axios.put(`/api/public/vod/${vod.vodNo}`); // 조회수 증가
   } catch (err) {
     console.error("❌ 조회수 증가 실패:", err);
-    router.push(`/vod/${vodNo}`); // 실패해도 이동
   }
+  router.push(`/vod/${vod.broadcastNo}`); // broadcastNo 기준으로 이동
 };
 
 onMounted(fetchVodList);
 </script>
+
 
 <template>
   <ClientFrame>
@@ -44,7 +44,7 @@ onMounted(fetchVodList);
       <div class="row g-4">
         <template v-for="vod in vodList" :key="vod.vodNo">
           <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-            <div class="card h-100 shadow-sm border-0 cursor-pointer" @click="goToVod(vod.vodNo)">
+            <div class="card h-100 shadow-sm border-0 cursor-pointer" @click="goToVod(vod)">
               <div class="position-relative">
                 <img
                     :src="vod.thumbnailPath || '/images/default-thumbnail.jpg'"
@@ -82,7 +82,7 @@ onMounted(fetchVodList);
                   <span class="fs-7 text-dark-gray">{{ vod.lawyerName }} 변호사</span>
                 </div>
 
-                <!-- ✅ 조회수 + 날짜 -->
+                <!-- 조회수 + 날짜 -->
                 <p class="mb-2 fs-7 text-muted">
                   조회수 {{ vod.viewCount }}회 <span class="mx-1">·</span> {{ vod.createdAt.slice(0, 10) }}
                 </p>
@@ -117,5 +117,11 @@ onMounted(fetchVodList);
 }
 .cursor-pointer {
   cursor: pointer;
+}
+
+.card:hover {
+  box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.15);
+  transform: scale(1.01);
+  transition: all 0.2s;
 }
 </style>

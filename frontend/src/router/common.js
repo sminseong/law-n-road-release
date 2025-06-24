@@ -71,6 +71,11 @@ export default [
         component: () => import('@/views/client/PublicVodListView.vue'),
         props: true
     },
+    {
+        path: '/vod/:broadcastNo',
+        name: 'VodView',
+        component: () => import('@/views/client/PublicVodView.vue')
+    },
 
 
     // ---------- 템플릿 ----------

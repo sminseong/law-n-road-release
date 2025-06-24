@@ -1,5 +1,6 @@
 package com.lawnroad.broadcast.live.controller;
 
+import com.lawnroad.broadcast.live.dto.VodDetailDto;
 import com.lawnroad.broadcast.live.dto.VodListDto;
 import com.lawnroad.broadcast.live.dto.VodListRequestDto;
 import com.lawnroad.broadcast.live.service.VodService;
@@ -26,6 +27,7 @@ public class VodPublicController {
         requestDto.setSize(size);
 
         List<VodListDto> vodList = vodService.getPublicVodList(requestDto);
+        System.out.println(vodList);
         return ResponseEntity.ok(vodList);
     }
 
@@ -34,5 +36,11 @@ public class VodPublicController {
     public ResponseEntity<Void> increaseViewCount(@PathVariable Long vodNo) {
         vodService.increaseViewCount(vodNo);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/view/{broadcastNo}")
+    public ResponseEntity<VodDetailDto> getVodDetail(@PathVariable Long broadcastNo) {
+        VodDetailDto dto = vodService.getVodDetailByBroadcastNo(broadcastNo);
+        return ResponseEntity.ok(dto);
     }
 }

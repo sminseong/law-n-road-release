@@ -8,6 +8,7 @@ import java.util.List;
 @Data
 public class VodListDto {
     private Long vodNo;
+    private Long broadcastNo;
     private String title;
     private String categoryName;
     private String thumbnailPath;

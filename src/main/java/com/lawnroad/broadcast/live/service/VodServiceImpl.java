@@ -1,5 +1,6 @@
 package com.lawnroad.broadcast.live.service;
 
+import com.lawnroad.broadcast.live.dto.VodDetailDto;
 import com.lawnroad.broadcast.live.dto.VodListDto;
 import com.lawnroad.broadcast.live.dto.VodListRequestDto;
 import com.lawnroad.broadcast.live.mapper.VodMapper;
@@ -50,5 +51,10 @@ public class VodServiceImpl implements VodService {
     @Override
     public void increaseViewCount(Long vodNo) {
         vodMapper.increaseViewCount(vodNo);
+    }
+
+    @Override
+    public VodDetailDto getVodDetailByBroadcastNo(Long broadcastNo) {
+        return vodMapper.findVodDetailByBroadcastNo(broadcastNo);
     }
 }
