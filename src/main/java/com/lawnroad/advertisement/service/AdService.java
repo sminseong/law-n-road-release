@@ -51,7 +51,9 @@ public class AdService {
     
     OrdersCreateDTO orderDto = new OrdersCreateDTO();
     orderDto.setUserNo(dto.getUserNo());
-    orderDto.setOrderCode(UUID.randomUUID().toString());
+    orderDto.setOrderCode("ADS-" +
+            UUID.randomUUID().toString().replace("-", "").substring(0, 16)
+    );
     orderDto.setAmount((long) amount);
     orderDto.setStatus("ORDERED");
     orderDto.setOrderType("ADVERTISEMENT");

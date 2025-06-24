@@ -39,6 +39,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
+import {getValidToken} from "@/libs/axios-auth.js";
 
 const route = useRoute()
 
@@ -76,6 +77,11 @@ onMounted(() => {
 })
 
 async function createOrderAndPay() {
+  const token = await getValidToken()
+  if (!token) {
+    alert('로그인이 필요합니다.')
+    return
+  }
   if (isProcessing.value) return
   isProcessing.value = true
 

@@ -9,7 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.text.html.Option;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,7 +23,7 @@ public class CartController {
   // 1. 장바구니 추가 (클라이언트 권한)
   @PostMapping
   public ResponseEntity<Void> addToCart(@RequestBody CartAddRequestDto dto) {
-    Long userNo = 1L; // TODO: @AuthenticationPrincipal 로 교체 예정
+    Long userNo = 2L; // TODO: @AuthenticationPrincipal 로 교체 예정
     
     boolean added = cartService.addToCart(userNo, dto.getTmplNo());
     if (added) {
@@ -41,21 +43,21 @@ public class CartController {
   // 3. 장바구니 목록 조회 (클라이언트 권한)
   @GetMapping
   public ResponseEntity<List<CartItemResponseDto>> getCartList() {
-    Long userNo = 1L; // TODO: @AuthenticationPrincipal 로 교체 예정
+    Long userNo = 2L; // TODO: @AuthenticationPrincipal 로 교체 예정
     
     List<CartItemResponseDto> cartItems = cartService.findCartItems(userNo);
     return ResponseEntity.ok(cartItems);
   }
   
   // 결제 (클라이언트 권한)
-  @PostMapping("/aa")
+  @PostMapping("/checkout")
   public ResponseEntity<CheckoutResponseDto> checkout(
       @RequestBody CheckoutRequestDto req
   ) {
+    req.setUserNo(Optional.ofNullable(req.getUserNo()).orElse(2L));
     // TODO: 나중에 @AuthenticationPrincipal 로 대체
-    req.setUserNo(1L);
-    Long orderNo = cartService.checkout(req);
-    return ResponseEntity.ok(new CheckoutResponseDto(orderNo));
+    CheckoutResponseDto dto = cartService.checkout(req);
+    return ResponseEntity.ok(dto);
   }
   
   // 장바구니 전체 삭제 (클라이언트 권한)
@@ -63,7 +65,7 @@ public class CartController {
   public ResponseEntity<Void> clearCart() {
     System.out.println( "clearCart()");
     // TODO: 나중에 @AuthenticationPrincipal 로 대체
-    Long userNo = 1L;
+    Long userNo = 2L;
     cartService.deleteAllByUser(userNo);
     return ResponseEntity.noContent().build();
   }

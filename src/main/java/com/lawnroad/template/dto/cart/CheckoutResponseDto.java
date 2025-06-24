@@ -10,6 +10,10 @@ import lombok.NoArgsConstructor;
 public class CheckoutResponseDto {
   private Long orderNo;
   private Long tmplNo;
+  private String orderCode;
+  private Long amount;
+  private String paymentKey;
+  private String paymentUrl;
   // (필요하다면 결제 트랜잭션 ID, 결제금액, 타임스탬프 등 추가)
   
   public CheckoutResponseDto(Long orderNo) {
