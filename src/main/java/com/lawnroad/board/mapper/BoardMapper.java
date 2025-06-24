@@ -1,9 +1,6 @@
 package com.lawnroad.board.mapper;
 
-import com.lawnroad.board.dto.BoardCreateDto;
-import com.lawnroad.board.dto.BoardDetailDto;
-import com.lawnroad.board.dto.BoardListDto;
-import com.lawnroad.board.dto.BoardUpdateDto;
+import com.lawnroad.board.dto.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -23,4 +20,6 @@ public interface BoardMapper {
     int updateBoard(BoardUpdateDto dto);
 
     int deleteBoard(Long id);
+
+    List<BoardSummaryDto> findBoardsByUserNo(@Param("userNo") Long userNo);
 }
