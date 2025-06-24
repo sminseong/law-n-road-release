@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.lawnroad.payment.dto.PaymentConfirmRequestDTO;
 import com.lawnroad.payment.dto.RefundRequestDTO;
 import com.lawnroad.payment.dto.OrdersStatusUpdateDTO;
+import com.lawnroad.payment.handler.PostPaymentHandler;
 import com.lawnroad.payment.model.OrdersVO;
 import com.lawnroad.payment.service.OrdersService;
 import com.lawnroad.payment.service.PaymentService;
@@ -18,40 +19,44 @@ import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/confirm")
 public class PaymentController {
 
-    private final OrdersService        ordersService;
-    private final PaymentService       paymentService;
-    private final RefundService        refundService;
-    private final ReservationsMapper   reservationsMapper;
-    private final PaymentMapper        paymentMapper;
+    private final OrdersService          ordersService;
+    private final PaymentService         paymentService;
+    private final RefundService          refundService;
+    private final ReservationsMapper     reservationsMapper;
+    private final PaymentMapper          paymentMapper;
+    private final List<PostPaymentHandler> handlers;
 
-    private static final String SECRET_KEY        = "test_sk_4yKeq5bgrpoROnDY0L4XVGX0lzW6";
-    private static final String TOSS_CONFIRM_URL  = "https://api.tosspayments.com/v1/payments/confirm";
+    private static final String SECRET_KEY       = "test_sk_4yKeq5bgrpoROnDY0L4XVGX0lzW6";
+    private static final String TOSS_CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
 
     public PaymentController(
             OrdersService ordersService,
             PaymentService paymentService,
             RefundService refundService,
             ReservationsMapper reservationsMapper,
-            PaymentMapper paymentMapper
+            PaymentMapper paymentMapper,
+            List<PostPaymentHandler> handlers
     ) {
-        this.ordersService       = ordersService;
-        this.paymentService      = paymentService;
-        this.refundService       = refundService;
-        this.reservationsMapper  = reservationsMapper;
-        this.paymentMapper       = paymentMapper;
+        this.ordersService      = ordersService;
+        this.paymentService     = paymentService;
+        this.refundService      = refundService;
+        this.reservationsMapper = reservationsMapper;
+        this.paymentMapper      = paymentMapper;
+        this.handlers           = handlers;
     }
 
     @PostMapping("/payment")
     public ResponseEntity<?> confirmPayment(@RequestBody PaymentConfirmRequestDTO req) {
-        // (기존 confirmPayment 로직 그대로)
         RestTemplate rt = new RestTemplate();
-        String basic = Base64.getEncoder().encodeToString((SECRET_KEY + ":").getBytes(StandardCharsets.UTF_8));
+        String basic = Base64.getEncoder()
+                .encodeToString((SECRET_KEY + ":").getBytes(StandardCharsets.UTF_8));
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", "Basic " + basic);
@@ -75,7 +80,7 @@ public class PaymentController {
             if (idx >= 0) {
                 int start = body.indexOf('"', idx + 9) + 1;
                 int end   = body.indexOf('"', start);
-                if (start>0 && end>start) {
+                if (start > 0 && end > start) {
                     msg = body.substring(start, end);
                 }
             }
@@ -83,7 +88,7 @@ public class PaymentController {
                     .body(Map.of("message", msg));
         }
 
-        // (1) order 조회
+        // (1) 주문 조회
         String orderCode = root.path("orderId").asText();
         OrdersVO order = ordersService.getOrderByCode(orderCode);
         if (order == null) {
@@ -106,20 +111,27 @@ public class PaymentController {
         st.setStatus("DONE".equals(root.path("status").asText()) ? "PAID" : "FAILED");
         ordersService.changeStatus(st);
 
+        // (5) 도메인별 후처리
+        handlers.stream()
+                .filter(h -> h.getOrderType().equals(order.getOrderType()))
+                .findFirst()
+                .ifPresent(h -> h.handlePaymentSuccess(orderNo, root));
+
         return ResponseEntity.ok(root);
     }
 
     @PostMapping("/cancel")
     public ResponseEntity<?> cancelPayment(@RequestBody RefundRequestDTO req) {
-        // 1) reservationNo → orderNo 조회
+        // 1) reservationNo -> orderNo, amount 조회
         Long reservationNo = req.getReservationNo();
-        Long orderNo = reservationsMapper.selectReservationByNo(reservationNo).getOrderNo();
-        Long amount = reservationsMapper.selectReservationByNo(reservationNo).getAmount();
+        var res = reservationsMapper.selectReservationByNo(reservationNo);
+        Long orderNo = res.getOrderNo();
+        Long amount  = res.getAmount();
 
-        // 2) orderNo → paymentKey 조회
+        // 2) orderNo -> paymentKey 조회
         String paymentKey = paymentMapper.findPaymentKeyByOrderNo(orderNo);
 
-        // 3) DTO에 세팅
+        // 3) DTO 세팅
         req.setOrderNo(orderNo);
         req.setPaymentKey(paymentKey);
         req.setAmount(amount);
@@ -127,6 +139,14 @@ public class PaymentController {
 
         try {
             refundService.processRefund(req);
+
+            // (4) 도메인별 환불 후처리
+            OrdersVO order = ordersService.getOrder(orderNo);
+            handlers.stream()
+                    .filter(h -> h.getOrderType().equals(order.getOrderType()))
+                    .findFirst()
+                    .ifPresent(h -> h.handleRefund(orderNo, req));
+
             return ResponseEntity.ok(Map.of("message","환불 처리 완료"));
         } catch (IllegalArgumentException ie) {
             String msg = ie.getMessage() != null ? ie.getMessage() : "리소스를 찾을 수 없습니다.";

@@ -15,10 +15,10 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class CartServiceImpl implements CartService {
-  
+
   private final CartMapper cartMapper;
   private final OrdersService ordersService;
-  
+
   @Override
   public boolean addToCart(Long userNo, Long tmplNo) {
     if (cartMapper.existsByUserAndTemplate(userNo, tmplNo) > 0) {
@@ -27,17 +27,17 @@ public class CartServiceImpl implements CartService {
     cartMapper.insertCart(userNo, tmplNo);
     return true;
   }
-  
+
   @Override
   public void removeFromCart(Long cartNo) {
     cartMapper.deleteByCartNo(cartNo);
   }
-  
+
   @Override
   public List<CartItemResponseDto> findCartItems(Long userNo) {
     return cartMapper.selectCartListByUser(userNo);
   }
-  
+
   /**
    * userNo 기준으로 장바구니 전체를 결제 → 주문 및 히스토리 생성 → 장바구니 비우기
    * @param dto 결제 요청 유저
@@ -51,14 +51,14 @@ public class CartServiceImpl implements CartService {
     if (cartItems.isEmpty()) {
       throw new IllegalStateException("장바구니가 비어 있습니다.");
     }
-    
+
     // ② 총 결제액 계산 (할인가 적용)
     int totalAmount = cartItems.stream()
-        .mapToInt(item ->
-            (int)(item.getPrice() * (1 - item.getDiscountRate() / 100.0))
-        )
-        .sum();
-    
+            .mapToInt(item ->
+                    (int)(item.getPrice() * (1 - item.getDiscountRate() / 100.0))
+            )
+            .sum();
+
     // ③ 주문 생성
     OrdersCreateDTO orderDto = new OrdersCreateDTO();
     orderDto.setUserNo(dto.getUserNo());
@@ -67,29 +67,29 @@ public class CartServiceImpl implements CartService {
     orderDto.setStatus("ORDERED");
     orderDto.setOrderType("TEMPLATE");
     Long orderNo = ordersService.createOrder(orderDto);
-    
+
     // ④ 결제 API 호출
 //    boolean paid = paymentGateway.charge(dto.getUserNo(), totalAmount, orderNo);
 //    if (!paid) {
 //      throw new PaymentException("결제에 실패했습니다.");
 //    }
-    
+
     // ⑤ tmpl_orders_history에 복사
     for (CartItemResponseDto item : cartItems) {
       int paidPrice = (int)(item.getPrice() * (1 - item.getDiscountRate() / 100.0));
       // 1) 히스토리 테이블에 복사
       cartMapper.insertHistory(item.getTmplNo(), orderNo, paidPrice);
-      
+
       // 2) 템플릿 판매량 증가
       cartMapper.incrementSalesCount(item.getTmplNo());
     }
-    
+
     // ⑥ 장바구니 비우기
     cartMapper.deleteByUserNo(dto.getUserNo());
-    
+
     return orderNo;
   }
-  
+
   @Override
   public void deleteAllByUser(Long userNo) {
     cartMapper.deleteByUserNo(userNo);
