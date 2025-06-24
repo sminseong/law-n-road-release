@@ -1,5 +1,6 @@
 package com.lawnroad.broadcast.chat.controller;
 
+import com.lawnroad.broadcast.chat.dto.AutoReplyDTO;
 import com.lawnroad.broadcast.chat.dto.ChatDTO;
 import com.lawnroad.broadcast.chat.service.AutoReplyService;
 import com.lawnroad.broadcast.chat.service.ChatRedisSaveServiceImpl;
@@ -11,10 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Controller
@@ -54,12 +55,23 @@ public class ChatController {
         chatDTO.setNickname(nickname);
         chatDTO.setCreatedAt(LocalDateTime.now());
         chatDTO.setNo(no);
+
+        // 공지 사항
+        if ("NOTICE".equals(chatDTO.getType())) {
+            chatDTO.setNickname(nickname);
+            chatDTO.setNo(no);
+            chatDTO.setCreatedAt(LocalDateTime.now());
+            chatDTO.setReportStatus(0);
+
+            messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), chatDTO);
+            return;
+        }
         if(chatDTO.getType() == null) {
             chatDTO.setType("CHAT"); // 기본값
         }
         chatDTO.setReportStatus(0);
 
-        // ----------------- AI 욕설/금칙어 검사 추가 -----------------
+        // ----------------- AI 욕설/금칙어 검사 -----------------
         String msg = chatDTO.getMessage();
         boolean hasProhibited = clovaForbiddenService.containsProhibitedWords(msg);
 
@@ -81,8 +93,53 @@ public class ChatController {
         if (msg != null && msg.startsWith("!")) {
             String keyword = msg.substring("!".length()).trim();
 
-            String autoReplyMsg = autoReplyService.findReplyMessage(chatDTO.getBroadcastNo(), keyword);
+            // !자동응답 명령어 처리
+            if (keyword.equals("자동응답")) {
+                // 프론트에서 scheduleNo를 꼭 보내주세요!
+                Long scheduleNo = chatDTO.getScheduleNo();
+                if (scheduleNo == null) {
+                    ChatDTO reply = ChatDTO.builder()
+                            .broadcastNo(chatDTO.getBroadcastNo())
+                            .nickname("AutoReply")
+                            .message("자동응답 정보 조회에 실패했습니다. (스케줄번호 없음)")
+                            .type("AUTO_REPLY")
+                            .createdAt(LocalDateTime.now())
+                            .build();
+                    messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), reply);
+                    return;
+                }
 
+                List<AutoReplyDTO> allReplies = autoReplyService.findByAutoReply(scheduleNo);
+                if (allReplies != null && !allReplies.isEmpty()) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("📢 자동응답 명령어 목록<br>");
+                    for (AutoReplyDTO dto : allReplies) {
+                        sb.append("!")
+                                .append(dto.getKeyword())
+                                .append("<br>");
+                    }
+                    ChatDTO reply = ChatDTO.builder()
+                            .broadcastNo(chatDTO.getBroadcastNo())
+                            .nickname("AutoReply")
+                            .message(sb.toString().trim())
+                            .type("AUTO_REPLY")
+                            .createdAt(LocalDateTime.now())
+                            .build();
+                    messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), reply);
+                } else {
+                    ChatDTO reply = ChatDTO.builder()
+                            .broadcastNo(chatDTO.getBroadcastNo())
+                            .nickname("AutoReply")
+                            .message("등록된 자동응답 명령어가 없습니다.")
+                            .type("AUTO_REPLY")
+                            .createdAt(LocalDateTime.now())
+                            .build();
+                    messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), reply);
+                }
+                return;
+            }
+            String autoReplyMsg = autoReplyService.findReplyMessage(chatDTO.getBroadcastNo(), keyword);
+            // 기존 단건 자동응답 처리
             if (autoReplyMsg != null) {
                 ChatDTO reply = ChatDTO.builder()
                         .broadcastNo(chatDTO.getBroadcastNo())
@@ -94,6 +151,7 @@ public class ChatController {
                 messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), reply);
             }
         }
+
     }
 
     @GetMapping("/api/client/my-no")

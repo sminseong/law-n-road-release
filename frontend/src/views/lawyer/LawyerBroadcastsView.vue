@@ -649,14 +649,18 @@ const handlePreQClickOutside = (e) => {
           <!-- 왼쪽: 채팅 타이틀 -->
           <div class="fw-bold fs-5">채팅</div>
           <!-- 오른쪽: 사전질문 버튼 -->
-          <div>
-            <button class="btn btn-link px-1 py-0 text-decoration-none"
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <button class="btn btn-link px-1 py-0 text-decoration-none d-flex flex-column align-items-center"
                     style="font-size:1.23rem;"
                     @click="togglePreQDropdown"
                     ref="preQBtnRef"
-                    title="사전질문 보기">📝
+                    title="사전질문 보기">
+              <span>📝</span>
+              <span style="font-size:0.7rem; color:#222; margin-top:-5px;">사전 질문</span>
             </button>
+
           </div>
+
           <!-- 드롭다운(채팅 상단 전체 너비) -->
           <div v-if="showPreQDropdown"
                class="preq-dropdown"
@@ -689,6 +693,11 @@ const handlePreQClickOutside = (e) => {
                  style="color: #435879; font-size: 0.80rem;">
               {{ msg.message }}
             </div>
+            <div v-else-if="msg.type === 'AUTO_REPLY'"
+                 class="w-100 text-center"
+                 v-html="msg.message.replace(/\n/g, '<br>')"
+                 style="background: #ffffff; color: #34559c; border-radius: 12px; font-size: 0.85rem; font-weight: 500; padding: 10px 2px; margin: 6px 0;">
+            </div>
             <div v-else-if="msg.type === 'Lawyer'"
                  style="font-size: 0.95rem; display: flex; align-items: center;">
               <!-- 닉네임: 검정색 고정 -->
@@ -699,6 +708,12 @@ const handlePreQClickOutside = (e) => {
               <span style="color: #fd1900; margin-left: 0.6em;">
          {{ msg.message }}
       </span>
+            </div>
+            <div v-else-if="msg.type === 'NOTICE'"
+                 class="w-100 text-center"
+                 style="color: #7e7e7e; background: #e3eaff; border-radius: 12px; font-size: 0.8rem; font-weight: 600; padding: 9px 2px;">
+              <span style="margin-right:6px;"></span>
+              {{ msg.message }}
             </div>
             <div v-else style="font-size: 0.97rem; display: flex; align-items: center;">
               <!-- 닉네임 드롭다운 & 랜덤 색상 -->
@@ -743,7 +758,8 @@ const handlePreQClickOutside = (e) => {
                  type="text"
                  class="form-control bg-body-secondary text-dark border-0 rounded-pill px-3 py-2"
                  placeholder="채팅을 입력해 주세요."
-                 @keyup.enter="sendMessage"/>
+                 @keyup.enter="sendMessage"
+                 maxlength="100"/>
         </div>
       </div>
 
