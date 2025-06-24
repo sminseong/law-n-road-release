@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lawnroad.admin.mapper.AdminPageMapper">
+
+    <!-- 검색 조건으로 실제 검색 진행 -->
+    <select id="selectAdPurchases"
+            parameterType="com.lawnroad.admin.dto.AdPurchaseSearchConditionDto"
+            resultType="com.lawnroad.admin.dto.AdPurchaseDto">
+        SELECT
+        ap.no,
+        ap.orders_no        AS ordersNo,
+        ap.user_no          AS userNo,
+        l.name              AS advertiserName,
+        ap.ad_path          AS adPath,
+        ap.ad_type          AS adType,
+        ap.main_text        AS mainText,
+        ap.detail_text      AS detailText,
+        ap.tip_text         AS tipText,
+        ap.start_date       AS startDate,
+        ap.end_date         AS endDate,
+        ap.ad_status        AS adStatus,
+        ap.approval_status  AS approvalStatus,
+        ap.created_at       AS createdAt,
+        ap.updated_at       AS updatedAt
+        FROM ad_purchase ap
+        LEFT JOIN lawyer l ON ap.user_no = l.no
+        WHERE 1=1
+
+        <if test="adType != null">
+            AND ap.ad_type = #{adType}
+        </if>
+        <if test="adStatus != null">
+            AND ap.ad_status = #{adStatus}
+        </if>
+        <if test="approvalStatus != null">
+            AND ap.approval_status = #{approvalStatus}
+        </if>
+        <if test="keyword != null and keyword.trim() != ''">
+            AND l.name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+
+        ORDER BY ap.start_date DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 검색 조건으로 페이지 수 구하기 -->
+    <select id="countAdPurchases"
+            parameterType="com.lawnroad.admin.dto.AdPurchaseSearchConditionDto"
+            resultType="int">
+        SELECT COUNT(*)
+        FROM ad_purchase ap
+        LEFT JOIN lawyer l ON ap.user_no = l.no
+        WHERE 1=1
+
+        <if test="adType != null">
+            AND ap.ad_type = #{adType}
+        </if>
+        <if test="adStatus != null">
+            AND ap.ad_status = #{adStatus}
+        </if>
+        <if test="approvalStatus != null">
+            AND ap.approval_status = #{approvalStatus}
+        </if>
+        <if test="keyword != null and keyword.trim() != ''">
+            AND l.name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+    </select>
+
+    <!-- 광고에 대해 승인하거나 반려하는  -->
+    <update id="updateApprovalStatus">
+        UPDATE ad_purchase
+        SET
+            approval_status = #{status},
+            ad_status = CASE
+                            WHEN #{status} = 'APPROVED'
+                                AND start_date &lt;= NOW()
+                                AND end_date &gt;= NOW()
+                                THEN 1
+                            ELSE ad_status
+                END
+        WHERE no = #{no}
+    </update>
+
+
+</mapper>
