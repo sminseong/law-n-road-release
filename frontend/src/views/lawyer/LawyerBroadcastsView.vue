@@ -704,6 +704,12 @@ const handlePreQClickOutside = (e) => {
          {{ msg.message }}
       </span>
             </div>
+            <div v-else-if="msg.type === 'NOTICE'"
+                 class="w-100 text-center"
+                 style="color: #7e7e7e; background: #e3eaff; border-radius: 12px; font-size: 0.8rem; font-weight: 600; padding: 9px 2px;">
+              <span style="margin-right:6px;"></span>
+              {{ msg.message }}
+            </div>
             <div v-else style="font-size: 0.97rem; display: flex; align-items: center;">
               <!-- 닉네임 드롭다운 & 랜덤 색상 -->
               <span

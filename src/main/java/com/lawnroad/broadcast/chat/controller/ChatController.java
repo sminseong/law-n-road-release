@@ -53,6 +53,17 @@ public class ChatController {
         chatDTO.setNickname(nickname);
         chatDTO.setCreatedAt(LocalDateTime.now());
         chatDTO.setNo(no);
+
+        // 공지 사항
+        if ("NOTICE".equals(chatDTO.getType())) {
+            chatDTO.setNickname(nickname);
+            chatDTO.setNo(no);
+            chatDTO.setCreatedAt(LocalDateTime.now());
+            chatDTO.setReportStatus(0);
+
+            messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), chatDTO);
+            return;
+        }
         if(chatDTO.getType() == null) {
             chatDTO.setType("CHAT"); // 기본값
         }

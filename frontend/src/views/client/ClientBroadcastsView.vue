@@ -223,6 +223,7 @@ export default defineComponent({
     const isConfirmModal = ref(false);
     const isCompleteModal = ref(false);
     const selectedUserNo = ref(null);
+    let noticeInterval = null;
 
     // 닉네임별 랜덤 색상
     const colorPalette = [
@@ -272,6 +273,8 @@ export default defineComponent({
             Authorization: `Bearer ${token}`,
           },
           onConnect: () => {
+            startAutoNotice(); // 연결되면 자동공지 시작
+
             stompClient.value.subscribe(
                 `/topic/${broadcastNo.value}`,
                 (msg) => {
@@ -284,14 +287,6 @@ export default defineComponent({
                     return;
                   }
 
-                  if (data.type === "NOTICE") {
-                    messages.value.push({
-                      ...data,
-                      isNotice: true
-                    });
-                    scrollToBottom();
-                    return;
-                  }
                   // 그 외(일반 채팅)는 채팅창에 추가
                   messages.value.push(data);
                   scrollToBottom();
@@ -325,7 +320,29 @@ export default defineComponent({
         stompClient.value.activate();
       });
     };
+    const startAutoNotice = () => {
+      if (noticeInterval) clearInterval(noticeInterval); // 중복 방지
+      noticeInterval = setInterval(async () => {
+        if (!stompClient.value?.connected) return;
+        const token = await getValidToken();
+        if (!token) return;
 
+        stompClient.value.publish({
+          destination: "/app/chat.sendMessage",
+          body: JSON.stringify({
+            broadcastNo: broadcastNo.value,
+            message: "📢 !자동응답이라고 입력하면\n" +
+                "사용 가능한 자동응답 키워드 목록을 안내해드려요!\n" +
+                "\n" +
+                "예) !예약, !상담 등",
+            type: "NOTICE"
+          }),
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }, 30000);
+    };
     const sendMessage = async () => {
       const trimmed = message.value.trim();
       if (!trimmed || !stompClient.value?.connected) return;
@@ -336,6 +353,7 @@ export default defineComponent({
           alert("로그인이 필요합니다!");
           return;
         }
+
         stompClient.value.publish({
           destination: "/app/chat.sendMessage",
           body: JSON.stringify({
@@ -750,13 +768,12 @@ export default defineComponent({
             </div>
                 <!--   자동응답 공지-->
             <div v-else-if="msg.type === 'NOTICE'"
-                 class="w-100 text-center px-2 py-2"
-                 style="background: #ffe89b; color:#d17b00; border-radius:12px; font-size:0.95rem; font-weight:700; letter-spacing:-0.5px; border:1.3px dashed #efd44a; box-shadow:0 2px 10px 0 rgba(255,210,60,0.12);">
-              <span style="margin-right:6px;">📢</span>
-              <span>
-        <b>{{ msg.nickname }}</b> {{ msg.message }}
-      </span>
+                 class="w-100 text-center"
+                 style="color: #7e7e7e; background: #e3eaff; border-radius: 12px; font-size: 0.8rem; font-weight: 600; padding: 9px 2px;">
+              <span style="margin-right:6px;"></span>
+              {{ msg.message }}
             </div>
+
             <div v-else style="font-size: 0.97rem; display: flex; align-items: center;">
               <!-- 닉네임 드롭다운 & 랜덤 색상 -->
               <span
