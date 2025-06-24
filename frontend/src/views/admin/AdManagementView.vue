@@ -48,7 +48,7 @@ async function fetchItems(page = 1, query = {}) {
 
   const res = await http.get(
       // api 주소 연결
-      `/api/`,
+      `/api/admin/member`,
       params
   )
 

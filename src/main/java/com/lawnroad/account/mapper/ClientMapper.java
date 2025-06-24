@@ -47,6 +47,10 @@ public interface ClientMapper {
 
     ClientProfileDTO selectProfileByClientId(@Param("clientId") String clientId);
 
+    ClientEntity findBySocialId(String socialId);
+
+    void insertClientBySocial(ClientEntity client);
+
 
 
 

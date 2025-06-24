@@ -21,6 +21,7 @@ export default defineComponent({
     const session = ref(null);
     const broadcastInfo = ref({
       title: "",
+      scheduleNo: 0,
       categoryName: "",
       keywords: [],
       userNo: 0,
@@ -223,6 +224,7 @@ export default defineComponent({
     const isConfirmModal = ref(false);
     const isCompleteModal = ref(false);
     const selectedUserNo = ref(null);
+    let noticeInterval = null;
 
     // 닉네임별 랜덤 색상
     const colorPalette = [
@@ -265,6 +267,7 @@ export default defineComponent({
       }
       fetchMyNo().then((ok) => {
         if (!ok) return;
+
         stompClient.value = new Client({
           webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
           reconnectDelay: 5000,
@@ -272,24 +275,36 @@ export default defineComponent({
             Authorization: `Bearer ${token}`,
           },
           onConnect: () => {
+            startAutoNotice(); // 자동공지 시작
+
+            // 채팅방 메시지 구독
             stompClient.value.subscribe(
                 `/topic/${broadcastNo.value}`,
                 (msg) => {
                   const data = JSON.parse(msg.body);
+
+                  // 금칙어/경고 메시지(본인만 알림)
                   if (data.type === "WARNING") {
-                    // 나의 userNo와 일치할 때만 알림
                     if (data.userNo === myNo.value) {
                       alert(data.message || "🚨욕설 또는 부적절한 내용이 포함되어 있습니다");
                     }
                     return;
                   }
-                  // 그 외(일반 채팅)는 채팅창에 추가
+
+                  // 입장 메시지는 여기서만 push! (중복 방지)
+                  if (data.type === "ENTER") {
+                    messages.value.push(data);
+                    scrollToBottom();
+                    return;
+                  }
+
+                  // 나머지 메시지(일반채팅/공지/자동응답/환영 등)는 채팅창에 추가
                   messages.value.push(data);
                   scrollToBottom();
                 }
             );
 
-            // 입장
+            // 입장(서버에 알림)
             stompClient.value.publish({
               destination: "/app/chat.addUser",
               body: JSON.stringify({ broadcastNo: broadcastNo.value }),
@@ -297,6 +312,8 @@ export default defineComponent({
                 Authorization: `Bearer ${token}`,
               },
             });
+
+            // WELCOME 메시지는 로컬에만 표시 (서버에 전송X)
             messages.value.push({
               type: "WELCOME",
               message:
@@ -317,22 +334,48 @@ export default defineComponent({
       });
     };
 
+// 5분(300,000ms)이면 300000, 30초는 30000
+    const startAutoNotice = () => {
+      if (noticeInterval) clearInterval(noticeInterval); // 중복 방지
+      noticeInterval = setInterval(async () => {
+        if (!stompClient.value?.connected) return;
+        const token = await getValidToken();
+        if (!token) return;
+
+        stompClient.value.publish({
+          destination: "/app/chat.sendMessage",
+          body: JSON.stringify({
+            broadcastNo: broadcastNo.value,
+            message:
+                "📢 !자동응답이라고 입력하면\n" +
+                "사용 가능한 자동응답 키워드 목록을 안내해드려요!\n" +
+                "\n" +
+                "예) !예약, !상담 등",
+            type: "NOTICE",
+          }),
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }, 30000); // 30초마다 (원하면 시간 조정)
+    };
+
     const sendMessage = async () => {
       const trimmed = message.value.trim();
       if (!trimmed || !stompClient.value?.connected) return;
 
       try {
-        // 항상 유효한 토큰 가져오기
         const token = await getValidToken();
         if (!token) {
           alert("로그인이 필요합니다!");
           return;
         }
-        // publish 자체도 try 안에!
+
         stompClient.value.publish({
           destination: "/app/chat.sendMessage",
           body: JSON.stringify({
             broadcastNo: broadcastNo.value,
+            scheduleNo: broadcastInfo.value.scheduleNo,
             message: trimmed,
           }),
           headers: {
@@ -345,8 +388,7 @@ export default defineComponent({
         console.error('메시지 전송 실패:', err);
         alert('메시지 전송 중 오류가 발생했습니다.');
       }
-    }
-
+    };
     // 스크롤 자동 하단 이동
     const scrollToBottom = () => {
       nextTick(() => {
@@ -668,12 +710,14 @@ export default defineComponent({
           <!-- 왼쪽: 채팅 타이틀 -->
           <div class="fw-bold fs-5">채팅</div>
           <!-- 오른쪽: 사전질문 버튼 -->
-          <div>
-            <button class="btn btn-link px-1 py-0 text-decoration-none"
+          <div style="display: flex; flex-direction: column; align-items: center;">
+            <button class="btn btn-link px-1 py-0 text-decoration-none d-flex flex-column align-items-center"
                     style="font-size:1.23rem;"
                     @click="togglePreQDropdown"
                     ref="preQBtnRef"
-                    title="사전질문 보기">📝
+                    title="사전질문 보기">
+              <span>📝</span>
+              <span style="font-size:0.7rem; color:#222; margin-top:-5px;">사전 질문</span>
             </button>
           </div>
           <!-- 드롭다운(채팅 상단 전체 너비) -->
@@ -693,8 +737,6 @@ export default defineComponent({
                   <div style="color:#222">{{ q.content }}</div>
                 </li>
               </ul>
-
-
             </div>
           </div>
         </div>
@@ -705,86 +747,108 @@ export default defineComponent({
              class="flex-grow-1 overflow-auto mb-3 scroll-hidden"
              style="scroll-behavior: smooth;">
           <div v-for="(msg, index) in messages" :key="index" class="mb-3" style="position:relative;">
+            <!-- 1. 입장 안내 메시지 -->
             <div v-if="msg.type === 'ENTER'"
                  class="w-100 text-center"
                  style="color: #435879; font-size: 0.75rem;">
               {{ msg.message }}
             </div>
+
+            <!-- 2. 자동응답 -->
+            <div v-else-if="msg.type === 'AUTO_REPLY'"
+                 class="w-100 text-center"
+                 v-html="msg.message.replace(/\n/g, '<br>')"
+                 style="background: #ffffff; color: #34559c; border-radius: 12px; font-size: 0.85rem; font-weight: 500; padding: 10px 2px; margin: 6px 0;">
+            </div>
+
+            <!-- 3. 환영 메시지 -->
             <div v-else-if="msg.type === 'WELCOME'"
                  class="w-100 text-center"
                  style="color: rgb(120,118,118); background: #e4e4e4; border-radius: 12px; font-size: 0.84rem; padding: 9px 2px;">
               {{ msg.message }}
             </div>
+
+            <!-- 4. 변호사 전용 메시지 (예시) -->
             <div v-else-if="msg.type === 'Lawyer'"
                  style="font-size: 0.90rem; display: flex; align-items: center;">
               <!-- 닉네임: 검정색 고정 + 클릭 가능 -->
               <span
                   @click.stop="Number(msg.no) !== Number(myNo) && openDropdown(index, msg)"
                   :style="{
-                    color: '#222',
-                    userSelect: 'text',
-                    cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
-                    fontWeight: 'bold'
-                    }">👑 {{ broadcastInfo.lawyerName }} 변호사
-                <span v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
-                      class="nickname-dropdown"
-                      style="position:absolute;top:120%;left:0;z-index:10000;">
-                  <ul class="dropdown-custom-menu">
-                    <li class="menu-report" @click.stop="onReportClick">🚨 메시지 신고 🚨</li>
-                </ul>
-              </span>
-            </span>
+          color: '#222',
+          userSelect: 'text',
+          cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
+          fontWeight: 'bold'
+        }">👑 {{ broadcastInfo.lawyerName }} 변호사
+        <span v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
+              class="nickname-dropdown"
+              style="position:absolute;top:120%;left:0;z-index:10000;">
+          <ul class="dropdown-custom-menu">
+            <li class="menu-report" @click.stop="onReportClick">🚨 메시지 신고 🚨</li>
+          </ul>
+        </span>
+      </span>
               <!-- 메시지: 빨간색 -->
               <span style="color: #fd1900; margin-left: 0.6em;">
-              {{ msg.message }}
-            </span>
+        {{ msg.message }}
+      </span>
             </div>
 
+            <!-- 5. 공지 메시지 -->
+            <div v-else-if="msg.type === 'NOTICE'"
+                 class="w-100 text-center"
+                 style="color: #7e7e7e; background: #e3eaff; border-radius: 12px; font-size: 0.8rem; font-weight: 600; padding: 9px 2px;">
+              <span style="margin-right:6px;"></span>
+              {{ msg.message }}
+            </div>
+
+            <!-- 6. 기본 채팅 메시지 (일반 유저 채팅) -->
             <div v-else style="font-size: 0.97rem; display: flex; align-items: center;">
               <!-- 닉네임 드롭다운 & 랜덤 색상 -->
               <span
                   @click.stop="Number(msg.no) !== Number(myNo) && openDropdown(index, msg)"
                   :style="{
-                        color: getNicknameColor(msg.nickname),
-                        fontWeight: Number(msg.no) === Number(myNo) ? 700 : 600,
-                        cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
-                        userSelect: 'text',
-                        position: 'relative',
-                        padding: '2px 7px',
-                        borderRadius: '7px',
-                        transition: 'background 0.14s'
-                  }"
+              color: getNicknameColor(msg.nickname),
+              fontWeight: Number(msg.no) === Number(myNo) ? 700 : 600,
+              cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
+              userSelect: 'text',
+              position: 'relative',
+              padding: '2px 7px',
+              borderRadius: '7px',
+              transition: 'background 0.14s'
+        }"
                   :class="{'nickname-hoverable': Number(msg.no) !== Number(myNo)}">
-                  {{ msg.nickname }}
+        {{ msg.nickname }}
 
                 <!-- 드롭다운 메뉴 -->
-                  <span
-                      v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
-                      class="nickname-dropdown"
-                      style="position:absolute;top:120%;left:0;z-index:10000;">
-                    <ul class="dropdown-custom-menu">
-                      <li class="menu-report" @click.stop="onReportClick">
-                        🚨 메시지 신고
-                      </li>
-                    </ul>
-                  </span>
-                </span>
+        <span
+            v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
+            class="nickname-dropdown"
+            style="position:absolute;top:120%;left:0;z-index:10000;">
+          <ul class="dropdown-custom-menu">
+            <li class="menu-report" @click.stop="onReportClick">
+              🚨 메시지 신고
+            </li>
+          </ul>
+        </span>
+      </span>
 
               <!-- 메시지 본문 -->
               <span style="color:#222; margin-left:0.7em; line-height:1.6; word-break:break-all;">
-              {{ msg.message }}
-            </span>
+        {{ msg.message }}
+      </span>
             </div>
-
           </div>
         </div>
+
         <!-- 입력창 -->
         <div class="d-flex">
           <input v-model="message"
                  type="text"
                  class="form-control bg-body-secondary text-dark border-0 rounded-pill px-3 py-2"
                  placeholder="채팅을 입력해 주세요."
-                 @keyup.enter="sendMessage"/>
+                 @keyup.enter="sendMessage"
+                 maxlength="100"/>
         </div>
       </div>
 
