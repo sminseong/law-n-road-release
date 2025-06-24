@@ -50,6 +50,21 @@ public class ChatMongodbSaveServiceImpl implements ChatMongodbSaveService {
             }
         }
     }
+    // Redis 장애 시 즉시 저장 (단일 메시지)
+    @Override
+    public void saveChatMessage(ChatDTO chatDTO) {
+        ChatVO doc = ChatVO.builder()
+                .no(chatDTO.getNo())
+                .userNo(chatDTO.getUserNo())
+                .broadcastNo(chatDTO.getBroadcastNo())
+                .nickname(chatDTO.getNickname())
+                .message(chatDTO.getMessage())
+                .reportStatus(chatDTO.getReportStatus())
+                .createdAt(chatDTO.getCreatedAt())
+                .build();
+        mongoChatRepository.save(doc);
+    }
+
 
     private <T> T fromJson(String json, Class<T> type) {
         try {
