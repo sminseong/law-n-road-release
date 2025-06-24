@@ -80,10 +80,10 @@ async function handleSubmit() {
 
   try {
     await http.post('/api/lawyer/ads/register', formData)
-    alert('광고가 등록되었습니다.')
+    alert('광고가 신청되었습니다. 승인되기까지 3~5 영업일이 소요됩니다.')
     router.push('/lawyer/ads')
   } catch (e) {
-    alert('등록 실패: ' + (e.response?.data || '알 수 없는 오류'))
+    alert('신청 실패: ' + (e.response?.data || '알 수 없는 오류'))
   }
 }
 </script>
@@ -91,7 +91,7 @@ async function handleSubmit() {
 <template>
   <lawyer-frame>
     <div class="container py-4">
-      <h3 class="fw-bold mb-3">광고 등록</h3>
+      <h3 class="fw-bold mb-3">광고 신청</h3>
 
       <!-- 설명 -->
       <p class="text-muted small mb-2">

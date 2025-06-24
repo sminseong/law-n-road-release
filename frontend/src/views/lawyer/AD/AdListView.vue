@@ -149,7 +149,7 @@ function handlePageChange(newPage) {
     <div class="container py-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="fw-bold">광고 목록</h3>
-        <button class="btn btn-primary" @click="router.push('/lawyer/ads/register')">+ 광고 등록</button>
+        <button class="btn btn-primary" @click="router.push('/lawyer/ads/register')">+ 광고 신청</button>
       </div>
 
       <CustomTable
