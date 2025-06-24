@@ -1,9 +1,6 @@
 package com.lawnroad.board.service;
 
-import com.lawnroad.board.dto.BoardCreateDto;
-import com.lawnroad.board.dto.BoardDetailDto;
-import com.lawnroad.board.dto.BoardListDto;
-import com.lawnroad.board.dto.BoardUpdateDto;
+import com.lawnroad.board.dto.*;
 
 import java.util.List;
 
@@ -38,4 +35,5 @@ public interface BoardService {
 
     void deleteBoard(Long id);
 
+    List<BoardSummaryDto> getBoardsByUserNo(Long userNo);
 }

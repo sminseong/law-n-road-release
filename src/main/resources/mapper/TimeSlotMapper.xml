@@ -56,4 +56,11 @@
         WHERE no = #{slotNo}
     </select>
 
+    <select id="countByLawyerAndSlotAndStatus" parameterType="long" resultType="int">
+        SELECT COUNT(*)
+        FROM reservations
+        WHERE slot_no = #{slotNo}
+          AND status = 'REQUESTED'
+    </select>
+
 </mapper>

@@ -46,6 +46,13 @@ public class ClientBoardController {
         return ResponseEntity.noContent().build();
     }
 
+    //마이페이지 내 답변
+    @GetMapping("/my")
+    public ResponseEntity<List<BoardSummaryDto>> getMyQna(@RequestParam("userNo") Long userNo) {
+        List<BoardSummaryDto> boards = boardService.getBoardsByUserNo(userNo);
+        return ResponseEntity.ok(boards);
+    }
+
     //채택 기능
     @PostMapping("/select")
     public ResponseEntity<?> selectAnswer(@RequestBody CommentSelectDto dto) {

@@ -102,10 +102,15 @@
           <li><strong>상담 내용:</strong> {{ detail.content || '-' }}</li>
         </ul>
         <div class="mt-6 flex justify-end space-x-2">
+          <!-- 취소 가능 여부에 따라 버튼 비활성화 -->
           <button
               v-if="detail.status === 'REQUESTED'"
-              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              :disabled="!canCancel(detail)"
               @click="cancelReservation(detail.no)"
+              class="px-4 py-2 rounded text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              :class="canCancel(detail)
+                ? 'bg-red-600 hover:bg-red-700'
+                : 'bg-gray-400'"
           >
             예약 취소
           </button>
@@ -160,6 +165,9 @@ function closeModal() {
 }
 
 async function cancelReservation(reservationNo) {
+  if (!canCancel(detail.value)) {
+    return alert('취소 가능 시간이 지났습니다. 예약은 시작 1시간 전까지만 가능합니다.')
+  }
   if (!confirm('정말 이 예약을 취소하시겠습니까?')) return
 
   try {
@@ -199,8 +207,18 @@ function formatDate(str) {
 function statusLabel(code) {
   if (code === 'REQUESTED') return '대기중'
   if (code === 'DONE')      return '완료'
-  if (code === 'CANCELED') return '취소'
+  if (code === 'CANCELED')  return '취소'
   return code
+}
+
+// 예약 취소 가능 여부 체크: 예약시각 기준 1시간 전까지 가능
+function canCancel(res) {
+  const now = new Date()
+  const [yyyy, mm, dd] = res.slotDate.split('-').map(Number)
+  const [hh, min] = res.slotTime.slice(0,5).split(':').map(Number)
+  const slotDateTime    = new Date(yyyy, mm - 1, dd, hh, min)
+  const cancelDeadline  = new Date(slotDateTime.getTime() - 60 * 60 * 1000)
+  return now < cancelDeadline
 }
 </script>
 

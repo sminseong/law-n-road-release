@@ -62,3 +62,7 @@ export async function selectCommentAnswer(boardId, commentId) {
     return await httpRequester.post('/api/client/qna/select', {
         boardId, commentId })
 }
+// 로그인한 사용자의 QnA 글 목록 조회
+export async function fetchMyQnaBoards(userNo) {
+    return await httpRequester.get('/api/client/qna/my', { userNo })
+}
