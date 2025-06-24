@@ -69,7 +69,7 @@ onMounted(fetchVodList);
               </div>
 
               <div class="card-body d-flex flex-column justify-content-between">
-                <h5 class="card-title fs-6 fw-bold text-truncate mb-2">{{ vod.title }}</h5>
+                <h5 class="card-title fs-6 fw-bold text-truncate mb-2 text-dark">{{ vod.title }}</h5>
 
                 <div class="d-flex align-items-center gap-2 mb-1">
                   <img
@@ -79,7 +79,7 @@ onMounted(fetchVodList);
                       width="28"
                       height="28"
                   />
-                  <span class="fs-7 text-muted">{{ vod.lawyerName }} 변호사</span>
+                  <span class="fs-7 text-dark-gray">{{ vod.lawyerName }} 변호사</span>
                 </div>
 
                 <!-- ✅ 조회수 + 날짜 -->
