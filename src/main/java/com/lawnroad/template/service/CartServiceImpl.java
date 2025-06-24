@@ -4,6 +4,7 @@ import com.lawnroad.payment.dto.OrdersCreateDTO;
 import com.lawnroad.payment.service.OrdersService;
 import com.lawnroad.template.dto.cart.CartItemResponseDto;
 import com.lawnroad.template.dto.cart.CheckoutRequestDto;
+import com.lawnroad.template.dto.cart.CheckoutResponseDto;
 import com.lawnroad.template.mapper.CartMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -45,7 +46,7 @@ public class CartServiceImpl implements CartService {
    */
   @Transactional
   @Override
-  public Long checkout(CheckoutRequestDto dto) {
+  public CheckoutResponseDto checkout(CheckoutRequestDto dto) {
     // ① CartItemResponseDto 를 그대로 조회
     List<CartItemResponseDto> cartItems = cartMapper.selectCartListByUser(dto.getUserNo());
     if (cartItems.isEmpty()) {
@@ -62,11 +63,14 @@ public class CartServiceImpl implements CartService {
     // ③ 주문 생성
     OrdersCreateDTO orderDto = new OrdersCreateDTO();
     orderDto.setUserNo(dto.getUserNo());
-    orderDto.setOrderCode(UUID.randomUUID().toString());
+    orderDto.setOrderCode("TMP-" +
+            UUID.randomUUID().toString().replace("-", "").substring(0, 16)
+    );
     orderDto.setAmount((long) totalAmount);
     orderDto.setStatus("ORDERED");
     orderDto.setOrderType("TEMPLATE");
     Long orderNo = ordersService.createOrder(orderDto);
+
 
     // ④ 결제 API 호출
 //    boolean paid = paymentGateway.charge(dto.getUserNo(), totalAmount, orderNo);
@@ -87,7 +91,12 @@ public class CartServiceImpl implements CartService {
     // ⑥ 장바구니 비우기
     cartMapper.deleteByUserNo(dto.getUserNo());
 
-    return orderNo;
+    CheckoutResponseDto response = new CheckoutResponseDto();
+    response.setOrderNo(orderNo);
+    response.setOrderCode(orderDto.getOrderCode());
+    response.setAmount((long) totalAmount);
+
+    return response;
   }
 
   @Override

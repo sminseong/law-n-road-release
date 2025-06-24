@@ -1,3 +1,7 @@
+import TemplatePaymentSuccessView from "@/views/client/template/TemplatePaymentSuccessView.vue";
+import TemplatePaymentFailView from "@/views/client/template/TemplatePaymentFailView.vue";
+import TemplatePaymentView from "@/views/client/template/TemplatePaymentView.vue";
+
 export default [
     // ---------- 기본, 대시보드 등 ----------
     {
@@ -69,6 +73,36 @@ export default [
         path: '/client/template/orders/detail/:tmplNo', // 마이페에지 -> 주문상세내역 -> 단일 상품 조회
         name: 'TmplHistoryDetailOneView',
         component: () => import('@/views/client/template/TmplHistoryDetailOneView.vue')
+    },
+
+    {
+        path: '/client/template/payment',
+        name: 'TemplatePaymentView',
+        component: TemplatePaymentView,
+        props: route => ({
+            orderCode: route.query.orderCode,
+            amount:    Number(route.query.amount)
+        })
+    },
+    {
+        path: '/client/template/payment/success',
+        name: 'TemplatePaymentSuccess',
+        component: TemplatePaymentSuccessView,
+        props: route => ({
+            orderCode: route.query.orderCode,
+            orderId:    route.query.orderId,
+            paymentKey: route.query.paymentKey,
+            amount:     Number(route.query.amount)
+        })
+    },
+    {
+        path: '/client/template/payment/fail',
+        name: 'TemplatePaymentFail',
+        component: TemplatePaymentFailView,
+        props: route => ({
+            orderCode: route.query.orderCode,
+            error:     route.query.error
+        })
     },
 
 
