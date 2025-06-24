@@ -20,6 +20,7 @@
 
     <select id="selectOrder" resultType="com.lawnroad.payment.model.OrdersVO" parameterType="long">
         SELECT no, user_no AS userNo, amount AS amount,
+            order_code AS orderCode,
             status, order_type AS orderType,
             created_at AS createdAt, updated_at AS updatedAt
         FROM orders
