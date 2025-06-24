@@ -62,20 +62,26 @@ onMounted(async () => {
     console.error('QnA 조회 실패', e)
   }
 
+  // 현재 알림 설정 조회
+  try {
+    const alertRes = await HttpRequester.get(`/api/client/alert-settings/${userNo}`)
+    console.log('알림 설정 조회 결과:', alertRes.data)
+
+    if (alertRes.data) {
+      notifyConsultEnabled.value = alertRes.data.isConsultAlert
+      notifyKeywordEnabled.value = alertRes.data.isKeywordAlert
+    }
+  } catch (e) {
+    console.error('알림 설정 조회 실패', e)
+    // 조회 실패 시 기본값 설정
+    notifyConsultEnabled.value = true
+    notifyKeywordEnabled.value = true
+  }
+
   // 키워드
   const keyRes = await HttpRequester.get('/api/client/keywords')
   keywords.value = keyRes.data
 })
-
-// 토글 1
-function toggleKeyword() {
-  console.log('방송 키워드 알림 수신 여부:', notifyKeywordEnabled.value ? '수신함' : '수신 안 함')
-}
-
-// 토글 2
-function toggleConsultation() {
-  console.log('상담 관련 알림 수신 여부:', notifyConsultEnabled.value ? '수신함' : '수신 안 함')
-}
 
 // 각 알림톡 테스트 함수
 async function testBroadcastStart() {
@@ -274,6 +280,86 @@ function handleKeyDown(event) {
   }
 }
 
+// 토글 핸들러들 - 이벤트에서 값을 받아서 업데이트
+function handleKeywordToggle(event) {
+  console.log('=== 키워드 토글 시작 ===')
+  console.log('이벤트 체크 상태:', event.target.checked)
+  console.log('토글 전 notifyKeywordEnabled:', notifyKeywordEnabled.value)
+  console.log('토글 전 notifyConsultEnabled:', notifyConsultEnabled.value)
+
+  // 먼저 값을 업데이트
+  notifyKeywordEnabled.value = event.target.checked
+
+  console.log('토글 후 notifyKeywordEnabled:', notifyKeywordEnabled.value)
+
+  // 그 다음 서버에 전송
+  toggleKeyword()
+}
+
+function handleConsultToggle(event) {
+  console.log('=== 상담 토글 시작 ===')
+  console.log('이벤트 체크 상태:', event.target.checked)
+  console.log('토글 전 notifyConsultEnabled:', notifyConsultEnabled.value)
+
+  // 먼저 값을 업데이트
+  notifyConsultEnabled.value = event.target.checked
+
+  console.log('토글 후 notifyConsultEnabled:', notifyConsultEnabled.value)
+
+  // 그 다음 서버에 전송
+  toggleConsultation()
+}
+
+// 토글 1: 키워드 알림
+async function toggleKeyword() {
+  console.log('=== 키워드 토글 시작 ===')
+  console.log('토글 전 notifyKeywordEnabled:', notifyKeywordEnabled.value)
+  console.log('토글 전 notifyConsultEnabled:', notifyConsultEnabled.value)
+
+  console.log(
+      '방송 키워드 알림 수신 여부:',
+      notifyKeywordEnabled.value ? '수신함' : '수신 안 함'
+  )
+
+  const requestData = {
+    clientNo: userNo,
+    isConsultAlert: notifyConsultEnabled.value,
+    isKeywordAlert: notifyKeywordEnabled.value
+  }
+
+  console.log('서버로 보낼 데이터:', requestData)
+
+  try {
+    await HttpRequester.post('/api/client/update-alerts', requestData)
+    console.log('키워드 알림 설정 저장 완료')
+  } catch (e) {
+    console.error('키워드 알림 설정 업데이트 실패:', e)
+    alert('키워드 알림 설정 저장 실패')
+    notifyKeywordEnabled.value = !notifyKeywordEnabled.value
+  }
+}
+
+// 토글 2: 상담 알림
+async function toggleConsultation() {
+  console.log(
+      '상담 관련 알림 수신 여부:',
+      notifyConsultEnabled.value ? '수신함' : '수신 안 함'
+  )
+
+  try {
+    await HttpRequester.post('/api/client/update-alerts', {
+      clientNo: 11,
+      isConsultAlert: notifyConsultEnabled.value,
+      isKeywordAlert: notifyKeywordEnabled.value
+    })
+  } catch (e) {
+    console.error('알림 설정 업데이트 실패:', e)
+    alert('알림 설정 저장 실패')
+    // 실패 시 원래 상태로 되돌리기
+    notifyConsultEnabled.value = !notifyConsultEnabled.value
+  }
+}
+
 </script>
 
 <template>
@@ -398,17 +484,21 @@ function handleKeyDown(event) {
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="text-muted small">카카오톡 상담 관련 알림</span>
             <div class="form-check form-switch m-0">
-              <input class="form-check-input" type="checkbox" no="consultationSwitch" v-model="notifyConsultEnabled" @change="toggleConsultation" />
+              <input class="form-check-input" type="checkbox" id="consultationSwitch"
+                     :checked="notifyConsultEnabled"
+                     @input="handleConsultToggle" />
             </div>
           </div>
           <div class="d-flex justify-content-between align-items-center mb-3">
             <span class="text-muted small">카카오톡 방송 키워드 알림</span>
             <div class="form-check form-switch m-0">
-              <input class="form-check-input" type="checkbox" no="keywordSwitch"  v-model="notifyKeywordEnabled" @change="toggleKeyword" />
+              <input class="form-check-input" type="checkbox" id="keywordSwitch"
+                     :checked="notifyKeywordEnabled"
+                     @input="handleKeywordToggle"/>
             </div>
           </div>
 
-          <hr class="my-4">
+          <hr v-if="notifyKeywordEnabled" class="my-4">
           <!-- 키워드 등록 섹션 -->
           <div v-if="notifyKeywordEnabled" class="mb-3">
             <div class="d-flex justify-content-between align-items-center mb-3">
