@@ -331,13 +331,11 @@ export default defineComponent({
       if (!trimmed || !stompClient.value?.connected) return;
 
       try {
-        // 항상 유효한 토큰 가져오기
         const token = await getValidToken();
         if (!token) {
           alert("로그인이 필요합니다!");
           return;
         }
-        // publish 자체도 try 안에!
         stompClient.value.publish({
           destination: "/app/chat.sendMessage",
           body: JSON.stringify({
