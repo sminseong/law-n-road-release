@@ -1,7 +1,7 @@
 <template>
   <ClientFrame>
     <div
-        class="flex justify-center items-center"
+        class="container py-5 text-center"
         style="min-height: 100vh; padding: 20px;"
     >
       <div id="info" class="box_section" style="width: 600px; text-align: center;">
@@ -56,10 +56,5 @@ const externalMessage = route.query.message || '알 수 없는 오류가 발생�
 </script>
 
 <style scoped>
-.box_section {
-  background: #fff;
-  border-radius: 8px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
+.container { max-width: 600px; margin: auto; }
 </style>

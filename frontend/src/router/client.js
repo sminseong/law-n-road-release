@@ -22,6 +22,12 @@ export default [
         name: 'ClientQaEditView',
         component: () => import('@/views/client/ClientQaEditView.vue')
     },
+    {
+        path: '/client/qna/my',
+        name: 'ClientQaMyList',
+        component: () => import('@/views/client/ClientQaMyListView.vue'),
+    },
+
 
     // ---------- 예약 ----------
     {

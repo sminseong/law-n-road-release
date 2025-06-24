@@ -12,6 +12,7 @@ import {
   sendLawyerReservationCanceledAlimtalk
 } from "@/service/notification.js"
 import HttpRequester from '@/libs/HttpRequester'
+import { fetchMyQnaBoards } from '@/service/boardService' //추가
 
 // 라우터
 const router = useRouter()
@@ -20,12 +21,14 @@ function goToProfileEdit() {
 }
 
 // 테스트용 임시 하드 코딩
-const userNo = 6
+const userNo = 11
 const notifyKeywordEnabled = ref(true)
 const notifyConsultEnabled = ref(true)
 const nickname = ref('회원')
 const requestedCount = ref(0)
 const doneCount = ref(0)
+
+const myQnaBoards = ref([]) //추가
 
 onMounted(async () => {
   const storedNickname = localStorage.getItem('nickname')
@@ -35,7 +38,7 @@ onMounted(async () => {
 
   try {
 
-    const userNo = 6
+    const userNo = 11
     const res = await HttpRequester.get(`/api/client/reservations/counts`)
     requestedCount.value = res.data.requestedCount
     doneCount.value = res.data.doneCount
@@ -46,6 +49,17 @@ onMounted(async () => {
   const res = await HttpRequester.get('/api/client/templates/orders/recent') // 최근 주문 5개
   console.log(res.data)
   orders_rows.value = res.data.orders || []
+
+  // QnA 조회 및 정렬 → 상위 3개만 보여줌
+  try {
+    const res = await fetchMyQnaBoards(userNo)
+
+    const sorted = res.data.sort((a, b) => new Date(b.incidentDate) - new Date(a.incidentDate))
+    myQnaBoards.value = sorted.slice(0, 3)
+  } catch (e) {
+    console.error('QnA 조회 실패', e)
+  }
+
 })
 
 // 토글 1
@@ -257,8 +271,36 @@ function handleRowClick(row) {
       <div class="card mb-4 border-light">
         <div class="card-header title-bg-primary text-white">Q&A 작성한 글 보러가기</div>
         <div class="card-body">
-          <p class="mb-2 text-muted small">작성하신 글이 없습니다.</p>
-          <a href="/client/qna" class="btn small">글 보러가기</a>
+          <table class="table table-hover align-middle">
+            <thead class="table">
+            <tr>
+              <th scope="col">글번호</th>
+              <th scope="col">카테고리</th>
+              <th scope="col">제목</th>
+              <th scope="col">사건발생일</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr
+                v-for="row in myQnaBoards"
+                :key="row.boardNo"
+                style="cursor: pointer"
+                @click="$router.push(`/qna/${row.boardNo}`)"
+            >
+              <td>{{ row.boardNo }}</td>
+              <td>{{ row.categoryName }}</td>
+              <td>{{ row.title }}</td>
+              <td>{{ row.incidentDate }}</td>
+            </tr>
+            <tr v-if="myQnaBoards.length === 0">
+              <td colspan="4" class="text-muted text-center">최근 상담글이 없습니다.</td>
+            </tr>
+            </tbody>
+          </table>
+
+          <div class="text-center"><router-link :to="{ name: 'ClientQaMyList' }" class="btn small text-decoration-none">
+            내 상담글 더보기
+          </router-link></div>
         </div>
       </div>
 

@@ -2,7 +2,7 @@
   <ClientFrame>
     <!-- 화면 전체를 채우는 flex 컨테이너 -->
     <div
-        class="flex justify-center items-center"
+        class="container py-5 text-center"
         style="min-height: 100vh; padding: 20px;"
     >
       <!-- 성공 메시지 박스 -->
@@ -122,7 +122,5 @@ onMounted(confirmPayment)
 </script>
 
 <style scoped>
-.container {
-  max-width: 600px;
-}
+.container { max-width: 600px; margin: auto; }
 </style>

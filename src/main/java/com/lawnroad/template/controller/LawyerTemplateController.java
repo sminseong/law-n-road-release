@@ -3,6 +3,7 @@ package com.lawnroad.template.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lawnroad.account.service.LawyerPointService;
 import com.lawnroad.ai.dto.ValidationResultDto;
 import com.lawnroad.ai.service.AiService;
 import com.lawnroad.common.util.NcpObjectStorageUtil;
@@ -31,6 +32,7 @@ public class LawyerTemplateController {
   private final OcrService ocrService;
   private final ObjectMapper objectMapper;
   private final AiService aiService;
+  private final LawyerPointService lawyerPointService;
   
   /**
    * 템플릿 등록 API (변호사 권한)
@@ -155,6 +157,7 @@ public class LawyerTemplateController {
       // [5] 최종 등록 처리
       // -----------------------------------
       templateService.registerTemplate(dto, thumbnailPath);
+      lawyerPointService.addPoint(lawyerNo, 100);
       return ResponseEntity.ok("등록 완료");
       
     } catch (Exception e) {

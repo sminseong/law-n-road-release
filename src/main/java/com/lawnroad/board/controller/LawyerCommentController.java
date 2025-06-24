@@ -36,7 +36,7 @@ public class LawyerCommentController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Long userNo = 24L; //TODO 나중 하드코딩 바꿔야됨
+        Long userNo = 31L; //TODO 나중 하드코딩 바꿔야됨
 //        System.out.println(page);
 //        System.out.println(size);
         Page<MyCommentResponseDto> result = commentService.getMyComments(userNo, page, size);
@@ -45,7 +45,7 @@ public class LawyerCommentController {
     // 특정 댓글 상세 조회
     @GetMapping("/detail/{commentId}")
     public ResponseEntity<CommentDetailDto> getCommentDetail(@PathVariable Long commentId) {
-        Long userNo = 24L; // 임시로 하드코딩
+        Long userNo = 31L; // 임시로 하드코딩
         return ResponseEntity.ok(commentService.findById(commentId, userNo));
     }
 

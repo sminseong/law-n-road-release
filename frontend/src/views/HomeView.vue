@@ -95,6 +95,7 @@
   const logout = async () => {
     const userNo = localStorage.getItem('no')
 
+
     try {
       // ✅ 0. 백엔드에 로그아웃 요청 → RefreshToken 삭제
       if (userNo) {
@@ -247,6 +248,9 @@
 <template>
   <!-- 의뢰인 타입 본문 콘텐츠 -->
   <ClientFrame>
+
+
+
     <!-- 메인 베너 -->
     <MainBannerSlider
         v-if="mainBanners.length > 0"

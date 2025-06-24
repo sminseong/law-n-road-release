@@ -61,9 +61,14 @@ const menuItems = [
   { label: '계정 설정', icon: 'bi-person-gear', path: '/lawyer/profile' },
 ]
 
-function go(path, label) {
-  emit('update:title', label)
+function go(path) {
   router.push(path)
+}
+
+function isActive(menuPath) {
+  // lawyerNo 들어간 동적 경로라면, 메뉴 path에서 lawyerNo 제거하고 비교
+  const normalizedMenuPath = menuPath.replace(/\d+/, '')
+  return route.path.startsWith(normalizedMenuPath)
 }
 
 // 로그아웃 처리
