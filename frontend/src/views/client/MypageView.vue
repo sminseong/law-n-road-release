@@ -9,7 +9,8 @@ import {
   sendLawyerReservationStartedAlimtalk,
   sendClientReservationCreatedAlimtalk,
   sendLawyerReservationCreatedAlimtalk,
-  sendLawyerReservationCanceledAlimtalk
+  sendLawyerReservationCanceledAlimtalk,
+  sendBroadcastCreateAlimtalk
 } from "@/service/notification.js"
 import HttpRequester from '@/libs/HttpRequester'
 import { fetchMyQnaBoards } from '@/service/boardService' //추가
@@ -84,6 +85,20 @@ async function testBroadcastStart() {
     alert(":흰색_확인_표시: 방송 시작 알림톡 발송 완료");
   } catch (e) {
     alert(":x: 방송 시작 알림 실패");
+  }
+}
+async function testBroadcastCreate() {
+  try {
+    await sendBroadcastCreateAlimtalk({
+      to: "01081272572",
+      name: "박건희",
+      lawyer: "김변",
+      title: "음주운전 뺑소니 사고",
+      start: "22:00"
+    });
+    alert(":흰색_확인_표시: 방송 등록 알림톡 발송 완료");
+  } catch (e) {
+    alert(":x: 방송 등록 알림 실패");
   }
 }
 async function testVerificationCode() {
@@ -331,6 +346,7 @@ function handleRowClick(row) {
           </div>
           <hr />
           <p><a href="#" @click.prevent="testBroadcastStart">🟡 방송 시작 알림톡 테스트</a></p>
+          <p><a href="#" @click.prevent="testBroadcastCreate">🟡 방송 등록 알림톡 테스트</a></p>
           <p><a href="#" @click.prevent="testVerificationCode">🔵 인증번호 발송 테스트</a></p>
           <p><a href="#" @click.prevent="testClientReservationStarted">🟢 상담 임박 (의뢰인)</a></p>
           <p><a href="#" @click.prevent="testLawyerReservationStarted">🟠 상담 임박 (변호사)</a></p>
