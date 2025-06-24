@@ -64,6 +64,13 @@ export default [
     },
 
 
+    // ---------- 방송 ----------
+    {
+        path: '/vod/list',
+        name: 'VodList',
+        component: () => import('@/views/client/PublicVodListView.vue'),
+        props: true
+    },
 
 
     // ---------- 템플릿 ----------

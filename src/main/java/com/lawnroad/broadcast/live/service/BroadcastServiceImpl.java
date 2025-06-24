@@ -125,6 +125,7 @@ public class BroadcastServiceImpl implements BroadcastService {
         }
 
         Long scheduleNo = broadcastMapper.findScheduleNoByBroadcastNo(broadcastNo);
+        dto.setScheduleNo(scheduleNo);
         dto.setKeywords(broadcastMapper.findKeywordsByScheduleNo(scheduleNo));
 
         return dto;
