@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watchEffect } from 'vue'
+import { ref, watchEffect, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import AccountFrame from '@/components/layout/account/AccountFrame.vue'
@@ -27,6 +27,11 @@ const clientId = ref('')
 const password = ref('')
 const remember = ref(false)
 
+const naverLogin = () => {
+  const redirectUri = encodeURIComponent('http://localhost:5173/login')
+  window.location.href = 'http://localhost:8080/oauth2/authorization/naver'
+}
+
 const submitLogin = async () => {
   try {
     console.log('📨 로그인 요청 데이터:', {
@@ -43,7 +48,7 @@ const submitLogin = async () => {
 
     console.log('✅ 로그인 성공 응답:', res.data)
 
-    const { accessToken, refreshToken, name, nickname,no} = res.data
+    const { accessToken, refreshToken, name, nickname, no } = res.data
 
     localStorage.setItem('token', accessToken)
     localStorage.setItem('refreshToken', refreshToken)
@@ -53,11 +58,6 @@ const submitLogin = async () => {
     localStorage.setItem('no', no)
 
     console.log('🚨🚨🚨 localStorage 저장 완료! 🚨🚨🚨')
-    console.log('TOKEN:', localStorage.getItem('token'))
-    console.log('ACCOUNT TYPE:', localStorage.getItem('accountType'))
-    console.log('no :', localStorage.getItem('no'))
-
-    // localStorage 저장 확인 로그
     console.log('💾 localStorage 저장된 데이터:', {
       token: localStorage.getItem('token'),
       refreshToken: localStorage.getItem('refreshToken'),
@@ -82,17 +82,12 @@ const submitLogin = async () => {
       }
     }
 
-    // ✅ 리다이렉트 처리 추가
     const redirect = route.query.redirect || (tab.value === 'lawyer' ? '/lawyer' : '/')
     router.push(redirect)
-    // router.push(tab.value === 'lawyer' ? '/lawyer' : '/')
 
   } catch (err) {
     console.error('❌ 로그인 실패:', err)
-
     if (err.response) {
-      console.error('📡 상태코드:', err.response.status)
-      console.error('📩 에러 메시지:', err.response.data)
       alert(`로그인 실패: ${err.response.data}`)
     } else {
       alert('네트워크 오류 또는 서버 응답 없음')
@@ -103,22 +98,44 @@ const submitLogin = async () => {
 function parseJwt(token) {
   try {
     let base64 = token.split('.')[1]
-    // base64url → base64 변환
     base64 = base64.replace(/-/g, '+').replace(/_/g, '/')
-    // 패딩 추가 (길이가 4의 배수가 되도록)
-    while (base64.length % 4 !== 0) {
-      base64 += '='
-    }
-
-    const json = atob(base64)
-    return JSON.parse(json)
+    while (base64.length % 4 !== 0) base64 += '='
+    return JSON.parse(atob(base64))
   } catch (e) {
     console.error('❌ JWT 파싱 실패:', e)
     return null
   }
 }
 
+// ✅ 기존 onMounted 삭제하고, 아래처럼 watchEffect로 소셜 로그인 토큰 감지
+watchEffect(async () => {
+  const queryToken = route.query.token
+  if (queryToken) {
+    try {
+      const decoded = parseJwt(queryToken)
+      const { no, nickname, role } = decoded
+
+      localStorage.setItem('token', queryToken)
+      localStorage.setItem('nickname', nickname)
+      localStorage.setItem('no', no)
+      localStorage.setItem('accountType', role.toLowerCase())
+
+      axios.defaults.headers.common['Authorization'] = `Bearer ${queryToken}`
+
+      if (role === 'LAWYER') {
+        await lawyerStore.fetchLawyerInfo(no)
+        router.replace('/lawyer') // 🔄 push → replace
+      } else {
+        router.replace('/')
+      }
+    } catch (e) {
+      console.error('소셜 로그인 JWT 처리 실패:', e)
+      alert('소셜 로그인 실패')
+    }
+  }
+})
 </script>
+
 
 <template>
   <AccountFrame>
@@ -142,37 +159,21 @@ function parseJwt(token) {
 
       <form @submit.prevent="submitLogin">
         <div class="mb-3">
-          <input
-              v-model="clientId"
-              type="text"
-              class="form-control"
-              placeholder="아이디"
-              required
-          />
+          <input v-model="clientId" type="text" class="form-control" placeholder="아이디" required />
         </div>
 
         <div class="mb-3">
-          <input
-              v-model="password"
-              type="password"
-              class="form-control"
-              placeholder="비밀번호"
-              required
-          />
+          <input v-model="password" type="password" class="form-control" placeholder="비밀번호" required />
         </div>
 
         <div class="d-flex justify-content-between align-items-center mb-3">
           <div class="form-check">
-            <input
-                v-model="remember"
-                type="checkbox"
-                class="form-check-input"
-                id="rememberMe"
-            />
+            <input v-model="remember" type="checkbox" class="form-check-input" id="rememberMe" />
             <label class="form-check-label" for="rememberMe">자동 로그인</label>
           </div>
           <router-link to="/forgot-password" class="small">아이디/비밀번호 찾기</router-link>
         </div>
+
         <button type="submit" class="btn btn-primary w-100">로그인</button>
       </form>
 
@@ -186,6 +187,13 @@ function parseJwt(token) {
         >
           {{ tab === 'client' ? '회원가입' : '변호사 회원가입' }}
         </router-link>
+      </div>
+
+      <!-- ✅ 소셜 로그인 버튼 -->
+      <div class="text-center mt-4">
+        <button class="btn btn-outline-success w-100" @click="naverLogin">
+          네이버로 로그인
+        </button>
       </div>
     </section>
   </AccountFrame>

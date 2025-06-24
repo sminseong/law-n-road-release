@@ -8,7 +8,6 @@
     <resultMap id="BoardListMap" type="com.lawnroad.board.dto.BoardListDto">
         <result property="no"          column="no"/>
         <result property="categoryNo"  column="category_no"/>
-        <result property="userNo"      column="user_no"/>
         <result property="title"       column="title"/>
         <result property="summary"     column="summary"/>
         <result property="incidentDate" column="incident_date"/>
@@ -19,7 +18,6 @@
         SELECT
         b.no,
         b.category_no,
-        b.user_no,
         b.title,
         LEFT(b.content, 100) AS summary,
         b.incident_date,
@@ -45,7 +43,6 @@
         <id property="no" column="no"/>
         <result property="categoryNo" column="category_no"/>
         <result property="categoryName" column="category_name"/>
-        <result property="userNo" column="user_no"/>
         <result property="title" column="title"/>
         <result property="content" column="content"/>
         <result property="incidentDate" column="incident_date"/>
@@ -58,7 +55,6 @@
         b.no,
         b.category_no,
         c.name AS category_name,
-        b.user_no,
         b.title,
         b.content,
         b.incident_date,

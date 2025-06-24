@@ -17,5 +17,6 @@ public class ClientEntity {
     private String phone;
     private int content;
     private int alert_content;
+    private String social_id;
 
 }

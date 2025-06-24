@@ -59,38 +59,41 @@ onBeforeUnmount(() => {
   document.removeEventListener('mousemove', updateGradient)
 })
 
-// 로그아웃 처리
-const logout = () => {
-  // ✅ 1. 로컬스토리지 항목 삭제
-  localStorage.removeItem('token')
-  localStorage.removeItem('refreshToken')
-  localStorage.removeItem('accountType')
-  localStorage.removeItem('name')
-  localStorage.removeItem('nickname')
+const logout = async () => {
+  // 0. (선택) 현재 로그인 유저 번호 가져오기
+  const userNo = Number(localStorage.getItem('no'))
 
-  // ✅ 2. Axios 인증 헤더 제거
-  delete axios.defaults.headers.common['Authorization']
+  try {
+    // 1. 서버에 로그아웃(리프레시 토큰 삭제) 요청
+    const response = await axios.post('/api/auth/logout', { userNo })
+    console.log('[서버 로그아웃 성공]', response.data)
 
-  // ✅ 3. 프론트 상태 초기화
-  isLoggedIn.value = false
-  nickname.value = '회원'
+  } catch (error) {
+    // 2. 에러 처리 (네트워크/서버 에러 등)
+    console.error('[서버 로그아웃 실패]', error)
 
-  // ✅ 4. 콘솔 로그 출력: 삭제 여부 확인
-  console.log('[로그아웃 완료] localStorage 상태 확인:')
-  console.log('token:', localStorage.getItem('token'))
-  console.log('refreshToken:', localStorage.getItem('refreshToken'))
-  console.log('accountType:', localStorage.getItem('accountType'))
-  console.log('name:', localStorage.getItem('name'))
-  console.log('nickname:', localStorage.getItem('nickname'))
+  } finally {
+    // 3. 로컬스토리지 클리어
+    localStorage.removeItem('token')
+    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('accountType')
+    localStorage.removeItem('name')
+    localStorage.removeItem('nickname')
+    localStorage.removeItem('no')
 
-  // ✅ 5. 로그인 페이지로 이동 + 새로고침
-  setTimeout(() => location.reload(), 100) // 새로고침으로 컴포넌트 초기화
-  console.log('[로그아웃 완료] localStorage 상태 확인:')
-  console.log('token:', localStorage.getItem('token'))
-  console.log('refreshToken:', localStorage.getItem('refreshToken'))
-  console.log('accountType:', localStorage.getItem('accountType'))
-  console.log('name:', localStorage.getItem('name'))
-  console.log('nickname:', localStorage.getItem('nickname'))
+    // 4. Axios 기본 헤더에서 Authorization 제거
+    delete axios.defaults.headers.common['Authorization']
+
+    // 5. 프론트 상태 초기화
+    isLoggedIn.value = false
+    nickname.value = '회원'
+
+    // 6. (선택) 페이지 리로드 혹은 라우팅
+    setTimeout(() => {
+      // 라우터를 쓰신다면 router.push('/login') 로 대체 가능
+      location.reload()
+    }, 100)
+  }
 }
 
 
