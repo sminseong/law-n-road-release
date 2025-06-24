@@ -85,4 +85,17 @@
         DELETE FROM board WHERE no = #{id}
     </delete>
 
+    <!-- 로그인한 유저가 작성한 QnA 목록 조회 -->
+    <select id="findBoardsByUserNo" resultType="com.lawnroad.board.dto.BoardSummaryDto">
+        SELECT
+        b.no AS board_no,
+        b.title,
+        b.incident_date,
+        c.name AS category_name
+        FROM board b
+        JOIN category c ON b.category_no = c.no
+        WHERE b.user_no = #{userNo}
+        ORDER BY b.created_at DESC
+    </select>
+
 </mapper>
