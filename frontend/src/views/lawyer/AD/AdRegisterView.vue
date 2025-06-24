@@ -28,6 +28,13 @@ function handleImageChange(e) {
     alert('이미지 파일만 업로드 가능합니다.')
     return
   }
+
+  const MAX_SIZE_MB = 10 * 1024 * 1024
+  if (file.size > MAX_SIZE_MB) {
+    alert('이미지는 10MB 이하로 업로드해 주세요.')
+    return
+  }
+
   imageFile.value = file
   imagePreview.value = URL.createObjectURL(file)
 }
@@ -41,8 +48,24 @@ function handleStartDateChange() {
 }
 
 async function handleSubmit() {
-  if (!mainText.value || !detailText.value || !startDate.value || !imageFile.value) {
-    alert('필수 항목을 모두 입력해 주세요.')
+  if (!startDate.value) {
+    alert('광고 시작일을 선택해 주세요.')
+    return
+  }
+  if (!mainText.value || mainText.value.length > 20) {
+    alert('광고 문구 1은 필수입니다. 20자 이하로 입력해 주세요.')
+    return
+  }
+  if (!detailText.value || detailText.value.length > 20) {
+    alert('광고 문구 2는 필수입니다. 20자 이하로 입력해 주세요.')
+    return
+  }
+  if (!tipText.value || tipText.value.length > 10) {
+    alert('광고 문구 3은 필수입니다. 10자 이하로 입력해 주세요.')
+    return
+  }
+  if (!imageFile.value) {
+    alert('이미지 파일을 입력해주세요. ')
     return
   }
 
