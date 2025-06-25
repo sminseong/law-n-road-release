@@ -54,11 +54,26 @@ const newKeyword = ref('')
 
 const addKeyword = () => {
   const value = newKeyword.value.trim()
-  if (value && !keywords.value.includes(value)) {
-    keywords.value.push(value)
+  if (!value) return
+  if (value.length > 6) {
+    alert('⚠ 키워드는 6자 이하로 입력해야 합니다.')
+    return
   }
+
+  if (keywords.value.includes(value)) {
+    alert('⚠ 이미 추가된 키워드입니다.')
+    return
+  }
+
+  if (keywords.value.length >= 6) {
+    alert('⚠ 키워드는 최대 6개까지 등록할 수 있습니다.')
+    return
+  }
+
+  keywords.value.push(value)
   newKeyword.value = ''
 }
+
 
 const removeKeyword = (index) => {
   keywords.value.splice(index, 1)
