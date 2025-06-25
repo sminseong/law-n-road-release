@@ -17,10 +17,6 @@ public class PaymentService {
     public PaymentService(PaymentMapper paymentMapper) {
         this.paymentMapper = paymentMapper;
     }
-
-    /**
-     * JsonNode 에서 값을 직접 꺼내서 PaymentSaveDTO 조립 → INSERT
-     */
     public void savePaymentFromToss(JsonNode root, Long orderNo) {
         PaymentSaveDTO dto = new PaymentSaveDTO();
         dto.setOrderNo(orderNo);

@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Mapper
@@ -31,4 +32,8 @@ public interface TimeSlotMapper {
     Long getAmountBySlotNo(@Param("slotNo") Long slotNo);
     // slotNo로 슬롯 전체 정보(날짜·시간·userNo 등)를 조회
     TimeSlotVO selectBySlotNo(@Param("slotNo") Long slotNo);
+
+    int countByLawyerAndSlotAndStatus(
+            @Param("slotNo") Long slotNo
+    );
 }

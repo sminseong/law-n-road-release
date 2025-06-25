@@ -1,9 +1,6 @@
 package com.lawnroad.board.controller;
 
-import com.lawnroad.board.dto.BoardCreateDto;
-import com.lawnroad.board.dto.BoardDetailDto;
-import com.lawnroad.board.dto.BoardListDto;
-import com.lawnroad.board.dto.BoardUpdateDto;
+import com.lawnroad.board.dto.*;
 import com.lawnroad.board.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,5 +42,12 @@ public class ClientBoardController {
     public ResponseEntity<Void> deleteBoard(@PathVariable Long id) {
         boardService.deleteBoard(id);
         return ResponseEntity.noContent().build();
+    }
+
+    //마이페이지 내 답변
+    @GetMapping("/my")
+    public ResponseEntity<List<BoardSummaryDto>> getMyQna(@RequestParam("userNo") Long userNo) {
+        List<BoardSummaryDto> boards = boardService.getBoardsByUserNo(userNo);
+        return ResponseEntity.ok(boards);
     }
 }

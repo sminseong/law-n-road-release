@@ -138,15 +138,22 @@ onMounted(() => fetchItems())
 
 // 환불 버튼
 const handleRefund = async () => {
-  const ok = confirm('정말 환불하시겠습니까?')
-  if (!ok) return
+  console.log(orderNo)
+  if (!confirm('정말 환불하시겠습니까?')) return
 
   try {
-    // await http.post(`/api/client/orders/${orderNo}/refund`)
-    // 예: 라우터 이동 또는 상태 갱신
+    const token = localStorage.getItem('token')
+    // orderNo만 담아서 호출
+    await http.post(
+        '/api/confirm/cancel',
+        { orderNo },
+        { headers: { Authorization: `Bearer ${token}` } }
+    )
+    alert('환불 처리 완료되었습니다.')
+    return window.location.href = `/client/template/orders`
   } catch (err) {
-    alert('환불 중 오류가 발생했습니다.')
-    console.error(err)
+    console.error('환불 중 오류', err)
+    alert(err.response?.data?.message || '환불 중 오류가 발생했습니다.')
   }
 }
 

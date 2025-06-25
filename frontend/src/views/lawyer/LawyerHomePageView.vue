@@ -100,9 +100,8 @@ onMounted(async () => {
                          word-break: break-word;
                          font-family: inherit;
                          min-height: 160px;
-                         max-height: 160px;     /* 높이 제한 */
-                         overflow-y: auto;     /* 수직 스크롤 */">{{ data.longIntro }}
-            </pre>
+                         max-height: 160px;
+                         overflow-y: auto;">{{ data.longIntro }}</pre>
             </div>
 
 

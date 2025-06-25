@@ -121,8 +121,11 @@ public class OpenViduServiceImpl implements OpenViduService {
                 return 0;
             }
             Session session = openVidu.getActiveSession(sessionId);
+            System.out.println(session);
+            System.out.println(session.getSessionId());
             if (session != null) {
-                return session.getActiveConnections().size();
+                System.out.println(session.getActiveConnections().size());
+                    return session.getActiveConnections().size();
             }
         } catch (Exception e) {
             System.out.println("🔴 시청자 수 조회 실패 (broadcastNo: " + broadcastNo + "): " + e.getMessage());
