@@ -15,4 +15,5 @@ public class BoardDetailDto {
     private LocalDate incidentDate; //사건발생일자
     private String createdAt; //생성일자
     private String updatedAt; //수정일자
+    private Long userNo; // 추가
 }

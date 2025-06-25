@@ -104,6 +104,7 @@ async function selectAnswer(answerNo) {
 
 onMounted(async () => {
   await loadDetail()
+  console.log('작성자 userNo:', qa.value.userNo) // 작성자 확인
   await loadComments()
 })
 </script>

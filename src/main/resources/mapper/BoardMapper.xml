@@ -48,6 +48,7 @@
         <result property="incidentDate" column="incident_date"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
+        <result property="userNo" column="user_no"/> <!-- 추가 -->
     </resultMap>
 
     <select id="selectBoardById" resultMap="BoardDetailMap" parameterType="long">
@@ -59,7 +60,8 @@
         b.content,
         b.incident_date,
         b.created_at,
-        b.updated_at
+        b.updated_at,
+        b.user_no <!-- 추가 -->
         FROM board b
         LEFT JOIN category c ON b.category_no = c.no
         LEFT JOIN user u ON b.user_no = u.no
