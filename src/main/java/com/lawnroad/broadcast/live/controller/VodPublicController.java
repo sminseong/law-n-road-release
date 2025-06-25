@@ -22,12 +22,14 @@ public class VodPublicController {
     public ResponseEntity<VodListResponseDto> getVodList(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "12") int size,
-            @RequestParam(defaultValue = "recent") String orderType
+            @RequestParam(defaultValue = "recent") String sort,
+            @RequestParam(required = false) Long categoryNo
     ) {
         VodListRequestDto requestDto = new VodListRequestDto();
         requestDto.setPage(page);
         requestDto.setSize(size);
-        requestDto.setOrderType(orderType);
+        requestDto.setSort(sort);
+        requestDto.setCategoryNo(categoryNo);
 
         VodListResponseDto response = vodService.getPagedVodList(requestDto);
         return ResponseEntity.ok(response);

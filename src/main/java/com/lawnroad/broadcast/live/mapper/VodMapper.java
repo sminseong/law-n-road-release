@@ -13,12 +13,13 @@ public interface VodMapper {
     void insertVod(BroadcastVodVo vod);
     List<VodListDto> findVodListPaged(@Param("offset") int offset,
                                       @Param("size") int size,
-                                      @Param("orderType") String orderType);
+                                      @Param("sort") String sort,
+                                      @Param("categoryNo") Long categoryNo);
     void increaseViewCount(Long vodNo);
 
     // vod 상세
     VodDetailDto findVodDetailByBroadcastNo(Long broadcastNo);
 
     // 페이지네이션 관련
-    long countAllVod();
+    long countVodByCondition(@Param("categoryNo") Long categoryNo);
 }

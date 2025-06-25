@@ -49,10 +49,13 @@ public class VodServiceImpl implements VodService {
         List<VodListDto> list = vodMapper.findVodListPaged(
                 requestDto.getOffset(),
                 requestDto.getSize(),
-                requestDto.getOrderType()
+                requestDto.getSort(),
+                requestDto.getCategoryNo()
         );
 
-        long totalCount = vodMapper.countAllVod();
+        long totalCount = vodMapper.countVodByCondition(
+                requestDto.getCategoryNo() // 카테고리 필터 추가
+        );
 
         int totalPages = (int) Math.ceil((double) totalCount / requestDto.getSize());
 

@@ -9,7 +9,19 @@ const router = useRouter();
 const currentPage = ref(1);
 const totalPages = ref(1);
 // 정렬기준
-const orderType = ref("recent")
+const sort = ref("recent");
+// 카테고리
+const categories = ref([])         // 카테고리 목록
+const selectedCategory = ref(null) // 선택된 카테고리 번호
+
+const fetchCategories = async () => {
+  try {
+    const res = await axios.get("/api/public/category/list")
+    categories.value = res.data
+  } catch (err) {
+    console.error("❌ 카테고리 목록 불러오기 실패:", err)
+  }
+}
 
 const formatDuration = (seconds) => {
   const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
@@ -20,9 +32,14 @@ const formatDuration = (seconds) => {
 
 const fetchVodList = async () => {
   try {
-    const res = await axios.get(
-        `/api/public/vod/list?page=${currentPage.value}&size=12&orderType=${orderType.value}`
-    )
+    const res = await axios.get(`/api/public/vod/list`, {
+      params: {
+        page: currentPage.value,
+        size: 12,
+        sort: sort.value,
+        categoryNo: selectedCategory.value,
+      }
+    });
     vodList.value = res.data.content;
     totalPages.value = res.data.totalPages;
   } catch (err) {
@@ -39,13 +56,13 @@ const goToVod = async (vod) => {
   router.push(`/vod/${vod.broadcastNo}`); // broadcastNo 기준으로 이동
 };
 
-const setOrder = (type) => {
-  if (orderType.value !== type) {
-    orderType.value = type
-    currentPage.value = 1 // 페이지 초기화
-    fetchVodList()
+const setSort = (type) => {
+  if (sort.value !== type) {
+    sort.value = type;
+    currentPage.value = 1;
+    fetchVodList();
   }
-}
+};
 
 // Pagination group logic
 const pageGroup = computed(() => {
@@ -69,11 +86,17 @@ function changePage(page) {
   }
 }
 
+const onCategoryChange = () => {
+  currentPage.value = 1;
+  fetchVodList();
+};
+
 watch(currentPage, () => {
   fetchVodList();
 });
 
 onMounted(() => {
+  fetchCategories();
   fetchVodList();
 });
 </script>
@@ -83,23 +106,47 @@ onMounted(() => {
   <ClientFrame>
     <div class="container py-4">
       <h2 class="fs-3 fw-bold text-primary mb-4">방송 다시보기</h2>
-      <!-- 정렬 버튼 -->
-      <div class="mb-3 d-flex gap-2">
-        <button
-            class="btn"
-            :class="orderType === 'recent' ? 'btn-primary' : 'btn-outline-primary'"
-            @click="setOrder('recent')"
-        >
-          최신순
-        </button>
-        <button
-            class="btn"
-            :class="orderType === 'popular' ? 'btn-primary' : 'btn-outline-primary'"
-            @click="setOrder('popular')"
-        >
-          인기순
-        </button>
+      <!-- 정렬 + 카테고리 선택 라인 -->
+      <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <!-- 정렬 버튼 -->
+        <div class="d-flex gap-2">
+          <button
+              class="btn"
+              :class="sort === 'recent' ? 'btn-primary' : 'btn-outline-primary'"
+              @click="setSort('recent')"
+          >
+            최신순
+          </button>
+          <button
+              class="btn"
+              :class="sort === 'popular' ? 'btn-primary' : 'btn-outline-primary'"
+              @click="setSort('popular')"
+          >
+            인기순
+          </button>
+        </div>
+
+        <!-- 카테고리 선택 -->
+        <div class="d-flex align-items-center gap-2">
+          <label class="fw-bold text-dark mb-0" style="white-space: nowrap;">카테고리</label>
+          <select
+              class="form-select"
+              style="min-width: 200px"
+              v-model="selectedCategory"
+              @change="onCategoryChange"
+          >
+            <option :value="null">전체 카테고리</option>
+            <option
+                v-for="c in categories"
+                :key="c.no"
+                :value="c.no"
+            >
+              {{ c.name }}
+            </option>
+          </select>
+        </div>
       </div>
+
       <div class="row g-4">
         <template v-for="vod in vodList" :key="vod.vodNo">
           <div class="col-12 col-sm-6 col-md-4 col-lg-3">
@@ -113,9 +160,12 @@ onMounted(() => {
                 />
                 <!-- 뱃지 묶음 -->
                 <div class="position-absolute top-0 start-0 m-2 d-flex gap-2">
-                  <span class="badge bg-primary">다시보기</span>
-                  <span v-if="vod.categoryName" class="badge bg-secondary">
-                    {{ vod.categoryName }}
+                  <span class="badge bg-primary" style="font-size: 0.7rem; padding: 0.35em 0.6em;">다시보기</span>
+                  <span
+                      v-if="vod.categoryName"
+                      class="badge bg-secondary"
+                      style="font-size: 0.7rem; padding: 0.35em 0.6em;"
+                  >{{ vod.categoryName }}
                   </span>
                 </div>
                 <!-- 영상 길이 -->

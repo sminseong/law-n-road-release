@@ -74,8 +74,11 @@
         JOIN category c ON bs.category_no = c.no
         JOIN lawyer l ON b.user_no = l.no
         WHERE v.status = 0
+        <if test="categoryNo != null">
+            AND c.no = #{categoryNo}
+        </if>
         <choose>
-            <when test="orderType == 'popular'">
+            <when test="sort == 'popular'">
                 ORDER BY v.view_count DESC
             </when>
             <otherwise>
@@ -119,8 +122,14 @@
         WHERE v.status = 0 AND v.broadcast_no = #{broadcastNo}
     </select>
 
-    <select id="countAllVod" resultType="long">
-        SELECT COUNT(*) FROM broadcast_vod WHERE status = 0
+    <select id="countVodByCondition" resultType="long">
+        SELECT COUNT(*) FROM broadcast_vod v
+        JOIN broadcast b ON v.broadcast_no = b.no
+        JOIN broadcast_schedule bs ON b.schedule_no = bs.no
+        WHERE v.status = 0
+        <if test="categoryNo != null">
+            AND bs.category_no = #{categoryNo}
+        </if>
     </select>
 
 </mapper>
