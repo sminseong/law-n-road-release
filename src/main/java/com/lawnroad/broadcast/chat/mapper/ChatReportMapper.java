@@ -6,4 +6,6 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface ChatReportMapper {
     void insertChatReport(ChatReportDTO report);
+    int selectIsStoppedByUserNo(Long userNo);
+
 }

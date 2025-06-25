@@ -22,4 +22,9 @@ public class ChatReportServiceImpl implements ChatReportService{
         chatReportMapper.insertChatReport(dto);
     }
 
+    @Override
+    public int getIsStopped(Long userNo) {
+        return chatReportMapper.selectIsStoppedByUserNo(userNo);
+    }
+
 }

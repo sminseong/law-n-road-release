@@ -7,6 +7,7 @@ import com.lawnroad.broadcast.chat.dto.PreQuestionItem;
 import com.lawnroad.broadcast.chat.mapper.AutoReplyMapper;
 import com.lawnroad.broadcast.chat.mapper.PreQuestionMapper;
 import com.lawnroad.broadcast.live.mapper.BroadcastMapper;
+import com.lawnroad.broadcast.live.mapper.VodMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +27,11 @@ public class test1 {
 
     @Autowired
     private PreQuestionMapper preQuestionMapper;
-
+    @Autowired
     private BroadcastMapper broadcastMapper;
+
+    @Autowired
+    private VodMapper vodMapper;
 
     @Test
     void preQuestionMapperTest() {
@@ -106,6 +110,17 @@ public class test1 {
             for (LawyerPreQuestion q : questions) {
                 System.out.println(q);
             }
+
+    }
+
+    @Test
+    void selectNameByUserNo() {
+        Long userNo = 80L;
+
+        String name = vodMapper.selectNameByUserNo(userNo);
+
+        System.out.println("Lawyer Name: " + name);
+
 
     }
 

@@ -132,4 +132,12 @@
         </if>
     </select>
 
+        <!-- 채팅 변호사 이름 가져오기-->
+        <select id="selectNameByUserNo" parameterType="long" resultType="string">
+            SELECT name
+            FROM lawyer
+            WHERE no = #{userNo}
+        </select>
+
+
 </mapper>

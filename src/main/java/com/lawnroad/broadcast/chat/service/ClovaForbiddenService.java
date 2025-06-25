@@ -14,7 +14,7 @@ public class ClovaForbiddenService {
 //    @Value("${clova.api-key}")
     private String apiKey;
 
-    //155~166 true,false 전부 반대로 바꿀것
+    //151번째 줄만 수정할것
     @Value("${clova.api-url}")
     private String apiUrl;
     private final String systemPrompt = """

@@ -22,4 +22,6 @@ public interface VodMapper {
 
     // 페이지네이션 관련
     long countVodByCondition(@Param("categoryNo") Long categoryNo);
+    String selectNameByUserNo(Long userNo);
+
 }
