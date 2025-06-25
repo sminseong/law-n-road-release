@@ -24,12 +24,16 @@ const formatDuration = (seconds) => {
 // vod 가져오는 함수
 const fetchVodInfo = async () => {
   try {
-    const { data } = await axios.get(`/api/public/vod/view/${broadcastNo}`);
-    vodInfo.value = data;
+    const res = await makeApiRequest({
+      method: 'get',
+      url: `/api/public/vod/view/${broadcastNo}`
+    })
+    vodInfo.value = res.data
   } catch (err) {
-    console.error("❌ VOD 정보 가져오기 실패:", err);
+    console.error("❌ VOD 정보 가져오기 실패:", err)
   }
-};
+}
+
 
 const goToLawyerHomepage = () => {
   const userNo = vodInfo.value.lawyerNo;
