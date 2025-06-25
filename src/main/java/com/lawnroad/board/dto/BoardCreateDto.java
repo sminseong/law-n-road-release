@@ -10,6 +10,6 @@ public class BoardCreateDto {
     private String title;
     private String content;
     private LocalDate incidentDate;
-    private Long userNo; // 추후 로그인 사용자로부터 받기
+    private Long userNo;
     private Long categoryNo;
 }
