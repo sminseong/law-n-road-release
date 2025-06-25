@@ -16,12 +16,12 @@ public interface VodMapper {
                                       @Param("sort") String sort,
                                       @Param("categoryNo") Long categoryNo);
     void increaseViewCount(Long vodNo);
-
     // vod 상세
     VodDetailDto findVodDetailByBroadcastNo(Long broadcastNo);
-
     // 페이지네이션 관련
     long countVodByCondition(@Param("categoryNo") Long categoryNo);
-    String selectNameByUserNo(Long userNo);
 
+
+
+    String selectNameByUserNo(Long userNo);
 }
