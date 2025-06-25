@@ -77,26 +77,34 @@ public class CartServiceImpl implements CartService {
 //    if (!paid) {
 //      throw new PaymentException("결제에 실패했습니다.");
 //    }
-
-    // ⑤ tmpl_orders_history에 복사
-    for (CartItemResponseDto item : cartItems) {
-      int paidPrice = (int)(item.getPrice() * (1 - item.getDiscountRate() / 100.0));
-      // 1) 히스토리 테이블에 복사
-      cartMapper.insertHistory(item.getTmplNo(), orderNo, paidPrice);
-
-      // 2) 템플릿 판매량 증가
-      cartMapper.incrementSalesCount(item.getTmplNo());
-    }
-
-    // ⑥ 장바구니 비우기
-    cartMapper.deleteByUserNo(dto.getUserNo());
-
+    
     CheckoutResponseDto response = new CheckoutResponseDto();
     response.setOrderNo(orderNo);
     response.setOrderCode(orderDto.getOrderCode());
     response.setAmount((long) totalAmount);
 
     return response;
+  }
+  
+  @Override
+  @Transactional
+  public void completeOrder(Long userNo, String orderCode) {
+    // ① 장바구니 아이템 조회
+    List<CartItemResponseDto> cartItems = cartMapper.selectCartListByUser(userNo);
+    
+    // orderCode 에 해당하는 orderNo 구하기
+    Long orderNo = cartMapper.selectOrderNoByOrderCode(orderCode);
+    System.out.println(orderNo);
+    
+    // ② 히스토리 테이블에 복사 + 판매량 증가
+    for (CartItemResponseDto item : cartItems) {
+      int paidPrice = (int) (item.getPrice() * (1 - item.getDiscountRate() / 100.0));
+      cartMapper.insertHistory(item.getTmplNo(), orderNo, paidPrice);
+      cartMapper.incrementSalesCount(item.getTmplNo());
+    }
+    
+    // ③ 장바구니 비우기
+    cartMapper.deleteByUserNo(userNo);
   }
 
   @Override

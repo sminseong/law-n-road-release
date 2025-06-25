@@ -4,6 +4,10 @@ import httpRequester from "@/libs/HttpRequester.js";
 export const sendBroadcastStartAlimtalk = (payload) =>
     httpRequester.post("/api/notification/broadcast/start", payload);
 
+// 1-1. 방송 등록 알림톡
+export const sendBroadcastCreateAlimtalk = (payload) =>
+    httpRequester.post("/api/notification/broadcast/create", payload);
+
 // 2. 인증번호 발송
 export const sendVerificationCodeAlimtalk = (payload) =>
     httpRequester.post("/api/notification/verify-code", payload);

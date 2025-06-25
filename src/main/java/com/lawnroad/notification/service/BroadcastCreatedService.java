@@ -1,7 +1,8 @@
 package com.lawnroad.notification.service;
 
 import com.lawnroad.common.config.SolapiConfig;
-import com.lawnroad.notification.dto.ClientReservationCreatedDto;
+import com.lawnroad.notification.dto.BroadcastCreatedDto;
+import com.lawnroad.notification.dto.BroadcastStartedDto;
 import lombok.RequiredArgsConstructor;
 import net.nurigo.sdk.NurigoApp;
 import net.nurigo.sdk.message.exception.NurigoMessageNotReceivedException;
@@ -15,12 +16,12 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class ClientReservationCreatedService {
+public class BroadcastCreatedService {
   
   private final SolapiConfig solapiConfig;
   
-  public void send(ClientReservationCreatedDto dto) {
-    // Solapi SDK 초기화
+  public void send(BroadcastCreatedDto dto) {
+    // SDK 초기화
     DefaultMessageService messageService = NurigoApp.INSTANCE.initialize(
         solapiConfig.getApiKey(),
         solapiConfig.getApiSecret(),
@@ -30,22 +31,22 @@ public class ClientReservationCreatedService {
     // 알림톡 옵션 구성
     KakaoOption kakaoOption = new KakaoOption();
     kakaoOption.setPfId(solapiConfig.getPfId());
-    kakaoOption.setTemplateId("KA01TP250624082532677Tv9n9oeacPL");
+    kakaoOption.setTemplateId("KA01TP250624110434737cvBn4FFuvbQ");  // 템플릿 ID 직접 지정
     
     Map<String, String> variables = new HashMap<>();
-    variables.put("#{client}", dto.getClient());
+    variables.put("#{name}", dto.getName());
     variables.put("#{lawyer}", dto.getLawyer());
-    variables.put("#{datetime}", dto.getDatetime());
-    variables.put("#{summary}", dto.getSummary());
+    variables.put("#{title}", dto.getTitle());
+    variables.put("#{start}", dto.getStart());
     kakaoOption.setVariables(variables);
     
-    // 메시지 생성
+    // 메시지 구성
     Message message = new Message();
     message.setFrom(solapiConfig.getFrom());
     message.setTo(dto.getTo());
     message.setKakaoOptions(kakaoOption);
     
-    // 메시지 전송
+    // 발송 시도
     try {
       messageService.send(message);
     } catch (NurigoMessageNotReceivedException e) {
