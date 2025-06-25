@@ -4,6 +4,7 @@ package com.lawnroad.template.mapper;
 import com.lawnroad.template.dto.cart.CartItemResponseDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -31,6 +32,9 @@ public interface CartMapper {
       @Param("orderNo") Long orderNo,
       @Param("price") Integer price
   );
+  
+  @Select("SELECT no FROM orders WHERE order_code = #{orderCode}")
+  Long selectOrderNoByOrderCode(@Param("orderCode") String orderCode);
   
   // 구매횟수 증가시키기
   void incrementSalesCount(@Param("tmplNo") Long tmplNo);
