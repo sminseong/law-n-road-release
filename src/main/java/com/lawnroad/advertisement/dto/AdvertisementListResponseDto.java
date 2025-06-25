@@ -16,4 +16,5 @@ public class AdvertisementListResponseDto {
   private LocalDateTime endDate;
   private String approvalStatus;
   private Integer adStatus;
+  private Long orderNo;
 }
