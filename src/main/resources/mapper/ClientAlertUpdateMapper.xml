@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lawnroad.keyword.mapper.ClientAlertUpdateMapper">
+
+    <!-- 클라이언트 알림 설정 조회 -->
+    <select id="getAlertSettings" resultType="com.lawnroad.keyword.dto.ClientAlertUpdateDto">
+        SELECT
+            no as clientNo,
+            is_consult_alert as isConsultAlert,
+            alert_content as isKeywordAlert
+        FROM client
+        WHERE no = #{clientNo}
+    </select>
+
+    <!-- 상담/키워드 알림 설정 업데이트 -->
+    <update id="updateAlertSettings">
+        UPDATE client
+        SET
+            is_consult_alert = #{isConsultAlert},
+            alert_content = #{isKeywordAlert}
+        WHERE no = #{clientNo}
+    </update>
+
+</mapper>

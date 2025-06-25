@@ -61,6 +61,7 @@ dependencies {
     // object storage
     implementation 'com.amazonaws:aws-java-sdk-s3:1.12.642'
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
+    implementation 'net.coobird:thumbnailator:0.4.20'
 
     // pdf
     implementation 'org.apache.pdfbox:pdfbox:2.0.30'

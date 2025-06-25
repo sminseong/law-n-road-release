@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 public class NotificationController {
   
   private final BroadcastStartedService broadcastStartedService;
+  private final BroadcastCreatedService BroadcastCreatedService;
   private final VerificationCodeService verificationCodeService;
   private final ClientReservationStartedService clientReservationStartedService;
   private final LawyerReservationStartedService lawyerReservationStartedService;
@@ -27,6 +28,16 @@ public class NotificationController {
   public ResponseEntity<String> sendBroadcastStartNotification(@RequestBody BroadcastStartedDto dto) {
     broadcastStartedService.send(dto);
     return ResponseEntity.ok("방송 시작 알림톡 발송 완료");
+  }
+  
+  /**
+   * 방송 시작 알림톡 발송 API
+   * POST /api/notification/broadcast/start
+   */
+  @PostMapping("/broadcast/create")
+  public ResponseEntity<String> sendBroadcastCreateNotification(@RequestBody BroadcastCreatedDto dto) {
+    BroadcastCreatedService.send(dto);
+    return ResponseEntity.ok("방송 등록 알림톡 발송 완료");
   }
   
   /**

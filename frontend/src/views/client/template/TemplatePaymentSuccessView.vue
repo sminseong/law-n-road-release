@@ -42,8 +42,14 @@ onMounted(async () => {
       orderId,
       amount: Number(amountStr)
     })
-    alert("결제가 완료되었습니다. 메인 페이지로 넘어갑니다.")
-    return window.location.href = `/`
+
+    // 결제 관련 사후 처리
+    await http.post('/api/client/cart/complete', {
+      orderId
+    })
+
+    alert("결제가 완료되었습니다. 주문내역으로 넘어갑니다.")
+    return window.location.href = `/client/template/orders`
   } catch (e) {
     error.value =
         e.response?.data?.message ||
