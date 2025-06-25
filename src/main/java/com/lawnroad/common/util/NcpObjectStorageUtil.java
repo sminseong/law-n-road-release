@@ -1,17 +1,17 @@
 package com.lawnroad.common.util;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.lang.Nullable;
+import net.coobird.thumbnailator.Thumbnails;
 
-import java.io.IOException;
-import java.io.InputStream;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.util.UUID;
 
 @Component
@@ -39,7 +39,7 @@ public class NcpObjectStorageUtil {
         baseName = oldKey.contains(".") ? oldKey.substring(0, oldKey.lastIndexOf('.')) : oldKey;
         
         // 동일 baseName의 다른 확장자 삭제
-        String[] extensions = { ".png", ".jpg", ".jpeg", ".ico", ".webp" };
+        String[] extensions = {".png", ".jpg", ".jpeg", ".ico", ".webp"};
         for (String candidateExt : extensions) {
           String candidateKey = baseName + candidateExt;
           if (!candidateExt.equals(ext) && amazonS3.doesObjectExist(bucketName, candidateKey)) {
@@ -70,6 +70,72 @@ public class NcpObjectStorageUtil {
     }
   }
   
+  public String saveOptimizedImage(MultipartFile file, String dir, @Nullable String oldFileUrl,
+                                   boolean resize, int width, int height,
+                                   boolean optimize, String targetFormat, float quality) {
+    try {
+      String originalExt = getExtension(file.getOriginalFilename());
+      String ext = optimize ? "." + targetFormat.toLowerCase() : originalExt;
+      
+      String baseName;
+      if (oldFileUrl != null && oldFileUrl.contains("/")) {
+        String oldKey = extractKeyFromUrl(oldFileUrl);
+        baseName = oldKey.contains(".") ? oldKey.substring(0, oldKey.lastIndexOf('.')) : oldKey;
+        deleteVariants(oldFileUrl, null);
+        
+//        String[] extensions = {".png", ".jpg", ".jpeg", ".ico", ".webp"};
+//        for (String candidateExt : extensions) {
+//          String candidateKey = baseName + candidateExt;
+//          if (!candidateExt.equals(ext) && amazonS3.doesObjectExist(bucketName, candidateKey)) {
+//            amazonS3.deleteObject(bucketName, candidateKey);
+//          }
+//        }
+      } else {
+        baseName = dir + "/" + UUID.randomUUID();
+      }
+      
+      String finalKey = baseName + ext;
+      String contentType = "image/" + targetFormat.toLowerCase();
+      InputStream inputStream;
+      long contentLength;
+      
+      boolean isImage = file.getContentType() != null && file.getContentType().startsWith("image");
+      
+      if (resize && isImage) {
+        BufferedImage originalImage = ImageIO.read(file.getInputStream());
+        
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        Thumbnails.Builder<BufferedImage> builder = Thumbnails.of(originalImage).size(width, height);
+        
+        if (optimize) {
+          builder.outputFormat(targetFormat.toLowerCase())
+              .outputQuality(quality); // e.g., 0.7
+        }
+        
+        builder.toOutputStream(os);
+        byte[] optimizedBytes = os.toByteArray();
+        inputStream = new ByteArrayInputStream(optimizedBytes);
+        contentLength = optimizedBytes.length;
+      } else {
+        inputStream = file.getInputStream();
+        contentLength = file.getSize();
+      }
+      
+      ObjectMetadata metadata = new ObjectMetadata();
+      metadata.setContentLength(contentLength);
+      metadata.setContentType(contentType);
+      
+      PutObjectRequest request = new PutObjectRequest(bucketName, finalKey, inputStream, metadata)
+          .withCannedAcl(CannedAccessControlList.PublicRead);
+      amazonS3.putObject(request);
+      
+      return BASE_URL + bucketName + "/" + finalKey;
+      
+    } catch (IOException e) {
+      throw new RuntimeException("이미지 최적화 저장 실패", e);
+    }
+  }
+  
   public void delete(String key) {
     amazonS3.deleteObject(bucketName, key);
   }
@@ -82,7 +148,7 @@ public class NcpObjectStorageUtil {
     if (baseKey.isBlank()) return;
     baseKey = baseKey.contains(".") ? baseKey.substring(0, baseKey.lastIndexOf('.')) : baseKey;
     
-    String[] extensions = { ".png", ".jpg", ".jpeg", ".webp", ".ico" };
+    String[] extensions = {".png", ".jpg", ".jpeg", ".webp", ".ico"};
     
     String protectedKey = (protectedFileUrl != null && !protectedFileUrl.isBlank())
         ? extractKeyFromUrl(protectedFileUrl)
@@ -110,4 +176,5 @@ public class NcpObjectStorageUtil {
     if (url == null || !url.contains(bucketName)) return "";
     return url.substring(url.indexOf(bucketName) + bucketName.length() + 1); // +1 for /
   }
+  
 }

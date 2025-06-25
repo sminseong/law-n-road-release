@@ -1,15 +1,14 @@
 package com.lawnroad.template.controller;
 
-import com.lawnroad.template.dto.cart.CartAddRequestDto;
-import com.lawnroad.template.dto.cart.CartItemResponseDto;
-import com.lawnroad.template.dto.cart.CheckoutRequestDto;
-import com.lawnroad.template.dto.cart.CheckoutResponseDto;
+import com.lawnroad.template.dto.cart.*;
 import com.lawnroad.template.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.text.html.Option;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -48,14 +47,22 @@ public class CartController {
   }
   
   // 결제 (클라이언트 권한)
-  @PostMapping("/aa")
+  @PostMapping("/checkout")
   public ResponseEntity<CheckoutResponseDto> checkout(
       @RequestBody CheckoutRequestDto req
   ) {
+    req.setUserNo(Optional.ofNullable(req.getUserNo()).orElse(1L));
     // TODO: 나중에 @AuthenticationPrincipal 로 대체
-    req.setUserNo(1L);
-    Long orderNo = cartService.checkout(req);
-    return ResponseEntity.ok(new CheckoutResponseDto(orderNo));
+    CheckoutResponseDto dto = cartService.checkout(req);
+    return ResponseEntity.ok(dto);
+  }
+  
+  @PostMapping("/complete")
+  public ResponseEntity<Void> completeOrder(
+      @RequestBody OnlyOrderCodeDto req
+  ) {
+    cartService.completeOrder(1L, req.getOrderId()); // TODO: 인증 정보로 대체 예정
+    return ResponseEntity.ok().build();
   }
   
   // 장바구니 전체 삭제 (클라이언트 권한)

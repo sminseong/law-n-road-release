@@ -580,7 +580,7 @@ export default defineComponent({
           <div class="d-flex justify-content-between align-items-end mt-4">
             <!-- 프로필 영역 -->
             <div class="d-flex align-items-center">
-              <!-- ✅ 초록 원 컨테이너 -->
+              <!-- 초록 원 컨테이너 -->
               <div
                   @click="goToLawyerHomepage"
                   role="button"
@@ -617,7 +617,7 @@ export default defineComponent({
               </div>
             </div>
 
-            <!-- 📛 방송 신고 버튼 -->
+            <!-- 방송 신고 버튼 -->
             <button class="btn btn-outline-danger btn-sm" @click="showReportModal = true">
               🚨 방송 신고
             </button>

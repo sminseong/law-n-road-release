@@ -3,7 +3,7 @@
 import {ref, computed, onMounted} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
-import { fetchBoardDetail, deleteQna ,fetchBoardComments  } from '@/service/boardService.js'
+import {fetchBoardDetail, deleteQna, fetchBoardComments} from '@/service/boardService.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -106,7 +106,7 @@ onMounted(async () => {
       </div>
 
       <div class="mb-4 small text-muted">
-        사건 발생일: {{ qa.incidentDate }}  |  작성일: {{ qa.createdAt }}
+        사건 발생일: {{ qa.incidentDate }} | 작성일: {{ qa.createdAt }}
       </div>
 
       <!-- 제목 -->
@@ -121,7 +121,7 @@ onMounted(async () => {
 
       <!-- 수정/삭제 버튼 -->
       <div v-if="isLoggedIn" class="d-flex justify-content-end mb-4">
-        <button @click="goEditPage" class="btn btn-link text-secondary p-0 me-2 edit-btn" >
+        <button @click="goEditPage" class="btn btn-link text-secondary p-0 me-2 edit-btn">
           <i class="fas fa-pencil-alt"></i> 수정하기
         </button>
         <button @click="onDeleteClick" class="btn btn-link text-secondary p-0 delete-btn">
@@ -147,25 +147,28 @@ onMounted(async () => {
       <hr class="my-4">
 
       <!-- 변호사 답변 섹션 -->
-      <h3 class="fw-bold mt-5 mb-3">변호사 답변</h3>
+      <div v-if="answers.length > 0">
+        <h3 class="fw-bold mt-5 mb-3">변호사 답변</h3>
 
         <div v-for="ans in sortedAnswers" :key="ans.commentId"
-          class="answer-card border rounded p-3 mb-3">
+             class="answer-card border rounded p-3 mb-3">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <div class="d-flex align-items-center">
               <img v-if="ans.lawyerProfileImage" :src="ans.lawyerProfileImage"
-                 class="rounded-circle me-2" style="width:32px; height:32px;" />
+                   class="rounded-circle me-2" style="width:32px; height:32px;"/>
               <small class="text-secondary">{{ ans.lawyerName }} 변호사 </small>
             </div>
             <div>
-            <button v-if="!ans.isSelected" @click="selectAnswer(ans.commentId)"
-                    class="btn btn-outline-primary btn-sm"> 채택 </button>
-            <span v-else class="badge bg-primary"> 채택됨 </span>
+              <button v-if="!ans.isSelected" @click="selectAnswer(ans.commentId)"
+                      class="btn btn-outline-primary btn-sm"> 채택
+              </button>
+              <span v-else class="badge bg-primary"> 채택됨 </span>
             </div>
           </div>
-        <p class="mb-0">{{ ans.content }}</p>
+          <p class="mb-0">{{ ans.content }}</p>
         </div>
       </div>
+    </div>
   </ClientFrame>
 </template>
 <style scoped>
@@ -176,6 +179,7 @@ onMounted(async () => {
 .answer-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
+
 .btn-link {
   text-decoration: none !important;
 }
@@ -232,9 +236,11 @@ onMounted(async () => {
   white-space: pre-line;
   padding-right: 0.5rem;
 }
+
 .custom-backdrop {
   z-index: 9999; /* 기존 1050보다 훨씬 높게 */
 }
+
 .answer-wrapper {
   background-color: #f3f6ff;
 

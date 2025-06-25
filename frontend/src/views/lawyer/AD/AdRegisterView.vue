@@ -70,21 +70,42 @@ async function handleSubmit() {
   }
 
   const formData = new FormData()
-  formData.append('adType', position.value)
+  formData.append('adType',    position.value)
   formData.append('startDate', startDate.value)
-  formData.append('endDate', endDate.value)
-  formData.append('mainText', mainText.value)
-  formData.append('detailText', detailText.value)
-  formData.append('tipText', tipText.value || '')
-  formData.append('file', imageFile.value)
+  formData.append('endDate',   endDate.value)
+  formData.append('mainText',  mainText.value)
+  formData.append('detailText',detailText.value)
+  formData.append('tipText',   tipText.value || '')
+  formData.append('file',      imageFile.value)
 
-  try {
-    await http.post('/api/lawyer/ads/register', formData)
-    alert('광고가 신청되었습니다. 승인되기까지 3~5 영업일이 소요됩니다.')
-    router.push('/lawyer/ads')
-  } catch (e) {
-    alert('신청 실패: ' + (e.response?.data || '알 수 없는 오류'))
-  }
+  const { data } = await http.post(
+      '/api/lawyer/ads/register-with-order',
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+  )
+  const { orderCode, amount } = data
+
+  // 2) 결제 팝업 띄우기
+  const toss = TossPayments('test_ck_d46qopOB89dkZvqg40zOrZmM75y0')
+  const { paymentKey } = await toss.requestPayment('카드', {
+    amount,
+    orderId:  orderCode,
+    orderName: position.value === 'MAIN'
+        ? '메인 배너 광고 결제'
+        : '서브 배너 광고 결제'
+  })
+
+  // 3) 결제 승인 API 호출
+  const token = localStorage.getItem('token')
+  await http.post(
+      '/api/confirm/payment',
+      { paymentKey, orderId: orderCode, amount },
+      { headers: { Authorization: `Bearer ${token}` } }
+  )
+
+  // 4) 완료 알림 및 리스트 이동
+  alert('결제가 완료되었습니다.')
+  router.push({ name: 'AdList' })
 }
 </script>
 
