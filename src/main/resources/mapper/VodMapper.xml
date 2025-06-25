@@ -93,12 +93,12 @@
         v.duration,
         v.view_count,
         v.created_at,
+        b.start_time,
+        b.end_time,
         bs.no AS schedule_no,
         bs.name AS title,
         bs.content,
         bs.date,
-        bs.start_time,
-        bs.end_time,
         bs.thumbnail_path,
         c.name AS category_name,
         l.no AS lawyer_no,
@@ -112,5 +112,8 @@
         WHERE v.status = 0 AND v.broadcast_no = #{broadcastNo}
     </select>
 
+    <select id="countAllVod" resultType="long">
+        SELECT COUNT(*) FROM broadcast_vod WHERE status = 0
+    </select>
 
 </mapper>

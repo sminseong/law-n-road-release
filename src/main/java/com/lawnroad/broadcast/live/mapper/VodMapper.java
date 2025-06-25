@@ -16,4 +16,7 @@ public interface VodMapper {
 
     // vod 상세
     VodDetailDto findVodDetailByBroadcastNo(Long broadcastNo);
+
+    // 페이지네이션 관련
+    long countAllVod();
 }
