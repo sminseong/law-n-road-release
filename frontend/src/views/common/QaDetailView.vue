@@ -98,7 +98,6 @@ async function selectAnswer(commentNo) {
     await selectCommentAnswer(id, commentNo) //id = boardNo, commentNo는 파라미터
     alert('답변이 채택되었습니다.')
     await loadComments()
-    console.log("✅ 답변 목록 재로드됨", answers.value)
   } catch (e) {
     console.error('채택 실패:', e)
     alert('채택에 실패했습니다.')
