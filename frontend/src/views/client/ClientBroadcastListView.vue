@@ -1,28 +1,59 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
-import { makeApiRequest   } from "@/libs/axios-auth.js";
+import { makeApiRequest } from "@/libs/axios-auth.js"
 
 const router = useRouter()
 const broadcasts = ref([])
 const hoveredCard = ref(null)
 
+// 무한 스크롤 상태
+const page = ref(1)
+const size = 9
+const totalPages = ref(1)
+const isLoading = ref(false)
+
+let scrollTimeout = null
+
 const fetchLiveBroadcasts = async () => {
   try {
+    //await new Promise(resolve => setTimeout(resolve, 800)); // 테스트용 딜레이
     const res = await makeApiRequest({
       method: 'get',
-      url: '/api/client/broadcast/live'
+      url: '/api/client/broadcast/live',
+      params: { page: page.value, size }
     })
+
     if (res?.data) {
-      broadcasts.value = res.data
+      broadcasts.value.push(...res.data.content)
+      totalPages.value = res.data.totalPages
+      page.value += 1
     }
   } catch (err) {
     console.error('❌ 방송 목록 불러오기 실패:', err)
+  } finally {
+    isLoading.value = false
   }
 }
 
+const handleScroll = () => {
+  if (scrollTimeout) return
+
+  scrollTimeout = setTimeout(() => {
+    const scrollY = window.scrollY
+    const viewportHeight = window.innerHeight
+    const fullHeight = document.documentElement.scrollHeight
+
+    if (!isLoading.value && page.value <= totalPages.value &&
+        scrollY + viewportHeight + 200 >= fullHeight) {
+      isLoading.value = true
+      fetchLiveBroadcasts()
+    }
+
+    scrollTimeout = null
+  }, 200)
+}
 
 const goToBroadcast = (broadcastNo) => {
   router.push(`/client/broadcasts/${broadcastNo}`)
@@ -47,7 +78,14 @@ onMounted(async () => {
   } catch (err) {
     console.warn('방송 만료 처리 실패:', err)
   }
+
+  isLoading.value = true
   await fetchLiveBroadcasts()
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
 })
 </script>
 
@@ -56,7 +94,13 @@ onMounted(async () => {
     <div class="container py-4">
       <h2 class="fs-3 fw-bold text-primary mb-4">라이브 방송 목록</h2>
 
-      <div class="row g-4">
+      <!-- 방송이 하나도 없을 때 -->
+      <div v-if="broadcasts.length === 0" class="text-center py-5 text-muted fs-5">
+        현재 진행중인 방송이 없습니다.
+      </div>
+
+      <!-- 방송 목록 -->
+      <div v-else class="row g-4">
         <div
             v-for="item in broadcasts"
             :key="item.broadcastNo"
@@ -77,21 +121,21 @@ onMounted(async () => {
               />
 
               <!-- LIVE 뱃지 -->
-              <div class="position-absolute d-flex align-items-center gap-2" style="top: 0.5rem; left: 0.75rem; z-index: 1;">
+              <div class="position-absolute top-0 start-0 m-2">
                 <span class="text-white fw-bold px-2 py-1 rounded-pill small d-flex align-items-center gap-1 live-badge">
                   <span class="blink">🔴</span> LIVE
                 </span>
               </div>
 
-              <!-- 시청자 수 뱃지 (hover 시 표시) -->
+              <!-- 시청자 수 뱃지 -->
               <div
-                  class="position-absolute top-0 end-0 me-2 mt-2 viewer-count-badge"
+                  class="position-absolute top-0 end-0 m-2 viewer-count-badge"
                   :class="{ 'visible': hoveredCard === item.broadcastNo }"
               >
-                 {{ item.viewerCount }}명 시청 중
+                {{ item.viewerCount }}명 시청 중
               </div>
 
-              <!-- 방송 시작 시간 (hover 시 표시) -->
+              <!-- 방송 시작 시간 -->
               <div
                   class="position-absolute bottom-0 start-0 w-100 text-white text-center py-1 small start-time-label"
                   :class="{ 'visible': hoveredCard === item.broadcastNo }"
@@ -127,17 +171,18 @@ onMounted(async () => {
                 </div>
               </div>
             </div>
-
           </div>
         </div>
-        <!-- 방송이 하나도 없을 때 표시 -->
-        <div v-if="broadcasts.length === 0" class="col-12 text-center py-5 text-muted fs-5 mt-16">
-          현재 진행중인 방송이 없습니다.
+
+        <!-- 로딩 중 메시지 -->
+        <div v-if="isLoading" class="col-12 text-center my-4 text-muted">
+          불러오는 중...
         </div>
       </div>
     </div>
   </ClientFrame>
 </template>
+
 
 <style scoped>
 .card:hover {
