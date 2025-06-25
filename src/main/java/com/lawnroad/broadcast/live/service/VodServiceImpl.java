@@ -46,7 +46,12 @@ public class VodServiceImpl implements VodService {
 
     @Override
     public VodListResponseDto getPagedVodList(VodListRequestDto requestDto) {
-        List<VodListDto> list = vodMapper.findVodListPaged(requestDto.getOffset(), requestDto.getSize());
+        List<VodListDto> list = vodMapper.findVodListPaged(
+                requestDto.getOffset(),
+                requestDto.getSize(),
+                requestDto.getOrderType()
+        );
+
         long totalCount = vodMapper.countAllVod();
 
         int totalPages = (int) Math.ceil((double) totalCount / requestDto.getSize());

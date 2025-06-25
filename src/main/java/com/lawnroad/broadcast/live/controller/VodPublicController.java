@@ -21,11 +21,13 @@ public class VodPublicController {
     @GetMapping("/list")
     public ResponseEntity<VodListResponseDto> getVodList(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "12") int size
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(defaultValue = "recent") String orderType
     ) {
         VodListRequestDto requestDto = new VodListRequestDto();
         requestDto.setPage(page);
         requestDto.setSize(size);
+        requestDto.setOrderType(orderType);
 
         VodListResponseDto response = vodService.getPagedVodList(requestDto);
         return ResponseEntity.ok(response);

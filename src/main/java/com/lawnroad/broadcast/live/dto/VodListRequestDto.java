@@ -6,6 +6,7 @@ import lombok.Data;
 public class VodListRequestDto {
     private int page = 1;
     private int size = 12;
+    private String orderType = "recent"; // "recent" or "popular"
 
     public int getOffset() {
         return (page - 1) * size;

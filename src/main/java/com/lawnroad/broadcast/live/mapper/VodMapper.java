@@ -11,7 +11,9 @@ import java.util.List;
 @Mapper
 public interface VodMapper {
     void insertVod(BroadcastVodVo vod);
-    List<VodListDto> findVodListPaged(@Param("offset") int offset, @Param("size") int size);
+    List<VodListDto> findVodListPaged(@Param("offset") int offset,
+                                      @Param("size") int size,
+                                      @Param("orderType") String orderType);
     void increaseViewCount(Long vodNo);
 
     // vod 상세

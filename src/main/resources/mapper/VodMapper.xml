@@ -74,7 +74,14 @@
         JOIN category c ON bs.category_no = c.no
         JOIN lawyer l ON b.user_no = l.no
         WHERE v.status = 0
-        ORDER BY v.created_at DESC
+        <choose>
+            <when test="orderType == 'popular'">
+                ORDER BY v.view_count DESC
+            </when>
+            <otherwise>
+                ORDER BY v.created_at DESC
+            </otherwise>
+        </choose>
         LIMIT #{size} OFFSET #{offset}
     </select>
 
