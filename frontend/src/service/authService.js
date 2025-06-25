@@ -23,31 +23,74 @@ export function parseJwt(token) {
 }
 
 /**
- * 로컬 스토리지에서 토큰을 꺼내 파싱한 뒤 사용자 번호(no)를 반환
+ * 로컬 스토리지에서 토큰을 꺼내 파싱한 뒤 payload 반환
+ * @returns {object|null}
+ */
+function getPayload() {
+    const token = localStorage.getItem('token');
+    return token ? parseJwt(token) : null;
+}
+
+/**
+ * 사용자 번호(no) 반환
  * @returns {number|null}
  */
 export function getUserNo() {
-    const token = localStorage.getItem('token');
-    const payload = token ? parseJwt(token) : null;
+    const payload = getPayload();
     return payload?.no ?? null;
 }
 
 /**
- * 로컬 스토리지에서 토큰을 꺼내 파싱한 뒤 사용자 역할(role)을 반환
+ * 닉네임 반환
+ * @returns {string|null}
+ */
+export function getUserNickname() {
+    const payload = getPayload();
+    return payload?.nickname ?? null;
+}
+
+/**
+ * 전화번호 반환
+ * @returns {string|null}
+ */
+export function getUserPhone() {
+    const payload = getPayload();
+    return payload?.phone ?? null;
+}
+
+/**
+ * 로그인 ID(Subject) 반환
+ * @returns {string|null}
+ */
+export function getUserLoginId() {
+    const payload = getPayload();
+    // JWT 표준 sub 클레임 사용
+    return payload?.sub ?? null;
+}
+
+/**
+ * 이메일 반환
+ * @returns {string|null}
+ */
+export function getUserEmail() {
+    const payload = getPayload();
+    return payload?.email ?? null;
+}
+
+/**
+ * 사용자 역할(role) 반환
  * @returns {string|null}
  */
 export function getUserRole() {
-    const token = localStorage.getItem('token');
-    const payload = token ? parseJwt(token) : null;
+    const payload = getPayload();
     return payload?.role ?? null;
 }
 
 /**
- * 토큰이 유효하고, 특정 역할을 가지고 있는지 확인
+ * 특정 역할이 있는지 확인
  * @param {string} requiredRole
  * @returns {boolean}
  */
 export function hasRole(requiredRole) {
-    const role = getUserRole();
-    return role === requiredRole;
+    return getUserRole() === requiredRole;
 }
