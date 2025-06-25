@@ -3,6 +3,7 @@ import { ref, onMounted, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
+import {makeApiRequest} from "@/libs/axios-auth.js";
 
 // 라우터에서 방송 번호 가져오기
 const route = useRoute();
@@ -38,6 +39,48 @@ const goToLawyerHomepage = () => {
   }
   router.push(`/lawyer/${userNo}/homepage`);
 };
+
+
+const applyKeywordAlert = async () => {
+  const lawyerName = vodInfo.value.lawyerName
+
+  if (!lawyerName) {
+    alert('변호사 정보가 없습니다.')
+    return
+  }
+
+  const confirmed = confirm(`'${lawyerName}' 변호사의 방송 알림을 신청하시겠습니까?`)
+  if (!confirmed) return
+
+  try {
+    await makeApiRequest({
+      method: 'post',
+      url: '/api/client/keyword-alert/apply',
+      params: {
+        keyword: lawyerName
+      }
+    })
+    alert('🔔 알림 신청이 완료되었습니다!')
+  } catch (err) {
+    if (err.response?.status === 400) {
+      alert(`⚠️ ${err.response.data}`) // 예: 이미 신청함
+    } else {
+      alert('❌ 알림 신청 중 오류가 발생했습니다.')
+      console.error(err)
+    }
+  }
+}
+
+
+// 컴포넌트 마운트 시 실행
+onMounted(() => {
+  fetchVodInfo();
+  playChatsLikeLive();
+});
+
+
+
+
 
 // 메시지 관련 상태
 const messages = ref([]);
@@ -208,7 +251,9 @@ onMounted(async () => {
             >
                   {{ vodInfo.lawyerName }} 변호사
                 </span>
-              <button class="btn btn-outline-primary btn-sm">🔔 알림신청</button>
+              <button class="btn btn-outline-primary btn-sm" @click="applyKeywordAlert">
+                🔔 알림신청
+              </button>
             </div>
           </div>
         </div>

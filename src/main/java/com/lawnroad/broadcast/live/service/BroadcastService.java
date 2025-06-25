@@ -17,7 +17,7 @@ public interface BroadcastService {
     //방송 신고
     void reportBroadcast(BroadcastReportRequestDto dto);
     // 방송 리스트
-    List<BroadcastListDto> getLiveBroadcasts();
+    BroadcastListResponseDto getLiveBroadcasts(BroadcastListRequestDto requestDto);
     // 해당 스케줄이 방송중인지
     Long findLiveBroadcastNoByScheduleNo(Long scheduleNo);
     // 방송종료시간 30분 지난방송 자동 종료처리

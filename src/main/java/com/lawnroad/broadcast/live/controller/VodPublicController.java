@@ -3,6 +3,7 @@ package com.lawnroad.broadcast.live.controller;
 import com.lawnroad.broadcast.live.dto.VodDetailDto;
 import com.lawnroad.broadcast.live.dto.VodListDto;
 import com.lawnroad.broadcast.live.dto.VodListRequestDto;
+import com.lawnroad.broadcast.live.dto.VodListResponseDto;
 import com.lawnroad.broadcast.live.service.VodService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,17 +19,20 @@ public class VodPublicController {
     private final VodService vodService;
 
     @GetMapping("/list")
-    public ResponseEntity<List<VodListDto>> getVodList(
+    public ResponseEntity<VodListResponseDto> getVodList(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "12") int size
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(defaultValue = "recent") String sort,
+            @RequestParam(required = false) Long categoryNo
     ) {
         VodListRequestDto requestDto = new VodListRequestDto();
         requestDto.setPage(page);
         requestDto.setSize(size);
+        requestDto.setSort(sort);
+        requestDto.setCategoryNo(categoryNo);
 
-        List<VodListDto> vodList = vodService.getPublicVodList(requestDto);
-        System.out.println(vodList);
-        return ResponseEntity.ok(vodList);
+        VodListResponseDto response = vodService.getPagedVodList(requestDto);
+        return ResponseEntity.ok(response);
     }
 
     // 조회수 증가

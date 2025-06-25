@@ -143,7 +143,7 @@ onMounted(async () => {
 <template>
   <ClientFrame>
     <div class="w-100 vh-100 d-flex flex-column p-4">
-      <h2 class="fs-3 fw-bold mb-4 text-primary">📅 방송 스케줄</h2>
+      <h2 class="fs-3 fw-bold mb-4 text-primary">방송 스케줄</h2>
       <div class="flex-grow-1">
         <FullCalendar ref="calendarRef" :options="calendarOptions" />
       </div>

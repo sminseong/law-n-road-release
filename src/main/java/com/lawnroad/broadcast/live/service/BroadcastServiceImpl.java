@@ -147,16 +147,30 @@ public class BroadcastServiceImpl implements BroadcastService {
     }
 
     @Override
-    public List<BroadcastListDto> getLiveBroadcasts() {
-        List<BroadcastListDto> list = broadcastMapper.selectLiveBroadcasts();
+    public BroadcastListResponseDto getLiveBroadcasts(BroadcastListRequestDto requestDto) {
+        List<BroadcastListDto> list = broadcastMapper.selectLiveBroadcastsPaged(
+                requestDto.getOffset(),
+                requestDto.getSize()
+        );
 
+        // 시청자 수 계산
         for (BroadcastListDto dto : list) {
-            // OpenViduService에서 broadcastNo 기반으로 sessionId 조회 후 시청자 수 반환
             int viewerCount = openViduService.getViewerCountByBroadcastNo(dto.getBroadcastNo());
             dto.setViewerCount(viewerCount);
         }
 
-        return list;
+        // 총 개수 조회 (이거 따로 만들어야 함 → 다음 단계)
+        long totalCount = broadcastMapper.countLiveBroadcasts();
+
+        int totalPages = (int) Math.ceil((double) totalCount / requestDto.getSize());
+
+        BroadcastListResponseDto response = new BroadcastListResponseDto();
+        response.setContent(list);
+        response.setTotalElements(totalCount);
+        response.setTotalPages(totalPages);
+        response.setCurrentPage(requestDto.getPage());
+
+        return response;
     }
 
     @Override

@@ -74,7 +74,17 @@
         JOIN category c ON bs.category_no = c.no
         JOIN lawyer l ON b.user_no = l.no
         WHERE v.status = 0
-        ORDER BY v.created_at DESC
+        <if test="categoryNo != null">
+            AND c.no = #{categoryNo}
+        </if>
+        <choose>
+            <when test="sort == 'popular'">
+                ORDER BY v.view_count DESC
+            </when>
+            <otherwise>
+                ORDER BY v.created_at DESC
+            </otherwise>
+        </choose>
         LIMIT #{size} OFFSET #{offset}
     </select>
 
@@ -112,13 +122,22 @@
         WHERE v.status = 0 AND v.broadcast_no = #{broadcastNo}
     </select>
 
+    <select id="countVodByCondition" resultType="long">
+        SELECT COUNT(*) FROM broadcast_vod v
+        JOIN broadcast b ON v.broadcast_no = b.no
+        JOIN broadcast_schedule bs ON b.schedule_no = bs.no
+        WHERE v.status = 0
+        <if test="categoryNo != null">
+            AND bs.category_no = #{categoryNo}
+        </if>
+    </select>
 
-        <!-- 채팅 변호사 이름 가져오기-->
-        <select id="selectNameByUserNo" parameterType="long" resultType="string">
-            SELECT name
-            FROM lawyer
-            WHERE no = #{userNo}
-        </select>
+    <!-- 채팅 변호사 이름 가져오기-->
+    <select id="selectNameByUserNo" parameterType="long" resultType="string">
+        SELECT name
+        FROM lawyer
+        WHERE no = #{userNo}
+    </select>
 
 
 </mapper>

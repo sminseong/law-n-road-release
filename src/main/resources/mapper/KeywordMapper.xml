@@ -14,4 +14,16 @@
         DELETE FROM keyword WHERE schedule_no = #{scheduleNo}
     </delete>
 
+    <insert id="insertKeywordAlert">
+        INSERT INTO keyword_alert (user_no, keyword)
+        VALUES (#{userNo}, #{keyword})
+    </insert>
+
+    <select id="existsByUserNoAndKeyword" resultType="boolean">
+        SELECT EXISTS (
+        SELECT 1 FROM keyword_alert
+        WHERE user_no = #{userNo} AND keyword = #{keyword}
+        )
+    </select>
+
 </mapper>
