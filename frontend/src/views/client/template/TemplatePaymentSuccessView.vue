@@ -21,7 +21,6 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import http from '@/libs/HttpRequester'   // axios 인스턴스
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
-import axios from "axios";
 
 const error  = ref('')
 const router = useRouter()

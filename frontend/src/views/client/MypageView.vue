@@ -13,7 +13,9 @@ import {
   sendBroadcastCreateAlimtalk
 } from "@/service/notification.js"
 import HttpRequester from '@/libs/HttpRequester'
-import { fetchMyQnaBoards } from '@/service/boardService' //추가
+import { fetchMyQnaBoards } from '@/service/boardService'
+import { getUserNo } from '@/service/authService.js'
+
 
 // 라우터
 const router = useRouter()
@@ -22,7 +24,7 @@ function goToProfileEdit() {
 }
 
 // 테스트용 임시 하드 코딩
-const userNo = 11
+const userNo = getUserNo()
 const notifyKeywordEnabled = ref(true)
 const notifyConsultEnabled = ref(true)
 const nickname = ref('회원')
@@ -39,7 +41,6 @@ onMounted(async () => {
 
   // 예약
   try {
-    const userNo = 11
     const res = await HttpRequester.get(`/api/client/reservations/counts`)
     requestedCount.value = res.data.requestedCount
     doneCount.value = res.data.doneCount
@@ -312,10 +313,6 @@ function handleConsultToggle(event) {
 
 // 토글 1: 키워드 알림
 async function toggleKeyword() {
-  console.log('=== 키워드 토글 시작 ===')
-  console.log('토글 전 notifyKeywordEnabled:', notifyKeywordEnabled.value)
-  console.log('토글 전 notifyConsultEnabled:', notifyConsultEnabled.value)
-
   console.log(
       '방송 키워드 알림 수신 여부:',
       notifyKeywordEnabled.value ? '수신함' : '수신 안 함'
@@ -348,7 +345,7 @@ async function toggleConsultation() {
 
   try {
     await HttpRequester.post('/api/client/update-alerts', {
-      clientNo: 11,
+      clientNo: userNo,
       isConsultAlert: notifyConsultEnabled.value,
       isKeywordAlert: notifyKeywordEnabled.value
     })
