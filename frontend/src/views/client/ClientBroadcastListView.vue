@@ -54,7 +54,7 @@ onMounted(async () => {
 <template>
   <ClientFrame>
     <div class="container py-4">
-      <h2 class="fs-3 fw-bold mb-4">📺 현재 라이브 방송 중</h2>
+      <h2 class="fs-3 fw-bold text-primary mb-4">라이브 방송 목록</h2>
 
       <div class="row g-4">
         <div
@@ -129,6 +129,10 @@ onMounted(async () => {
             </div>
 
           </div>
+        </div>
+        <!-- 방송이 하나도 없을 때 표시 -->
+        <div v-if="broadcasts.length === 0" class="col-12 text-center py-5 text-muted fs-5 mt-16">
+          현재 진행중인 방송이 없습니다.
         </div>
       </div>
     </div>
