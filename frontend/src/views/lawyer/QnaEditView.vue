@@ -19,7 +19,6 @@ const submitEdit = async () => {
   try {
     const payload = {
       boardNo: boardNo.value,
-      userNo: userNo.value,
       content: answerContent.value
     }
     await updateComment(commentId, payload)

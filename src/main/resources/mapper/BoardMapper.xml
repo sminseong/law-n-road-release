@@ -96,4 +96,17 @@
         ORDER BY b.created_at DESC
     </select>
 
+    <select id="findById" resultType="com.lawnroad.board.dto.BoardDetailDto">
+        SELECT
+        no,
+        category_no,
+        user_no,
+        title,
+        content,
+        incident_date,
+        created_at,
+        updated_at
+        FROM board
+        WHERE no = #{id}
+    </select>
 </mapper>

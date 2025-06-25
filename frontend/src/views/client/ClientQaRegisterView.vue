@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import { createQna } from '@/service/boardService.js'
+import { getUserNo } from '@/service/authService.js'
 
 const router = useRouter()
 
@@ -10,9 +11,9 @@ const router = useRouter()
 const title = ref('')
 const incidentDate  = ref('')
 const content = ref('')
-const userNo = ref(4) // 🔐 임시: 로그인 후 실제 사용자 ID로 대체
-// TODO: 로그인 상태에서 userNo 동적으로 주입
-// const { userNo } = useAccountStore()
+const userNo = getUserNo()
+// const userNo = ref(4) // 🔐 임시: 로그인 후 실제 사용자 ID로 대체
+
 const categoryNo = ref('')
 const categories = ref([
   { no: 1, name: '사고 발생/처리' },
@@ -43,7 +44,7 @@ const submit = async () => {
       title: title.value,
       content: content.value,
       incidentDate: incidentDate.value,
-      userNo: userNo.value,
+      userNo: userNo,
       categoryNo: categoryNo.value
     }
 

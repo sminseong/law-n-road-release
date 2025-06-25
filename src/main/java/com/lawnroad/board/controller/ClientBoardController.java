@@ -6,15 +6,9 @@ import com.lawnroad.board.service.CommentService;
 import com.lawnroad.common.util.JwtTokenUtil;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.net.URI;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 @RestController
@@ -71,7 +65,18 @@ public class ClientBoardController {
 
     //채택 기능
     @PostMapping("/select")
-    public ResponseEntity<?> selectAnswer(@RequestBody CommentSelectDto dto) {
+    public ResponseEntity<?> selectAnswer(
+            @RequestBody CommentSelectDto dto,
+            @RequestHeader("Authorization") String authHeader) {
+//        System.out.println(dto);
+//        System.out.println(authHeader);
+
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtUtil.parseToken(token);
+        Long userNo = claims.get("no", Long.class);
+
+        dto.setUserNo(userNo); //작성자 검증을 위한 주입
+
         commentService.selectAnswer(dto);
         return ResponseEntity.ok().build();
     }

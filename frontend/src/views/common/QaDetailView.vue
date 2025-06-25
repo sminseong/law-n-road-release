@@ -3,13 +3,14 @@
 import {ref, computed, onMounted} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
-import { fetchBoardDetail, deleteQna ,fetchBoardComments } from '@/service/boardService.js'
+import { fetchBoardDetail, deleteQna ,fetchBoardComments, selectCommentAnswer } from '@/service/boardService.js'
+import { getUserNo } from '@/service/authService.js'
 
 const route = useRoute()
 const router = useRouter()
 const id = route.params.id
 
-const isLoggedIn = !!localStorage.getItem('accountType')
+const myUserNo = getUserNo()
 
 // 게시글 상세 데이터
 const qa = ref({
@@ -46,8 +47,8 @@ async function loadDetail() {
 async function loadComments() {
   try {
     const res = await fetchBoardComments(id)
-    console.log('📥 답변 API 응답:', res)
-    console.log('📦 데이터:', res.data)
+    // console.log('📥 답변 API 응답:', res)
+    // console.log('📦 데이터:', res.data)
     answers.value = res.data
   } catch (err) {
     console.error('답변 불러오기 실패:', err)
@@ -85,17 +86,19 @@ const sortedAnswers = computed(() => [
 ])
 
 // 답변 채택 함수
-async function selectAnswer(answerNo) {
-  const myUserNo = localStorage.getItem('no') // 비회원이면 null
-  if (myUserNo != qa.value.userNo) {
+async function selectAnswer(commentNo) {
+  if (myUserNo !== qa.value.userNo) {
     alert('작성자만 답변을 채택할 수 있습니다.')
     return
   }
 
+  // console.log("id",id)
+  // console.log("commentNo",commentNo)
   try {
-    await selectCommentAnswer(id, answerNo)
+    await selectCommentAnswer(id, commentNo) //id = boardNo, commentNo는 파라미터
     alert('답변이 채택되었습니다.')
     await loadComments()
+    console.log("✅ 답변 목록 재로드됨", answers.value)
   } catch (e) {
     console.error('채택 실패:', e)
     alert('채택에 실패했습니다.')
@@ -104,7 +107,7 @@ async function selectAnswer(answerNo) {
 
 onMounted(async () => {
   await loadDetail()
-  console.log('작성자 userNo:', qa.value.userNo) // 작성자 확인
+  // console.log('작성자 userNo:', qa.value.userNo) // 작성자 확인
   await loadComments()
 })
 </script>
@@ -132,7 +135,7 @@ onMounted(async () => {
       </p>
 
       <!-- 수정/삭제 버튼 -->
-      <div v-if="isLoggedIn" class="d-flex justify-content-end mb-4">
+      <div v-if="myUserNo == qa.userNo" class="d-flex justify-content-end mb-4">
         <button @click="goEditPage" class="btn btn-link text-secondary p-0 me-2 edit-btn" >
           <i class="fas fa-pencil-alt"></i> 수정하기
         </button>
@@ -159,6 +162,7 @@ onMounted(async () => {
       <hr class="my-4">
 
       <!-- 변호사 답변 섹션 -->
+      <div v-if="answers.length">
       <h3 class="fw-bold mt-5 mb-3">변호사 답변</h3>
 
         <div v-for="ans in sortedAnswers" :key="ans.commentId"
@@ -170,14 +174,21 @@ onMounted(async () => {
               <small class="text-secondary">{{ ans.lawyerName }} 변호사 </small>
             </div>
             <div>
-            <button v-if="!ans.isSelected" @click="selectAnswer(ans.commentId)"
-                    class="btn btn-outline-primary btn-sm"> 채택 </button>
-            <span v-else class="badge bg-primary"> 채택됨 </span>
+              <!-- 채택된 답변이면 뱃지만 보임 -->
+              <span v-if="ans.isSelected" class="badge bg-primary">채택됨</span>
+
+              <!-- 채택 안된 답변이면 누구든지 채택 버튼 보임 -->
+              <button v-else
+                      @click="selectAnswer(ans.commentId)"
+                      class="btn btn-outline-primary btn-sm">
+                채택
+              </button>
             </div>
           </div>
         <p class="mb-0">{{ ans.content }}</p>
         </div>
       </div>
+    </div>
   </ClientFrame>
 </template>
 <style scoped>
@@ -246,11 +257,6 @@ onMounted(async () => {
 }
 .custom-backdrop {
   z-index: 9999; /* 기존 1050보다 훨씬 높게 */
-}
-.answer-wrapper {
-  background-color: #f3f6ff;
-
-  border-radius: 1px;
 }
 </style>
 

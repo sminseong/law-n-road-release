@@ -32,5 +32,7 @@ public interface CommentMapper {
 
     List<BoardCommentResponseDto> findBoardCommentsByBoardId(@Param("boardId") Long boardId);
 
-    void selectComment(@Param("commentId") Long commentId);
+    void selectComment(CommentSelectDto dto);
+
+    boolean existsSelectedAnswer(@Param("boardNo") Long boardNo);
 }

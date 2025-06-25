@@ -16,16 +16,18 @@ public interface CommentService {
     //로그인한 변호사 본인의 답변 목록을 페이징 조회
     Page<MyCommentResponseDto> getMyComments(Long userNo, int page, int size);
 
-    //특정 댓글의 상세 내용을 조회
-    CommentDetailDto findById(Long commentId, Long userNo);
+    //[변호사] 특정 답변(commentId)의 상세 내용을 조회
+    CommentDetailDto findById(Long commentNo);
 
-    //댓글(답변) 내용을 수정
+    // [변호사] 기존 답변 내용을 수정
     void updateComment(Long commentId, CommentUpdateDto dto);
 
-    //댓글(답변)을 삭제
+    //[변호사] 답변 삭제
     void deleteComment(Long commentId);
 
+    //[공개] 게시글 ID를 기반으로 모든 답변 리스트 반환
     List<BoardCommentResponseDto> findBoardCommentsByBoardId(@Param("boardId") Long boardId);
 
+    //[의뢰인] 특정 답변을 채택 처리
     void selectAnswer(CommentSelectDto dto);
 }

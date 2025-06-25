@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import {ref, onMounted, computed, nextTick} from 'vue'
 import { useRouter } from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import {
@@ -57,7 +57,7 @@ onMounted(async () => {
   try {
     const res = await fetchMyQnaBoards(userNo)
 
-    const sorted = res.data.sort((a, b) => new Date(b.incidentDate) - new Date(a.incidentDate))
+    const sorted = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     myQnaBoards.value = sorted.slice(0, 3)
   } catch (e) {
     console.error('QnA 조회 실패', e)

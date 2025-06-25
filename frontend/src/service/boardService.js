@@ -1,14 +1,14 @@
 import httpRequester from "@/libs/HttpRequester.js";
 
-/** [Public] 상담글 목록 조회 */
+/** [Public] 전체 상담글 목록 조회 */
 export async function fetchBoardList(page = 1, size = 10) {
     return await httpRequester.get(`/api/public/qna?page=${page}&size=${size}`)
 }
-/** [Public] 상담글 상세 조회 */
+/** [Public] 특정 상담글 상세 조회 */
 export async function fetchBoardDetail(id) {
     return await httpRequester.get(`/api/public/qna/${id}`);
 }
-/** [Public] 전체 게시글 수 조회 */
+/** [Public] 전체 상담글 수 조회 */
 export async function fetchBoardCount() {
     return await httpRequester.get(`/api/public/qna/count`);
 }
@@ -52,17 +52,16 @@ export async function deleteComment(commentId) {
     console.log('📡 boardService.js - commentId:', commentId)
     return await httpRequester.delete(`/api/lawyer/comment/${commentId}`)
 }
-
+/** [Public] QnA 게시글별 답변 목록 조회 (비회원 포함 조회 가능) */
 export const fetchBoardComments = (boardId) => {
     return httpRequester.get(`/api/public/qna/${boardId}/comments`)
 }
 
-// 답변 채택
-export async function selectCommentAnswer(boardId, commentId) {
-    return await httpRequester.post('/api/client/qna/select', {
-        boardId, commentId })
+/** [Client] 게시글에 특정 답변 채택 요청 */
+export function selectCommentAnswer(boardNo, commentNo) {
+    return httpRequester.post('/api/client/qna/select', {boardNo, commentNo })
 }
-// 로그인한 사용자의 QnA 글 목록 조회
+/** [Client] 로그인한 사용자가 작성한 상담글 목록 조회 */
 export async function fetchMyQnaBoards(userNo) {
     return await httpRequester.get('/api/client/qna/my', { userNo })
 }

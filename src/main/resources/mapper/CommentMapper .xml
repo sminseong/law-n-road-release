@@ -106,10 +106,16 @@
         WHERE c.board_no = #{boardId}
     </select>
 
-    <update id="selectComment">
+    <update id="selectComment" parameterType="com.lawnroad.board.dto.CommentSelectDto">
         UPDATE comment
         SET is_selected = true
-        WHERE no = #{commentId}
+        WHERE board_no = #{boardNo} and no = #{commentNo}
     </update>
 
+    <select id="existsSelectedAnswer" parameterType="long" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM comment
+        WHERE board_no = #{boardNo}
+          AND is_selected = true
+    </select>
 </mapper>
