@@ -4,4 +4,5 @@ import com.lawnroad.broadcast.live.model.KeywordVo;
 
 public interface KeywordService {
     void insertKeyword(KeywordVo keywordVo);
+    void registerKeywordAlert(Long userNo, String keyword);
 }
