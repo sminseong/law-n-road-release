@@ -85,11 +85,14 @@ import {useRouter} from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import http from '@/libs/HttpRequester'
 import {getValidToken} from '@/libs/axios-auth.js'
+import {getUserNo} from "@/service/authService.js";
 
 const cartItems = ref([])
 const isLoading = ref(true)
 const isProcessing = ref(false)
 const router = useRouter()
+
+const userNo = getUserNo()
 
 // 1) 장바구니 아이템 불러오기
 onMounted(async () => {
@@ -127,12 +130,14 @@ async function goToCheckout() {
   if (isProcessing.value) return
   isProcessing.value = true
 
+  // console.log(userNo)
+
   try {
     // (1) 주문 생성 요청
     const token = await getValidToken()
     if (!token) throw new Error('로그인이 필요합니다.')
     const res = await http.post('/api/client/cart/checkout', {
-      userNo: 2
+      userNo: userNo
     })
     const {orderCode, amount} = res.data
 

@@ -52,7 +52,7 @@
         <if test="tag != null and tag != ''">
             <choose>
                 <when test="tag == 'free'">AND t.price = 0</when>
-                <when test="tag == 'special'">AND t.discount_rate &gt;= 30</when>
+                <when test="tag == 'special'">AND t.discount_rate &gt;= 20</when>
                 <when test="tag == 'ai'">AND t.type = 'EDITOR'</when>
                 <when test="tag == 'file'">AND t.type = 'FILE'</when>
             </choose>
