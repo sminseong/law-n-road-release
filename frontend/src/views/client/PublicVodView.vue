@@ -148,7 +148,7 @@ const playChatsLikeLive = async () => {
                 </span>
 
                 <!-- 업로드 일자 -->
-                <span class="text-dark-gray">{{ vodInfo.createdAt.slice(0, 10) }}</span class="text-dark-gray">
+                <span class="text-dark-gray">{{ vodInfo.createdAt.slice(0, 10) }}</span>
               </div>
             </div>
           </div>
