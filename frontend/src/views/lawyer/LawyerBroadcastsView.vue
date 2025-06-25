@@ -431,7 +431,8 @@ const initPublisherWithDelay = async () => {
         body: JSON.stringify({
           broadcastNo: broadcastNo.value,
           message: trimmed,
-          type: "Lawyer"
+          type: "Lawyer",
+          userNo: myNo.value,
         }),
         headers: {
           Authorization: `Bearer ${token}`,

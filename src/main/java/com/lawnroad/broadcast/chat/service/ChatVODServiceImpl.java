@@ -2,6 +2,7 @@ package com.lawnroad.broadcast.chat.service;
 
 import com.lawnroad.broadcast.chat.model.ChatVO;
 import com.lawnroad.broadcast.chat.repository.MongoChatRepository;
+import com.lawnroad.broadcast.live.mapper.VodMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,4 +19,5 @@ public class ChatVODServiceImpl implements ChatVODService {
     public List<ChatVO> getChatsByBroadcastNo(Long broadcastNo) {
         return mongoChatRepository.findByBroadcastNoOrderByCreatedAtAsc(broadcastNo);
     }
+
 }

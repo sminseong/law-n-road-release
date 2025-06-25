@@ -202,10 +202,11 @@ export default defineComponent({
     });
 
     onMounted(() => {
+      fetchMyNoAndIsStopped();
       connect();
       loadBroadcastInfo();
       connectOpenVidu();
-      loadReportReasons()
+      loadReportReasons();
     });
 
 
@@ -216,6 +217,7 @@ export default defineComponent({
     const messageContainer = ref(null);
     const nicknameColors = ref({});
     const myNo = ref(null);
+    const isStopped = ref(false);
 
     //드롭다운/신고 모달 상태
     const dropdownIdx = ref(null);
@@ -306,6 +308,7 @@ export default defineComponent({
 
             // 입장(서버에 알림)
             stompClient.value.publish({
+
               destination: "/app/chat.addUser",
               body: JSON.stringify({ broadcastNo: broadcastNo.value }),
               headers: {
@@ -320,6 +323,7 @@ export default defineComponent({
                   "📢 도로 위 질서만큼이나 채팅 예절도 중요합니다. 부적절한 내용은 전송이 제한되니 모두가 함께 즐기는 방송을 만들어주세요. 😊",
             });
           },
+
           onStompError: (frame) => {
             if (frame.body && frame.body.includes("expired")) {
               alert("로그인이 만료되었습니다. 다시 로그인 해주세요.");
@@ -377,6 +381,7 @@ export default defineComponent({
             broadcastNo: broadcastNo.value,
             scheduleNo: broadcastInfo.value.scheduleNo,
             message: trimmed,
+            userNo: myNo.value,
           }),
           headers: {
             Authorization: `Bearer ${token}`,
@@ -501,6 +506,19 @@ export default defineComponent({
           ? selectedUser.value
           : broadcastInfo.value.lawyerName+" 변호사";
     });
+    // 사용자 상태 가져오기
+    async function fetchIsStopped(userNo) {
+      const res = await axios.get(`/api/client/is-stopped/${userNo}`);
+      console.log('실제 응답:', res.data);
+      isStopped.value = res.data.is_stopped === 1;
+    }
+    async function fetchMyNoAndIsStopped() {
+      const ok = await fetchMyNo();
+      if (ok) {
+        await fetchIsStopped(myNo.value);
+      }
+    }
+
 
     return {
       videoContainer,
@@ -531,7 +549,7 @@ export default defineComponent({
       myNo,
       showPreQDropdown, preQuestions, isPreQLoading,
       goToLawyerHomepage,
-      togglePreQDropdown, preQBtnRef, preQDropdownRef,selectedUserToShow,
+      togglePreQDropdown, preQBtnRef, preQDropdownRef,selectedUserToShow,isStopped
     };
   }
 });
@@ -842,17 +860,19 @@ export default defineComponent({
         </div>
 
         <!-- 입력창 -->
-        <div class="d-flex">
+        <div class="d-flex flex-column">
           <input v-model="message"
                  type="text"
                  class="form-control bg-body-secondary text-dark border-0 rounded-pill px-3 py-2"
-                 placeholder="채팅을 입력해 주세요."
+                 :placeholder="isStopped ? '🚫 채팅이 제한된 회원입니다.' : '채팅을 입력해 주세요.'"
                  @keyup.enter="sendMessage"
-                 maxlength="100"/>
+                 maxlength="100"
+                 :disabled="isStopped" />
+
         </div>
       </div>
 
-      <!-- 신고 확인 모달 -->
+        <!-- 신고 확인 모달 -->
       <div v-if="isConfirmModal" class="modal-overlay-dark">
         <div class="modal-custom-box shadow">
           <div class="modal-custom-content">

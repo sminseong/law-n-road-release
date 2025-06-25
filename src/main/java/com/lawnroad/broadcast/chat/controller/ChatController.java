@@ -62,7 +62,6 @@ public class ChatController {
             chatDTO.setNickname(nickname);
             chatDTO.setNo(no);
             chatDTO.setCreatedAt(LocalDateTime.now());
-            chatDTO.setReportStatus(0);
 
             messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), chatDTO);
             return;
@@ -70,7 +69,6 @@ public class ChatController {
         if(chatDTO.getType() == null) {
             chatDTO.setType("CHAT"); // 기본값
         }
-        chatDTO.setReportStatus(0);
 
         // ----------------- AI 욕설/금칙어 검사 -----------------
         String msg = chatDTO.getMessage();
@@ -88,11 +86,12 @@ public class ChatController {
         }
 
         // Redis 장애시 MongoDB fallback
-        try {
-            chatRedisSaveService.saveChatMessage(chatDTO);
-        } catch (Exception e) {
-            chatMongodbSaveService.saveChatMessage(chatDTO);
-        }
+//        try {
+//            chatRedisSaveService.saveChatMessage(chatDTO);
+//        } catch (Exception e) {
+//            chatMongodbSaveService.saveChatMessage(chatDTO);
+//        }
+        chatRedisSaveService.saveChatMessage(chatDTO);
         messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), chatDTO);
 
         // ------- 자동응답 처리 -------
