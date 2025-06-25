@@ -10,6 +10,7 @@ public class LawyerTemplateRegisterDto {
   
   // 공통 필드
   // 작성자 (템플릿을 등록하는 변호사의 유저no)
+  private Long lawyerNo;
   // 템플릿명
   private String name;
   // 가격

@@ -1,7 +1,9 @@
 package com.lawnroad.template.controller;
 
+import com.lawnroad.common.util.JwtTokenUtil;
 import com.lawnroad.template.dto.cart.*;
 import com.lawnroad.template.service.CartService;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,11 +18,14 @@ import java.util.Optional;
 public class CartController {
   
   private final CartService cartService;
+  private final JwtTokenUtil jwtUtil;
   
   // 1. 장바구니 추가 (클라이언트 권한)
   @PostMapping
-  public ResponseEntity<Void> addToCart(@RequestBody CartAddRequestDto dto) {
-    Long userNo = 1L; // TODO: @AuthenticationPrincipal 로 교체 예정
+  public ResponseEntity<Void> addToCart(@RequestHeader("Authorization") String authHeader, @RequestBody CartAddRequestDto dto) {
+    String token = authHeader.replace("Bearer ", "");
+    Claims claims = jwtUtil.parseToken(token);
+    long userNo = claims.get("no", Long.class);
     
     boolean added = cartService.addToCart(userNo, dto.getTmplNo());
     if (added) {
@@ -39,8 +44,10 @@ public class CartController {
   
   // 3. 장바구니 목록 조회 (클라이언트 권한)
   @GetMapping
-  public ResponseEntity<List<CartItemResponseDto>> getCartList() {
-    Long userNo = 1L; // TODO: @AuthenticationPrincipal 로 교체 예정
+  public ResponseEntity<List<CartItemResponseDto>> getCartList(@RequestHeader("Authorization") String authHeader) {
+    String token = authHeader.replace("Bearer ", "");
+    Claims claims = jwtUtil.parseToken(token);
+    long userNo = claims.get("no", Long.class);
     
     List<CartItemResponseDto> cartItems = cartService.findCartItems(userNo);
     return ResponseEntity.ok(cartItems);
@@ -49,28 +56,39 @@ public class CartController {
   // 결제 (클라이언트 권한)
   @PostMapping("/checkout")
   public ResponseEntity<CheckoutResponseDto> checkout(
+      @RequestHeader("Authorization") String authHeader,
       @RequestBody CheckoutRequestDto req
   ) {
-    req.setUserNo(Optional.ofNullable(req.getUserNo()).orElse(1L));
-    // TODO: 나중에 @AuthenticationPrincipal 로 대체
+    String token = authHeader.replace("Bearer ", "");
+    Claims claims = jwtUtil.parseToken(token);
+    long userNo = claims.get("no", Long.class);
+    
+    req.setUserNo(Optional.ofNullable(req.getUserNo()).orElse(userNo));
     CheckoutResponseDto dto = cartService.checkout(req);
     return ResponseEntity.ok(dto);
   }
   
+  // 결제 후 사후처리작업 (장바구니 비우거나, 히스토리 옮기거나 등)
   @PostMapping("/complete")
   public ResponseEntity<Void> completeOrder(
+      @RequestHeader("Authorization") String authHeader,
       @RequestBody OnlyOrderCodeDto req
   ) {
-    cartService.completeOrder(1L, req.getOrderId()); // TODO: 인증 정보로 대체 예정
+    String token = authHeader.replace("Bearer ", "");
+    Claims claims = jwtUtil.parseToken(token);
+    long userNo = claims.get("no", Long.class);
+    
+    cartService.completeOrder(userNo, req.getOrderId());
     return ResponseEntity.ok().build();
   }
   
   // 장바구니 전체 삭제 (클라이언트 권한)
   @DeleteMapping("/all")
-  public ResponseEntity<Void> clearCart() {
-    System.out.println( "clearCart()");
-    // TODO: 나중에 @AuthenticationPrincipal 로 대체
-    Long userNo = 1L;
+  public ResponseEntity<Void> clearCart(@RequestHeader("Authorization") String authHeader) {
+    String token = authHeader.replace("Bearer ", "");
+    Claims claims = jwtUtil.parseToken(token);
+    long userNo = claims.get("no", Long.class);
+    
     cartService.deleteAllByUser(userNo);
     return ResponseEntity.noContent().build();
   }
