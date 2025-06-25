@@ -89,4 +89,14 @@ export default [
         name: 'AdRegister',
         component: () => import('@/views/lawyer/AD/AdRegisterView.vue')
     },
+    {
+        path: '/lawyer/ads/success',
+        name: 'AdPaymentSuccess',
+        component: () => import('@/views/lawyer/AD/AdPaymentSuccessView.vue')
+    },
+    {
+        path: '/lawyer/ads/fail',
+        name: 'AdPaymentFail',
+        component: () => import('@/views/lawyer/AD/AdPaymentFailView.vue')
+    }
 ]

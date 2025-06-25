@@ -1,15 +1,29 @@
 <script setup>
+import { ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+
 import LawyerHeader from './LawyerHeader.vue'
 import LawyerSidebar from './LawyerSidebar.vue'
 import LawyerFooter from './LawyerFooter.vue'
 import LawyerPageWrapper from './LawyerPageWrapper.vue'
 
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+const route = useRoute()
+const currentTitle = ref('')
 
-const router = useRouter()
+function resolveTitle(path) {
+  if (path === '/lawyer') return '홈 대시보드'
+  if (/^\/lawyer\/\d+\/reservation/.test(path)) return '1:1 상담예약'
+  if (path.startsWith('/lawyer/broadcasts/schedule')) return '방송 스케줄'
+  if (path.startsWith('/lawyer/templates')) return '문서 템플릿'
+  if (path.startsWith('/lawyer/qna')) return 'Q&A 관리'
+  if (path.startsWith('/lawyer/ads')) return '광고 관리'
+  if (path.startsWith('/lawyer/profile')) return '계정 설정'
+  return ''
+}
 
-const currentTitle = ref('홈 대시보드')
+watch(() => route.path, (newPath) => {
+  currentTitle.value = resolveTitle(newPath)
+}, { immediate: true })
 </script>
 
 <template>

@@ -18,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -111,31 +112,77 @@ public class PaymentController {
 
     @PostMapping("/cancel")
     public ResponseEntity<?> cancelPayment(@RequestBody RefundRequestDTO req) {
-        // 1) reservationNo → orderNo 조회
-        Long reservationNo = req.getReservationNo();
-        Long orderNo = reservationsMapper.selectReservationByNo(reservationNo).getOrderNo();
-        Long amount = reservationsMapper.selectReservationByNo(reservationNo).getAmount();
-
-        // 2) orderNo → paymentKey 조회
-        String paymentKey = paymentMapper.findPaymentKeyByOrderNo(orderNo);
-
-        // 3) DTO에 세팅
-        req.setOrderNo(orderNo);
-        req.setPaymentKey(paymentKey);
-        req.setAmount(amount);
-        req.setCancelReason("사용자 취소 요청");
-
         try {
-            refundService.processRefund(req);
-            return ResponseEntity.ok(Map.of("message","환불 처리 완료"));
+            // 1) reservationNo 기준—기존 예약 취소 흐름 유지
+            if (req.getReservationNo() != null) {
+                Long reservationNo = req.getReservationNo();
+                // (1-1) reservationNo → orderNo, amount 조회
+                var res = reservationsMapper.selectReservationByNo(reservationNo);
+                Long orderNo  = res.getOrderNo();
+                Long amount   = res.getAmount();
+                // (1-2) orderNo → paymentKey 조회
+                String paymentKey = paymentMapper.findPaymentKeyByOrderNo(orderNo);
+                // (1-3) DTO 세팅
+                req.setOrderNo(orderNo);
+                req.setPaymentKey(paymentKey);
+                req.setAmount(amount);
+                req.setCancelReason("사용자 예약 취소 요청");
+                // (1-4) 환불 처리
+                refundService.processRefund(req);
+                return ResponseEntity.ok(Map.of("message", "예약 환불 처리 완료"));
+            }
+
+            // 2) orderNo 기준—템플릿/광고 환불 분기
+            else if (req.getOrderNo() != null) {
+                Long orderNo = req.getOrderNo();
+
+                // ◼︎ (2-1) 주문 정보 조회
+                OrdersVO order = ordersService.getOrder(orderNo);
+                if (order == null) {
+                    return ResponseEntity
+                            .status(HttpStatus.NOT_FOUND)
+                            .body(Map.of("message", "해당 주문이 없습니다."));
+                }
+
+                // ◼︎ (2-2) 타입 검증: orderType 필드 사용
+                String type = order.getOrderType();
+                if (!"TEMPLATE".equals(type) && !"ADVERTISEMENT".equals(type)) {
+                    return ResponseEntity
+                            .badRequest()
+                            .body(Map.of("message", "해당 주문은 존재하지 않습니다."));
+                }
+
+                // ◼︎ (2-3) 결제키 · 금액 준비
+                String paymentKey = paymentMapper.findPaymentKeyByOrderNo(orderNo);
+                Long   amount     = order.getAmount();
+
+                // ◼︎ (2-4) DTO 세팅 후 환불 처리
+                req.setPaymentKey(paymentKey);
+                req.setAmount(amount);
+                req.setCancelReason("사용자 " + type.toLowerCase() + " 환불 요청");
+
+                refundService.processRefund(req);
+
+                return ResponseEntity.ok(
+                        Map.of("message", type + " 환불 처리 완료")
+                );
+            }
+
+            // 3) 둘 다 없으면 잘못된 요청
+            else {
+                return ResponseEntity
+                        .badRequest()
+                        .body(Map.of("message", "reservationNo 또는 orderNo 중 하나를 전달해야 합니다."));
+            }
+
         } catch (IllegalArgumentException ie) {
-            String msg = ie.getMessage() != null ? ie.getMessage() : "리소스를 찾을 수 없습니다.";
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", msg));
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", ie.getMessage()));
         } catch (Exception e) {
-            String err = e.getMessage() != null ? e.getMessage() : "환불 처리 실패";
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message","환불 처리 실패","error", err));
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "환불 처리 중 오류가 발생했습니다.", "error", e.getMessage()));
         }
     }
 }

@@ -30,7 +30,7 @@ public class ClientReservationCreatedService {
     // 알림톡 옵션 구성
     KakaoOption kakaoOption = new KakaoOption();
     kakaoOption.setPfId(solapiConfig.getPfId());
-    kakaoOption.setTemplateId("KA01TP250604090415128SfyPVa2SRMa");
+    kakaoOption.setTemplateId("KA01TP250624082532677Tv9n9oeacPL");
     
     Map<String, String> variables = new HashMap<>();
     variables.put("#{client}", dto.getClient());

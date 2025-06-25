@@ -72,10 +72,9 @@ onMounted(async () => {
           <div class="card shadow-sm" style="min-height: 400px; max-height: 400px;">
 
             <!-- 변호사 정보 -->
-            <div class="d-flex align-items-start  position-relative bg-light-primary" style="min-height: 55px;">
-              <div class=" mb-5 mt-5 me-4 ms-4">
+            <div class="d-flex align-items-start pb-5 position-relative bg-light-primary" style="min-height: 55px;">
+              <div class=" mb-2 mt-5 me-4 ms-4">
                 <strong class="fw-semibold fs-1" style="color: #5a5a78;"> {{ data.shortIntro }} </strong>
-                <br />
                 <br />
                 <strong class="fw-semibold fs-5 ms-3"> {{ data.name }} 변호사 </strong>
               </div>
@@ -98,8 +97,11 @@ onMounted(async () => {
               <!-- 오른쪽 -->
               <pre class="w-100 w-md-50 mb-0"
                    style="white-space: pre-wrap;
-                   word-break: break-word;
-                   font-family: inherit;">{{ data.longIntro }}</pre>
+                         word-break: break-word;
+                         font-family: inherit;
+                         min-height: 160px;
+                         max-height: 160px;
+                         overflow-y: auto;">{{ data.longIntro }}</pre>
             </div>
 
 
