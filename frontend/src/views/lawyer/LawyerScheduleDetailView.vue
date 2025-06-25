@@ -62,11 +62,28 @@ onMounted(async () => {
 
 const addKeyword = () => {
   const val = newKeyword.value.trim()
-  if (val && !keywords.value.includes(val)) {
-    keywords.value.push(val)
+
+  if (!val) return
+
+  if (val.length > 6) {
+    alert('⚠ 키워드는 6자 이하로 입력해야 합니다.')
+    return
   }
+
+  if (keywords.value.includes(val)) {
+    alert('⚠ 이미 추가된 키워드입니다.')
+    return
+  }
+
+  if (keywords.value.length >= 6) {
+    alert('⚠ 키워드는 최대 6개까지 등록할 수 있습니다.')
+    return
+  }
+
+  keywords.value.push(val)
   newKeyword.value = ''
 }
+
 
 const removeKeyword = (i) => {
   keywords.value.splice(i, 1)
