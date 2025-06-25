@@ -31,9 +31,6 @@ public class ChatVO {
     /** 메시지 내용 */
     private String message;
 
-    /** 신고 여부 (TINYINT) */
-    private Integer reportStatus;
-
     /** 생성 일시 */
     private LocalDateTime createdAt;
 

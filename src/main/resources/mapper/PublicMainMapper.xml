@@ -49,8 +49,7 @@
             t.discount_rate AS discountRate,
             t.thumbnail_path AS thumbnailPath
         FROM template t
-        WHERE t.user_no = 1
-          AND t.is_deleted = 0
+        WHERE t.is_deleted = 0
         ORDER BY t.sales_count DESC, t.created_at DESC
         LIMIT 10
     </select>

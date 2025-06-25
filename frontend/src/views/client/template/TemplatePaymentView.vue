@@ -130,6 +130,8 @@ async function goToCheckout() {
   if (isProcessing.value) return
   isProcessing.value = true
 
+  // console.log(userNo)
+
   try {
     // (1) 주문 생성 요청
     const token = await getValidToken()

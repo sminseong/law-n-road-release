@@ -12,4 +12,9 @@
             (#{userNo}, #{reportedUserNo} ,#{nickname}, #{message}, NOW())
     </insert>
 
+    <select id="selectIsStoppedByUserNo" resultType="int" parameterType="long">
+        SELECT is_stopped
+        FROM client
+        WHERE no = #{userNo}
+    </select>
 </mapper>

@@ -3,6 +3,7 @@ package com.lawnroad.broadcast.chat.controller;
 import com.lawnroad.broadcast.chat.dto.AutoReplyDTO;
 import com.lawnroad.broadcast.chat.dto.ChatDTO;
 import com.lawnroad.broadcast.chat.service.AutoReplyService;
+import com.lawnroad.broadcast.chat.service.ChatMongodbSaveService;
 import com.lawnroad.broadcast.chat.service.ChatRedisSaveServiceImpl;
 import com.lawnroad.broadcast.chat.service.ClovaForbiddenService;
 import com.lawnroad.common.util.JwtTokenUtil;
@@ -26,7 +27,7 @@ public class ChatController {
     private final JwtTokenUtil jwtTokenUtil;
     private final AutoReplyService autoReplyService;
     private final ClovaForbiddenService clovaForbiddenService;
-
+    private final ChatMongodbSaveService chatMongodbSaveService;
 
     @MessageMapping("/chat.addUser")
     public void addUser(@Payload ChatDTO chatDTO, @Header("Authorization") String authHeader) {
@@ -61,7 +62,6 @@ public class ChatController {
             chatDTO.setNickname(nickname);
             chatDTO.setNo(no);
             chatDTO.setCreatedAt(LocalDateTime.now());
-            chatDTO.setReportStatus(0);
 
             messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), chatDTO);
             return;
@@ -69,7 +69,6 @@ public class ChatController {
         if(chatDTO.getType() == null) {
             chatDTO.setType("CHAT"); // 기본값
         }
-        chatDTO.setReportStatus(0);
 
         // ----------------- AI 욕설/금칙어 검사 -----------------
         String msg = chatDTO.getMessage();
@@ -86,6 +85,12 @@ public class ChatController {
             return;
         }
 
+        // Redis 장애시 MongoDB fallback
+//        try {
+//            chatRedisSaveService.saveChatMessage(chatDTO);
+//        } catch (Exception e) {
+//            chatMongodbSaveService.saveChatMessage(chatDTO);
+//        }
         chatRedisSaveService.saveChatMessage(chatDTO);
         messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), chatDTO);
 

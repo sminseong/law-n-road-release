@@ -34,12 +34,10 @@ public class ChatMongodbSaveServiceImpl implements ChatMongodbSaveService {
                         .map(json -> {
                             ChatDTO dto = fromJson(json, ChatDTO.class);
                             return ChatVO.builder()
-                                    .no(dto.getNo())
                                     .userNo(dto.getUserNo())
                                     .broadcastNo(dto.getBroadcastNo())
                                     .nickname(dto.getNickname())
                                     .message(dto.getMessage())
-                                    .reportStatus(dto.getReportStatus())
                                     .createdAt(dto.getCreatedAt())
                                     .build();
                         })
@@ -50,6 +48,19 @@ public class ChatMongodbSaveServiceImpl implements ChatMongodbSaveService {
             }
         }
     }
+    // Redis 장애 시 즉시 저장 (단일 메시지)
+    @Override
+    public void saveChatMessage(ChatDTO chatDTO) {
+        ChatVO doc = ChatVO.builder()
+                .userNo(chatDTO.getUserNo())
+                .broadcastNo(chatDTO.getBroadcastNo())
+                .nickname(chatDTO.getNickname())
+                .message(chatDTO.getMessage())
+                .createdAt(chatDTO.getCreatedAt())
+                .build();
+        mongoChatRepository.save(doc);
+    }
+
 
     private <T> T fromJson(String json, Class<T> type) {
         try {

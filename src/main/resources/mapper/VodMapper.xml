@@ -93,12 +93,12 @@
         v.duration,
         v.view_count,
         v.created_at,
+        b.start_time,
+        b.end_time,
         bs.no AS schedule_no,
         bs.name AS title,
         bs.content,
         bs.date,
-        bs.start_time,
-        bs.end_time,
         bs.thumbnail_path,
         c.name AS category_name,
         l.no AS lawyer_no,
@@ -111,6 +111,14 @@
         JOIN lawyer l ON b.user_no = l.no
         WHERE v.status = 0 AND v.broadcast_no = #{broadcastNo}
     </select>
+
+
+        <!-- 채팅 변호사 이름 가져오기-->
+        <select id="selectNameByUserNo" parameterType="long" resultType="string">
+            SELECT name
+            FROM lawyer
+            WHERE no = #{userNo}
+        </select>
 
 
 </mapper>

@@ -16,4 +16,6 @@ public interface VodMapper {
 
     // vod 상세
     VodDetailDto findVodDetailByBroadcastNo(Long broadcastNo);
+    String selectNameByUserNo(Long userNo);
+
 }

@@ -1,14 +1,14 @@
 <script setup>
 import { ref, onMounted, nextTick } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
-import { useRouter } from 'vue-router'
 
 // 라우터에서 방송 번호 가져오기
 const route = useRoute();
 const router = useRouter();
 const broadcastNo = route.params.broadcastNo;
+
 // vod 불러오기
 const vodInfo = ref(null);
 
@@ -31,33 +31,22 @@ const fetchVodInfo = async () => {
 };
 
 const goToLawyerHomepage = () => {
-  const userNo = vodInfo.value.lawyerNo
-  console.log(userNo)
+  const userNo = vodInfo.value.lawyerNo;
   if (!userNo || userNo === 0) {
-    alert('변호사 정보가 없습니다.')
-    return
+    alert('변호사 정보가 없습니다.');
+    return;
   }
-  router.push(`/lawyer/${userNo}/homepage`)
-}
-
-
-
-
-// 컴포넌트 마운트 시 실행
-onMounted(() => {
-  fetchVodInfo();
-  playChatsLikeLive();
-});
-
-
-
-
+  router.push(`/lawyer/${userNo}/homepage`);
+};
 
 // 메시지 관련 상태
 const messages = ref([]);
 const messageContainer = ref(null);
 
-// 스크롤을 맨 아래로 내리는 함수
+let chatLogs = [];
+let vodStartTime = null;
+let chatIntervalId = null;
+
 const scrollToBottom = () => {
   nextTick(() => {
     if (messageContainer.value) {
@@ -66,28 +55,68 @@ const scrollToBottom = () => {
   });
 };
 
-// 채팅을 실시간처럼 하나씩 재생
-const playChatsLikeLive = async () => {
-  const { data: chatLogs } = await axios.get(`/api/broadcast/${broadcastNo}/chats`);
-  if (!chatLogs.length) return;
-
-  messages.value = [];
-  let lastTime = new Date(chatLogs[0].createdAt).getTime();
-
-  for (let i = 0; i < chatLogs.length; i++) {
-    const msg = chatLogs[i];
-    const msgTime = new Date(msg.createdAt).getTime();
-    let delay = 0;
-    if (i > 0) {
-      delay = msgTime - lastTime;
-    }
-    await new Promise((res) => setTimeout(res, delay));
-    messages.value.push(msg);
-    scrollToBottom();
-    lastTime = msgTime;
-  }
+// 채팅을 영상 위치에 맞게 표시
+const updateMessagesByCurrentTime = () => {
+  if (!videoRef.value) return;
+  const curTime = videoRef.value.currentTime;
+  messages.value = chatLogs.filter(msg => msg.seconds <= curTime);
+  scrollToBottom();
 };
 
+
+
+function parseDate(obj) {
+  if (obj instanceof Date) return obj;
+  if (obj && typeof obj === "object" && "$date" in obj) return new Date(obj.$date);
+  if (typeof obj === "string") return new Date(obj);
+  return null;
+}
+
+const playChatsLikeLive = async () => {
+  const { data } = await axios.get(`/api/broadcast/${broadcastNo}/chats`);
+  console.log('불러온 채팅 원본:', data);
+  if (!data.length || !vodInfo.value?.startTime) {
+    console.log('채팅 없음 또는 방송 시작시간 없음');
+    return;
+  }
+  const broadcastStart = parseDate(vodInfo.value.startTime);
+  console.log('방송 시작시간:', vodInfo.value.startTime, broadcastStart);
+  chatLogs = data.map(msg => ({
+    ...msg,
+    createdAt: parseDate(msg.createdAt),
+  }));
+  chatLogs = chatLogs.map(msg => ({
+    ...msg,
+    seconds: (msg.createdAt - broadcastStart) / 1000 - 2.5,
+  }));
+  console.log('가공된 chatLogs:', chatLogs);
+};
+
+const videoRef = ref(null);
+
+onMounted(async () => {
+  await fetchVodInfo();
+  await playChatsLikeLive();
+  nextTick(() => {
+    if (videoRef.value) {
+      videoRef.value.addEventListener("play", () => {
+        if (chatIntervalId) clearInterval(chatIntervalId);
+        chatIntervalId = setInterval(updateMessagesByCurrentTime, 350);
+      });
+      videoRef.value.addEventListener("pause", () => {
+        if (chatIntervalId) clearInterval(chatIntervalId);
+        chatIntervalId = null;
+      });
+      videoRef.value.addEventListener("seeked", updateMessagesByCurrentTime);
+      videoRef.value.addEventListener("ended", () => {
+        if (chatIntervalId) clearInterval(chatIntervalId);
+        chatIntervalId = null;
+        updateMessagesByCurrentTime();
+      });
+      videoRef.value.addEventListener("loadedmetadata", updateMessagesByCurrentTime);
+    }
+  });
+});
 </script>
 
 
@@ -108,6 +137,7 @@ const playChatsLikeLive = async () => {
         >
           <video
               v-if="vodInfo?.vodPath"
+              ref="videoRef"
               :src="vodInfo.vodPath"
               controls
               class="w-100 h-100"
