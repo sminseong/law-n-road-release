@@ -6,10 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lawnroad.account.service.LawyerPointService;
 import com.lawnroad.ai.dto.ValidationResultDto;
 import com.lawnroad.ai.service.AiService;
+import com.lawnroad.common.util.JwtTokenUtil;
 import com.lawnroad.common.util.NcpObjectStorageUtil;
 import com.lawnroad.template.dto.*;
 import com.lawnroad.template.service.LawyerTemplateService;
 import com.lawnroad.template.service.OcrService;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.http.HttpStatus;
@@ -33,6 +35,7 @@ public class LawyerTemplateController {
   private final ObjectMapper objectMapper;
   private final AiService aiService;
   private final LawyerPointService lawyerPointService;
+  private final JwtTokenUtil jwtUtil;
   
   /**
    * 템플릿 등록 API (변호사 권한)
@@ -49,8 +52,12 @@ public class LawyerTemplateController {
    * 4. 최종 등록
    */
   @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<String> registerTemplate(@ModelAttribute LawyerTemplateRegisterDto dto) {
-    Long lawyerNo = 1L; // TODO: 로그인 연동 후 교체
+  public ResponseEntity<String> registerTemplate(@RequestHeader("Authorization") String authHeader, @ModelAttribute LawyerTemplateRegisterDto dto) {
+    String token = authHeader.replace("Bearer ", "");
+    Claims claims = jwtUtil.parseToken(token);
+    long lawyerNo = claims.get("no", Long.class);
+    dto.setLawyerNo(lawyerNo);
+    
     String type = dto.getType();
     // 기본 값
     String thumbnailPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";
@@ -182,8 +189,11 @@ public class LawyerTemplateController {
    * @return 템플릿 목록 + 총 개수 + 총 페이지 수
    */
   @GetMapping
-  public ResponseEntity<TemplateListResponseDto> getMyTemplates(TemplateSearchConditionDto condition) {
-    Long lawyerNo = 1L;  // 로그인 미적용 상태 → 임시 고정
+  public ResponseEntity<TemplateListResponseDto> getMyTemplates(@RequestHeader("Authorization") String authHeader, TemplateSearchConditionDto condition) {
+    String token = authHeader.replace("Bearer ", "");
+    Claims claims = jwtUtil.parseToken(token);
+    long lawyerNo = claims.get("no", Long.class);
+    
     return ResponseEntity.ok(templateService.findTemplatesByLawyerNo(lawyerNo, condition));
   }
   
@@ -222,13 +232,16 @@ public class LawyerTemplateController {
   // 1) 메타데이터만 업데이트 (변호사 권한)
   @PostMapping(value = "/update-meta", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<String> updateTemplateMeta(
+      @RequestHeader("Authorization") String authHeader,
       @ModelAttribute TemplateDto dto,               // 모든 메타데이터 필드
       @RequestParam(value = "file", required = false) MultipartFile thumbFile,
       @RequestParam(value = "removeThumbnail", required = false) Integer removeThumbnail
   ) {
-    System.out.println("✅ update-meta 도착!");
+    String token = authHeader.replace("Bearer ", "");
+    Claims claims = jwtUtil.parseToken(token);
+    long lawyerNo = claims.get("no", Long.class);
+    
     System.out.println("dto: " + dto);
-    Long lawyerNo = 1L; // TODO: 인증 적용 후 교체
     dto.setUserNo(lawyerNo);
     
     String thumbnailPath = null;
@@ -259,7 +272,7 @@ public class LawyerTemplateController {
   }
   
   /**
-   * 1. 기존 템플릿 조회 (변호사 권한)
+   * 1. 기존 템플릿 수정 (변호사 권한)
    * 2. FILE인 경우 pathJson 병합 + 신규 파일 저장
    * 3. 본문 추출
    *    * FILE → OCR
@@ -271,9 +284,13 @@ public class LawyerTemplateController {
    */
   @PostMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<String> updateTemplate(
+      @RequestHeader("Authorization") String authHeader,
       @ModelAttribute LawyerTemplateUpdateDto dto
   ) {
-    Long lawyerNo = 1L; // TODO: 인증 연동 후 교체
+    String token = authHeader.replace("Bearer ", "");
+    Claims claims = jwtUtil.parseToken(token);
+    long lawyerNo = claims.get("no", Long.class);
+    
     dto.setUserNo(lawyerNo);
     String type = dto.getType();
     String thumbnailPath = "https://kr.object.ncloudstorage.com/law-n-road/uploads/defaults/template-thumbnail.png";

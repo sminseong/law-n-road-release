@@ -21,7 +21,7 @@ public class LawyerTemplateServiceImpl implements LawyerTemplateService {
   public void registerTemplate(LawyerTemplateRegisterDto dto, String thumbnailPath) {
     // 1. 공통 템플릿 정보 insert
     TemplateDto template = new TemplateDto();
-    template.setUserNo(1L);  // 로그인 전 임시 하드코딩
+    template.setUserNo(dto.getLawyerNo());  // 로그인 전 임시 하드코딩
     template.setCategoryNo(dto.getCategoryNo());
     template.setName(dto.getName());
     template.setDescription(dto.getDescription());
