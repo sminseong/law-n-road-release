@@ -5,8 +5,10 @@ import com.lawnroad.reservation.dto.TimeSlotUpdateRequestDTO;
 import com.lawnroad.reservation.model.TimeSlotVO;
 import com.lawnroad.reservation.service.TimeSlotService;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -44,7 +46,7 @@ public class TimeSlotController {
     ) {
         List<TimeSlotVO> vos = updates.stream()
                 .map(r -> new TimeSlotVO(
-                        null,
+                        r.getNo(),
                         lawyerNo,
                         r.getSlotDate(),
                         r.getSlotTime(),
@@ -53,7 +55,11 @@ public class TimeSlotController {
                 ))
                 .collect(Collectors.toList());
 
-        timeSlotService.updateSlotStatuses(vos);
-        return ResponseEntity.noContent().build();
+        try {
+            timeSlotService.updateSlotStatuses(vos);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException ex) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, ex.getMessage());
+        }
     }
 }

@@ -10,7 +10,7 @@ const router = useRouter()
 const title = ref('')
 const incidentDate  = ref('')
 const content = ref('')
-const userNo = ref(1) // 🔐 임시: 로그인 후 실제 사용자 ID로 대체
+const userNo = ref(11) // 🔐 임시: 로그인 후 실제 사용자 ID로 대체
 // TODO: 로그인 상태에서 userNo 동적으로 주입
 // const { userNo } = useAccountStore()
 const categoryNo = ref('')

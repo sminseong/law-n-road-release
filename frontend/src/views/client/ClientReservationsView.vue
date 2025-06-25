@@ -90,6 +90,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
+import {getValidToken} from "@/libs/axios-auth.js";
 
 // 1) 라우터로부터 props 받기
 const props = defineProps({
@@ -105,6 +106,11 @@ const selectedNo = ref(null)
 
 // 슬롯 조회
 onMounted(async () => {
+  const token = await getValidToken()
+  if (!token) {
+    alert('로그인이 필요합니다.')
+    return
+  }
   try {
     const token = localStorage.getItem('token')
     const today = new Date().toISOString().slice(0, 10)
@@ -152,6 +158,11 @@ function select(slot) {
 }
 
 async function apply() {
+  const token = await getValidToken()
+  if (!token) {
+    alert('로그인이 필요합니다.')
+    return
+  }
   try {
     const token = localStorage.getItem('token')
     const payload = {
