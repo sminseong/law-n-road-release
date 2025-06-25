@@ -1,5 +1,6 @@
 package com.lawnroad.template.controller;
 
+import com.lawnroad.common.util.JwtTokenUtil;
 import com.lawnroad.template.dto.*;
 import com.lawnroad.template.dto.cart.CheckoutResponseDto;
 import com.lawnroad.template.dto.order.ClientOrderListDto;
@@ -7,6 +8,7 @@ import com.lawnroad.template.dto.order.ClientOrderListResponseDto;
 import com.lawnroad.template.dto.order.ClientOrderTemplateDto;
 import com.lawnroad.template.dto.order.ClientOrderTemplateListResponseDto;
 import com.lawnroad.template.service.ClientTemplateService;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,19 +23,22 @@ import java.util.Map;
 public class ClientTemplateController {
   
   private final ClientTemplateService clientTemplateService;
+  private final JwtTokenUtil jwtUtil;
   
   /**
    * 전체 주문 목록 조회 (필터 및 페이징 포함) (클라이언트 권한)
    */
   @GetMapping("/orders")
   public ResponseEntity<ClientOrderListResponseDto> getOrders(
+      @RequestHeader("Authorization") String authHeader,
       @RequestParam(required = false) String keyword,
       @RequestParam(required = false) String status,
       @RequestParam(defaultValue = "1") int page,
       @RequestParam(defaultValue = "10") int limit
   ) {
-    // TODO: 유저 번호는 하드코딩
-    Long userNo = 1L;
+    String token = authHeader.replace("Bearer ", "");
+    Claims claims = jwtUtil.parseToken(token);
+    long userNo = claims.get("no", Long.class);
     
     // System.out.println(keyword +' '+ status+' '+page+' '+limit);
     
@@ -139,12 +144,12 @@ public class ClientTemplateController {
   
   // 사용자 마이페이지 -> 최근 5건의 구매내역
   @GetMapping("/orders/recent")
-  public ResponseEntity<Map<String, Object>> getRecentOrders() {
-    // System.out.println("test");
+  public ResponseEntity<Map<String, Object>> getRecentOrders(@RequestHeader("Authorization") String authHeader) {
+    String token = authHeader.replace("Bearer ", "");
+    Claims claims = jwtUtil.parseToken(token);
+    long userNo = claims.get("no", Long.class);
     
-    // TODO : 사용자 NO 하드코딩
-    List<ClientOrderListDto> orders = clientTemplateService.findRecentOrders(1L);
-    // System.out.println(orders);
+    List<ClientOrderListDto> orders = clientTemplateService.findRecentOrders(userNo);
     
     Map<String, Object> result = new HashMap<>();
     result.put("orders", orders);
