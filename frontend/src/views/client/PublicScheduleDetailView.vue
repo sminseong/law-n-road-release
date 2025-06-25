@@ -22,7 +22,7 @@ onMounted(async () => {
   try {
     const res = await makeApiRequest({
       method: 'get',
-      url: `/api/client/schedule/${dateStr}`
+      url: `/api/public/schedule/${dateStr}`
     })
 
     if (res?.data) {
@@ -33,7 +33,7 @@ onMounted(async () => {
           rawSchedules.map(schedule =>
               makeApiRequest({
                 method: 'get',
-                url: `/api/client/broadcast/live-check/${schedule.no}`
+                url: `/api/public/broadcast/live-check/${schedule.no}`
               }).then(res => ({
                 scheduleNo: schedule.no,
                 live: res.data.live
@@ -80,7 +80,7 @@ const goToSchedule = async (scheduleNo) => {
   try {
     const res = await makeApiRequest({
       method: 'get',
-      url: `/api/client/broadcast/live-check/${scheduleNo}`
+      url: `/api/public/broadcast/live-check/${scheduleNo}`
     })
 
     if (res.data.live && res.data.broadcastNo) {
@@ -98,7 +98,7 @@ const goToSchedule = async (scheduleNo) => {
 }
 
 const goBackToCalendar = () => {
-  router.push('/client/broadcasts/schedule')
+  router.push('/broadcasts/schedule')
 }
 </script>
 

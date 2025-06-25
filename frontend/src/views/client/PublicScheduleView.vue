@@ -27,7 +27,7 @@ const calendarOptions = ref({
       cell.classList.add('clicked')
       setTimeout(() => cell.classList.remove('clicked'), 150)
     }
-    router.push(`/client/broadcasts/schedule/${arg.dateStr}`)
+    router.push(`/broadcasts/schedule/${arg.dateStr}`)
   },
   eventClick: (info) => {
     const dateStr = info.event.startStr.slice(0, 10)
@@ -36,7 +36,7 @@ const calendarOptions = ref({
       cell.classList.add('clicked')
       setTimeout(() => cell.classList.remove('clicked'), 150)
     }
-    router.push(`/client/broadcasts/schedule/${dateStr}`)
+    router.push(`/broadcasts/schedule/${dateStr}`)
   },
   eventContent: (info) => {
     const title = info.event.title
@@ -80,7 +80,7 @@ const fetchMonthlySchedule = async () => {
 
     const res = await makeApiRequest({
       method: 'get',
-      url: `/api/client/schedule/month?month=${month}`
+      url: `/api/public/schedule/month?month=${month}`
     })
 
     if (res?.data) {
@@ -88,7 +88,7 @@ const fetchMonthlySchedule = async () => {
           res.data.map(ev =>
               makeApiRequest({
                 method: 'get',
-                url: `/api/client/broadcast/live-check/${ev.scheduleNo}`
+                url: `/api/public/broadcast/live-check/${ev.scheduleNo}`
               }).then(liveRes => ({
                 ...ev,
                 isLive: liveRes.data.live
@@ -128,7 +128,7 @@ onMounted(async () => {
     // 방송 종료 상태 갱신 먼저 수행
     await makeApiRequest({
       method: 'get',
-      url: '/api/client/broadcast/expire-overdue'
+      url: '/api/public/broadcast/expire-overdue'
     })
     console.log('⏱ 방송 상태 갱신 완료')
   } catch (err) {

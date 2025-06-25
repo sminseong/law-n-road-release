@@ -72,7 +72,7 @@ onMounted(async () => {
   try {
     await makeApiRequest({
       method: 'get',
-      url: '/api/client/broadcast/expire-overdue'
+      url: '/api/public/broadcast/expire-overdue'
     })
     console.log('⏱ 방송 상태 갱신 완료')
   } catch (err) {

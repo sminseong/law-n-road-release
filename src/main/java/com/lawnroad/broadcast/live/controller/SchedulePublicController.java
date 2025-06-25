@@ -3,8 +3,6 @@ package com.lawnroad.broadcast.live.controller;
 import com.lawnroad.broadcast.live.dto.ScheduleCalendarDto;
 import com.lawnroad.broadcast.live.dto.ScheduleDateDto;
 import com.lawnroad.broadcast.live.service.ScheduleService;
-import com.lawnroad.common.util.FileStorageUtil;
-import com.lawnroad.common.util.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,13 +11,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/client/schedule")
+@RequestMapping("/api/public/schedule")
 @RequiredArgsConstructor
-public class ScheduleClientController {
+public class SchedulePublicController {
 
-    private final JwtTokenUtil jwtTokenUtil;
     private final ScheduleService scheduleService;
-    private final FileStorageUtil fileStorageUtil;
 
 
     @GetMapping("/month")
