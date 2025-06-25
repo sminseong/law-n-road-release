@@ -253,24 +253,26 @@ public ResponseEntity<?> lawyerSignup(
             userNo   = client.getNo();
             clientId = client.getClientId();
 
-            accessToken  = jwtTokenUtil.generateAccessToken(clientId,  userNo, /*role*/"CLIENT", client.getNickname());
+            accessToken  = jwtTokenUtil.generateAccessToken(clientId,  userNo, /*role*/"CLIENT", client.getNickname(),client.getPhone());
             refreshToken = jwtTokenUtil.generateRefreshToken(clientId);
 
             result.put("name",     client.getName());
             result.put("nickname", client.getNickname());
             result.put("no",       client.getNo());
+            result.put("phone",     client.getPhone());
         }
         else if (type.equalsIgnoreCase("LAWYER")) {
             LawyerEntity lawyer = lawyerService.login(request.getClientId(), request.getPassword());
             userNo   = lawyer.getNo();
             clientId = lawyer.getLawyerId();
 
-            accessToken  = jwtTokenUtil.generateAccessToken(clientId,  userNo, /*role*/"LAWYER", lawyer.getName());
+            accessToken  = jwtTokenUtil.generateAccessToken(clientId,  userNo, /*role*/"LAWYER", lawyer.getName(),lawyer.getPhone());
             refreshToken = jwtTokenUtil.generateRefreshToken(clientId);
 
             result.put("name",     lawyer.getName());
             result.put("nickname", lawyer.getName());
             result.put("no", lawyer.getNo());
+            result.put("phone",lawyer.getPhone());
         }
         else {
             return ResponseEntity.badRequest().body("알 수 없는 사용자 유형입니다.");
@@ -532,6 +534,7 @@ public ResponseEntity<?> lawyerSignup(
 
             String id;
             String nickname = "";  // 기본값 비어있음
+            String phone = "";
 
             // 2. role에 따라 client 또는 lawyer 테이블에서 정보 조회
             if ("CLIENT".equalsIgnoreCase(role)) {
@@ -539,6 +542,8 @@ public ResponseEntity<?> lawyerSignup(
                 Map<String, Object> client = jdbcTemplate.queryForMap(clientSql, no);
                 id = (String) client.get("client_id");
                 nickname = (String) client.get("nickname");
+                phone = (String) client.get("phone");
+
             } else if ("LAWYER".equalsIgnoreCase(role)) {
                 String lawyerSql = "SELECT lawyer_id FROM lawyer WHERE no = ?";
                 Map<String, Object> lawyer = jdbcTemplate.queryForMap(lawyerSql, no);
@@ -554,7 +559,7 @@ public ResponseEntity<?> lawyerSignup(
 //            System.out.println("🎯 사용자 정보: " + id + " / " + role + " / " + nickname);
 
             // 3. accessToken 재발급
-            String newAccessToken = jwtTokenUtil.generateAccessToken(id, no, role, nickname);
+            String newAccessToken = jwtTokenUtil.generateAccessToken(id, no, role, nickname,phone);
             System.out.println("재발급 완료: " + newAccessToken + '\n');
 
             return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
@@ -611,7 +616,7 @@ public ResponseEntity<?> lawyerSignup(
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        String accessToken = jwtTokenUtil.generateAccessToken(adminId,admin.getNo(), "ADMIN", admin.getName());
+        String accessToken = jwtTokenUtil.generateAccessToken(adminId,admin.getNo(), "ADMIN", admin.getName(),admin.getPhone());
         String refreshToken = jwtTokenUtil.generateRefreshToken(adminId);
 
         refreshTokenService.save(admin.getNo(), refreshToken);

@@ -127,59 +127,59 @@ async function rejectAd(adNo) {
       />
     </div>
 
-    <!-- 광고 모달 -->
-    <div v-if="showModal" class="modal-overlay">
-      <div class="modal-container">
-        <button class="modal-close-btn" @click="closeModal">✕</button>
+<!--    &lt;!&ndash; 광고 모달 &ndash;&gt;-->
+<!--    <div v-if="showModal" class="modal-overlay">-->
+<!--      <div class="modal-container">-->
+<!--        <button class="modal-close-btn" @click="closeModal">✕</button>-->
 
-        <h3 class="modal-title">광고 상세 (#{{ selectedRow?.no }})</h3>
+<!--        <h3 class="modal-title">광고 상세 (#{{ selectedRow?.no }})</h3>-->
 
-        <!-- 광고 이미지 -->
-        <div v-if="selectedRow?.adPath" class="image-container">
-          <img
-              :src="selectedRow.adPath"
-              :alt="'광고 이미지 #' + selectedRow.no"
-              class="ad-image"
-              @error="handleImageError"
-          />
-        </div>
+<!--        &lt;!&ndash; 광고 이미지 &ndash;&gt;-->
+<!--        <div v-if="selectedRow?.adPath" class="image-container">-->
+<!--          <img-->
+<!--              :src="selectedRow.adPath"-->
+<!--              :alt="'광고 이미지 #' + selectedRow.no"-->
+<!--              class="ad-image"-->
+<!--              @error="handleImageError"-->
+<!--          />-->
+<!--        </div>-->
 
-        <!-- 이미지 없음 -->
-        <div v-else class="no-image">📷 이미지 없음</div>
+<!--        &lt;!&ndash; 이미지 없음 &ndash;&gt;-->
+<!--        <div v-else class="no-image">📷 이미지 없음</div>-->
 
-        <!-- 광고 정보 -->
-        <ul class="ad-info-list">
-          <li><strong>광고유형:</strong> {{ selectedRow?.adType }}</li>
-          <li><strong>광고주:</strong> {{ selectedRow?.advertiserName }}</li>
-          <li><strong>시작일:</strong> {{ selectedRow?.startDate }}</li>
-          <li><strong>종료일:</strong> {{ selectedRow?.endDate }}</li>
-          <li><strong>활성상태:</strong> {{ selectedRow?.adStatus ? '활성' : '비활성' }}</li>
-          <li><strong>승인여부:</strong> {{ selectedRow?.approvalStatus }}</li>
-        </ul>
+<!--        &lt;!&ndash; 광고 정보 &ndash;&gt;-->
+<!--        <ul class="ad-info-list">-->
+<!--          <li><strong>광고유형:</strong> {{ selectedRow?.adType }}</li>-->
+<!--          <li><strong>광고주:</strong> {{ selectedRow?.advertiserName }}</li>-->
+<!--          <li><strong>시작일:</strong> {{ selectedRow?.startDate }}</li>-->
+<!--          <li><strong>종료일:</strong> {{ selectedRow?.endDate }}</li>-->
+<!--          <li><strong>활성상태:</strong> {{ selectedRow?.adStatus ? '활성' : '비활성' }}</li>-->
+<!--          <li><strong>승인여부:</strong> {{ selectedRow?.approvalStatus }}</li>-->
+<!--        </ul>-->
 
-        <!-- 처리 버튼 -->
-        <div class="modal-footer">
-          <p class="modal-description">해당 광고를 어떻게 처리하시겠습니까?</p>
-          <div class="button-group">
-            <button
-                v-if="selectedRow?.approvalStatus !== 'APPROVED'"
-                class="btn btn-approve"
-                @click="approveAd(selectedRow.no)"
-            >
-              승인
-            </button>
-            <button
-                v-if="selectedRow?.approvalStatus !== 'REJECTED'"
-                class="btn btn-reject"
-                @click="rejectAd(selectedRow.no)"
-            >
-              반려
-            </button>
-            <button class="btn btn-cancel" @click="closeModal">닫기</button>
-          </div>
-        </div>
-      </div>
-    </div>
+<!--        &lt;!&ndash; 처리 버튼 &ndash;&gt;-->
+<!--        <div class="modal-footer">-->
+<!--          <p class="modal-description">해당 광고를 어떻게 처리하시겠습니까?</p>-->
+<!--          <div class="button-group">-->
+<!--            <button-->
+<!--                v-if="selectedRow?.approvalStatus !== 'APPROVED'"-->
+<!--                class="btn btn-approve"-->
+<!--                @click="approveAd(selectedRow.no)"-->
+<!--            >-->
+<!--              승인-->
+<!--            </button>-->
+<!--            <button-->
+<!--                v-if="selectedRow?.approvalStatus !== 'REJECTED'"-->
+<!--                class="btn btn-reject"-->
+<!--                @click="rejectAd(selectedRow.no)"-->
+<!--            >-->
+<!--              반려-->
+<!--            </button>-->
+<!--            <button class="btn btn-cancel" @click="closeModal">닫기</button>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
 
   </AdminFrame>
 </template>

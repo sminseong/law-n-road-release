@@ -121,56 +121,35 @@ function changePage(page) {
             @click="emit('row-click', row)"
         >
           <td v-for="col in columns" :key="col.key" class="align-middle">
-            <!-- Actions -->
-            <template v-if="col.key === 'actions'">
-              <div class="d-flex gap-2">
-                <button
-                    v-if="actionButtons.edit"
-                    class="btn btn-sm btn-outline-primary"
-                    :disabled="typeof actionButtons.edit === 'function' ? !actionButtons.edit(row) : false"
-                    @click.stop.prevent="emit('edit-action', row)"
-                >수정</button>
-                <button
-                    v-if="actionButtons.delete"
-                    class="btn btn-sm btn-outline-secondary"
-                    :disabled="typeof actionButtons.delete === 'function' ? !actionButtons.delete(row) : false"
-                    @click.stop.prevent="emit('delete-action', row)"
-                >삭제</button>
-              </div>
-            </template>
-            <!-- Image -->
-            <template v-else-if="imageConfig.enabled && col.key === imageConfig.targetKey">
-              <div class="d-flex align-items-center gap-3">
-                <img
-                    :src="row[imageConfig.key]"
-                    alt="상품 이미지"
-                    width="80"
-                    height="80"
-                    class="rounded"
-                />
-              </div>
-            </template>
-            <!-- Status Badge -->
-            <template v-else-if="col.key === 'status'">
-                <span
-                    class="badge"
-                    :class="{
-                      'bg-success': ['완료', 'PAID', '결제완료'].includes(row[col.key]),
-                      'bg-warning text-dark': ['진행 중', 'ORDERED', '결제대기'].includes(row[col.key]),
-                      'bg-danger': ['환불', 'REFUNDED', '환불'].includes(row[col.key])
-                  }"
-                >{{ row[col.key] }}</span>
-            </template>
-            <!-- Default -->
-            <template v-else>
-              <span>
-                {{ col.formatter
-                  ? col.formatter(row[col.key], row)
-                  : row[col.key]
-                }}
-              </span>
-            </template>
+            <slot :name="`cell-${col.key}`" :row="row">
+              <!-- Default rendering logic -->
+              <template v-if="col.key === 'actions'">
+                <!-- 생략 -->
+              </template>
+              <template v-else-if="imageConfig.enabled && col.key === imageConfig.targetKey">
+                <!-- 생략 -->
+              </template>
+              <template v-else-if="col.key === 'status'">
+      <span
+          class="badge"
+          :class="{
+          'bg-success': ['완료', 'PAID', '결제완료'].includes(row[col.key]),
+          'bg-warning text-dark': ['진행 중', 'ORDERED', '결제대기'].includes(row[col.key]),
+          'bg-danger': ['환불', 'REFUNDED', '환불'].includes(row[col.key])
+        }"
+      >{{ row[col.key] }}</span>
+              </template>
+              <template v-else>
+      <span>
+        {{ col.formatter
+          ? col.formatter(row[col.key], row)
+          : row[col.key]
+        }}
+      </span>
+              </template>
+            </slot>
           </td>
+
         </tr>
         <tr v-if="rows.length === 0">
           <td :colspan="columns.length" class="text-center">데이터가 없습니다.</td>
@@ -208,8 +187,3 @@ function changePage(page) {
   </div>
 </template>
 
-<style scoped>
-img {
-  object-fit: cover;
-}
-</style>

@@ -1,18 +1,21 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
 import { ref, watch } from 'vue'
+
 const router = useRouter()
 const route = useRoute()
 const emit = defineEmits(['update:title'])
 
 const lawyer = {
-  // 실제 적용 시에는 로그인 완료 후 API로 받아오는 값으로 대체하면 됨
   name: '김수영',
 }
 
 const menuItems = [
   { label: '홈 대시보드', icon: 'bi-house-door', path: '/admin' },
-  { label: '회원관리', icon: 'bi-people', path: '/admin/member' },
+  { label: '의뢰인관리', icon: 'bi-people', path: '/admin/member' },
+  { label: '변호사관리', icon: 'bi-person-badge', path: '/admin/lawyer' },
+  { label: '변호사신고관리', icon: 'bi-flag', path: '/admin/report_lawyer' },
+  { label: '의뢰인신고관리', icon: 'bi-flag', path: '/admin/report_client' },
   { label: '광고관리', icon: 'bi-megaphone', path: '/admin/ads' },
 ]
 
@@ -22,19 +25,17 @@ function go(path, label) {
 }
 
 function logout() {
-  // 여기에 실제 로그아웃 처리 로직 넣기
-  // 예: 토큰 삭제, 상태 초기화, 로그인 페이지로 이동
   console.log('로그아웃')
   router.push('/')
 }
 
 watch(
-  () => route.path,
-  () => {
-    const current = menuItems.find(item => item.path === route.path)
-    if (current) emit('update:title', current.label)
-  },
-  { immediate: true }
+    () => route.path,
+    () => {
+      const current = menuItems.find(item => item.path === route.path)
+      if (current) emit('update:title', current.label)
+    },
+    { immediate: true }
 )
 </script>
 
@@ -112,14 +113,12 @@ watch(
 .logout-box {
   width: 100%;
 }
-
 .logout-link {
-  color: #767779; /* 옅은 회색 */
+  color: #767779;
   font-size: 0.75rem;
   cursor: pointer !important;
   transition: opacity 0.2s;
 }
-
 .logout-link:hover {
   opacity: 0.6;
   text-decoration: underline;
