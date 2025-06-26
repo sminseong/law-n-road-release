@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import axios from "axios";
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import { makeApiRequest } from "@/libs/axios-auth.js"
+import basicThumbnail from '@/assets/images/thumbnail/basic_thumbnail.png';
 
 const vodList = ref([]);
 const router = useRouter();
@@ -166,7 +167,7 @@ onMounted(() => {
             <div class="card h-100 shadow-sm border-0 cursor-pointer" @click="goToVod(vod)">
               <div class="position-relative">
                 <img
-                    :src="vod.thumbnailPath || '/images/default-thumbnail.jpg'"
+                    :src="vod.thumbnailPath || basicThumbnail"
                     class="card-img-top"
                     alt="방송 썸네일"
                     style="height: 180px; object-fit: cover"
