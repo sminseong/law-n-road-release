@@ -127,7 +127,7 @@
         label ASC
     </select>
     <!-- 방송 목록 조회 -->
-    <select id="selectLiveBroadcasts" resultMap="BroadcastListMap">
+    <select id="selectLiveBroadcastsPaged" resultMap="BroadcastListMap">
         SELECT
         b.no AS broadcast_no,
         b.start_time,
@@ -144,6 +144,13 @@
         JOIN category c ON s.category_no = c.no
         WHERE b.status = 'RECORD'
         ORDER BY b.start_time DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+    <!--  방송 갯수 조회  -->
+    <select id="countLiveBroadcasts" resultType="long">
+        SELECT COUNT(*)
+        FROM broadcast b
+        WHERE b.status = 'RECORD'
     </select>
     <!-- 세션ID 가져오기 -->
     <select id="findSessionIdByBroadcastNo" resultType="String">

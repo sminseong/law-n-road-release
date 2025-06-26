@@ -106,7 +106,7 @@ const goBackToCalendar = () => {
   <ClientFrame>
     <div class="w-100 min-vh-100 px-4 py-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fs-3 fw-bold text-primary mb-0">📅 {{ dateStr }} 방송 스케줄</h2>
+        <h2 class="fs-3 fw-bold text-primary mb-0">{{ dateStr }} 방송 스케줄</h2>
         <button class="btn btn-outline-secondary" @click="goBackToCalendar">← 달력으로 돌아가기</button>
       </div>
 

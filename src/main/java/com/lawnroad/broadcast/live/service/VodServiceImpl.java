@@ -3,6 +3,7 @@ package com.lawnroad.broadcast.live.service;
 import com.lawnroad.broadcast.live.dto.VodDetailDto;
 import com.lawnroad.broadcast.live.dto.VodListDto;
 import com.lawnroad.broadcast.live.dto.VodListRequestDto;
+import com.lawnroad.broadcast.live.dto.VodListResponseDto;
 import com.lawnroad.broadcast.live.mapper.VodMapper;
 import com.lawnroad.broadcast.live.model.BroadcastVodVo;
 import com.lawnroad.common.util.FileStorageUtil;
@@ -44,8 +45,27 @@ public class VodServiceImpl implements VodService {
     }
 
     @Override
-    public List<VodListDto> getPublicVodList(VodListRequestDto requestDto) {
-        return vodMapper.findVodListPaged(requestDto.getOffset(), requestDto.getSize());
+    public VodListResponseDto getPagedVodList(VodListRequestDto requestDto) {
+        List<VodListDto> list = vodMapper.findVodListPaged(
+                requestDto.getOffset(),
+                requestDto.getSize(),
+                requestDto.getSort(),
+                requestDto.getCategoryNo()
+        );
+
+        long totalCount = vodMapper.countVodByCondition(
+                requestDto.getCategoryNo() // 카테고리 필터 추가
+        );
+
+        int totalPages = (int) Math.ceil((double) totalCount / requestDto.getSize());
+
+        VodListResponseDto response = new VodListResponseDto();
+        response.setContent(list);
+        response.setTotalElements(totalCount);
+        response.setTotalPages(totalPages);
+        response.setCurrentPage(requestDto.getPage());
+
+        return response;
     }
 
     @Override

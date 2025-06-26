@@ -54,11 +54,26 @@ const newKeyword = ref('')
 
 const addKeyword = () => {
   const value = newKeyword.value.trim()
-  if (value && !keywords.value.includes(value)) {
-    keywords.value.push(value)
+  if (!value) return
+  if (value.length > 6) {
+    alert('⚠ 키워드는 6자 이하로 입력해야 합니다.')
+    return
   }
+
+  if (keywords.value.includes(value)) {
+    alert('⚠ 이미 추가된 키워드입니다.')
+    return
+  }
+
+  if (keywords.value.length >= 6) {
+    alert('⚠ 키워드는 최대 6개까지 등록할 수 있습니다.')
+    return
+  }
+
+  keywords.value.push(value)
   newKeyword.value = ''
 }
+
 
 const removeKeyword = (index) => {
   keywords.value.splice(index, 1)
@@ -115,6 +130,12 @@ const formattedTimeRange = computed(() => {
   return `${formatDate(date.value)} ${startTime.value} ~ ${formatDate(endDate.value)} ${endTime.value}`
 })
 
+const handleConfirmSubmit = () => {
+  if (window.confirm("정말로 방송 스케줄을 등록하시겠습니까?")) {
+    submitSchedule();
+  }
+};
+
 const submitSchedule = async () => {
   try {
     const formData = new FormData()
@@ -125,7 +146,9 @@ const submitSchedule = async () => {
     formData.append('date', date.value)
     formData.append('startTime', `${date.value}T${startTime.value}:00`)
     formData.append('endTime', `${endDate.value}T${endTime.value}:00`)
-    formData.append('thumbnail', selectedFile.value)
+    if (selectedFile.value) {
+      formData.append('thumbnail', selectedFile.value)
+    }
     formData.append('keywords', JSON.stringify(keywords.value))
 
     const token = await getValidToken()
@@ -234,7 +257,7 @@ const goBack = () => {
 
         <div class="d-flex justify-content-between mt-4">
           <button class="btn btn-outline-secondary" @click="goBack">← 목록으로</button>
-          <button class="btn btn-primary" @click="submitSchedule">등록</button>
+          <button class="btn btn-primary" @click="handleConfirmSubmit">등록</button>
         </div>
       </div>
     </div>

@@ -26,7 +26,10 @@ public interface BroadcastMapper {
     List<ReportReasonDto> findAllReportReasons();
 
     // 방송 리스트
-    List<BroadcastListDto> selectLiveBroadcasts();
+    List<BroadcastListDto> selectLiveBroadcastsPaged(@Param("offset") int offset,
+                                                     @Param("size") int size);
+    // 라이브 중인 방송 개수
+    long countLiveBroadcasts();
     // 세션ID 가져오기
     String findSessionIdByBroadcastNo(Long broadcastNo);
     // 해당 스케줄이 방송중인지

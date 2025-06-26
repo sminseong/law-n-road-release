@@ -59,10 +59,18 @@ public class BroadcastClientController {
     }
     // 라이브 목록조회
     @GetMapping("/live")
-    public ResponseEntity<List<BroadcastListDto>> getLiveBroadcasts() {
-        List<BroadcastListDto> liveList = broadcastService.getLiveBroadcasts();
-        return ResponseEntity.ok(liveList);
+    public ResponseEntity<BroadcastListResponseDto> getLiveBroadcasts(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "9") int size
+    ) {
+        BroadcastListRequestDto requestDto = new BroadcastListRequestDto();
+        requestDto.setPage(page);
+        requestDto.setSize(size);
+
+        BroadcastListResponseDto response = broadcastService.getLiveBroadcasts(requestDto);
+        return ResponseEntity.ok(response);
     }
+
     // 라이브 중인지 확인
     @GetMapping("/live-check/{scheduleNo}")
     public ResponseEntity<Map<String, Object>> checkLiveBroadcast(@PathVariable Long scheduleNo) {

@@ -180,6 +180,36 @@ export default defineComponent({
       }
     };
 
+    const applyKeywordAlert = async () => {
+      const lawyerName = broadcastInfo.value.lawyerName
+
+      if (!lawyerName) {
+        alert('변호사 정보가 없습니다.')
+        return
+      }
+
+      const confirmed = confirm(`'${lawyerName}' 변호사의 방송 알림을 신청하시겠습니까?`)
+      if (!confirmed) return
+
+      try {
+        await makeApiRequest({
+          method: 'post',
+          url: '/api/client/keyword-alert/apply',
+          params: {
+            keyword: lawyerName
+          }
+        })
+        alert('🔔 알림 신청이 완료되었습니다!')
+      } catch (err) {
+        if (err.response?.status === 400) {
+          alert(`⚠️ ${err.response.data}`) // 예: 이미 신청함
+        } else {
+          alert('❌ 알림 신청 중 오류가 발생했습니다.')
+          console.error(err)
+        }
+      }
+    }
+
     const goToLawyerHomepage = () => {
       const userNo = broadcastInfo.value.userNo
       if (!userNo || userNo === 0) {
@@ -557,7 +587,8 @@ export default defineComponent({
       myNo,
       showPreQDropdown, preQuestions, isPreQLoading,
       goToLawyerHomepage,
-      togglePreQDropdown, preQBtnRef, preQDropdownRef,selectedUserToShow,isStopped
+      togglePreQDropdown, preQBtnRef, preQDropdownRef,selectedUserToShow,isStopped,
+      applyKeywordAlert,
     };
   }
 });
@@ -639,7 +670,9 @@ export default defineComponent({
                 >
                   {{ broadcastInfo.lawyerName }} 변호사
                 </span>
-                <button class="btn btn-outline-primary btn-sm">🔔 알림신청</button>
+                <button class="btn btn-outline-primary btn-sm" @click="applyKeywordAlert">
+                  🔔 알림신청
+                </button>
               </div>
             </div>
 

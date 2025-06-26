@@ -39,16 +39,16 @@ public class ScheduleLawyerController {
             @RequestParam("date") String date,
             @RequestParam("startTime") String startTime,
             @RequestParam("endTime") String endTime,
-            @RequestParam("thumbnail") MultipartFile thumbnail,
+            @RequestParam(value = "thumbnail", required = false) MultipartFile thumbnail,
             @RequestParam(value = "keywords", required = false) String keywordsJson
     ) {
         String token = authHeader.replace("Bearer ", "");
         Claims claims = jwtTokenUtil.parseToken(token);
         Long userNo = claims.get("no", Long.class);
 
-        String path = ncpObjectStorageUtil.save(thumbnail, "uploads/lawyers/" + userNo + "/thumbnail", null);
-        if (path == null || path.isEmpty()) {
-            throw new IllegalArgumentException("썸네일 파일 경로가 없습니다.");
+        String path = null;
+        if (thumbnail != null && !thumbnail.isEmpty()) {
+            path = ncpObjectStorageUtil.save(thumbnail, "uploads/lawyers/" + userNo + "/thumbnail", null);
         }
 
         // keywords JSON을 List<String>으로 변환
