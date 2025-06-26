@@ -4,7 +4,9 @@ import com.lawnroad.broadcast.live.dto.BroadcastStartDto;
 import com.lawnroad.broadcast.live.dto.BroadcastStartResponseDto;
 import com.lawnroad.broadcast.live.dto.BroadcastViewDetailDto;
 import com.lawnroad.broadcast.live.dto.ScheduleDetailDto;
+import com.lawnroad.broadcast.live.mapper.ScheduleMapper;
 import com.lawnroad.broadcast.live.service.BroadcastService;
+import com.lawnroad.broadcast.live.service.KeywordService;
 import com.lawnroad.broadcast.live.service.ScheduleService;
 import com.lawnroad.common.util.JwtTokenUtil;
 import io.jsonwebtoken.Claims;
@@ -20,6 +22,8 @@ public class BroadcastLawyerController {
     private final JwtTokenUtil jwtTokenUtil;
     private final BroadcastService broadcastService;
     private final ScheduleService scheduleService;
+    private final KeywordService keywordService;
+    private final ScheduleMapper scheduleMapper;
 
     @PostMapping("/start")
     public ResponseEntity<BroadcastStartResponseDto> startBroadcast(
@@ -31,6 +35,13 @@ public class BroadcastLawyerController {
         Long userNo = claims.get("no", Long.class);
 
         BroadcastStartResponseDto response = broadcastService.startBroadcast(userNo, dto);
+        ScheduleDetailDto schedule = scheduleMapper.findByScheduleNo(dto.getScheduleNo());
+
+        // 방송 알림톡 전송 (스케줄 번호 & 방송 제목 필요)
+        keywordService.notifyKeywordMatchedUsers(
+                dto.getScheduleNo(),
+                schedule.getName()
+        );
         return ResponseEntity.ok(response);
     }
 

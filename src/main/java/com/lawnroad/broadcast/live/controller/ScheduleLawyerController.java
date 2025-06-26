@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.lawnroad.broadcast.live.dto.*;
 import com.lawnroad.broadcast.live.service.ScheduleService;
-import com.lawnroad.common.util.FileStorageUtil;
 import com.lawnroad.common.util.JwtTokenUtil;
 import com.lawnroad.common.util.NcpObjectStorageUtil;
 import io.jsonwebtoken.Claims;
@@ -27,7 +26,6 @@ public class ScheduleLawyerController {
 
     private final JwtTokenUtil jwtTokenUtil;
     private final ScheduleService scheduleService;
-    //private final FileStorageUtil fileStorageUtil;
     private final NcpObjectStorageUtil ncpObjectStorageUtil;
 
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -76,6 +74,7 @@ public class ScheduleLawyerController {
                 .build();
 
         scheduleService.registerSchedule(scheduleRequestDto);
+
         return ResponseEntity.ok("방송 스케줄이 성공적으로 등록되었습니다.");
     }
 

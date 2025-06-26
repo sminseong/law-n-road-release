@@ -7,6 +7,7 @@ import com.lawnroad.broadcast.live.model.KeywordVo;
 import com.lawnroad.broadcast.live.model.ScheduleVo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.time.format.DateTimeFormatter;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -47,6 +48,17 @@ public class ScheduleServiceImpl implements ScheduleService {
                 keywordService.insertKeyword(keywordVo);
             }
         }
+
+        // 방송 알림톡 발송 (스케줄 등록 시)
+        String lawyerName = keywordMapper.findLawyerNameByScheduleNo(scheduleNo);
+        String startTime = scheduleVo.getStartTime().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+
+        keywordService.notifyKeywordMatchedUsersForSchedule(
+                scheduleNo,
+                scheduleVo.getName(),
+                startTime,
+                lawyerName
+        );
     }
     // 클라이언트 방송 스케줄 달력
     @Override
