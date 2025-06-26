@@ -38,4 +38,7 @@ public interface BroadcastMapper {
     void expireOverdueBroadcasts();
     // 방송 상태 확인
     BroadcastStatusDto findBroadcastStatusByScheduleNo(Long scheduleNo);
+
+    // 홈화면에 띄울 라이브
+    FeaturedBroadcastDto findFeaturedLiveBroadcast();
 }

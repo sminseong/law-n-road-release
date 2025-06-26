@@ -25,4 +25,6 @@ public interface BroadcastService {
 
     // 방송 상태 확인
     BroadcastStatusDto getBroadcastStatusByScheduleNo(Long scheduleNo);
+    // 홈화면 라이브 방송
+    FeaturedBroadcastDto getFeaturedLiveBroadcast();
 }

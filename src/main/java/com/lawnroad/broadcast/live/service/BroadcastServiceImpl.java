@@ -188,4 +188,16 @@ public class BroadcastServiceImpl implements BroadcastService {
     public BroadcastStatusDto getBroadcastStatusByScheduleNo(Long scheduleNo) {
         return broadcastMapper.findBroadcastStatusByScheduleNo(scheduleNo);
     }
+
+    @Override
+    public FeaturedBroadcastDto getFeaturedLiveBroadcast() {
+        FeaturedBroadcastDto featured = broadcastMapper.findFeaturedLiveBroadcast();
+
+        if (featured != null && featured.getScheduleNo() != null) {
+            List<String> keywords = broadcastMapper.findKeywordsByScheduleNo(featured.getScheduleNo());
+            featured.setKeywords(keywords);
+        }
+
+        return featured;
+    }
 }

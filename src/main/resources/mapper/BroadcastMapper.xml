@@ -190,4 +190,26 @@
         FROM broadcast
         WHERE schedule_no = #{scheduleNo}
     </select>
+
+    <!--  홈화면에 띄울 라이브  -->
+    <select id="findFeaturedLiveBroadcast" resultType="com.lawnroad.broadcast.live.dto.FeaturedBroadcastDto">
+        SELECT
+        b.no AS broadcastNo,
+        b.session_id AS sessionId,
+        bs.name AS title,
+        bs.no AS scheduleNo,
+        l.name AS lawyerName,
+        l.profile AS lawyerProfile,
+        c.name AS categoryName,
+        bs.thumbnail_path AS thumbnailPath
+        FROM broadcast b
+        JOIN broadcast_schedule bs ON b.schedule_no = bs.no
+        JOIN user u ON bs.user_no = u.no
+        JOIN lawyer l ON u.no = l.no
+        JOIN category c ON bs.category_no = c.no
+        WHERE b.status = 'RECORD'
+        ORDER BY b.start_time DESC
+        LIMIT 1
+    </select>
+
 </mapper>

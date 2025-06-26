@@ -1,6 +1,7 @@
 package com.lawnroad.broadcast.live.controller;
 
 import com.lawnroad.broadcast.live.dto.BroadcastStatusDto;
+import com.lawnroad.broadcast.live.dto.FeaturedBroadcastDto;
 import com.lawnroad.broadcast.live.mapper.BroadcastMapper;
 import com.lawnroad.broadcast.live.service.BroadcastService;
 import com.lawnroad.common.util.JwtTokenUtil;
@@ -50,5 +51,10 @@ public class BroadcastPublicController {
         }
 
         return ResponseEntity.ok(statusDto);
+    }
+
+    @GetMapping("/featured")
+    public FeaturedBroadcastDto getFeaturedBroadcast() {
+        return broadcastService.getFeaturedLiveBroadcast();
     }
 }
