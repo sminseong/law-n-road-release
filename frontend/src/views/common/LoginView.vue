@@ -25,7 +25,7 @@ watchEffect(() => {
 
 const clientId = ref('')
 const password = ref('')
-const remember = ref(false)
+
 
 const naverLogin = () => {
   const redirectUri = encodeURIComponent('http://localhost:5173/login')
@@ -48,7 +48,7 @@ const submitLogin = async () => {
 
     console.log('✅ 로그인 성공 응답:', res.data)
 
-    const { accessToken, refreshToken, name, nickname, no } = res.data
+    const { accessToken, refreshToken, name, nickname, no ,phone} = res.data
 
     localStorage.setItem('token', accessToken)
     localStorage.setItem('refreshToken', refreshToken)
@@ -56,6 +56,7 @@ const submitLogin = async () => {
     localStorage.setItem('name', name)
     localStorage.setItem('nickname', nickname)
     localStorage.setItem('no', no)
+    localStorage.setItem('phone', phone)
 
     console.log('🚨🚨🚨 localStorage 저장 완료! 🚨🚨🚨')
     console.log('💾 localStorage 저장된 데이터:', {
@@ -63,7 +64,8 @@ const submitLogin = async () => {
       refreshToken: localStorage.getItem('refreshToken'),
       accountType: localStorage.getItem('accountType'),
       name: localStorage.getItem('name'),
-      nickname: localStorage.getItem('nickname')
+      nickname: localStorage.getItem('nickname'),
+      phone: localStorage.getItem('phone')
     })
 
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`
@@ -90,7 +92,7 @@ const submitLogin = async () => {
     if (err.response) {
       alert(`로그인 실패: ${err.response.data}`)
     } else {
-      alert('네트워크 오류 또는 서버 응답 없음')
+      alert('로그인 정보가 일치하지 않습니다.')
     }
   }
 }
@@ -107,7 +109,6 @@ function parseJwt(token) {
   }
 }
 
-// ✅ 기존 onMounted 삭제하고, 아래처럼 watchEffect로 소셜 로그인 토큰 감지
 watchEffect(async () => {
   const queryToken = route.query.token
   if (queryToken) {
@@ -124,7 +125,7 @@ watchEffect(async () => {
 
       if (role === 'LAWYER') {
         await lawyerStore.fetchLawyerInfo(no)
-        router.replace('/lawyer') // 🔄 push → replace
+        router.replace('/lawyer')
       } else {
         router.replace('/')
       }
@@ -135,7 +136,6 @@ watchEffect(async () => {
   }
 })
 </script>
-
 
 <template>
   <AccountFrame>
@@ -167,10 +167,7 @@ watchEffect(async () => {
         </div>
 
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <div class="form-check">
-            <input v-model="remember" type="checkbox" class="form-check-input" id="rememberMe" />
-            <label class="form-check-label" for="rememberMe">자동 로그인</label>
-          </div>
+
           <router-link to="/forgot-password" class="small">아이디/비밀번호 찾기</router-link>
         </div>
 
@@ -182,15 +179,15 @@ watchEffect(async () => {
           {{ tab === 'client' ? '아직 계정이 없으신가요?' : '변호사 계정이 없으신가요?' }}
         </span>
         <router-link
-            :to="tab === 'client' ? '/client/signup' : '/lawyer/signup'"
+            :to="tab === 'client' ? '/signup/client' : '/signup/lawyer'"
             class="ms-1 small"
         >
           {{ tab === 'client' ? '회원가입' : '변호사 회원가입' }}
         </router-link>
       </div>
 
-      <!-- ✅ 소셜 로그인 버튼 -->
-      <div class="text-center mt-4">
+      <!-- ✅ 소셜 로그인 버튼: 의뢰인 탭일 때만 보이게 -->
+      <div v-if="tab === 'client'" class="text-center mt-4">
         <button class="btn btn-outline-success w-100" @click="naverLogin">
           네이버로 로그인
         </button>

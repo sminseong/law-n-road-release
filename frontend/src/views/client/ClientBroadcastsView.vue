@@ -322,9 +322,18 @@ export default defineComponent({
                   // 금칙어/경고 메시지(본인만 알림)
                   if (data.type === "WARNING") {
                     if (data.userNo === myNo.value) {
-                      alert(data.message || "🚨욕설 또는 부적절한 내용이 포함되어 있습니다");
+                      alert(data.message || "🚨욕설 또는 부적절한 내용이 포함되어 있습니다!");
                     }
                     return;
+                  }
+                  // 메시지 id(no)가 이미 있으면 내용만 바꿔치기(블라인드 반영)
+                  if (data.no !== undefined && data.no !== null) {
+                    const idx = messages.value.findIndex((m) => m.no === data.no);
+                    if (idx !== -1) {
+                      // 기존 메시지 내용을 갱신 (메시지, blind 등 모든 필드 교체)
+                      messages.value[idx] = { ...messages.value[idx], ...data };
+                      return;
+                    }
                   }
 
                   // 입장 메시지는 여기서만 push! (중복 방지)
@@ -372,7 +381,6 @@ export default defineComponent({
       });
     };
 
-// 5분(300,000ms)이면 300000, 30초는 30000
     const startAutoNotice = () => {
       if (noticeInterval) clearInterval(noticeInterval); // 중복 방지
       noticeInterval = setInterval(async () => {

@@ -3,8 +3,8 @@ import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import { nextTick, onMounted, ref, watch, computed } from "vue";
 import axios from "axios";
 import { useRoute } from "vue-router";
-import {getValidToken} from "@/libs/axios-auth.js";
 import basicThumbnail from '@/assets/images/thumbnail/basic_thumbnail.png';
+import { getValidToken } from "@/libs/axios-auth.js";
 
 const nickname = ref('');
 const inputContent = ref('');
@@ -13,6 +13,14 @@ const route = useRoute();
 const scheduleNo = route.params.scheduleNo;
 const myUserNo = ref(null);
 const preQuestionList = ref(null);
+
+// base64url -> base64 변환 및 디코딩 (JWT 대응)
+function base64UrlDecode(str) {
+  if (!str) return '';
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (str.length % 4) str += '=';
+  return atob(str);
+}
 
 // 스크롤 하단 이동 함수
 const scrollToPreQuestionBottom = () => {
@@ -33,9 +41,7 @@ watch(
 // 이미 질문 등록 여부
 const alreadyAsked = computed(() => {
   if (!preQuestion.value.preQuestions || !myUserNo.value) return false;
-  return preQuestion.value.preQuestions.some(
-      q => q.userNo === myUserNo.value
-  );
+  return preQuestion.value.preQuestions.some(q => q.userNo === myUserNo.value);
 });
 
 // 방송 시작 시간 기준 사전질문 입력 가능 여부
@@ -53,25 +59,30 @@ function getMsToStart() {
 }
 function autoReloadWhenNeeded() {
   const msLeft = getMsToStart();
-  // startTime이 없는 경우 패스
   if (msLeft === null) return;
-  // 이미 10분 이내라면(입력창 애초에 안보임): 새로고침 예약 X
   if (msLeft <= 10 * 60 * 1000) return;
-  // 10분 전에 들어온 경우 → 10분 남았을 때 새로고침 딱 한 번만 예약
   setTimeout(() => {
     location.reload();
   }, msLeft - 10 * 60 * 1000);
 }
 
-
 onMounted(async () => {
   const token = await getValidToken();
   if (token) {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    myUserNo.value = payload.no;
+    try {
+      const payloadStr = token.split('.')[1];
+      if (payloadStr) {
+        const decoded = base64UrlDecode(payloadStr);
+        const payload = JSON.parse(decoded);
+        myUserNo.value = payload.no;
+      }
+    } catch (e) {
+      myUserNo.value = null;
+      console.warn("JWT decode error:", e);
+    }
   }
 
-  const preQRes = await axios.get(`/api/broadcasts/schedule/${scheduleNo}/preQuestion`);
+  const preQRes = await axios.get(`/api/client/broadcasts/schedule/${scheduleNo}/preQuestion`);
   const data = preQRes.data;
 
   if (Array.isArray(data.preQuestions)) {
@@ -101,7 +112,7 @@ const submitQuestion = async () => {
   }
   try {
     await axios.post(
-        `/api/broadcasts/schedule/${scheduleNo}/preQuestion`,
+        `/api/client/broadcasts/schedule/${scheduleNo}/preQuestion`,
         {
           scheduleNo: scheduleNo,
           nickname: nickname.value,
@@ -115,7 +126,7 @@ const submitQuestion = async () => {
     );
     inputContent.value = '';
     alert('질문이 등록되었습니다.');
-    const preQRes = await axios.get(`/api/broadcasts/schedule/${scheduleNo}/preQuestion`);
+    const preQRes = await axios.get(`/api/client/broadcasts/schedule/${scheduleNo}/preQuestion`);
     preQuestion.value = preQRes.data;
     scrollToPreQuestionBottom();
     autoReloadWhenNeeded();
@@ -128,14 +139,12 @@ const deleteQuestion = async (q) => {
   if (!confirm('정말 삭제하시겠습니까?')) return;
   try {
     await axios.delete(
-        `/api/broadcasts/schedule/${scheduleNo}/preQuestion/${q.no}`,
+        `/api/client/broadcasts/schedule/${scheduleNo}/preQuestion/${q.no}`,
         {
           headers: { Authorization: `Bearer ${await getValidToken()}` }
         }
     );
     location.reload();
-    // 아래 코드는 실제로는 필요 없음 (새로고침됨)
-    // scrollToPreQuestionBottom();
   } catch (e) {
     alert('삭제에 실패했습니다.');
   }

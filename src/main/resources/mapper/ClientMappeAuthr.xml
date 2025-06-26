@@ -99,7 +99,9 @@
             phone,
             content,
             alert_content,
-            social_id
+            social_id,
+            is_consult_alert
+
         )
         VALUES (
                    #{no},
@@ -110,10 +112,42 @@
                    #{phone},
                    #{content},
                    #{alert_content},
-                   #{social_id}
+                   #{social_id},
+                   #{is_consult_alert}
                )
     </insert>
 
+
+
+    <select id="selectClients" resultType="com.lawnroad.account.dto.ClientDto">
+        SELECT
+        c.no,
+        'CLIENT' AS type,
+        c.name,
+        c.client_id AS id,
+        c.phone,
+        c.email,
+        c.created_at,
+        CASE
+        WHEN c.withdrawal_at IS NULL THEN '회원'
+        ELSE '탈퇴'
+        END AS status
+        FROM client c
+        <where>
+            <if test="status != null and status != ''">
+                <choose>
+                    <when test="status == '회원'">
+                        c.withdrawal_at IS NULL
+                    </when>
+                    <when test="status == '탈퇴'">
+                        c.withdrawal_at IS NOT NULL
+                    </when>
+                </choose>
+            </if>
+        </where>
+        ORDER BY c.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
 
 
 </mapper>

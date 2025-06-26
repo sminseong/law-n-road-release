@@ -33,4 +33,7 @@ public class ChatDTO {
 
     /** 채팅 타입 */
     private String type;
+    private boolean blind = false;  // 블라인드 여부
+    private boolean checked = false; // 금칙어 검사 여부
+
 }

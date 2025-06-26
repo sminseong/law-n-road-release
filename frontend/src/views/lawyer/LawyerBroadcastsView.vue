@@ -429,37 +429,37 @@ async function fetchMyNo() {
 }
 
 // STOMP 연결 및 입장 메시지 전송
-const connect = () => {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    alert("로그인이 필요합니다!");
-    return;
-  }
-  fetchMyNo().then((ok) => {
-    if (!ok) return;
-    stompClient.value = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
-      reconnectDelay: 5000,
-      connectHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
-      onConnect: () => {
-        stompClient.value.subscribe(
-            `/topic/${broadcastNo.value}`,
-            (msg) => {
-              const data = JSON.parse(msg.body);
-              if (data.type === "WARNING") {
-                // 나의 userNo와 일치할 때만 알림
-                if (data.userNo === myNo.value) {
-                  alert(data.message || "금칙어 또는 욕설이 포함되어 있습니다!");
+    const connect = () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert("로그인이 필요합니다!");
+        return;
+      }
+      fetchMyNo().then((ok) => {
+        if (!ok) return;
+        stompClient.value = new Client({
+          webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+          reconnectDelay: 5000,
+          connectHeaders: {
+            Authorization: `Bearer ${token}`,
+          },
+          onConnect: () => {
+            stompClient.value.subscribe(
+                `/topic/${broadcastNo.value}`,
+                (msg) => {
+                  const data = JSON.parse(msg.body);
+                  if (data.type === "WARNING") {
+                    // 나의 userNo와 일치할 때만 알림
+                    if (data.userNo === myNo.value) {
+                      alert(data.message || "🚨욕설 또는 부적절한 내용이 포함되어 있습니다!");
+                    }
+                    return;
+                  }
+                  // 그 외(일반 채팅)는 채팅창에 추가
+                  messages.value.push(data);
+                  scrollToBottom();
                 }
-                return;
-              }
-              // 그 외(일반 채팅)는 채팅창에 추가
-              messages.value.push(data);
-              scrollToBottom();
-            }
-        );
+            );
 
         //입장 시 type: "ENTER"만 전달
         stompClient.value.publish({
