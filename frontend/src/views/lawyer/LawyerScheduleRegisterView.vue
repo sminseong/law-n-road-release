@@ -232,7 +232,10 @@ const goBack = () => {
           <!-- 오른쪽 영역 -->
           <div class="col-md-6 ps-md-4">
             <div class="mb-3">
-              <label class="form-label text-label">썸네일 이미지</label>
+              <label class="form-label text-label">
+                썸네일 이미지
+                <span class="text-muted fs-6 ms-2">(16:9 비율 권장)</span>
+              </label>
               <div class="preview-box mb-2 d-flex align-items-center justify-content-center border rounded">
                 <img v-if="previewUrl" :src="previewUrl" alt="미리보기" class="img-fluid h-100" style="object-fit: contain" />
                 <span v-else class="text-muted">이미지가 없습니다</span>
