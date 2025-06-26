@@ -3,6 +3,7 @@
 import { useRoute, useRouter } from 'vue-router'
 import {onMounted, onBeforeUnmount, ref} from 'vue'
 import axios from "axios";
+import { Offcanvas } from 'bootstrap'
 
 const router = useRouter()
 const route = useRoute()
@@ -53,10 +54,28 @@ onMounted(() => {
     nickname.value = nick
   }
 
+  document.addEventListener('mousemove', updateGradient)
+
+  // 백드롭 클릭 시 offcanvas 숨기기
+  const backdropHandler = (e) => {
+    if (e.target.classList.contains('offcanvas-backdrop')) {
+      const el = document.getElementById('navbar-default')
+      const inst = Offcanvas.getInstance(el)
+      if (inst) inst.hide()
+
+      document.querySelectorAll('.offcanvas-backdrop').forEach(b => b.remove())
+    }
+  }
+  document.body.addEventListener('click', backdropHandler)
+
+  // 핸들러를 later에 제거할 수 있도록 전역에 저장
+  window.__backdropHandler__ = backdropHandler
+
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('mousemove', updateGradient)
+  document.body.removeEventListener('click', window.__backdropHandler__)
 })
 
 const logout = async () => {
@@ -116,7 +135,7 @@ const logout = async () => {
               <!-- 모바일 전용 로고 -->
               <div class="d-flex justify-content-between w-100 d-lg-none">
                 <a class="navbar-brand" href="/">
-                  <img src="@/assets/images/logo/logo.png" />
+                  <img src="@/assets/images/logo/logo-dark.png" />
                 </a>
 
                 <!-- 모바일 아이콘 + 햄버거 아이콘 -->
@@ -127,7 +146,7 @@ const logout = async () => {
                       <!-- 로그인 상태일 때 -->
                       <a
                           href="#"
-                          class="text-muted"
+                          class="text-white"
                           @click.prevent="goToMyPage"
                       >
                         <svg
@@ -147,10 +166,10 @@ const logout = async () => {
                         </svg>
                       </a>
 
-                      <div v-if="role === 'client'" class="ms-2 list-inline-item">
+                      <div v-if="role === 'client'" class="ms-4 list-inline-item">
                         <!-- 장바구니 아이콘 -->
                         <a
-                            class="text-muted position-relative"
+                            class="text-white position-relative"
                             href="/client/cart"
                             role="button"
                             aria-controls="offcanvasRight"
@@ -175,11 +194,11 @@ const logout = async () => {
                         </a>
                       </div>
 
-                      <div class="ms-1 list-inline-item">
+                      <div class="ms-3 list-inline-item">
                         <!-- 로그아웃 아이콘: logout 호출 -->
                         <a
                             href="#"
-                            class="text-muted"
+                            class="text-white"
                             @click="logout"
                             title="로그아웃"
                         >
@@ -204,7 +223,7 @@ const logout = async () => {
                     </div>
                     <!-- 비로그인 상태일 때 -->
                     <div v-else>
-                      <router-link to="/login" class="btn btn-primary">로그인</router-link>
+                      <router-link to="/login" class="btn btn-login-custom">로그인</router-link>
                     </div>
                   </div>
                   <!-- 햄버거 버튼 -->
@@ -222,7 +241,7 @@ const logout = async () => {
                         width="32"
                         height="32"
                         fill="currentColor"
-                        class="bi bi-text-indent-left text-primary"
+                        class="bi bi-text-indent-left text-white"
                         viewBox="0 0 16 16"
                     >
                       <path
@@ -239,33 +258,32 @@ const logout = async () => {
               <form action="#">
                 <div class="input-group">
                   <input
-                      class="form-control rounded"
+                      class="form-control rounded-start"
                       type="search"
                       name="search"
                       placeholder="궁금하신 법률 문제를 검색해보세요"
                   />
-                  <span class="input-group-append">
-                    <button
-                        class="btn bg-white border border-start-0 ms-n10 rounded-0 rounded-end"
-                        type="button"
+                  <button
+                      class="btn border border-start-0 rounded-end text-dark"
+                      style="background-color: #a8abc1;"
+                      type="button"
+                  >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="feather feather-search"
                     >
-                      <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          class="feather feather-search"
-                      >
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                      </svg>
-                    </button>
-                  </span>
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                  </button>
                 </div>
               </form>
             </div>
@@ -277,13 +295,13 @@ const logout = async () => {
             <div class="col-md-2 col-xxl-1 text-end d-none d-lg-block">
               <div v-if="isLoggedIn" class="d-flex align-items-center justify-content-end gap-2">
                 <span class="text-muted me-1" style="min-width: 150px;">
-                  <strong class="text-primary">{{ nickname }}</strong> 님 환영합니다.
+                  <strong class="text-white">{{ nickname }}</strong> 님 환영합니다.
                 </span>
                 <div class="list-inline-item">
                   <!-- 사용자 아이콘: goToMyPage 호출 -->
                   <a
                       href="#"
-                      class="text-muted"
+                      class="text-white"
                       @click.prevent="goToMyPage"
                       title="마이페이지"
                   >
@@ -308,7 +326,7 @@ const logout = async () => {
                 <div v-if="role === 'client'" class="list-inline-item">
                   <!-- 장바구니 아이콘 -->
                   <a
-                      class="text-muted position-relative"
+                      class="text-white position-relative"
                       href="/client/cart"
                       role="button"
                       aria-controls="offcanvasRight"
@@ -337,7 +355,7 @@ const logout = async () => {
                   <!-- 로그아웃 아이콘: logout 호출 -->
                   <a
                       href="#"
-                      class="text-muted"
+                      class="text-white"
                       @click="logout"
                       title="로그아웃"
                   >
@@ -361,7 +379,7 @@ const logout = async () => {
                 </div>
               </div>
               <div v-else>
-                <router-link to="/login" class="btn btn-primary">로그인</router-link>
+                <router-link to="/login" class="btn btn-login-custom">로그인</router-link>
               </div>
             </div>
 
@@ -374,10 +392,10 @@ const logout = async () => {
         <div class="container px-0 px-md-3">
 
           <!-- 모바일용 네비게이션 (햄버거 버튼 클릭시 등장) -->
-          <div class="offcanvas offcanvas-start p-4 p-lg-0" id="navbar-default">
+          <div class="offcanvas offcanvas-start p-4 p-lg-0" id="navbar-default" data-bs-backdrop="true" data-bs-keyboard="true" data-bs-scroll="false">
             <!-- 햄버거창 로고 -->
             <div class="d-flex justify-content-between align-items-center mb-2 d-block d-lg-none">
-              <a href="/"><img src="@/assets/images/logo/logo.png" alt="eCommerce HTML Template" /></a>
+              <a href="/"><img src="@/assets/images/logo/logo-dark.png" alt="eCommerce HTML Template" /></a>
               <!-- 햄버거창 닫기 버튼 -->
               <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
@@ -387,33 +405,32 @@ const logout = async () => {
               <form action="#">
                 <div class="input-group">
                   <input
-                      class="form-control rounded"
+                      class="form-control rounded-start"
                       type="search"
                       name="search"
                       placeholder="궁금하신 법률 문제를 검색해보세요"
                   />
-                  <span class="input-group-append">
-                    <button
-                        class="btn bg-white border border-start-0 ms-n10 rounded-0 rounded-end"
-                        type="button"
+                  <button
+                      class="btn border border-start-0 rounded-end text-dark"
+                      style="background-color: #a8abc1;"
+                      type="button"
+                  >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="feather feather-search"
                     >
-                      <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          class="feather feather-search"
-                      >
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                      </svg>
-                    </button>
-                  </span>
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                  </button>
                 </div>
               </form>
             </div>
@@ -446,22 +463,22 @@ const logout = async () => {
             <div class="d-block d-lg-none h-100" data-simplebar="">
               <ul class="navbar-nav">
                 <li class="nav-item">
-                  <a class="nav-link" href="/">홈</a>
+                  <a class="nav-link" :class="{ active: route.path === '/' }" href="/">홈</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/client/broadcasts">라이브 방송</a>
+                  <a class="nav-link" :class="{ active: route.path.startsWith('/client/broadcasts') }" href="/client/broadcasts">라이브 방송</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/replay">방송 다시보기</a>
+                  <a class="nav-link" :class="{ active: route.path.startsWith('/replay') }" href="/replay">방송 다시보기</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/templates">법률서류 템플릿</a>
+                  <a class="nav-link" :class="{ active: route.path.startsWith('/templates') }" href="/templates">법률서류 템플릿</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/qna">법률Q&A</a>
+                  <a class="nav-link" :class="{ active: route.path.startsWith('/qna') }" href="/qna">법률Q&A</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/ci">브랜드 가치</a>
+                  <a class="nav-link" :class="{ active: route.path.startsWith('/ci') }" href="/ci">브랜드 가치</a>
                 </li>
               </ul>
             </div>
@@ -475,54 +492,152 @@ const logout = async () => {
 </template>
 
 <style scoped>
+
 /* 브랜드 컬러: 짙은 남색 계열 */
 .header-bg {
-  background-color: #0D1A36;
+  background-color: #394663;
   color: white;
 }
 
+/* 공통 네비게이션 스타일 */
 .navbar-nav .nav-link {
   color: white !important;
   padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
+  border-radius: 0.5rem; /* ← 상하좌우 모두 둥글게 */
+  display: inline-block;
+  transition: background-color 0.2s, color 0.2s;
 }
 
+input.form-control {
+  background-color: #f1f3f5; /* 약간 부드러운 회색 */
+  border: none;
+  color: #24364a;
+}
+
+input.form-control::placeholder {
+  color: #6c757d;
+}
+
+/* 선택된 메뉴 스타일 - 밝은 강조 배경 */
 .navbar-nav .nav-link.active {
-  background-color: white;
-  color: #0D1A36 !important;
+  background-color: #445b7c;
+  color: white !important;
   font-weight: bold;
 }
 
-/* 헤더 내부 요소 전체 흰색화 (글자 + 아이콘) */
-.header-bg a,
+/* 헤더 내부 아이콘/텍스트 모두 흰색 유지 */
+.header-bg a:not(.btn),
 .header-bg span,
-.header-bg svg,
 .header-bg .feather {
   color: white !important;
-  stroke: white !important;
-  fill: white !important;
 }
 
-/* hover 시 강조 */
-.header-bg .nav-link:hover {
-  background-color: white;
-  color: #0D1A36 !important;
-  text-decoration: underline;
-}
-
-/* 현재 경로 활성화 강조 */
-.header-bg .nav-link.active {
-  color: #0D1A36 !important;
-  font-weight: bold;
-}
-
+/* 헤더 위치 */
 header {
   position: fixed;
-  z-index: 1050; /* 필요에 따라 조절 */
-  /* 초기 CSS 변수를 중앙으로 설정 */
+  z-index: 1050;
   width: 100%;
   --x: 50%;
   --y: 50%;
+}
+
+.btn-login-custom {
+  background-color: white;
+  color: #24364a !important; /* ← 덮어쓰기 */
+  border: 1px solid white;
+  font-weight: 500;
+  padding: 6px 16px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.btn-login-custom:hover {
+  background-color: #f0f0f0;
+  color: #1c2b42 !important; /* ← 덮어쓰기 */
+  text-decoration: none;
+}
+
+
+.input-group-append button svg {
+  stroke: #495057 !important; /* 부드러운 다크그레이 */
+}
+
+.input-group-append button {
+  background-color: #f8f9fa  !important; /* 배경색 */
+  border-color: #ced4da !important;     /* 테두리색 */
+}
+
+/* 햄버거 창(offcanvas) 배경색을 헤더와 동일하게 */
+.offcanvas {
+  background-color: #394663 !important;
+  color: white !important;
+}
+
+/* 햄버거 창 내부 모든 텍스트를 흰색으로 */
+.offcanvas * {
+  color: white !important;
+}
+
+/* 햄버거 창 내부 검색창도 동일한 스타일 적용 */
+.offcanvas input.form-control {
+  background-color: #f1f3f5;
+  border: none;
+  color: #24364a;
+}
+
+.offcanvas .btn-close {
+  filter: invert(1) !important;
+}
+
+.offcanvas input.form-control::placeholder {
+  color: #6c757d;
+}
+
+.offcanvas .input-group-append button {
+  background-color: #f8f9fa !important;
+  border-color: #ced4da !important;
+}
+
+/* 햄버거 창 내부 네비게이션 링크 스타일 */
+.offcanvas .navbar-nav .nav-link {
+  color: white !important;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  display: block; /* inline-block 대신 block 사용 */
+  transition: background-color 0.2s, color 0.2s;
+  text-decoration: none !important; /* 밑줄 제거 */
+  border: none !important; /* 테두리 제거 */
+  margin-bottom: 0.25rem; /* 메뉴 간격 추가 */
+}
+
+
+
+/* 전역 또는 scoped CSS 에 넣으셔도 됩니다 */
+.form-control:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+::v-deep .navbar-nav .nav-link.active:hover {
+  background-color: #4F5F7A !important;
+  color: white        !important;
+}
+/* hover 시 - 약간 더 진한 배경 */
+.navbar-nav .nav-link:hover:not(.active) {
+  background-color: #4F5F7A !important;
+  color: white !important;
+}
+
+/* 검색 input 버튼 그룹 전체에서 불필요한 테두리 없애기 */
+.input-group .form-control,
+.input-group .btn {
+  border: none !important;
+}
+
+/* input 포커스 아웃라인/박스쉐도우 완전 제거 */
+.input-group .form-control:focus {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 </style>
