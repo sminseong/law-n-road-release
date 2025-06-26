@@ -25,6 +25,15 @@ function go(path, label) {
 }
 
 function logout() {
+  // ✅ 1. 로컬스토리지 항목 삭제
+  localStorage.removeItem('token')
+
+  localStorage.removeItem('accountType')
+  localStorage.removeItem('name')
+  localStorage.removeItem('no')
+
+  // ✅ 2. Axios 인증 헤더 제거
+  //delete axios.defaults.headers.common['Authorization']
   console.log('로그아웃')
   router.push('/')
 }

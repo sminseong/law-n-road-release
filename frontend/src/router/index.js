@@ -22,21 +22,21 @@ router.beforeEach((to, from, next) => {
     if (to.path.startsWith('/lawyer')) {
         if (!token || role !== 'lawyer') {
             alert('변호사만 접근 가능한 페이지입니다. 다시 로그인 해주세요 ^^')
-            return next('/login')
+            return next('/')
         }
     }
 
     if (to.path.startsWith('/client')) {
         if (!token || role !== 'client') {
             alert('일반 사용자만 접근 가능한 페이지입니다. 다시 로그인 해주세요 ^^')
-            return next('/login')
+            return next('/')
         }
     }
 
     if (to.path.startsWith('/admin')) {
         if (!token || role !== 'admin') {
             alert('관리자만 접근 가능한 페이지입니다. 다시 로그인 해주세요 ^^')
-            return next('/login')
+            return next('/')
         }
     }
 
