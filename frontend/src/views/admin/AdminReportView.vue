@@ -38,32 +38,7 @@ function handlePenalty(row) {
       })
 }
 
-// 입력값 기반 패널티 부여
-function handlePenaltyByInput() {
-  const broadcastNo = searchKeyword.value.trim()
-  if (!broadcastNo) {
-    alert('방송번호를 입력해주세요.')
-    return
-  }
 
-  if (!/^\d+$/.test(broadcastNo)) {
-    alert('숫자 형식의 방송번호만 입력 가능합니다.')
-    return
-  }
-
-  if (!confirm(`방송번호 ${broadcastNo}에 대해 패널티를 부여하시겠습니까?`)) return
-
-  axios.post('/api/admin/report/penalty', { broadcastNo })
-      .then(() => {
-        alert('패널티 부여 완료')
-        fetchReports()
-        searchKeyword.value = ''
-      })
-      .catch(e => {
-        console.error('패널티 부여 실패:', e)
-        alert(e?.response?.data?.message || '패널티 처리 중 오류가 발생했습니다.')
-      })
-}
 
 onMounted(() => {
   fetchReports()
@@ -75,19 +50,7 @@ onMounted(() => {
     <div class="container py-5">
       <h2 class="mb-4">미처리 신고 목록</h2>
 
-      <!-- 방송번호 입력 + 버튼 -->
-      <div class="input-group mb-3" style="max-width: 400px;">
-        <input
-            v-model="searchKeyword"
-            type="text"
-            class="form-control"
-            placeholder="방송번호 입력"
-            @keyup.enter="handlePenaltyByInput"
-        />
-        <button class="btn btn-danger" @click="handlePenaltyByInput" :disabled="isLoading">
-          패널티 부여
-        </button>
-      </div>
+
 
       <!-- CustomTable 그대로 유지 -->
       <CustomTable

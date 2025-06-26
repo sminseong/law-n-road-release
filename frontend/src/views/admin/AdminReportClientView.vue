@@ -39,32 +39,7 @@ function handlePenalty(row) {
 
 
 
-// 사용자 번호 기반 패널티 부여
-function handlePenaltyByUserNo() {
-  const userNo = userNoKeyword.value.trim();
-  if (!userNo) {
-    alert('사용자 번호를 입력해주세요.');
-    return;
-  }
 
-  if (!/^\d+$/.test(userNo)) {
-    alert('숫자 형식의 사용자 번호만 입력 가능합니다.');
-    return;
-  }
-
-  if (!confirm(`사용자 번호 ${userNo}에 대해 패널티를 부여하시겠습니까?`)) return;
-
-  axios.post('/api/admin/report/penalty/client', { userNo })
-      .then(() => {
-        alert('패널티 부여 완료');
-        fetchReports();
-        userNoKeyword.value = '';
-      })
-      .catch(e => {
-        console.error('패널티 부여 실패:', e);
-        alert(e?.response?.data?.message || '패널티 처리 중 오류가 발생했습니다.');
-      });
-}
 
 onMounted(() => {
   fetchReports();
@@ -77,18 +52,7 @@ onMounted(() => {
       <h2 class="mb-4">미처리 신고 목록</h2>
 
       <!-- 사용자 번호 기반 입력 -->
-      <div class="input-group mb-4" style="max-width: 400px;">
-        <input
-            v-model="userNoKeyword"
-            type="text"
-            class="form-control"
-            placeholder="사용자 번호 입력"
-            @keyup.enter="handlePenaltyByUserNo"
-        />
-        <button class="btn btn-warning" @click="handlePenaltyByUserNo" :disabled="isLoading">
-          사용자 번호 패널티
-        </button>
-      </div>
+
 
       <!-- 테이블 출력 -->
       <CustomTable

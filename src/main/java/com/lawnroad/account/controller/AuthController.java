@@ -343,8 +343,10 @@ public ResponseEntity<?> lawyerSignup(
         boolean success;
 
         if ("client".equalsIgnoreCase(request.getUserType())) {
+
             success = clientService.resetPassword(request.getUserId(), request.getEmail(), request.getFullName(), request.getNewPassword());
         } else if ("lawyer".equalsIgnoreCase(request.getUserType())) {
+            System.out.println("컨트롤러 비밀번호 재설정 들어감");
             success = lawyerService.resetPassword(request.getUserId(), request.getEmail(), request.getFullName(), request.getNewPassword());
         } else {
             return ResponseEntity.badRequest().body("잘못된 사용자 유형입니다.");
