@@ -12,15 +12,12 @@ const originalPhone = localStorage.getItem('phone') || ''
 const nickname = ref(originalNickname)
 const phone = ref(originalPhone)
 
-// 이메일 초기화
+// 이메일 입력 관련 상태
 const emailId = ref(originalEmail.split('@')[0] || '')
+const domainList = ['gmail.com', 'naver.com', 'daum.net', 'custom']
 const savedDomain = originalEmail.split('@')[1] || 'gmail.com'
-const emailDomainSelect = ref(
-    ['gmail.com', 'naver.com', 'daum.net'].includes(savedDomain) ? savedDomain : 'custom'
-)
-const emailDomainCustom = ref(
-    emailDomainSelect.value === 'custom' ? savedDomain : ''
-)
+const emailDomainSelect = ref(domainList.includes(savedDomain) ? savedDomain : 'custom')
+const emailDomainCustom = ref(emailDomainSelect.value === 'custom' ? savedDomain : '')
 
 const email = computed(() => {
   return (
@@ -29,8 +26,7 @@ const email = computed(() => {
   )
 })
 
-// 프로필 GET
-const fetchProfile = async () => {
+onMounted(async () => {
   try {
     const res = await makeApiRequest({ method: 'get', url: '/api/client/profile' })
     if (res?.data) {
@@ -38,7 +34,7 @@ const fetchProfile = async () => {
       phone.value = res.data.phone
       const [id, domain] = res.data.email.split('@')
       emailId.value = id
-      if (['gmail.com', 'naver.com', 'daum.net'].includes(domain)) {
+      if (domainList.includes(domain)) {
         emailDomainSelect.value = domain
         emailDomainCustom.value = ''
       } else {
@@ -49,13 +45,8 @@ const fetchProfile = async () => {
   } catch (err) {
     console.error('프로필 조회 실패:', err)
   }
-}
-
-onMounted(() => {
-  fetchProfile()
 })
 
-// 프로필 수정
 const updateProfile = async () => {
   if (!nickname.value.trim() || !email.value.trim() || !phone.value.trim()) {
     alert('모든 정보를 입력해주세요.')
@@ -95,18 +86,14 @@ const updateProfile = async () => {
   }
 }
 
-// 회원 탈퇴
 const withdrawAccount = async () => {
   if (!confirm('정말로 회원 탈퇴하시겠습니까?')) return
   try {
-    const res = await makeApiRequest({
-      method: 'delete',
-      url: '/api/client/withdraw'
-    })
+    const res = await makeApiRequest({ method: 'delete', url: '/api/client/withdraw' })
     if (res) {
       localStorage.clear()
       alert('회원 탈퇴가 완료되었습니다.')
-      router.push('/login')
+      router.push('/')
     }
   } catch (err) {
     console.error('❌ 회원 탈퇴 실패:', err)
@@ -125,44 +112,33 @@ const withdrawAccount = async () => {
 
       <div class="form-group">
         <label for="nickname">닉네임</label>
-        <input
-            id="nickname"
-            v-model="nickname"
-            class="form-control"
-            type="text"
-            placeholder="새 닉네임을 입력하세요"
-        />
+        <input id="nickname" v-model="nickname" class="form-control" type="text" placeholder="새 닉네임 입력" />
       </div>
 
       <div class="form-group">
         <label>이메일</label>
         <div class="email-row">
-          <input v-model="emailId" class="form-control" placeholder="이메일 아이디 입력" />
+          <input v-model="emailId" class="form-control small" placeholder="아이디 입력" />
           <span class="at">@</span>
-          <template v-if="emailDomainSelect !== 'custom'">
-            <select v-model="emailDomainSelect" class="form-control">
-              <option value="gmail.com">gmail.com</option>
-              <option value="naver.com">naver.com</option>
-              <option value="daum.net">daum.net</option>
-              <option value="custom">직접입력</option>
-            </select>
-          </template>
-          <template v-else>
-            <input v-model="emailDomainCustom" class="form-control" placeholder="도메인 직접 입력" />
-          </template>
+          <select v-model="emailDomainSelect" class="form-control small">
+            <option value="gmail.com">gmail.com</option>
+            <option value="naver.com">naver.com</option>
+            <option value="daum.net">daum.net</option>
+            <option value="custom">직접입력</option>
+          </select>
+          <input
+              v-if="emailDomainSelect === 'custom'"
+              v-model="emailDomainCustom"
+              class="form-control small"
+              placeholder="도메인 입력"
+          />
         </div>
         <p class="text-muted">현재 이메일: {{ email }}</p>
       </div>
 
       <div class="form-group">
         <label for="phone">전화번호</label>
-        <input
-            id="phone"
-            v-model="phone"
-            class="form-control"
-            type="tel"
-            placeholder="전화번호를 입력하세요"
-        />
+        <input id="phone" v-model="phone" class="form-control" type="tel" placeholder="전화번호 입력" />
       </div>
 
       <div class="btn-group">
@@ -218,11 +194,16 @@ label {
   border: 1px solid #ccc;
   border-radius: 6px;
 }
+.form-control.small {
+  width: auto;
+  min-width: 100px;
+  flex: 1;
+}
 .email-row {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
   align-items: center;
+  flex-wrap: wrap;
 }
 .at {
   font-weight: bold;

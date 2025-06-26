@@ -28,6 +28,8 @@ public interface AdminReportMapper {
 
     void releaseClientStop();
 
+    void applyPenaltyClient_M(@Param("userNo") Long userNo);
+
 
 
 

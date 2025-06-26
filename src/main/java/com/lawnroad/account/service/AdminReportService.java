@@ -33,6 +33,10 @@ public class AdminReportService {
         adminReportMapper.markReportAsPenalized(broadcastNo);
     }
 
+    public void applyPenaltyClient(Long userNo) {
+        adminReportMapper.applyPenaltyClient_M(userNo);
+    }
+
 
     public List<ChatReportDto> getPenalizedChatReports() {
         System.out.println("getPenalizedChatReports");
