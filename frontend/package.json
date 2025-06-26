@@ -21,6 +21,7 @@
     "@tiptap/vue-3": "^2.14.0",
     "axios": "^1.10.0",
     "bootstrap": "^5.3.7",
+    "chart.js": "^4.5.0",
     "crypto-js": "^4.2.0",
     "html2pdf.js": "^0.10.3",
     "jspdf": "^3.0.1",
