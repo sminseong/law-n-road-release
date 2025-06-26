@@ -123,7 +123,7 @@ const logout = async () => {
     <!-- 본문 시작 -->
     <div class="border-bottom sticky-top shadow-extra-light header-bg" style="z-index: 9999;">
       <div class="py-4 pt-lg-3 pb-lg-0">
-        <div class="container">
+        <div class="container mt-2">
           <div class="row w-100 align-items-center gx-lg-2 gx-0">
 
             <div class="col-xxl-2 col-lg-3">
@@ -436,7 +436,7 @@ const logout = async () => {
             </div>
 
             <!-- 데스크탑용 메뉴이동 -->
-            <div class="d-none d-lg-block">
+            <div class="d-none d-lg-block mb-2">
               <ul class="navbar-nav align-items-center">
                 <li class="nav-item">
                   <a class="nav-link" :class="{ active: route.path === '/' }" href="/">홈</a>
