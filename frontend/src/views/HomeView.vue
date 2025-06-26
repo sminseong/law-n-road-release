@@ -24,6 +24,9 @@
   // 라이브 방송
   const featuredBroadcast = ref(null)
 
+  // VOD 리스트
+  const vodList = ref([])
+
   // qna 테이블
   const qnaSampleList = ref([])
 
@@ -74,24 +77,39 @@
       const res = await http.get('/api/public/broadcast/featured')
       const data = res.data
 
-      if (!data || !data.broadcastNo) {
+      if (!data || typeof data !== 'object') {
+        console.log('대표 방송이 없습니다.')
         featuredBroadcast.value = null
-        return
-      }
-
-      featuredBroadcast.value = {
-        isLive: true,
-        videoEmbedUrl: `/client/broadcasts/${data.broadcastNo}?embed=true`,
-        thumbnail: data.thumbnailPath,
-        title: data.title,
-        tags: data.keywords || [],
-        hostImage: data.lawyerProfilePath,
-        hostName: data.lawyerName,
-        hostDesc: data.categoryName,
-        broadcastNo: data.broadcastNo
+      } else {
+        featuredBroadcast.value = {
+          isLive: true,
+          videoEmbedUrl: `/client/broadcasts/${data.broadcastNo}?embed=true`,
+          thumbnail: data.thumbnailPath || basicThumbnail,
+          title: data.title,
+          tags: data.keywords || [],
+          hostImage: data.lawyerProfilePath,
+          hostName: data.lawyerName,
+          hostDesc: data.categoryName,
+          broadcastNo: data.broadcastNo
+        }
       }
     } catch (e) {
       console.error('대표 방송 정보 조회 실패:', e)
+    }
+
+    try {
+      const res = await http.get('/api/public/vod/all') // API 경로 변경
+
+      vodList.value = res.data.map(vod => ({
+        no: vod.vodNo,
+        title: vod.title,
+        thumbnail: vod.thumbnailPath || basicThumbnail,
+        link: `/vod/${vod.broadcastNo}`
+      }))
+
+      console.log('[vodList]', vodList.value)
+    } catch (e) {
+      console.error('VOD 리스트 불러오기 실패:', e)
     }
 
     try {
@@ -195,95 +213,6 @@
     }
   }
 
-  // 라이브 방송박스 (라이브온)
-  const liveBroadcast2 = {
-    isLive: true,
-    videoEmbedUrl: 'https://www.youtube.com/embed/jfKfPfyJRdk?si=ldIipCvzo-aAVoKa',
-    thumbnail: '/assets/images/thumbnail_waiting.png',
-    title: '음주운전 대응 전략 공개!',
-    tags: ['합의', '뺑소니', '음주뺑소니'],
-    hostImage: '/img/profiles/kim.png',
-    hostName: '김서연 변호사',
-    hostDesc: '교통사고 전문',
-    link: '/live.html'
-  }
-
-  // VOD 다시보기
-  const vodList = [
-    {
-      no: 1,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '음주운전 대처법',
-      link: '/replay.html'
-    },
-    {
-      no: 2,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '합의 시 유의사항',
-      link: '/replay.html'
-    },
-    {
-      no: 3,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '블랙박스 제출 전략',
-      link: '/replay.html'
-    },
-    {
-      no: 4,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '음주운전 대처법',
-      link: '/replay.html'
-    },
-    {
-      no: 5,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '합의 시 유의사항',
-      link: '/replay.html'
-    },
-    {
-      no: 6,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '블랙박스 제출 전략',
-      link: '/replay.html'
-    },
-
-    {
-      no: 1,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '음주운전 대처법',
-      link: '/replay.html'
-    },
-    {
-      no: 2,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '합의 시 유의사항',
-      link: '/replay.html'
-    },
-    {
-      no: 3,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '블랙박스 제출 전략',
-      link: '/replay.html'
-    },
-    {
-      no: 4,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '음주운전 대처법',
-      link: '/replay.html'
-    },
-    {
-      no: 5,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '합의 시 유의사항',
-      link: '/replay.html'
-    },
-    {
-      no: 6,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '블랙박스 제출 전략',
-      link: '/replay.html'
-    }
-  ]
 </script>
 
 <template>
@@ -306,7 +235,7 @@
       <div class="col-12 mb-6">
         <div class="d-flex justify-content-between align-items-center">
           <h3 class="mb-0">변호사와 함께하는 실시간 라이브 방송</h3>
-          <h5 class="mb-0 text-muted me-3" style="cursor: pointer;">더 보러가기 ></h5>
+          <h5 class="mb-0 text-muted me-3" style="cursor: pointer;" @click="router.push('/client/broadcasts/list')">더 보러가기 ></h5>
         </div>
       </div>
     </div>
@@ -328,7 +257,7 @@
       <div class="col-12 mb-6">
         <div class="d-flex justify-content-between align-items-center">
           <h3 class="mb-0">VOD 방송 다시보기</h3>
-          <h5 class="mb-0 text-muted me-3" style="cursor: pointer;">더 보러가기 ></h5>
+          <h5 class="mb-0 text-muted me-3" style="cursor: pointer;" @click="router.push('/vod/list')">더 보러가기 ></h5>
         </div>
       </div>
     </div>
