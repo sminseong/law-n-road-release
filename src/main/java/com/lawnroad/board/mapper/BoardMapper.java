@@ -15,11 +15,16 @@ public interface BoardMapper {
 
     void insertBoard(BoardCreateDto dto);
 
+    //[공개] 게시글 상세 정보 조회
     BoardDetailDto selectBoardById(Long id);
 
     int updateBoard(BoardUpdateDto dto);
 
     int deleteBoard(Long id);
 
+    //[회원] 특정 회원이 작성한 게시글 목록 조회 - 마이페이지용
     List<BoardSummaryDto> findBoardsByUserNo(@Param("userNo") Long userNo);
+
+    // 게시글 단건 조회 (채택 시 작성자 검증용)
+    BoardDetailDto findById(@Param("id") Long id);
 }

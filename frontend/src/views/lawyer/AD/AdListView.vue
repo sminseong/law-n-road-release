@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import {ref, onMounted} from 'vue'
+import {useRouter} from 'vue-router'
 import CustomTable from '@/components/table/CustomTable.vue'
 import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 import http from '@/libs/HttpRequester'
@@ -15,13 +15,13 @@ const totalPages = ref(1)
 
 // 컬럼 정의
 const columns = [
-  { label: '광고 이미지', key: 'imagePath' },
-  { label: '광고 유형', key: 'adType' },
-  { label: '승인 상태', key: 'approvalStatus' },
-  { label: '광고 상태', key: 'adStatus' },
-  { label: '시작일', key: 'startDate' },
-  { label: '종료일', key: 'endDate' },
-  { label: '관리', key: 'actions' }
+  {label: '광고 이미지', key: 'imagePath'},
+  {label: '광고 유형', key: 'adType'},
+  {label: '승인 상태', key: 'approvalStatus'},
+  {label: '광고 상태', key: 'adStatus'},
+  {label: '시작일', key: 'startDate'},
+  {label: '종료일', key: 'endDate'},
+  {label: '관리', key: 'actions'}
 ]
 
 /**
@@ -52,6 +52,7 @@ async function fetchAds(pageNo = 1) {
     }
 
     ads.value = adsData.map(ad => ({
+      orderId: ad.orderNo,
       adNo: ad.adNo,
       adType: mapAdType(ad.adType),
       mainText: ad.mainText,
@@ -128,12 +129,21 @@ async function handleDelete(row) {
 
   try {
     await http.delete(`/api/lawyer/ads/${row.adNo}`)
+    const token = localStorage.getItem('token')
+    await http.post(
+        '/api/confirm/cancel',
+        {orderNo: row.orderId},
+        {headers: {Authorization: `Bearer ${token}`}},
+    )
     await fetchAds(page.value)
-    alert('삭제되었습니다.')
+    alert('삭제 및 환불 처리 되었습니다.')
   } catch (e) {
-    console.error('삭제 실패:', e)
-    const message = e?.response?.data?.message || '삭제 중 오류가 발생했습니다.'
-    alert(message)
+    console.error('삭제(환불) 실패:', e);
+    // 백엔드가 던져준 메시지(JSON)의 구조를 보고 꺼내 옵니다.
+    const serverMsg = e.response?.data?.error ||
+        e.response?.data?.message ||
+        '환불 처리 중 오류가 발생했습니다.';
+    alert(`삭제 실패: ${serverMsg}`);
   }
 }
 
