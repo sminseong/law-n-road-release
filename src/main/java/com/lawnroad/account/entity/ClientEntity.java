@@ -18,5 +18,6 @@ public class ClientEntity {
     private int content;
     private int alert_content;
     private String social_id;
+    private int is_consult_alert;
 
 }

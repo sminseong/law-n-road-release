@@ -1,12 +1,16 @@
 package com.lawnroad.account.mapper;
 
 
+import com.lawnroad.account.dto.ClientDto;
 import com.lawnroad.account.dto.ClientProfileDTO;
 import com.lawnroad.account.entity.ClientEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+
+import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface ClientMapper {
@@ -50,6 +54,24 @@ public interface ClientMapper {
     ClientEntity findBySocialId(String socialId);
 
     void insertClientBySocial(ClientEntity client);
+
+
+
+    List<ClientDto> selectClients(
+            @Param("offset") int offset,
+            @Param("limit") int limit,
+            @Param("status") String status,
+            @Param("type") String type
+    );
+
+    int countClientList(
+            @Param("status") String status,
+            @Param("keyword") String keyword
+    );
+
+
+
+    void deleteLawyer(Long no);
 
 
 

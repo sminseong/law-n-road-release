@@ -15,12 +15,12 @@ export default [
         component: () => import('@/views/common/AdminLoginView.vue')
     },
     {
-        path: '/lawyer/signup',
+        path: '/signup/lawyer',
         name: 'LawyerSignup',
         component: () => import('@/views/common/LawyerSignupView.vue')
     },
     {
-        path: '/client/signup',
+        path: '/signup/client',
         name: 'ClientSignup',
         component: () => import('@/views/common/ClientSignupView.vue')
     },
