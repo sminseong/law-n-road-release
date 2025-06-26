@@ -35,7 +35,7 @@ function logout() {
   // ✅ 2. Axios 인증 헤더 제거
   //delete axios.defaults.headers.common['Authorization']
   console.log('로그아웃')
-  router.push('/')
+  setTimeout(() => location.reload(), 100)
 }
 
 watch(
