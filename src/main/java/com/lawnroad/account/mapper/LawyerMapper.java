@@ -38,8 +38,12 @@ public interface LawyerMapper {
             @Param("lawyerId") String lawyerId,
             @Param("officeNumber") String officeNumber,
             @Param("phone") String phone,
-            @Param("detailAddress") String detailAddress
+            @Param("detailAddress") String detailAddress,
+            @Param("zipcode") String zipcode,
+            @Param("roadAddress") String roadAddress,
+            @Param("landAddress") String landAddress
     );
+
 
     List<LawyerDTO> selectLawyerList(Map<String, Object> param);
 }

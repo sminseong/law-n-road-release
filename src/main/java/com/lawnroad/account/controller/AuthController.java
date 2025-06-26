@@ -591,10 +591,11 @@ public ResponseEntity<?> lawyerSignup(
         String officeNumber = request.get("officeNumber");
         String phone = request.get("phone");
         String detailAddress = request.get("detailAddress");
-        System.out.println(lawyerId);
-        System.out.println(officeNumber);
-        System.out.println(phone);
-        System.out.println(detailAddress);
+        // ✅ 추가된 주소 필드
+        String zipcode = request.get("zipcode");
+        String roadAddress = request.get("roadAddress");
+        String landAddress = request.get("landAddress");
+
 
 
 
@@ -602,7 +603,10 @@ public ResponseEntity<?> lawyerSignup(
                 officeNumber.trim().isEmpty() || phone.trim().isEmpty() || detailAddress.trim().isEmpty()) {
             return ResponseEntity.badRequest().body("모든 필드를 입력해주세요.");
         }
-        lawyerService.updateLawyerInfo(lawyerId, officeNumber, phone, detailAddress);
+        lawyerService.updateLawyerInfo(
+                lawyerId, officeNumber, phone, detailAddress, zipcode, roadAddress, landAddress
+        );
+
         return ResponseEntity.ok().build();
     }
     //관리자 전용 controller

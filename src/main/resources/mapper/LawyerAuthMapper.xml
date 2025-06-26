@@ -69,9 +69,13 @@
         SET
             office_number = #{officeNumber},
             phone = #{phone},
-            detail_address = #{detailAddress}
+            detail_address = #{detailAddress},
+            zipcode = #{zipcode},
+            road_address = #{roadAddress},
+            land_address = #{landAddress}
         WHERE lawyer_id = #{lawyerId}
     </update>
+
 
 
 

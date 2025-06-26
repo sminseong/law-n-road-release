@@ -4,6 +4,7 @@ import com.lawnroad.account.dto.BroadcastReportDTO;
 import com.lawnroad.account.dto.ChatReportDto;
 import com.lawnroad.account.mapper.AdminReportMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +51,13 @@ public class AdminReportService {
         if (updated == 0) {
             throw new IllegalArgumentException("해당 신고번호의 신고가 존재하지 않거나 이미 처리되었습니다.");
         }
+    }
+
+
+    @Scheduled(cron = "0 5 0 * * *")  // 매일 새벽 3시
+    public void autoReleaseClientStop() {
+        adminReportMapper.releaseClientStop();
+        System.out.println("✅ 자동 정지 해제 완료됨");
     }
 
 

@@ -15,6 +15,7 @@ async function fetchReports() {
     const params = { keyword: searchKeyword.value }
     const response = await axios.get('/api/admin/report/unpenalized', { params })
     rows.value = response.data
+    console.log(rows)
   } catch (error) {
     console.error('신고 목록 조회 실패:', error)
   } finally {
@@ -97,14 +98,13 @@ onMounted(() => {
           { label: '방송번호',      key: 'broadcastNo' },
           { label: '신고 사유 코드', key: 'reason' },
           { label: '상세 사유',     key: 'detailReason' },
-          { label: '신고일시',      key: 'createdAt' }
+          { label: '신고일시',      key: 'createdAt' },
+          { label: '관리',         key: 'actions' }
+
         ]"
           :show-search-input="true"
-          :action-buttons="{ edit: false, delete: false }"
-          :custom-actions="[
-          { label: '패널티 부여', action: handlePenalty }
-        ]"
-      />
+          :action-buttons="{ edit: false, delete: true }"
+          @delete-action="handlePenalty"/>
 
       <div v-if="isLoading" class="text-center my-4">불러오는 중...</div>
       <div v-else-if="rows.length === 0" class="text-center my-4 text-muted">미처리 신고가 없습니다.</div>

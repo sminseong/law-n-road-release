@@ -100,13 +100,13 @@ onMounted(() => {
           { label: '닉네임',          key: 'nickname' },
           { label: '신고 메시지',     key: 'message' },
           { label: '처리 상태',       key: 'reportStatus' },
-          { label: '신고일시',        key: 'createdAt' }
+          { label: '신고일시',        key: 'createdAt' },
+          { label: '관리',         key: 'actions' }
         ]"
           :show-search-input="true"
-          :action-buttons="{ edit: false, delete: false }"
-          :custom-actions="[
-          { label: '패널티 부여', action: handlePenalty }
-        ]"
+          :action-buttons="{ edit: false, delete: true }"
+          @delete-action="handlePenalty"
+
       />
 
       <div v-if="isLoading" class="text-center my-4">불러오는 중...</div>

@@ -26,7 +26,7 @@ public interface AdminReportMapper {
 
     int updateReportStatus(@Param("reportNo") Long reportNo);
 
-
+    void releaseClientStop();
 
 
 

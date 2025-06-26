@@ -99,7 +99,9 @@
             phone,
             content,
             alert_content,
-            social_id
+            social_id,
+            is_consult_alert
+
         )
         VALUES (
                    #{no},
@@ -110,7 +112,8 @@
                    #{phone},
                    #{content},
                    #{alert_content},
-                   #{social_id}
+                   #{social_id},
+                   #{is_consult_alert}
                )
     </insert>
 

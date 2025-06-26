@@ -80,6 +80,19 @@
 
 
 
+    <update id="releaseClientStop">
+        UPDATE client
+        SET is_stopped = 0,
+            stop_date = NULL
+        WHERE is_stopped = 1
+          AND stop_date IS NOT NULL
+          AND DATEDIFF(NOW(), stop_date) >= 3
+    </update>
+
+
+
+
+
 
 
 
