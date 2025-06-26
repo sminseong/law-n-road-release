@@ -380,7 +380,7 @@ const initPublisherWithDelay = async () => {
                   if (data.type === "WARNING") {
                     // 나의 userNo와 일치할 때만 알림
                     if (data.userNo === myNo.value) {
-                      alert(data.message || "금칙어 또는 욕설이 포함되어 있습니다!");
+                      alert(data.message || "🚨욕설 또는 부적절한 내용이 포함되어 있습니다!");
                     }
                     return;
                   }

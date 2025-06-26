@@ -14,6 +14,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
+
+        // 순수 WebSocket 엔드포인트 (JMeter용)
+        registry.addEndpoint("/ws-pure")
+                .setAllowedOriginPatterns("*");
     }
 
     @Override

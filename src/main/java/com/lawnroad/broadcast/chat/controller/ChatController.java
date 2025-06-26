@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,15 +53,17 @@ public class ChatController {
         Claims claims = jwtTokenUtil.parseToken(token);
 
         String nickname = claims.get("nickname", String.class);
-        Long no = claims.get("no", Long.class);
+       // Long no = claims.get("no", Long.class);
         chatDTO.setNickname(nickname);
         chatDTO.setCreatedAt(LocalDateTime.now());
-        chatDTO.setNo(no);
+        //chatDTO.setNo(no);
+        chatDTO.setBlind(false);
+        chatDTO.setChecked(false);
 
         // 공지 사항
         if ("NOTICE".equals(chatDTO.getType())) {
             chatDTO.setNickname(nickname);
-            chatDTO.setNo(no);
+           // chatDTO.setNo(no);
             chatDTO.setCreatedAt(LocalDateTime.now());
 
             messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), chatDTO);
@@ -72,26 +75,26 @@ public class ChatController {
 
         // ----------------- AI 욕설/금칙어 검사 -----------------
         String msg = chatDTO.getMessage();
-        boolean hasProhibited = clovaForbiddenService.containsProhibitedWords(msg);
-
-        // 컨트롤러에서 메시지 전송 시
-        if (hasProhibited) {
-            ChatDTO warning = ChatDTO.builder()
-                    .type("WARNING")
-                    .userNo(no)
-                    .message("⚠️ 욕설 또는 금칙어가 포함된 메시지는 전송할 수 없습니다.")
-                    .build();
-            messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), warning);
-            return;
-        }
+//        boolean hasProhibited = clovaForbiddenService.containsProhibitedWords(msg);
+//
+//        // 컨트롤러에서 메시지 전송 시
+//        if (hasProhibited) {
+//            ChatDTO warning = ChatDTO.builder()
+//                    .type("WARNING")
+//                    .userNo(no)
+//                    .message("⚠️ 욕설 또는 금칙어가 포함된 메시지는 전송할 수 없습니다.")
+//                    .build();
+//            messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), warning);
+//            return;
+//        }
 
         // Redis 장애시 MongoDB fallback
-//        try {
-//            chatRedisSaveService.saveChatMessage(chatDTO);
-//        } catch (Exception e) {
-//            chatMongodbSaveService.saveChatMessage(chatDTO);
-//        }
-        chatRedisSaveService.saveChatMessage(chatDTO);
+        try {
+            chatRedisSaveService.saveChatMessage(chatDTO);
+        } catch (Exception e) {
+            chatMongodbSaveService.saveChatMessage(chatDTO);
+        }
+
         messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), chatDTO);
 
         // ------- 자동응답 처리 -------
@@ -174,5 +177,26 @@ public class ChatController {
         Long no = claims.get("no", Long.class);
         return ResponseEntity.ok(no);
     }
+    // 0.5초마다 최근 미검사 메시지에 대해 금칙어 검사 및 블라인드 처리
+    @Scheduled(fixedDelay = 500)
+    public void blindBadMessages() {
+        List<ChatDTO> uncheckedChats = chatRedisSaveService.findUncheckedMessages(); // blind==false && checked==false
+        for (ChatDTO chat : uncheckedChats) {
+            boolean isProhibited = clovaForbiddenService.containsProhibitedWords(chat.getMessage());
+            if (isProhibited) {
+                chat.setBlind(true);
+                chat.setMessage("🚨 관리자에 의해 메시지가 가려졌습니다.");
+            }
+            chat.setChecked(true);
+            chatRedisSaveService.updateChatMessage(chat);
+
+            //  프론트에 수정된 메시지 브로드캐스트 (중요)
+            if (chat.isBlind()) {
+                messagingTemplate.convertAndSend("/topic/" + chat.getBroadcastNo(), chat);
+            }
+        }
+    }
+
+
 
 }

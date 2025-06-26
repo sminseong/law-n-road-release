@@ -47,7 +47,7 @@ public class PublicBoardController {
         return ResponseEntity.ok(resp); // 클라이언트에게 200 OK와 함께 응답 반환
     }
     //전체 게시글 수 조회
-    @GetMapping("/count") // GET /api/public/qna/count
+    @GetMapping("/count")
     public ResponseEntity<Integer> getBoardCount() {
         // 단순 count 조회 결과 반환
         return ResponseEntity.ok(boardService.getBoardCount());

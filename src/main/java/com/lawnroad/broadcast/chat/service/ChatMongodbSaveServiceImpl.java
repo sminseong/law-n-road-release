@@ -23,7 +23,6 @@ public class ChatMongodbSaveServiceImpl implements ChatMongodbSaveService {
     private final StringRedisTemplate redisTemplate;
     private final MongoChatRepository mongoChatRepository; // Mongo용 Repository
 
-    @Override
     @Scheduled(fixedDelay = 10000) // 10초마다 백업
     public void backupRedisToMongo() {
         Set<String> keys = redisTemplate.keys("chat:*");

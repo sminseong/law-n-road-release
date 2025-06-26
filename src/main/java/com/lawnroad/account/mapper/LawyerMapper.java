@@ -1,11 +1,15 @@
 package com.lawnroad.account.mapper;
 
+import com.lawnroad.account.dto.LawyerDTO;
 import com.lawnroad.account.entity.ClientEntity;
 import com.lawnroad.account.entity.LawyerEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+
+import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface LawyerMapper {
@@ -34,6 +38,12 @@ public interface LawyerMapper {
             @Param("lawyerId") String lawyerId,
             @Param("officeNumber") String officeNumber,
             @Param("phone") String phone,
-            @Param("detailAddress") String detailAddress
+            @Param("detailAddress") String detailAddress,
+            @Param("zipcode") String zipcode,
+            @Param("roadAddress") String roadAddress,
+            @Param("landAddress") String landAddress
     );
+
+
+    List<LawyerDTO> selectLawyerList(Map<String, Object> param);
 }

@@ -20,7 +20,7 @@ public class PreQuestionController {
     private PreQuestionService preQuestionService;
     private final JwtTokenUtil jwtTokenUtil;
 
-    @PostMapping("/api/broadcasts/schedule/{scheduleNo}/preQuestion")
+    @PostMapping("/api/client/broadcasts/schedule/{scheduleNo}/preQuestion")
     public void insertPreQuestion(
             @RequestBody PreQuestionItem preQuestionItem,
             @RequestHeader("Authorization") String authHeader) {
@@ -36,7 +36,7 @@ public class PreQuestionController {
     }
 
 
-    @GetMapping("/api/broadcasts/schedule/{scheduleNo}/preQuestion")
+    @GetMapping("/api/client/broadcasts/schedule/{scheduleNo}/preQuestion")
     public PreQuestionDTO PreQuestion(@PathVariable int scheduleNo) {
        return preQuestionService.findByPreQuestion(scheduleNo);
     }
@@ -46,13 +46,13 @@ public class PreQuestionController {
        return preQuestionService.findByPreQuestionLawyer(scheduleNo);
     }
 
-    @PostMapping("/api/preQuestions/save")
+    @PostMapping("/api/client/preQuestions/save")
     public void deleteLawyerPreQuestion(@RequestBody List<Long> preQuestionNo) {
         preQuestionService.deleteLawyerPreQuestion(preQuestionNo);
     }
 
 
-    @DeleteMapping("/api/broadcasts/schedule/{scheduleNo}/preQuestion/{questionNo}")
+    @DeleteMapping("/api/client/broadcasts/schedule/{scheduleNo}/preQuestion/{questionNo}")
     public void deletePreQuestion(
             @PathVariable Long scheduleNo,
             @PathVariable Long questionNo,
