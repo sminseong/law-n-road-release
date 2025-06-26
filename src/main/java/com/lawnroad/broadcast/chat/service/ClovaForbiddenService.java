@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 
 @Service
 public class ClovaForbiddenService {
-//    @Value("${clova.api-key}")
+    @Value("${clova.api-key}")
     private String apiKey;
 
     //151번째 줄만 수정할것
