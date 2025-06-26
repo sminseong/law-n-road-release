@@ -1,0 +1,23 @@
+package com.lawnroad.account.service;
+
+
+import com.lawnroad.account.dto.LawyerDTO;
+import com.lawnroad.account.mapper.LawyerMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+public class AdminLawyerService {
+
+    private final LawyerMapper lawyerMapper;
+
+    public List<LawyerDTO> getLawyerList(Map<String, Object> param) {
+        return lawyerMapper.selectLawyerList(param);
+    }
+
+
+}
