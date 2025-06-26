@@ -1,5 +1,6 @@
 package com.lawnroad.broadcast.live.controller;
 
+import com.lawnroad.broadcast.live.dto.BroadcastStatusDto;
 import com.lawnroad.broadcast.live.mapper.BroadcastMapper;
 import com.lawnroad.broadcast.live.service.BroadcastService;
 import com.lawnroad.common.util.JwtTokenUtil;
@@ -37,5 +38,17 @@ public class BroadcastPublicController {
     @GetMapping("/expire-overdue")
     public void expireOverdueBroadcasts() {
         broadcastService.expireOverdueBroadcasts();
+    }
+
+    @GetMapping("/status/{scheduleNo}")
+    public ResponseEntity<BroadcastStatusDto> getBroadcastStatus(@PathVariable Long scheduleNo) {
+        BroadcastStatusDto statusDto = broadcastService.getBroadcastStatusByScheduleNo(scheduleNo);
+
+        // 방송이 아직 시작되지 않아서 존재하지 않으면 → status는 null로 전달됨
+        if (statusDto == null) {
+            return ResponseEntity.ok(new BroadcastStatusDto(null, null));
+        }
+
+        return ResponseEntity.ok(statusDto);
     }
 }

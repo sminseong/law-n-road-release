@@ -183,4 +183,9 @@ public class BroadcastServiceImpl implements BroadcastService {
     public void expireOverdueBroadcasts() {
         broadcastMapper.expireOverdueBroadcasts();
     }
+
+    @Override
+    public BroadcastStatusDto getBroadcastStatusByScheduleNo(Long scheduleNo) {
+        return broadcastMapper.findBroadcastStatusByScheduleNo(scheduleNo);
+    }
 }

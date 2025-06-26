@@ -181,4 +181,13 @@
         b.status = 'RECORD'
         AND TIMESTAMPADD(MINUTE, 30, s.end_time) &lt;= NOW()
     </update>
+
+    <!-- 방송 상태 확인 -->
+    <select id="findBroadcastStatusByScheduleNo" resultType="com.lawnroad.broadcast.live.dto.BroadcastStatusDto">
+        SELECT
+        no AS broadcastNo,
+        status
+        FROM broadcast
+        WHERE schedule_no = #{scheduleNo}
+    </select>
 </mapper>

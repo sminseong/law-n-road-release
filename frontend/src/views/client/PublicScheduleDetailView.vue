@@ -78,24 +78,32 @@ function arrangeSchedulePositions(scheduleList) {
 
 const goToSchedule = async (scheduleNo) => {
   try {
+    // 방송 상태 조회 (RECORD / DONE / null)
     const res = await makeApiRequest({
       method: 'get',
-      url: `/api/public/broadcast/live-check/${scheduleNo}`
+      url: `/api/public/broadcast/status/${scheduleNo}`
     })
 
-    if (res.data.live && res.data.broadcastNo) {
-      // 방송 중이면 방송 보기로 이동
-      router.push(`/client/broadcasts/${res.data.broadcastNo}`)
+    const { status, broadcastNo } = res.data;
+
+    if (status === 'DONE' && broadcastNo) {
+      // 방송이 종료된 경우 → VOD로 이동
+      router.push(`/vod/${broadcastNo}`);
+    } else if (status === 'RECORD' && broadcastNo) {
+      // 방송이 진행 중인 경우 → 방송 시청 페이지
+      router.push(`/client/broadcasts/${broadcastNo}`);
     } else {
-      // 방송 전이면 사전 질문 페이지로 이동
-      router.push(`/client/broadcasts/schedule/${scheduleNo}/preQuestion`)
+      // 방송이 시작되지 않은 경우 → 사전 질문 페이지
+      router.push(`/client/broadcasts/schedule/${scheduleNo}/preQuestion`);
     }
+
   } catch (err) {
-    console.error('방송 상태 확인 실패:', err)
+    console.error('방송 상태 확인 실패:', err);
     // fallback - 기본 이동
-    router.push(`/client/broadcasts/schedule/${scheduleNo}/preQuestion`)
+    router.push(`/client/broadcasts/schedule/${scheduleNo}/preQuestion`);
   }
-}
+};
+
 
 const goBackToCalendar = () => {
   router.push('/broadcasts/schedule')
