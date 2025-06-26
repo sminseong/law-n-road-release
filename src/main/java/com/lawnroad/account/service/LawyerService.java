@@ -151,6 +151,8 @@ public class LawyerService {
     public boolean resetPassword(String lawyerId, String email, String fullName, String newPassword) {
         LawyerEntity lawyer = lawyerMapper.findByLawyerId(lawyerId);
 
+        System.out.println(lawyer);
+
         if (lawyer == null || !lawyer.getEmail().equals(email) || !lawyer.getName().equals(fullName)) {
             return false;
         }
@@ -160,8 +162,14 @@ public class LawyerService {
         return true;
     }
 
-    public void updateLawyerInfo(String lawyerId, String officeNumber, String phone, String detailAddress) {
-        lawyerMapper.updateLawyerInfo(lawyerId, officeNumber, phone, detailAddress);
+    public void updateLawyerInfo(String lawyerId,
+                                 String officeNumber,
+                                 String phone,
+                                 String detailAddress,
+                                 String zipcode,
+                                 String roadAddress,
+                                 String landAddress) {
+        lawyerMapper.updateLawyerInfo(lawyerId, officeNumber, phone, detailAddress, zipcode, roadAddress, landAddress);
     }
 
 }

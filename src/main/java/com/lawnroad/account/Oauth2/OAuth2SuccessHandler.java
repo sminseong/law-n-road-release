@@ -70,7 +70,7 @@ public void onAuthenticationSuccess(HttpServletRequest request,
     }
 
     String accessToken = jwtTokenUtil.generateAccessToken(
-            client.getClientId(), client.getNo(), "CLIENT", client.getNickname());
+            client.getClientId(), client.getNo(), "CLIENT", client.getNickname(),client.getPhone());
     String refreshToken = jwtTokenUtil.generateRefreshToken(client.getClientId());
 
     // ✅ DB에 RefreshToken 저장
