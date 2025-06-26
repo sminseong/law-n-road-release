@@ -51,7 +51,7 @@ public class ScheduleServiceImpl implements ScheduleService {
 
         // 방송 알림톡 발송 (스케줄 등록 시)
         String lawyerName = keywordMapper.findLawyerNameByScheduleNo(scheduleNo);
-        String startTime = scheduleVo.getStartTime().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+        String startTime = scheduleVo.getStartTime().format(DateTimeFormatter.ofPattern("M월 d일 HH:mm"));
 
         keywordService.notifyKeywordMatchedUsersForSchedule(
                 scheduleNo,
