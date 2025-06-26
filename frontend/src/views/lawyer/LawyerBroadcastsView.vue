@@ -152,210 +152,281 @@ const initPublisherWithDelay = async () => {
   }
 }
 
-    const connectSession = async () => {
-      try {
-        const saved = localStorage.getItem("currentBroadcast");
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (parsed.scheduleNo === Number(scheduleNo)) {
-            console.log("🧷 저장된 세션 복구됨:", parsed);
-            await reconnectBroadcast(parsed.sessionId);
-            broadcastNo.value = parsed.broadcastNo;
-            return;
-          } else {
-            localStorage.removeItem("currentBroadcast");
-          }
-        }
-
-        const res = await makeApiRequest({
-          method: 'post',
-          url: '/api/lawyer/broadcast/start',
-          data: {
-            scheduleNo: Number(scheduleNo)
-          }
-        });
-
-        const {sessionId, token, broadcastNo: newBroadcastNo, startTime} = res.data;
-
-        console.log("📡 sessionId:", sessionId);
-        console.log("🔑 token:", token);
-        console.log("🎯 broadcastNo:", newBroadcastNo);
-        console.log("🕒 startTime:", startTime);
-
-        broadcastNo.value = newBroadcastNo;
-
-        localStorage.setItem("currentBroadcast", JSON.stringify({
-          sessionId,
-          scheduleNo,
-          broadcastNo: newBroadcastNo,
-        }));
-
-        OV.value = new OpenVidu();
-        session.value = OV.value.initSession();
-
-        session.value.on("connectionCreated", updateViewerCount);
-        session.value.on("connectionDestroyed", updateViewerCount);
-        session.value.on("streamCreated", (event) => {
-          console.log("📡 방송자: streamCreated 발생 (시청자 연결)");
-          updateViewerCount();
-        });
-        session.value.on("streamDestroyed", (event) => {
-          console.log("📴 방송자: streamDestroyed 발생 (시청자 퇴장)");
-          updateViewerCount();
-        });
-        session.value.on("exception", (exception) => {
-          console.warn("OpenVidu 예외:", exception);
-        });
-        session.value.on("sessionDisconnected", (event) => {
-          console.warn("세션 연결 종료:", event.reason);
-        });
-
-        await session.value.connect(token);
-        await initPublisherWithDelay();
-        startTimerFrom(startTime);
-        updateViewerCount();
-      } catch (e) {
-        console.error("❌ 방송 연결 오류:", e);
-      }
-    };
-
-    const reconnectBroadcast = async (existingSessionId) => {
-      try {
-        const res = await makeApiRequest({
-          method: 'get',
-          url: `/api/lawyer/broadcast/reconnect/${existingSessionId}`
-        })
-
-        if (res?.data) {
-          const {token, startTime} = res.data
-
-          OV.value = new OpenVidu()
-          session.value = OV.value.initSession()
-
-          session.value.on("exception", (exception) => {
-            console.warn("OpenVidu 예외:", exception)
-          })
-
-          await session.value.connect(token)
-          await initPublisherWithDelay()
-          startTimerFrom(startTime)
-        }
-      } catch (err) {
-        console.error("❌ 재접속 실패:", err)
-        localStorage.removeItem("currentBroadcast")
-      }
-    }
-
-
-    const handleEndBroadcast = async () => {
-      if (!broadcastNo.value) {
-        alert("방송 번호가 유효하지 않습니다.")
-        return
-      }
-
-      const confirmEnd = confirm("정말 방송을 종료하시겠습니까?")
-      if (!confirmEnd) return
-
-      try {
-        await makeApiRequest({
-          method: 'post',
-          url: `/api/lawyer/broadcast/end/${broadcastNo.value}`
-        })
-
-        alert("✅ 방송이 종료되었습니다.")
-
-        if (mediaRecorder.value && mediaRecorder.value.state !== "inactive") {
-          mediaRecorder.value.stop();
-        }
-        if (session.value) session.value.disconnect()
-        if (timerInterval) clearInterval(timerInterval)
-        router.push("/lawyer")
-      } catch (e) {
-        console.error("❌ 방송 종료 실패:", e)
-        alert("방송 종료 중 문제가 발생했습니다.")
-      }
-    };
-
-    const goToLawyerHomepage = () => {
-      const userNo = broadcastInfo.value.userNo
-      if (!userNo || userNo === 0) {
-        alert('변호사 정보가 없습니다.')
-        return
-      }
-      router.push(`/lawyer/${userNo}/homepage`)
-    }
-
-
-    onMounted(async () => {
-      window.addEventListener("beforeunload", preventReload);
-
-      if (!scheduleNo) {
-        alert("❌ 유효하지 않은 스케줄 번호입니다.");
+const connectSession = async () => {
+  try {
+    const saved = localStorage.getItem("currentBroadcast");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.scheduleNo === Number(scheduleNo)) {
+        console.log("🧷 저장된 세션 복구됨:", parsed);
+        await reconnectBroadcast(parsed.sessionId);
+        broadcastNo.value = parsed.broadcastNo;
         return;
+      } else {
+        localStorage.removeItem("currentBroadcast");
       }
+    }
 
-      await loadBroadcastInfo();
-      await connectSession();
-      connect();
+    const res = await makeApiRequest({
+      method: 'post',
+      url: '/api/lawyer/broadcast/start',
+      data: {
+        scheduleNo: Number(scheduleNo)
+      }
     });
 
-    onBeforeUnmount(() => {
-      window.removeEventListener("beforeunload", preventReload);
-      if (timerInterval) clearInterval(timerInterval);
-      stompClient.value?.deactivate();
-      closeDropdown();
+    const {sessionId, token, broadcastNo: newBroadcastNo, startTime} = res.data;
+
+    console.log("📡 sessionId:", sessionId);
+    console.log("🔑 token:", token);
+    console.log("🎯 broadcastNo:", newBroadcastNo);
+    console.log("🕒 startTime:", startTime);
+
+    broadcastNo.value = newBroadcastNo;
+
+    localStorage.setItem("currentBroadcast", JSON.stringify({
+      sessionId,
+      scheduleNo,
+      broadcastNo: newBroadcastNo,
+    }));
+
+    OV.value = new OpenVidu();
+    session.value = OV.value.initSession();
+
+    session.value.on("connectionCreated", updateViewerCount);
+    session.value.on("connectionDestroyed", updateViewerCount);
+    session.value.on("streamCreated", (event) => {
+      console.log("📡 방송자: streamCreated 발생 (시청자 연결)");
+      updateViewerCount();
     });
+    session.value.on("streamDestroyed", (event) => {
+      console.log("📴 방송자: streamDestroyed 발생 (시청자 퇴장)");
+      updateViewerCount();
+    });
+    session.value.on("exception", (exception) => {
+      console.warn("OpenVidu 예외:", exception);
+    });
+    session.value.on("sessionDisconnected", (event) => {
+      console.warn("세션 연결 종료:", event.reason);
+    });
+
+    await session.value.connect(token);
+    await initPublisherWithDelay();
+    startTimerFrom(startTime);
+    updateViewerCount();
+
+    // 종료시간 알림 타이머
+    setupBroadcastEndAlert();
+  } catch (e) {
+    console.error("❌ 방송 연결 오류:", e);
+  }
+};
+
+const reconnectBroadcast = async (existingSessionId) => {
+  try {
+    const res = await makeApiRequest({
+      method: 'get',
+      url: `/api/lawyer/broadcast/reconnect/${existingSessionId}`
+    })
+
+    if (res?.data) {
+      const {token, startTime} = res.data
+
+      OV.value = new OpenVidu()
+      session.value = OV.value.initSession()
+
+      session.value.on("exception", (exception) => {
+        console.warn("OpenVidu 예외:", exception)
+      })
+
+      await session.value.connect(token)
+      await initPublisherWithDelay()
+      startTimerFrom(startTime)
+    }
+  } catch (err) {
+    console.error("❌ 재접속 실패:", err)
+    localStorage.removeItem("currentBroadcast")
+  }
+}
+
+const setupBroadcastEndAlert = () => {
+  const { endTime } = broadcastInfo.value;
+
+  console.log("⏰ 종료 시각 endTime:", endTime); // "2025-06-26T11:46:00"
+
+  if (!endTime) {
+    console.warn("⛔ 종료 시각 정보가 없습니다.");
+    return;
+  }
+
+  const endDateTime = new Date(endTime);
+
+  if (isNaN(endDateTime.getTime())) {
+    console.warn("⛔ 종료 시각이 유효하지 않습니다:", endTime);
+    return;
+  }
+
+  const now = new Date();
+  const diffMs = endDateTime.getTime() - now.getTime();
+
+  if (diffMs <= 0) {
+    console.warn("⏰ 방송 종료 시간이 이미 지났습니다.", { now, endDateTime });
+    setTimeout(() => {
+      handleAutoEndBroadcast();
+    }, 30 * 60 * 1000); // 30분 후
+    return;
+  }
+
+  console.log(`⏱️ 방송 종료 알림까지 ${Math.floor(diffMs / 1000)}초 남음`);
+
+  // 1단계: 종료 예정 시각 도달 알림
+  setTimeout(() => {
+    alert("📢 방송 종료 시간이 되었습니다!");
+
+    // 2단계: 종료 시간으로부터 30분 후 자동 종료
+    setTimeout(() => {
+      handleAutoEndBroadcast();
+    }, 30 * 60 * 1000); // 30분 후
+  }, diffMs);
+};
+
+
+const handleEndBroadcast = async () => {
+  if (!broadcastNo.value) {
+    alert("방송 번호가 유효하지 않습니다.")
+    return
+  }
+
+  const confirmEnd = confirm("정말 방송을 종료하시겠습니까?")
+  if (!confirmEnd) return
+
+  try {
+    await makeApiRequest({
+      method: 'post',
+      url: `/api/lawyer/broadcast/end/${broadcastNo.value}`
+    })
+
+    alert("✅ 방송이 종료되었습니다.")
+
+    if (mediaRecorder.value && mediaRecorder.value.state !== "inactive") {
+      mediaRecorder.value.stop();
+    }
+    if (session.value) session.value.disconnect()
+    if (timerInterval) clearInterval(timerInterval)
+    router.push("/lawyer")
+  } catch (e) {
+    console.error("❌ 방송 종료 실패:", e)
+    alert("방송 종료 중 문제가 발생했습니다.")
+  }
+};
+
+// 자동 방송 종료
+const handleAutoEndBroadcast = async () => {
+  if (!broadcastNo.value) {
+    console.warn("❌ 방송 번호가 유효하지 않습니다.");
+    return;
+  }
+
+  try {
+    await makeApiRequest({
+      method: 'post',
+      url: `/api/lawyer/broadcast/end/${broadcastNo.value}`
+    });
+
+    alert("⏰ 방송 종료 시간이 30분 초과되어 자동으로 방송이 종료되었습니다.");
+
+    if (mediaRecorder.value && mediaRecorder.value.state !== "inactive") {
+      mediaRecorder.value.stop();
+    }
+    if (session.value) session.value.disconnect();
+    if (timerInterval) clearInterval(timerInterval);
+    router.push("/lawyer");
+  } catch (e) {
+    console.error("❌ 자동 방송 종료 실패:", e);
+    alert("자동 방송 종료 중 문제가 발생했습니다.");
+  }
+};
+
+const goToLawyerHomepage = () => {
+  const userNo = broadcastInfo.value.userNo
+  if (!userNo || userNo === 0) {
+    alert('변호사 정보가 없습니다.')
+    return
+  }
+  router.push(`/lawyer/${userNo}/homepage`)
+}
+
+
+onMounted(async () => {
+  window.addEventListener("beforeunload", preventReload);
+
+  if (!scheduleNo) {
+    alert("❌ 유효하지 않은 스케줄 번호입니다.");
+    return;
+  }
+
+  await loadBroadcastInfo();
+  await connectSession();
+  connect();
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("beforeunload", preventReload);
+  if (timerInterval) clearInterval(timerInterval);
+  stompClient.value?.deactivate();
+  closeDropdown();
+});
 
 
 // --- 채팅 WebSocket 관련 ---
-    /** 채팅 */
-    const stompClient = ref(null);
-    const message = ref("");
-    const messages = ref([]);
-    const messageContainer = ref(null);
-    const nicknameColors = ref({});
-    const myNo = ref(null);
+/** 채팅 */
+const stompClient = ref(null);
+const message = ref("");
+const messages = ref([]);
+const messageContainer = ref(null);
+const nicknameColors = ref({});
+const myNo = ref(null);
 
 
 //드롭다운/신고 모달 상태
-    const dropdownIdx = ref(null);
-    const selectedUser = ref(null);
-    const selectedMessage = ref(null);
-    const isConfirmModal = ref(false);
-    const isCompleteModal = ref(false);
-    const selectedUserNo = ref(null);
+const dropdownIdx = ref(null);
+const selectedUser = ref(null);
+const selectedMessage = ref(null);
+const isConfirmModal = ref(false);
+const isCompleteModal = ref(false);
+const selectedUserNo = ref(null);
 
 // 닉네임별 랜덤 색상
-    const colorPalette = [
-      "#1abc9c", "#034335", "#84ddaa", "#450978",
-      "#184563", "#8bc2e4", "#c791dd", "#8e44ad",
-      "#837225", "#876124", "#004aff", "#ff6400",
-      "#ec8d85", "#603a37", "#246667", "#e4de0d"
-    ];
+const colorPalette = [
+  "#1abc9c", "#034335", "#84ddaa", "#450978",
+  "#184563", "#8bc2e4", "#c791dd", "#8e44ad",
+  "#837225", "#876124", "#004aff", "#ff6400",
+  "#ec8d85", "#603a37", "#246667", "#e4de0d"
+];
 
-    function getRandomColor() {
-      return colorPalette[Math.floor(Math.random() * colorPalette.length)];
-    }
+function getRandomColor() {
+  return colorPalette[Math.floor(Math.random() * colorPalette.length)];
+}
 
-    function getNicknameColor(nick) {
-      if (!nicknameColors.value[nick]) {
-        nicknameColors.value[nick] = getRandomColor();
-      }
-      return nicknameColors.value[nick];
-    }
+function getNicknameColor(nick) {
+  if (!nicknameColors.value[nick]) {
+    nicknameColors.value[nick] = getRandomColor();
+  }
+  return nicknameColors.value[nick];
+}
 
-    async function fetchMyNo() {
-      const token = await getValidToken();
-      if (!token) {
-        alert("로그인이 필요합니다!");
-        return false;
-      }
-      const res = await axios.get("/api/Lawyer/my-no", {
-        headers: {Authorization: `Bearer ${token}`}
-      });
-      myNo.value = res.data;
-      return true;
-    }
+async function fetchMyNo() {
+  const token = await getValidToken();
+  if (!token) {
+    alert("로그인이 필요합니다!");
+    return false;
+  }
+  const res = await axios.get("/api/Lawyer/my-no", {
+    headers: {Authorization: `Bearer ${token}`}
+  });
+  myNo.value = res.data;
+  return true;
+}
 
 // STOMP 연결 및 입장 메시지 전송
     const connect = () => {
@@ -390,165 +461,165 @@ const initPublisherWithDelay = async () => {
                 }
             );
 
-            //입장 시 type: "ENTER"만 전달
-            stompClient.value.publish({
-              destination: "/app/chat.addUser",
-              body: JSON.stringify({
-                broadcastNo: broadcastNo.value,
-                name: broadcastInfo.value.lawyerName
-              }),
+        //입장 시 type: "ENTER"만 전달
+        stompClient.value.publish({
+          destination: "/app/chat.addUser",
+          body: JSON.stringify({
+            broadcastNo: broadcastNo.value,
+            name: broadcastInfo.value.lawyerName
+          }),
 
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-          },
-          onStompError: (frame) => {
-            if (frame.body && frame.body.includes("expired")) {
-              alert("로그인이 만료되었습니다. 다시 로그인 해주세요.");
-              localStorage.removeItem('token');
-              location.href = "/login";
-            } else {
-              console.error("STOMP error:", frame);
-            }
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
         });
-        stompClient.value.activate();
-      });
-    };
+      },
+      onStompError: (frame) => {
+        if (frame.body && frame.body.includes("expired")) {
+          alert("로그인이 만료되었습니다. 다시 로그인 해주세요.");
+          localStorage.removeItem('token');
+          location.href = "/login";
+        } else {
+          console.error("STOMP error:", frame);
+        }
+      },
+    });
+    stompClient.value.activate();
+  });
+};
 
 // 채팅 메시지 전송 (type: "CHAT"만 전달)
-    const sendMessage = async () => {
-      const trimmed = message.value.trim();
-      const token = await getValidToken();
-      if (!trimmed || !stompClient.value?.connected) return;
-      if (!token) {
-        alert("로그인이 필요합니다!");
-        return;
-      }
-      stompClient.value.publish({
-        destination: "/app/chat.sendMessage",
-        body: JSON.stringify({
-          broadcastNo: broadcastNo.value,
-          message: trimmed,
-          type: "Lawyer",
-          userNo: myNo.value,
-        }),
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      message.value = "";
-      scrollToBottom();
-    };
+const sendMessage = async () => {
+  const trimmed = message.value.trim();
+  const token = await getValidToken();
+  if (!trimmed || !stompClient.value?.connected) return;
+  if (!token) {
+    alert("로그인이 필요합니다!");
+    return;
+  }
+  stompClient.value.publish({
+    destination: "/app/chat.sendMessage",
+    body: JSON.stringify({
+      broadcastNo: broadcastNo.value,
+      message: trimmed,
+      type: "Lawyer",
+      userNo: myNo.value,
+    }),
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  message.value = "";
+  scrollToBottom();
+};
 
 
 // 스크롤 자동 하단 이동
-    const scrollToBottom = () => {
-      nextTick(() => {
-        if (messageContainer.value) {
-          messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
-        }
-      });
-    };
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (messageContainer.value) {
+      messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
+    }
+  });
+};
 
 // 닉네임 드롭다운
-    const openDropdown = (idx, msg) => {
-      dropdownIdx.value = idx;
-      selectedUser.value = msg.nickname;
-      selectedMessage.value = msg.message;
-      selectedUserNo.value = msg.no;
-      setTimeout(() => {
-        window.addEventListener("mousedown", onWindowClick);
-      }, 0);
-    };
+const openDropdown = (idx, msg) => {
+  dropdownIdx.value = idx;
+  selectedUser.value = msg.nickname;
+  selectedMessage.value = msg.message;
+  selectedUserNo.value = msg.no;
+  setTimeout(() => {
+    window.addEventListener("mousedown", onWindowClick);
+  }, 0);
+};
 
-    const closeDropdown = () => {
-      dropdownIdx.value = null;
-      window.removeEventListener("mousedown", onWindowClick);
-    };
+const closeDropdown = () => {
+  dropdownIdx.value = null;
+  window.removeEventListener("mousedown", onWindowClick);
+};
 
-    const onWindowClick = (e) => {
-      if (!e.target.closest(".nickname-dropdown")) closeDropdown();
-    };
+const onWindowClick = (e) => {
+  if (!e.target.closest(".nickname-dropdown")) closeDropdown();
+};
 
 // 신고 모달
-    const onReportClick = () => {
-      isConfirmModal.value = true;
-      closeDropdown();
-    };
+const onReportClick = () => {
+  isConfirmModal.value = true;
+  closeDropdown();
+};
 
-    const confirmReport = async () => {
-      try {
-        const token = await getValidToken();
-        await axios.post(
-            "/api/Lawyer/chat/report",
-            {
-              userNo: selectedUserNo.value,
-              reportedUserNo: myNo.value,
-              nickname: selectedUser.value,
-              message: selectedMessage.value,
-            },
-            {
-              headers: {Authorization: `Bearer ${token}`}
-            },
-        );
-      } catch (e) {
-      }
-      isConfirmModal.value = false;
-      isCompleteModal.value = true;
-    };
+const confirmReport = async () => {
+  try {
+    const token = await getValidToken();
+    await axios.post(
+        "/api/Lawyer/chat/report",
+        {
+          userNo: selectedUserNo.value,
+          reportedUserNo: myNo.value,
+          nickname: selectedUser.value,
+          message: selectedMessage.value,
+        },
+        {
+          headers: {Authorization: `Bearer ${token}`}
+        },
+    );
+  } catch (e) {
+  }
+  isConfirmModal.value = false;
+  isCompleteModal.value = true;
+};
 
-    const closeCompleteModal = () => {
-      isCompleteModal.value = false;
-    };
+const closeCompleteModal = () => {
+  isCompleteModal.value = false;
+};
 
 
 // 사전 질문 표시
-    const showPreQDropdown = ref(false);
-    const preQuestions = ref([]);
-    const isPreQLoading = ref(false);
-    const preQBtnRef = ref(null);
-    const preQDropdownRef = ref(null);
+const showPreQDropdown = ref(false);
+const preQuestions = ref([]);
+const isPreQLoading = ref(false);
+const preQBtnRef = ref(null);
+const preQDropdownRef = ref(null);
 
 // API 호출
-    const fetchPreQuestions = async () => {
-      try {
-        const token = await getValidToken();
-        const res = await axios.get(`/api/Lawyer/broadcasts/schedule/${broadcastNo.value}`, {
-          headers: {Authorization: `Bearer ${token}`}
-        });
-        const data = Array.isArray(res.data) ? res.data : res.data.data;
-        preQuestions.value = data.map(q => ({
-          ...q,
-          checked: false
-        }));
-      } catch (e) {
-        console.error("사전 질문 불러오기 실패:", e);
-      }
-    };
+const fetchPreQuestions = async () => {
+  try {
+    const token = await getValidToken();
+    const res = await axios.get(`/api/Lawyer/broadcasts/schedule/${broadcastNo.value}`, {
+      headers: {Authorization: `Bearer ${token}`}
+    });
+    const data = Array.isArray(res.data) ? res.data : res.data.data;
+    preQuestions.value = data.map(q => ({
+      ...q,
+      checked: false
+    }));
+  } catch (e) {
+    console.error("사전 질문 불러오기 실패:", e);
+  }
+};
 
-    const togglePreQDropdown = async () => {
-      showPreQDropdown.value = !showPreQDropdown.value;
-      if (showPreQDropdown.value) {
-        await fetchPreQuestions();
-        // 클릭 바깥 감지
-        nextTick(() => window.addEventListener('mousedown', handlePreQClickOutside));
-      } else {
-        window.removeEventListener('mousedown', handlePreQClickOutside);
-      }
-    };
+const togglePreQDropdown = async () => {
+  showPreQDropdown.value = !showPreQDropdown.value;
+  if (showPreQDropdown.value) {
+    await fetchPreQuestions();
+    // 클릭 바깥 감지
+    nextTick(() => window.addEventListener('mousedown', handlePreQClickOutside));
+  } else {
+    window.removeEventListener('mousedown', handlePreQClickOutside);
+  }
+};
 
-    const handlePreQClickOutside = (e) => {
-      // 드롭다운과 버튼 바깥 클릭시 닫힘
-      if (
-          preQDropdownRef.value && !preQDropdownRef.value.contains(e.target) &&
-          preQBtnRef.value && !preQBtnRef.value.contains(e.target)
-      ) {
-        showPreQDropdown.value = false;
-        window.removeEventListener('mousedown', handlePreQClickOutside);
-      }
-    };
+const handlePreQClickOutside = (e) => {
+  // 드롭다운과 버튼 바깥 클릭시 닫힘
+  if (
+      preQDropdownRef.value && !preQDropdownRef.value.contains(e.target) &&
+      preQBtnRef.value && !preQBtnRef.value.contains(e.target)
+  ) {
+    showPreQDropdown.value = false;
+    window.removeEventListener('mousedown', handlePreQClickOutside);
+  }
+};
 
 </script>
 

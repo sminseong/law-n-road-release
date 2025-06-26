@@ -2,6 +2,8 @@ package com.lawnroad.broadcast.live.dto;
 
 import lombok.Data;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -14,4 +16,7 @@ public class BroadcastViewDetailDto {
     private Long userNo;             // 변호사 no
     private String lawyerName;       // 변호사 이름
     private String lawyerProfilePath;// 프로필 이미지 경로
+    private LocalDate date;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
 }

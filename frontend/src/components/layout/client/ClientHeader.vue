@@ -400,7 +400,7 @@ const logout = async () => {
                  <a class="nav-link" href="/client/broadcasts/list">라이브 방송</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/client/broadcasts/schedule">방송 스케줄</a>
+                  <a class="nav-link" href="/broadcasts/schedule">방송 스케줄</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="/vod/list">방송 다시보기</a>

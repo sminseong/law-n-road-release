@@ -1,9 +1,6 @@
 package com.lawnroad.broadcast.live.service;
 
-import com.lawnroad.broadcast.live.dto.VodDetailDto;
-import com.lawnroad.broadcast.live.dto.VodListDto;
-import com.lawnroad.broadcast.live.dto.VodListRequestDto;
-import com.lawnroad.broadcast.live.dto.VodListResponseDto;
+import com.lawnroad.broadcast.live.dto.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -15,4 +12,6 @@ public interface VodService {
 
     // vod 상세
     VodDetailDto getVodDetailByBroadcastNo(Long broadcastNo);
+    // 홈 vod
+    List<VodListItemDto> getAllVodList();
 }

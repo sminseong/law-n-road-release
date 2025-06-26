@@ -26,4 +26,30 @@
         )
     </select>
 
+    <select id="findKeywordsByScheduleNo" resultType="string">
+        SELECT keyword
+        FROM keyword
+        WHERE schedule_no = #{scheduleNo}
+    </select>
+
+    <select id="findLawyerNameByScheduleNo" resultType="string">
+        SELECT l.name
+        FROM broadcast_schedule s
+        JOIN user u ON s.user_no = u.no
+        JOIN lawyer l ON u.no = l.no
+        WHERE s.no = #{scheduleNo}
+    </select>
+
+    <select id="findUsersByKeywords" resultType="com.lawnroad.broadcast.live.dto.KeywordAlertMatchDto">
+        SELECT ka.user_no, c.name, c.phone, ka.keyword
+        FROM keyword_alert ka
+        JOIN user u ON ka.user_no = u.no
+        JOIN client c ON u.no = c.no
+        WHERE ka.keyword IN
+        <foreach item="kw" collection="keywords" open="(" separator="," close=")">
+            #{kw}
+        </foreach>
+    </select>
+
+
 </mapper>

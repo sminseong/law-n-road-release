@@ -59,17 +59,6 @@ export default [
         component: () => import('@/views/client/ClientPreQuestionView.vue')
     },
     {
-        path: '/client/broadcasts/schedule',
-        name: 'ClientBroadCastsSchedule',
-        component: () => import('@/views/client/ClientScheduleView.vue')
-    },
-    {
-        path: '/client/broadcasts/schedule/:date',
-        name: 'ClientScheduleDetailView',
-        component: () => import('@/views/client/ClientScheduleDetailView.vue'),
-        props: true
-    },
-    {
         path: '/client/broadcasts/list',
         name: 'ClientBroadCastsList',
         component: () => import('@/views/client/ClientBroadcastListView.vue')

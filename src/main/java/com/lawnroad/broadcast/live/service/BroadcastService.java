@@ -22,4 +22,9 @@ public interface BroadcastService {
     Long findLiveBroadcastNoByScheduleNo(Long scheduleNo);
     // 방송종료시간 30분 지난방송 자동 종료처리
     void expireOverdueBroadcasts();
+
+    // 방송 상태 확인
+    BroadcastStatusDto getBroadcastStatusByScheduleNo(Long scheduleNo);
+    // 홈화면 라이브 방송
+    FeaturedBroadcastDto getFeaturedLiveBroadcast();
 }

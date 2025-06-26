@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import { makeApiRequest } from "@/libs/axios-auth.js"
+import basicThumbnail from '@/assets/images/thumbnail/basic_thumbnail.png';
 
 const router = useRouter()
 const broadcasts = ref([])
@@ -72,7 +73,7 @@ onMounted(async () => {
   try {
     await makeApiRequest({
       method: 'get',
-      url: '/api/client/broadcast/expire-overdue'
+      url: '/api/public/broadcast/expire-overdue'
     })
     console.log('⏱ 방송 상태 갱신 완료')
   } catch (err) {
@@ -115,7 +116,7 @@ onUnmounted(() => {
             <!-- 썸네일 + 뱃지 -->
             <div class="position-relative rounded-top overflow-hidden" style="aspect-ratio: 16 / 9;">
               <img
-                  :src="item.thumbnailPath || '/images/default-thumbnail.jpg'"
+                  :src="item.thumbnailPath || basicThumbnail"
                   class="w-100 h-100 object-fit-cover"
                   alt="썸네일"
               />

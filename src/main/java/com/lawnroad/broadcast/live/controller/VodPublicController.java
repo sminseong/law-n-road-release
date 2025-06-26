@@ -1,9 +1,6 @@
 package com.lawnroad.broadcast.live.controller;
 
-import com.lawnroad.broadcast.live.dto.VodDetailDto;
-import com.lawnroad.broadcast.live.dto.VodListDto;
-import com.lawnroad.broadcast.live.dto.VodListRequestDto;
-import com.lawnroad.broadcast.live.dto.VodListResponseDto;
+import com.lawnroad.broadcast.live.dto.*;
 import com.lawnroad.broadcast.live.service.VodService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -46,5 +43,12 @@ public class VodPublicController {
     public ResponseEntity<VodDetailDto> getVodDetail(@PathVariable Long broadcastNo) {
         VodDetailDto dto = vodService.getVodDetailByBroadcastNo(broadcastNo);
         return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<VodListItemDto>> getAllVodList() {
+        List<VodListItemDto> vods = vodService.getAllVodList();
+        System.out.println(vods);
+        return ResponseEntity.ok(vods);
     }
 }

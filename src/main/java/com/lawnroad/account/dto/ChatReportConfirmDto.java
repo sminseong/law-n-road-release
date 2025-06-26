@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class ChatReportDto {
+public class ChatReportConfirmDto {
 
 
     private Long no;                  // 신고 번호

@@ -70,24 +70,4 @@ public class BroadcastClientController {
         BroadcastListResponseDto response = broadcastService.getLiveBroadcasts(requestDto);
         return ResponseEntity.ok(response);
     }
-
-    // 라이브 중인지 확인
-    @GetMapping("/live-check/{scheduleNo}")
-    public ResponseEntity<Map<String, Object>> checkLiveBroadcast(@PathVariable Long scheduleNo) {
-        Long broadcastNo = broadcastService.findLiveBroadcastNoByScheduleNo(scheduleNo);
-
-        if (broadcastNo != null) {
-            return ResponseEntity.ok(Map.of(
-                    "live", true,
-                    "broadcastNo", broadcastNo
-            ));
-        } else {
-            return ResponseEntity.ok(Map.of("live", false));
-        }
-    }
-
-    @GetMapping("/expire-overdue")
-    public void expireOverdueBroadcasts() {
-        broadcastService.expireOverdueBroadcasts();
-    }
 }

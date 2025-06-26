@@ -139,5 +139,17 @@
         WHERE no = #{userNo}
     </select>
 
+    <select id="findAllVods" resultType="com.lawnroad.broadcast.live.dto.VodListItemDto">
+        SELECT
+        v.no AS vodNo,
+        bs.name AS title,
+        bs.thumbnail_path AS thumbnailPath,
+        b.no AS broadcastNo
+        FROM broadcast_vod v
+        JOIN broadcast b ON v.broadcast_no = b.no
+        JOIN broadcast_schedule bs ON b.schedule_no = bs.no
+        WHERE v.status = 0
+        ORDER BY v.created_at DESC
+    </select>
 
 </mapper>

@@ -1,9 +1,6 @@
 package com.lawnroad.broadcast.live.service;
 
-import com.lawnroad.broadcast.live.dto.VodDetailDto;
-import com.lawnroad.broadcast.live.dto.VodListDto;
-import com.lawnroad.broadcast.live.dto.VodListRequestDto;
-import com.lawnroad.broadcast.live.dto.VodListResponseDto;
+import com.lawnroad.broadcast.live.dto.*;
 import com.lawnroad.broadcast.live.mapper.VodMapper;
 import com.lawnroad.broadcast.live.model.BroadcastVodVo;
 import com.lawnroad.common.util.FileStorageUtil;
@@ -76,5 +73,10 @@ public class VodServiceImpl implements VodService {
     @Override
     public VodDetailDto getVodDetailByBroadcastNo(Long broadcastNo) {
         return vodMapper.findVodDetailByBroadcastNo(broadcastNo);
+    }
+
+    @Override
+    public List<VodListItemDto> getAllVodList() {
+        return vodMapper.findAllVods();
     }
 }

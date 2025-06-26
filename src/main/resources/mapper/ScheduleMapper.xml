@@ -72,7 +72,9 @@
         c.name AS categoryName
         FROM broadcast_schedule bs
         JOIN category c ON bs.category_no = c.no
+        LEFT JOIN broadcast b ON bs.no = b.schedule_no
         WHERE bs.user_no = #{userNo}
+        AND (b.status IS NULL OR b.status != 'DONE')
         ORDER BY bs.date ASC, bs.start_time ASC
     </select>
 

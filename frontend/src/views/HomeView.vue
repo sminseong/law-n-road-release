@@ -11,6 +11,7 @@
   import { ref, onMounted, computed } from 'vue'
   import { useRouter } from 'vue-router'
   import axios from 'axios'
+  import basicThumbnail from '@/assets/images/thumbnail/basic_thumbnail.png';
 
   // 변수들
   const router = useRouter()
@@ -19,6 +20,12 @@
 
   // 메인 베너
   const mainBanners = ref([])
+
+  // 라이브 방송
+  const featuredBroadcast = ref(null)
+
+  // VOD 리스트
+  const vodList = ref([])
 
   // qna 테이블
   const qnaSampleList = ref([])
@@ -64,6 +71,45 @@
       mainBanners.value = res.data
     } catch (e) {
       console.error('배너 조회 실패:', e)
+    }
+
+    try {
+      const res = await http.get('/api/public/broadcast/featured')
+      const data = res.data
+
+      if (!data || typeof data !== 'object') {
+        console.log('대표 방송이 없습니다.')
+        featuredBroadcast.value = null
+      } else {
+        featuredBroadcast.value = {
+          isLive: true,
+          videoEmbedUrl: `/client/broadcasts/${data.broadcastNo}?embed=true`,
+          thumbnail: data.thumbnailPath || basicThumbnail,
+          title: data.title,
+          tags: data.keywords || [],
+          hostImage: data.lawyerProfilePath,
+          hostName: data.lawyerName,
+          hostDesc: data.categoryName,
+          broadcastNo: data.broadcastNo
+        }
+      }
+    } catch (e) {
+      console.error('대표 방송 정보 조회 실패:', e)
+    }
+
+    try {
+      const res = await http.get('/api/public/vod/all') // API 경로 변경
+
+      vodList.value = res.data.map(vod => ({
+        no: vod.vodNo,
+        title: vod.title,
+        thumbnail: vod.thumbnailPath || basicThumbnail,
+        link: `/vod/${vod.broadcastNo}`
+      }))
+
+      console.log('[vodList]', vodList.value)
+    } catch (e) {
+      console.error('VOD 리스트 불러오기 실패:', e)
     }
 
     try {
@@ -154,95 +200,19 @@
     link: '/live.html'
   }
 
-  // 라이브 방송박스 (라이브온)
-  const liveBroadcast2 = {
-    isLive: true,
-    videoEmbedUrl: 'https://www.youtube.com/embed/jfKfPfyJRdk?si=ldIipCvzo-aAVoKa',
-    thumbnail: '/assets/images/thumbnail_waiting.png',
-    title: '음주운전 대응 전략 공개!',
-    tags: ['합의', '뺑소니', '음주뺑소니'],
-    hostImage: '/img/profiles/kim.png',
-    hostName: '김서연 변호사',
-    hostDesc: '교통사고 전문',
-    link: '/live.html'
+  // 방송 참여 함수
+  const handleFeaturedClick = async () => {
+    try {
+      const res = await http.get(`/api/client/broadcast/${featuredBroadcast.value.broadcastNo}/token`)
+      const { token, sessionId } = res.data
+
+      // 예: 방송 페이지로 이동하거나 모달로 OpenVidu 연결 시작
+      router.push(`/client/broadcasts/${featuredBroadcast.value.broadcastNo}`)
+    } catch (e) {
+      console.error('방송 참여 실패:', e)
+    }
   }
 
-  // VOD 다시보기
-  const vodList = [
-    {
-      no: 1,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '음주운전 대처법',
-      link: '/replay.html'
-    },
-    {
-      no: 2,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '합의 시 유의사항',
-      link: '/replay.html'
-    },
-    {
-      no: 3,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '블랙박스 제출 전략',
-      link: '/replay.html'
-    },
-    {
-      no: 4,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '음주운전 대처법',
-      link: '/replay.html'
-    },
-    {
-      no: 5,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '합의 시 유의사항',
-      link: '/replay.html'
-    },
-    {
-      no: 6,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '블랙박스 제출 전략',
-      link: '/replay.html'
-    },
-
-    {
-      no: 1,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '음주운전 대처법',
-      link: '/replay.html'
-    },
-    {
-      no: 2,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '합의 시 유의사항',
-      link: '/replay.html'
-    },
-    {
-      no: 3,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '블랙박스 제출 전략',
-      link: '/replay.html'
-    },
-    {
-      no: 4,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '음주운전 대처법',
-      link: '/replay.html'
-    },
-    {
-      no: 5,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '합의 시 유의사항',
-      link: '/replay.html'
-    },
-    {
-      no: 6,
-      thumbnail: '/img/vod/thumbnails/category-dairy-bread-eggs.jpg',
-      title: '블랙박스 제출 전략',
-      link: '/replay.html'
-    }
-  ]
 </script>
 
 <template>
@@ -261,25 +231,33 @@
     <!-- 동그라미 카테고리 -->
     <RoundCategory :categories="roundCategories" />
 
-    <!-- 라이브 방송박스 -->
     <div class="row">
-        <div class="col-12 mb-6">
-          <div class="d-flex justify-content-between align-items-center">
-            <h3 class="mb-0">변호사와 함께하는 실시간 라이브 방송</h3>
-            <h5 class="mb-0 text-muted me-3" style="cursor: pointer;">더 보러가기 ></h5>
-          </div>
+      <div class="col-12 mb-6">
+        <div class="d-flex justify-content-between align-items-center">
+          <h3 class="mb-0">변호사와 함께하는 실시간 라이브 방송</h3>
+          <h5 class="mb-0 text-muted me-3" style="cursor: pointer;" @click="router.push('/client/broadcasts/list')">더 보러가기 ></h5>
         </div>
       </div>
+    </div>
 
-    <!-- <LiveBroadcastCard :broadcast="liveBroadcast" /> -->
-    <LiveBroadcastCard :broadcast="liveBroadcast2" />
+    <LiveBroadcastCard
+        v-if="featuredBroadcast"
+        :broadcast="featuredBroadcast"
+        @click="handleFeaturedClick"
+    />
+
+    <div v-else class="text-center py-5">
+      <img :src="basicThumbnail" alt="대기 중 썸네일" style="max-width: 800px; width: 100%; border-radius: 12px;">
+      <h4 class="mt-4 text-muted">현재 방송 중인 콘텐츠가 없습니다.</h4>
+      <p class="text-secondary">곧 새로운 방송이 시작될 예정이에요. 기대해주세요!</p>
+    </div>
 
     <!-- VOD 방송 다시보기 -->
     <div class="row">
       <div class="col-12 mb-6">
         <div class="d-flex justify-content-between align-items-center">
           <h3 class="mb-0">VOD 방송 다시보기</h3>
-          <h5 class="mb-0 text-muted me-3" style="cursor: pointer;">더 보러가기 ></h5>
+          <h5 class="mb-0 text-muted me-3" style="cursor: pointer;" @click="router.push('/vod/list')">더 보러가기 ></h5>
         </div>
       </div>
     </div>

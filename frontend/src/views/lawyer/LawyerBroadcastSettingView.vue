@@ -4,6 +4,7 @@ import { onMounted, ref, computed } from "vue";
 import axios from "axios";
 import {useRoute, useRouter} from "vue-router";
 import {getValidToken, makeApiRequest} from "@/libs/axios-auth.js";
+import basicThumbnail from '@/assets/images/thumbnail/basic_thumbnail.png';
 
 const route = useRoute();
 const router = useRouter();
@@ -235,8 +236,12 @@ const deleteNightbotMessage = async (no) => {
               <div class="mb-3 w-100">
                 <label class="form-label fw-bold">썸네일 이미지</label>
                 <div class="preview-box mb-2 border rounded d-flex justify-content-center align-items-center" style="height: 240px;">
-                  <img v-if="scheduleDetail.thumbnailPath" :src="scheduleDetail.thumbnailPath" alt="썸네일" class="img-fluid h-100" style="object-fit: contain;" />
-                  <span v-else class="text-muted">이미지 없음</span>
+                  <img
+                      :src="scheduleDetail.thumbnailPath || basicThumbnail"
+                      alt="썸네일"
+                      class="img-fluid h-100"
+                      style="object-fit: contain;"
+                  />
                 </div>
               </div>
               <div class="mb-3 w-100" >

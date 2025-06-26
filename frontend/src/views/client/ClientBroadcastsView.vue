@@ -28,6 +28,10 @@ export default defineComponent({
       lawyerName: "",
       lawyerProfilePath: ""
     });
+
+    //embed ( 홈뷰에서 보이게 )
+    const isEmbedMode = computed(() => route.query.embed === 'true')
+
     // 방송 실시간 시간
     const elapsedTime = ref("00:00:00");
     let streamStartTime = null;
@@ -589,85 +593,69 @@ export default defineComponent({
       goToLawyerHomepage,
       togglePreQDropdown, preQBtnRef, preQDropdownRef,selectedUserToShow,isStopped,
       applyKeywordAlert,
+      isEmbedMode,
     };
   }
 });
 </script>
 <template>
-  <ClientFrame>
+  <!-- ✅ embed 모드: 오직 영상만 (ClientFrame 포함 X) -->
+  <div v-if="isEmbedMode" class="embed-video-only">
+    <div ref="videoContainer" class="w-100 h-100"></div>
+  </div>
+
+  <!-- ✅ 일반 모드: 전체 방송 UI (ClientFrame 포함) -->
+  <ClientFrame v-else>
     <div class="position-relative w-100 vh-100">
-      <!-- 방송 카드 전체 영역 -->
+      <!-- 방송 카드 -->
       <div class="position-absolute top-0 start-0 bg-dark shadow rounded d-flex flex-column"
            style="width: calc(100% - 480px); margin: 2rem;">
 
-        <!-- 방송 영상 영역 -->
+        <!-- 영상 -->
         <div ref="videoContainer" style="height: 520px;" class="rounded-top"></div>
 
-        <!-- 방송 정보 영역 -->
+        <!-- 방송 정보 -->
         <div class="bg-light text-dark p-5 rounded-bottom position-relative">
-
-          <!-- 방송 제목 -->
           <div class="mb-3">
             <h2 class="fs-3 fw-bold mb-2">{{ broadcastInfo.title }}</h2>
-
-            <!-- 키워드 & 방송시간/시청자수 같은 라인에 정렬 -->
             <div class="d-flex justify-content-between align-items-center">
-              <!-- 키워드 -->
               <div>
-          <span
-              v-for="(keyword, index) in broadcastInfo.keywords"
-              :key="index"
-              class="text-muted me-3 fs-6 fw-semibold"
-              style="opacity: 0.75;"
-          ># {{ keyword }}</span>
+                <span
+                    v-for="(keyword, index) in broadcastInfo.keywords"
+                    :key="index"
+                    class="text-muted me-3 fs-6 fw-semibold"
+                    style="opacity: 0.75;"
+                ># {{ keyword }}</span>
               </div>
-
-              <!-- 방송 시간 & 시청자 수 -->
               <div class="text-muted d-flex gap-4 align-items-center">
-          <span>
-            <span class="blinking-dot"></span>
-            {{ elapsedTime }} 스트리밍 중
-          </span>
+                <span>
+                  <span class="blinking-dot"></span>
+                  {{ elapsedTime }} 스트리밍 중
+                </span>
                 <span>👥 {{ viewerCount }}명 시청 중</span>
               </div>
             </div>
           </div>
 
-          <!-- 변호사 정보 + 알림신청 + 신고버튼 -->
+          <!-- 프로필 + 알림 + 신고 -->
           <div class="d-flex justify-content-between align-items-end mt-4">
-            <!-- 프로필 영역 -->
             <div class="d-flex align-items-center">
-              <!-- 초록 원 컨테이너 -->
-              <div
-                  @click="goToLawyerHomepage"
-                  role="button"
-                  class="profile-border-hover position-relative d-flex justify-content-center align-items-center"
-              >
-                <!-- 프로필 이미지 -->
-                <img
-                    :src="broadcastInfo.lawyerProfilePath"
-                    alt="변호사 프로필"
-                    class="rounded-circle"
-                    style="width: 68px; height: 68px; object-fit: cover;"
-                />
-
-                <!-- LIVE 뱃지 -->
-                <div
-                    class="position-absolute bottom-0 start-50 translate-middle-x bg-danger text-white fw-bold px-2 py-1 rounded"
-                    style="font-size: 0.8rem; line-height: 1; transform: translate(-30%, 70%);"
-                >
+              <div @click="goToLawyerHomepage" role="button"
+                   class="profile-border-hover position-relative d-flex justify-content-center align-items-center">
+                <img :src="broadcastInfo.lawyerProfilePath"
+                     alt="변호사 프로필"
+                     class="rounded-circle"
+                     style="width: 68px; height: 68px; object-fit: cover;" />
+                <div class="position-absolute bottom-0 start-50 translate-middle-x bg-danger text-white fw-bold px-2 py-1 rounded"
+                     style="font-size: 0.8rem; line-height: 1; transform: translate(-30%, 70%);">
                   LIVE
                 </div>
               </div>
-
-              <!-- 변호사 이름 + 알림신청 -->
               <div class="d-flex align-items-center ms-3">
-                <span
-                    @click="goToLawyerHomepage"
-                    role="button"
-                    class="fs-5 fw-bold me-3 text-primary text-decoration-none"
-                    style="cursor: pointer;"
-                >
+                <span @click="goToLawyerHomepage"
+                      role="button"
+                      class="fs-5 fw-bold me-3 text-primary text-decoration-none"
+                      style="cursor: pointer;">
                   {{ broadcastInfo.lawyerName }} 변호사
                 </span>
                 <button class="btn btn-outline-primary btn-sm" @click="applyKeywordAlert">
@@ -675,14 +663,10 @@ export default defineComponent({
                 </button>
               </div>
             </div>
-
-            <!-- 방송 신고 버튼 -->
             <button class="btn btn-outline-danger btn-sm" @click="showReportModal = true">
               🚨 방송 신고
             </button>
           </div>
-
-
         </div>
       </div>
 
@@ -1184,5 +1168,11 @@ export default defineComponent({
 
 .profile-border-hover:hover {
   border-width: 5px;
+}
+
+.embed-video-only {
+  width: 100%;
+  height: 100vh;
+  background-color: black;
 }
 </style>

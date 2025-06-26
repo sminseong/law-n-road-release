@@ -11,6 +11,10 @@
         <result property="userNo" column="user_no"/>
         <result property="lawyerName" column="lawyer_name"/>
         <result property="lawyerProfilePath" column="lawyer_profile"/>
+        <result property="date" column="date"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+
     </resultMap>
 
     <!-- 방송 리스트 MAP -->
@@ -66,7 +70,10 @@
         c.name AS category_name,
         l.no AS user_no,
         l.name AS lawyer_name,
-        l.profile AS lawyer_profile
+        l.profile AS lawyer_profile,
+        bs.date,
+        bs.start_time,
+        bs.end_time
         FROM broadcast_schedule bs
         JOIN category c ON bs.category_no = c.no
         JOIN user u ON bs.user_no = u.no
@@ -174,4 +181,35 @@
         b.status = 'RECORD'
         AND TIMESTAMPADD(MINUTE, 30, s.end_time) &lt;= NOW()
     </update>
+
+    <!-- 방송 상태 확인 -->
+    <select id="findBroadcastStatusByScheduleNo" resultType="com.lawnroad.broadcast.live.dto.BroadcastStatusDto">
+        SELECT
+        no AS broadcastNo,
+        status
+        FROM broadcast
+        WHERE schedule_no = #{scheduleNo}
+    </select>
+
+    <!--  홈화면에 띄울 라이브  -->
+    <select id="findFeaturedLiveBroadcast" resultType="com.lawnroad.broadcast.live.dto.FeaturedBroadcastDto">
+        SELECT
+        b.no AS broadcastNo,
+        b.session_id AS sessionId,
+        bs.name AS title,
+        bs.no AS scheduleNo,
+        l.name AS lawyerName,
+        l.profile AS lawyerProfile,
+        c.name AS categoryName,
+        bs.thumbnail_path AS thumbnailPath
+        FROM broadcast b
+        JOIN broadcast_schedule bs ON b.schedule_no = bs.no
+        JOIN user u ON bs.user_no = u.no
+        JOIN lawyer l ON u.no = l.no
+        JOIN category c ON bs.category_no = c.no
+        WHERE b.status = 'RECORD'
+        ORDER BY b.start_time DESC
+        LIMIT 1
+    </select>
+
 </mapper>

@@ -3,6 +3,8 @@ import {computed, onMounted, ref, watch} from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
+import { makeApiRequest } from "@/libs/axios-auth.js"
+import basicThumbnail from '@/assets/images/thumbnail/basic_thumbnail.png';
 
 const vodList = ref([]);
 const router = useRouter();
@@ -16,7 +18,10 @@ const selectedCategory = ref(null) // 선택된 카테고리 번호
 
 const fetchCategories = async () => {
   try {
-    const res = await axios.get("/api/public/category/list")
+    const res = await makeApiRequest({
+      method: 'get',
+      url: '/api/public/category/list'
+    })
     categories.value = res.data
   } catch (err) {
     console.error("❌ 카테고리 목록 불러오기 실패:", err)
@@ -32,29 +37,38 @@ const formatDuration = (seconds) => {
 
 const fetchVodList = async () => {
   try {
-    const res = await axios.get(`/api/public/vod/list`, {
+    const res = await makeApiRequest({
+      method: 'get',
+      url: '/api/public/vod/list',
       params: {
         page: currentPage.value,
         size: 12,
         sort: sort.value,
-        categoryNo: selectedCategory.value,
+        categoryNo: selectedCategory.value
       }
-    });
-    vodList.value = res.data.content;
-    totalPages.value = res.data.totalPages;
+    })
+
+    vodList.value = res.data.content
+    totalPages.value = res.data.totalPages
   } catch (err) {
-    console.error("❌ VOD 목록 불러오기 실패:", err);
+    console.error("❌ VOD 목록 불러오기 실패:", err)
   }
-};
+}
+
 
 const goToVod = async (vod) => {
   try {
-    await axios.put(`/api/public/vod/${vod.vodNo}`); // 조회수 증가
+    await makeApiRequest({
+      method: 'put',
+      url: `/api/public/vod/${vod.vodNo}` // 조회수 증가
+    })
   } catch (err) {
-    console.error("❌ 조회수 증가 실패:", err);
+    console.error("❌ 조회수 증가 실패:", err)
   }
-  router.push(`/vod/${vod.broadcastNo}`); // broadcastNo 기준으로 이동
-};
+
+  router.push(`/vod/${vod.broadcastNo}`) // broadcastNo 기준으로 이동
+}
+
 
 const setSort = (type) => {
   if (sort.value !== type) {
@@ -153,7 +167,7 @@ onMounted(() => {
             <div class="card h-100 shadow-sm border-0 cursor-pointer" @click="goToVod(vod)">
               <div class="position-relative">
                 <img
-                    :src="vod.thumbnailPath || '/images/default-thumbnail.jpg'"
+                    :src="vod.thumbnailPath || basicThumbnail"
                     class="card-img-top"
                     alt="방송 썸네일"
                     style="height: 180px; object-fit: cover"

@@ -36,4 +36,9 @@ public interface BroadcastMapper {
     Long findLiveBroadcastNoByScheduleNo(Long scheduleNo);
     // 방송 종료 시간 30분 지난방송 자동 종료처리
     void expireOverdueBroadcasts();
+    // 방송 상태 확인
+    BroadcastStatusDto findBroadcastStatusByScheduleNo(Long scheduleNo);
+
+    // 홈화면에 띄울 라이브
+    FeaturedBroadcastDto findFeaturedLiveBroadcast();
 }

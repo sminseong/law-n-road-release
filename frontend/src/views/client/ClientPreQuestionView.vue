@@ -3,6 +3,7 @@ import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import { nextTick, onMounted, ref, watch, computed } from "vue";
 import axios from "axios";
 import { useRoute } from "vue-router";
+import basicThumbnail from '@/assets/images/thumbnail/basic_thumbnail.png';
 import { getValidToken } from "@/libs/axios-auth.js";
 
 const nickname = ref('');
@@ -169,8 +170,11 @@ function getTextColorClass(index) {
           <div class="col-md-7 d-flex flex-column justify-content-center align-items-center" style="min-height: 70vh;">
             <!-- 상단 이미지 -->
             <div class="w-100 d-flex justify-content-center mb-4 mt-3">
-              <img :src="preQuestion.thumbnailPath" alt="방송 이미지"
-                   style="max-width: 100%; height: 100%; border-radius: 18px;">
+              <img
+                  :src="preQuestion.thumbnailPath || basicThumbnail"
+                  alt="방송 이미지"
+                  style="max-width: 100%; height: 100%; border-radius: 18px;"
+              />
             </div>
             <!-- 방송 상세 카드 -->
             <div class="bg-white border rounded-4 shadow p-4 w-100 d-flex flex-row align-items-center gap-4" style="min-height: 230px;">
