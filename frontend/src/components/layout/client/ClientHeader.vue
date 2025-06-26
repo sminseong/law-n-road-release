@@ -110,7 +110,7 @@ const logout = async () => {
             <div class="col-xxl-2 col-lg-3">
               <!-- 데스크탑 전용 로고 -->
               <a class="navbar-brand d-none d-lg-block" href="/">
-                <img src="@/assets/images/logo/logo.png" />
+                <img src="@/assets/images/logo/logo-dark.png" />
               </a>
 
               <!-- 모바일 전용 로고 -->
@@ -147,7 +147,35 @@ const logout = async () => {
                         </svg>
                       </a>
 
-                      <div class="ms-4 list-inline-item">
+                      <div v-if="role === 'client'" class="ms-2 list-inline-item">
+                        <!-- 장바구니 아이콘 -->
+                        <a
+                            class="text-muted position-relative"
+                            href="/client/cart"
+                            role="button"
+                            aria-controls="offcanvasRight"
+                            title="장바구니"
+                        >
+                          <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="feather feather-shopping-bag"
+                          >
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                          </svg>
+                        </a>
+                      </div>
+
+                      <div class="ms-1 list-inline-item">
                         <!-- 로그아웃 아이콘: logout 호출 -->
                         <a
                             href="#"
@@ -394,22 +422,22 @@ const logout = async () => {
             <div class="d-none d-lg-block">
               <ul class="navbar-nav align-items-center">
                 <li class="nav-item">
-                  <a class="nav-link" href="/">홈</a>
+                  <a class="nav-link" :class="{ active: route.path === '/' }" href="/">홈</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/client/broadcasts">라이브 방송</a>
+                  <a class="nav-link" :class="{ active: route.path.startsWith('/client/broadcasts') }" href="/client/broadcasts">라이브 방송</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/replay">방송 다시보기</a>
+                  <a class="nav-link" :class="{ active: route.path.startsWith('/replay') }" href="/replay">방송 다시보기</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/templates">법률서류 템플릿</a>
+                  <a class="nav-link" :class="{ active: route.path.startsWith('/templates') }" href="/templates">법률서류 템플릿</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/qna">법률Q&A</a>
+                  <a class="nav-link" :class="{ active: route.path.startsWith('/qna') }" href="/qna">법률Q&A</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="/ci">브랜드 가치</a>
+                  <a class="nav-link" :class="{ active: route.path.startsWith('/ci') }" href="/ci">브랜드 가치</a>
                 </li>
               </ul>
             </div>
@@ -447,6 +475,47 @@ const logout = async () => {
 </template>
 
 <style scoped>
+/* 브랜드 컬러: 짙은 남색 계열 */
+.header-bg {
+  background-color: #0D1A36;
+  color: white;
+}
+
+.navbar-nav .nav-link {
+  color: white !important;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+}
+
+.navbar-nav .nav-link.active {
+  background-color: white;
+  color: #0D1A36 !important;
+  font-weight: bold;
+}
+
+/* 헤더 내부 요소 전체 흰색화 (글자 + 아이콘) */
+.header-bg a,
+.header-bg span,
+.header-bg svg,
+.header-bg .feather {
+  color: white !important;
+  stroke: white !important;
+  fill: white !important;
+}
+
+/* hover 시 강조 */
+.header-bg .nav-link:hover {
+  background-color: white;
+  color: #0D1A36 !important;
+  text-decoration: underline;
+}
+
+/* 현재 경로 활성화 강조 */
+.header-bg .nav-link.active {
+  color: #0D1A36 !important;
+  font-weight: bold;
+}
+
 header {
   position: fixed;
   z-index: 1050; /* 필요에 따라 조절 */
@@ -456,25 +525,4 @@ header {
   --y: 50%;
 }
 
-/* 헤더 배경색 (예: 연한 그레이) */
-.header-bg {
-  background-color: #ffffff;
-}
-
-/* 헤더 바로 아래 그림자처럼 퍼지는 그라데이션 */
-header::before {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  height: 2px; /* 아래로 퍼지는 거리 */
-  background: radial-gradient(
-      circle at var(--x) var(--y),
-      rgb(62, 111, 180) 0%,      /* 최상단 강한 파랑 */ rgba(169, 182, 246, 0.4) 30%,     /* 중간 노랑 포인트 */
-      transparent 100%               /* 아래로 갈수록 투명 */
-  );
-  pointer-events: none;
-  z-index: -1;
-}
 </style>
