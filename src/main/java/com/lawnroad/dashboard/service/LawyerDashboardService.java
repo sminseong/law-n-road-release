@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public interface LawyerDashboardService {
     /**
@@ -21,5 +22,12 @@ public interface LawyerDashboardService {
      */
     List<TomorrowConsultationRequestDto> getTomorrowConsultationRequests();
     // 파라미터 없이 내일 방송을 조회
-    List<TomorrowBroadcastDto> getTomorrowBroadcasts();
+    List<TomorrowBroadcastDto> getTomorrowBroadcasts(Long userNo);
+
+    /**
+     * 특정 변호사의 주간 상담 & 방송 통계 조회
+     * @param lawyerNo 변호사 번호
+     * @return 주간 통계 맵 (consultations, broadcasts 배열 포함)
+     */
+    Map<String, int[]> getWeeklyStats(Long lawyerNo);
 }

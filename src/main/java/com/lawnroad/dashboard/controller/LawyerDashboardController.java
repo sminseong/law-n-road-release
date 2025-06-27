@@ -11,7 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -83,15 +85,58 @@ public class LawyerDashboardController {
     ) {
         String token = authHeader.replace("Bearer ", "");
         Claims claims = jwtUtil.parseToken(token);
-        Long lawyerNo = claims.get("no", Long.class);
+        Long userNo = claims.get("no", Long.class);
 
         try {
-            List<TomorrowBroadcastDto> broadcasts = lawyerDashboardService.getTomorrowBroadcasts();
-            log.info("내일 방송 조회 성공 - lawyerNo: {}, 건수: {}", lawyerNo, broadcasts.size());
+            List<TomorrowBroadcastDto> broadcasts = lawyerDashboardService.getTomorrowBroadcasts(userNo);
+            log.info("내일 방송 조회 성공 - lawyerNo: {}, 건수: {}", userNo, broadcasts.size());
             return ResponseEntity.ok(broadcasts);
         } catch (Exception e) {
-            log.error("내일 방송 조회 실패 - lawyerNo: {}", lawyerNo, e);
+            log.error("내일 방송 조회 실패 - lawyerNo: {}", userNo, e);
             return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * 주간 상담 & 방송 통계 조회
+     * GET /api/lawyer/dashboard/weekly-stats
+     */
+    @GetMapping("/weekly-stats")
+    public ResponseEntity<Map<String, Object>> getWeeklyStats(@RequestHeader("Authorization") String authHeader) {
+        log.info("주간 통계 조회 요청");
+
+        try {
+            // JWT 토큰에서 변호사 번호 추출
+            String token = authHeader.replace("Bearer ", "");
+            Claims claims = jwtUtil.parseToken(token);
+            Long lawyerNo = claims.get("no", Long.class);
+
+            log.info("주간 통계 조회 - 변호사 번호: {}", lawyerNo);
+
+            Map<String, int[]> weeklyStats = lawyerDashboardService.getWeeklyStats(lawyerNo);
+
+            log.info("🔥 서비스에서 반환된 데이터: {}", weeklyStats);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "주간 통계 조회 성공");
+            response.put("data", weeklyStats);
+
+            log.info("🔥 최종 응답 데이터: {}", response);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("주간 통계 조회 실패: ", e);
+
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "주간 통계 조회 실패: " + e.getMessage());
+            errorResponse.put("data", Map.of(
+                    "consultations", new int[]{0, 0, 0, 0, 0, 0, 0},
+                    "broadcasts", new int[]{0, 0, 0, 0, 0, 0, 0}
+            ));
+
+            return ResponseEntity.ok(errorResponse);
         }
     }
 }

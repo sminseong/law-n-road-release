@@ -1,36 +1,17 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import LawyerFrame from "@/components/layout/lawyer/LawyerFrame.vue";
-import { fetchTodaySchedule, fetchTomorrowConsultationRequests } from '@/service/dashboardService.js'
+import { fetchTodaySchedule, fetchTomorrowConsultationRequests, fetchTomorrowBroadcasts, fetchWeeklyStats  } from '@/service/dashboardService.js'
 
 import {
-  Chart,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  BarController,
-  LineController
+  Chart, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip,
+  Legend, Filler, BarController, LineController
 } from 'chart.js'
 
 // Chart.js 컴포넌트 등록
 Chart.register(
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    LineElement,
-    PointElement,
-    Title,
-    Tooltip,
-    Legend,
-    Filler,
-    BarController,
-    LineController
+    CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend,
+    Filler, BarController, LineController
 )
 
 // 반응형 데이터
@@ -86,6 +67,10 @@ const scheduleLoading = ref(false)
 const tomorrowConsultationRequests = ref([])
 const consultationLoading = ref(false)
 
+// 예정된 방송 데이터
+const tomorrowBroadcasts = ref([])
+const broadcastLoading = ref(false)
+
 // 차트 참조
 const weeklyChart = ref(null)
 const revenueChart = ref(null)
@@ -122,7 +107,17 @@ const getScheduleColor = (type) => {
     default: return 'bg-gray-100 border-gray-300'
   }
 }
+// 시간 포맷팅 함수
+const formatTime = (dateTimeString) => {
+  if (!dateTimeString) return ''
+  const date = new Date(dateTimeString)
+  return date.toLocaleTimeString('ko-KR', {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
 
+// createWeeklyChart 함수 수정 (기존 차트 제거 로직 추가)
 const createWeeklyChart = (data = null) => {
   if (!weeklyChart.value) return
 
@@ -131,6 +126,13 @@ const createWeeklyChart = (data = null) => {
   const chartData = data || {
     consultations: [0, 0, 0, 0, 0, 0, 0],
     broadcasts: [0, 0, 0, 0, 0, 0, 0]
+  }
+
+  console.log('차트 생성 데이터:', chartData)
+
+  // 기존 차트가 있으면 제거
+  if (weeklyChartInstance) {
+    weeklyChartInstance.destroy()
   }
 
   weeklyChartInstance = new Chart(ctx, {
@@ -287,10 +289,10 @@ const createRevenueChart = (data = null) => {
 const loadTodaySchedule = async () => {
   scheduleLoading.value = true
   try {
-    console.log('오늘 일정 로드 시작 - lawyerNo:', lawyerInfo.value.id)
+    // console.log('오늘 일정 로드 시작 - lawyerNo:', lawyerInfo.value.id)
 
     const response = await fetchTodaySchedule (lawyerInfo.value.id)
-    console.log('API 응답:', response)
+    // console.log('API 응답:', response)
 
     if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
       todaySchedule.value = response.data.map(item => ({
@@ -299,13 +301,13 @@ const loadTodaySchedule = async () => {
         type: item.type,
         clientName: item.clientName || null
       }))
-      console.log('일정 데이터 매핑 완료:', todaySchedule.value)
+      // console.log('일정 데이터 매핑 완료:', todaySchedule.value)
     } else {
-      console.log('일정 데이터 없음')
+      // console.log('일정 데이터 없음')
       todaySchedule.value = []
     }
   } catch (error) {
-    console.error('오늘 일정 로딩 실패:', error)
+    // console.error('오늘 일정 로딩 실패:', error)
     todaySchedule.value = []
   } finally {
     scheduleLoading.value = false
@@ -315,10 +317,10 @@ const loadTodaySchedule = async () => {
 const loadTomorrowConsultationRequests = async () => {
   consultationLoading.value = true
   try {
-    console.log('내일 상담신청 로드 시작')
+    // console.log('내일 상담신청 로드 시작')
 
     const response = await fetchTomorrowConsultationRequests()
-    console.log('내일 상담신청 API 응답:', response)
+    // console.log('내일 상담신청 API 응답:', response)
 
     if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
       tomorrowConsultationRequests.value = response.data
@@ -326,15 +328,15 @@ const loadTomorrowConsultationRequests = async () => {
       dashboardStats.value[0].value = response.data.length + '건'
       dashboardStats.value[0].loading = false
 
-      console.log('내일 상담신청 데이터 매핑 완료:', tomorrowConsultationRequests.value)
+      // console.log('내일 상담신청 데이터 매핑 완료:', tomorrowConsultationRequests.value)
     } else {
-      console.log('내일 상담신청 데이터 없음')
+      // console.log('내일 상담신청 데이터 없음')
       tomorrowConsultationRequests.value = []
       dashboardStats.value[0].value = '0건'
       dashboardStats.value[0].loading = false
     }
   } catch (error) {
-    console.error('내일 상담신청 로딩 실패:', error)
+    // console.error('내일 상담신청 로딩 실패:', error)
     tomorrowConsultationRequests.value = []
     dashboardStats.value[0].value = '데이터 없음'
     dashboardStats.value[0].loading = false
@@ -342,19 +344,132 @@ const loadTomorrowConsultationRequests = async () => {
     consultationLoading.value = false
   }
 }
+//내일 방송 로드 함수
+const loadTomorrowBroadcasts = async () => {
+  broadcastLoading.value = true
+  try {
+    // console.log('내일 방송 로드 시작')
+
+    const response = await fetchTomorrowBroadcasts()
+    // console.log('내일 방송 API 응답:', response)
+
+    if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
+      tomorrowBroadcasts.value = response.data
+
+      // 방송의 시간과 제목을 카드에 표시
+      const firstBroadcast = response.data[0]
+      const broadcastTime = formatTime(firstBroadcast.startTime)
+      const broadcastTitle = firstBroadcast.name
+
+      dashboardStats.value[1].value = `${broadcastTime} ${broadcastTitle}`
+      dashboardStats.value[1].loading = false
+
+      // console.log('내일 방송 데이터 매핑 완료:', tomorrowBroadcasts.value)
+    } else {
+      // console.log('내일 방송 데이터 없음')
+      tomorrowBroadcasts.value = []
+      dashboardStats.value[1].value = '데이터 없음'
+      dashboardStats.value[1].loading = false
+    }
+  } catch (error) {
+    // console.error('내일 방송 로딩 실패:', error)
+    tomorrowBroadcasts.value = []
+    dashboardStats.value[1].value = '데이터 없음'
+    dashboardStats.value[1].loading = false
+  } finally {
+    broadcastLoading.value = false
+  }
+}
+
+
+
+const loadWeeklyChartData = async () => {
+  try {
+    // console.log(' 주간 차트 데이터 로드 시작')
+
+    const response = await fetchWeeklyStats()
+    // console.log('주간 통계 API 전체 응답:', response)
+
+    // 올바른 데이터 접근 경로: response.data.data
+    if (response && response.data && response.data.data) {
+      // console.log(' response.data.data:', response.data.data)
+      // console.log(' response.data.data.consultations:', response.data.data.consultations)
+      // console.log(' response.data.data.broadcasts:', response.data.data.broadcasts)
+
+      const chartData = {
+        consultations: response.data.data.consultations || [0, 0, 0, 0, 0, 0, 0],
+        broadcasts: response.data.data.broadcasts || [0, 0, 0, 0, 0, 0, 0]
+      }
+
+      // console.log(' 차트에 적용할 최종 데이터:', chartData)
+
+      // 즉시 차트 업데이트
+      updateWeeklyChart(chartData)
+
+    } else {
+      // console.log(' 응답 데이터 구조 이상:', response)
+      updateWeeklyChart({
+        consultations: [1, 2, 3, 4, 5, 6, 7], // 테스트용 더미 데이터
+        broadcasts: [2, 1, 4, 3, 6, 5, 8]
+      })
+    }
+  } catch (error) {
+    // console.error(' 주간 차트 데이터 로딩 실패:', error)
+    // 테스트용 더미 데이터
+    updateWeeklyChart({
+      consultations: [1, 2, 3, 4, 5, 6, 7],
+      broadcasts: [2, 1, 4, 3, 6, 5, 8]
+    })
+  }
+}
+
+const updateWeeklyChart = (data) => {
+  // console.log(' updateWeeklyChart 호출됨, 데이터:', data)
+  // console.log(' weeklyChartInstance 존재 여부:', !!weeklyChartInstance)
+
+  if (weeklyChartInstance) {
+    // console.log(' 기존 차트 데이터 업데이트')
+    // console.log(' 업데이트 전 차트 데이터:', {
+    //   consultations: weeklyChartInstance.data.datasets[0].data,
+    //   broadcasts: weeklyChartInstance.data.datasets[1].data
+    // })
+
+    weeklyChartInstance.data.datasets[0].data = data.consultations
+    weeklyChartInstance.data.datasets[1].data = data.broadcasts
+    weeklyChartInstance.update('active') // 애니메이션 모드
+
+    // console.log(' 업데이트 후 차트 데이터:', {
+    //   consultations: weeklyChartInstance.data.datasets[0].data,
+    //   broadcasts: weeklyChartInstance.data.datasets[1].data
+    // })
+  } else {
+    // console.log(' 차트 인스턴스가 없어서 새로 생성')
+    createWeeklyChart(data)
+  }
+}
 
 onMounted(() => {
   updateTime()
   timeInterval = setInterval(updateTime, 1000)
 
+  // 차트 생성과 데이터 로드를 순차적으로 실행
   setTimeout(() => {
-    createWeeklyChart()
+    // console.log(' 차트 생성 시작')
+    createWeeklyChart() // 빈 차트 먼저 생성
     createRevenueChart()
+
+    // 차트 생성 후 약간의 지연을 두고 데이터 로드
+    setTimeout(() => {
+      // console.log(' 데이터 로드 시작')
+      loadWeeklyChartData() // 실제 데이터로 업데이트
+    }, 200)
   }, 100)
 
   loadTodaySchedule()
   loadTomorrowConsultationRequests()
+  loadTomorrowBroadcasts()
 })
+
 
 onUnmounted(() => {
   if (timeInterval) {
@@ -427,6 +542,7 @@ onUnmounted(() => {
             </div>
           </div>
         </div>
+
 
         <!-- 주요 지표 카드 -->
         <div class="overflow-x-auto">

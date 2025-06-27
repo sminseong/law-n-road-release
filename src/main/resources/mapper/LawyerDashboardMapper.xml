@@ -66,7 +66,6 @@
     </resultMap>
 
     <select id="selectTomorrowBroadcasts"
-            parameterType="java.time.LocalDate"
             resultMap="TomorrowBroadcastResultMap">
         SELECT
             no,
@@ -75,7 +74,60 @@
             start_time
         FROM broadcast_schedule
         WHERE date = #{date}
+          AND user_no = #{userNo}
     </select>
 
+
+    <!-- 주간 통계 ResultMap 추가 -->
+    <resultMap id="WeeklyStatsResultMap" type="com.lawnroad.dashboard.dto.WeeklyStatsDto">
+        <result property="dayOfWeek" column="day_of_week"/>
+        <result property="consultationCount" column="consultation_count"/>
+        <result property="broadcastCount" column="broadcast_count"/>
+    </resultMap>
+
+    <!--  주간 상담 & 방송 통합 통계 조회 -->
+    <select id="getWeeklyStats" parameterType="long" resultMap="WeeklyStatsResultMap">
+        WITH RECURSIVE week_days AS (
+            SELECT 1 as day_of_week
+            UNION ALL
+            SELECT day_of_week + 1
+            FROM week_days
+            WHERE day_of_week &lt; 7
+        ),
+                       this_week AS (
+                           SELECT
+                               DATE_SUB(CURDATE(), INTERVAL DAYOFWEEK(CURDATE())-2 DAY) as week_start,
+                               DATE_ADD(DATE_SUB(CURDATE(), INTERVAL DAYOFWEEK(CURDATE())-2 DAY), INTERVAL 6 DAY) as week_end
+                       ),
+                       consultation_stats AS (
+                           SELECT
+                               DAYOFWEEK(wts.slot_date) as day_of_week,
+                               COUNT(*) as consultation_count
+                           FROM weekly_time_slots wts
+                                    CROSS JOIN this_week tw
+                           WHERE wts.user_no = #{lawyerNo}
+                             AND wts.slot_date BETWEEN tw.week_start AND tw.week_end
+                             AND wts.status IN (1, 2)  -- 예약됨(1) 또는 완료됨(2)
+                           GROUP BY DAYOFWEEK(wts.slot_date)
+                       ),
+                       broadcast_stats AS (
+                           SELECT
+                               DAYOFWEEK(bs.date) as day_of_week,
+                               COUNT(*) as broadcast_count
+                           FROM broadcast_schedule bs
+                                    CROSS JOIN this_week tw
+                           WHERE bs.user_no = #{lawyerNo}
+                             AND bs.date BETWEEN tw.week_start AND tw.week_end
+                           GROUP BY DAYOFWEEK(bs.date)
+                       )
+        SELECT
+            wd.day_of_week,
+            COALESCE(cs.consultation_count, 0) as consultation_count,
+            COALESCE(bs.broadcast_count, 0) as broadcast_count
+        FROM week_days wd
+                 LEFT JOIN consultation_stats cs ON wd.day_of_week = cs.day_of_week
+                 LEFT JOIN broadcast_stats bs ON wd.day_of_week = bs.day_of_week
+        ORDER BY wd.day_of_week
+    </select>
 
 </mapper>
