@@ -69,9 +69,44 @@
         SET
             office_number = #{officeNumber},
             phone = #{phone},
-            detail_address = #{detailAddress}
+            detail_address = #{detailAddress},
+            zipcode = #{zipcode},
+            road_address = #{roadAddress},
+            land_address = #{landAddress}
         WHERE lawyer_id = #{lawyerId}
     </update>
+
+
+
+
+    <select id="selectLawyerList" resultType="com.lawnroad.account.dto.LawyerDTO">
+        SELECT
+        no,
+        name,
+        lawyer_id AS lawyerId,
+        phone,
+        email,
+        created_at AS createdAt,
+        status
+        FROM lawyer
+        <where>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                name LIKE CONCAT('%', #{keyword}, '%')
+                OR lawyer_id LIKE CONCAT('%', #{keyword}, '%')
+                OR phone LIKE CONCAT('%', #{keyword}, '%')
+                OR email LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+
 
 
 </mapper>

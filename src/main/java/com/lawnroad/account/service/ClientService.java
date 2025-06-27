@@ -61,6 +61,7 @@ public class ClientService {
         client.setPhone(request.getPhone());
         client.setContent(1);
         client.setAlert_content(1);
+        client.setIs_consult_alert(1);
         clientMapper.insertClient(client);
     }
 

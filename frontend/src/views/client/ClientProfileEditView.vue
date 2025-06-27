@@ -1,11 +1,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { makeApiRequest, refreshAccessToken } from '@/libs/axios-auth.js'  // ✅ 전역 유틸 import
+import { makeApiRequest } from '@/libs/axios-auth.js'
 
 const router = useRouter()
 
-// 로컬스토리지 초기값
 const originalNickname = localStorage.getItem('nickname') || ''
 const originalEmail = localStorage.getItem('email') || ''
 const originalPhone = localStorage.getItem('phone') || ''
@@ -13,7 +12,7 @@ const originalPhone = localStorage.getItem('phone') || ''
 const nickname = ref(originalNickname)
 const phone = ref(originalPhone)
 
-// 이메일 파싱
+// 이메일 초기화
 const emailId = ref(originalEmail.split('@')[0] || '')
 const savedDomain = originalEmail.split('@')[1] || 'gmail.com'
 const emailDomainSelect = ref(
@@ -23,29 +22,20 @@ const emailDomainCustom = ref(
     emailDomainSelect.value === 'custom' ? savedDomain : ''
 )
 
-// 이메일 최종 조합
 const email = computed(() => {
   return (
       emailId.value + '@' +
-      (emailDomainSelect.value === 'custom'
-          ? emailDomainCustom.value
-          : emailDomainSelect.value)
+      (emailDomainSelect.value === 'custom' ? emailDomainCustom.value : emailDomainSelect.value)
   )
 })
 
-// ——— 1) 기존 프로필 조회(GET) 함수 추가 ———
+// 프로필 GET
 const fetchProfile = async () => {
   try {
     const res = await makeApiRequest({ method: 'get', url: '/api/client/profile' })
     if (res?.data) {
-      // 서버 응답에서 nickname, email, phone 할당
-
       nickname.value = res.data.nickname
       phone.value = res.data.phone
-      console.log("프론트쪽 get 접근 테스트중 ")
-      console.log(nickname.value)
-      console.log(phone.value)
-
       const [id, domain] = res.data.email.split('@')
       emailId.value = id
       if (['gmail.com', 'naver.com', 'daum.net'].includes(domain)) {
@@ -61,49 +51,37 @@ const fetchProfile = async () => {
   }
 }
 
-// 컴포넌트 마운트 시 프로필 자동 조회 및 디버깅 정보 출력
 onMounted(() => {
   fetchProfile()
-  console.log('=== 디버깅 정보 ===')
-  console.log('현재 토큰:', localStorage.getItem('token'))
-  console.log('사용자 번호:', localStorage.getItem('no'))
-  console.log('닉네임:', localStorage.getItem('nickname'))
-  console.log('이메일:', localStorage.getItem('email'))
-  console.log('전화번호:', localStorage.getItem('phone'))
-  console.log('==================')
 })
 
-// ✅ 프로필 수정
+// 프로필 수정
 const updateProfile = async () => {
   if (!nickname.value.trim() || !email.value.trim() || !phone.value.trim()) {
     alert('모든 정보를 입력해주세요.')
     return
   }
 
-  const updateData = {
-    nickname: nickname.value,
-    email: email.value,
-    phone: phone.value
-  }
-
   try {
     const response = await makeApiRequest({
       method: 'put',
       url: '/api/client/profile',
-      data: updateData
+      data: {
+        nickname: nickname.value,
+        email: email.value,
+        phone: phone.value
+      }
     })
 
     if (response) {
       localStorage.setItem('nickname', nickname.value)
       localStorage.setItem('email', email.value)
       localStorage.setItem('phone', phone.value)
-
       alert('✅ 프로필이 성공적으로 수정되었습니다.')
       router.push('/client/mypage')
     }
   } catch (error) {
     console.error('❌ 프로필 수정 실패:', error)
-
     const status = error.response?.status
     if (status === 400) {
       alert('입력 정보가 올바르지 않습니다.')
@@ -117,18 +95,15 @@ const updateProfile = async () => {
   }
 }
 
-// ✅ 회원 탈퇴
+// 회원 탈퇴
 const withdrawAccount = async () => {
   if (!confirm('정말로 회원 탈퇴하시겠습니까?')) return
-
   try {
-    const response = await makeApiRequest({
+    const res = await makeApiRequest({
       method: 'delete',
-      url: '/api/client/withdraw',
-      data: {}
+      url: '/api/client/withdraw'
     })
-
-    if (response) {
+    if (res) {
       localStorage.clear()
       alert('회원 탈퇴가 완료되었습니다.')
       router.push('/login')
@@ -138,108 +113,141 @@ const withdrawAccount = async () => {
     alert('탈퇴 중 오류가 발생했습니다.')
   }
 }
-
-// 🔍 테스트용 토큰 재발급 버튼
-const testRefreshToken = async () => {
-  console.log('🧪 토큰 재발급 테스트 시작')
-  //await refreshAccessToken()
-}
 </script>
 
 <template>
-  <div class="container mt-5">
-    <h3 class="mb-4">프로필 수정</h3>
+  <div class="mypage-wrapper">
+    <h2 class="page-title">프로필 관리</h2>
+    <p class="welcome-msg">안녕하세요, {{ nickname }}님! 회원정보를 수정하실 수 있습니다.</p>
 
-    <!-- 디버깅 버튼 -->
-    <div class="card p-3 mb-3 bg-light">
-      <h5>디버깅 도구</h5>
-      <button class="btn btn-info btn-sm" @click="testRefreshToken">
-        토큰 재발급 테스트
-      </button>
-      <small class="text-muted mt-2 d-block">
-        콘솔창(F12)을 열고 테스트해보세요.
-      </small>
-    </div>
+    <div class="info-card">
+      <h5 class="section-title">기본 정보 수정</h5>
 
-    <div class="card p-4">
-      <div class="mb-3">
-        <label for="nickname" class="form-label">닉네임</label>
+      <div class="form-group">
+        <label for="nickname">닉네임</label>
         <input
             id="nickname"
-            type="text"
-            class="form-control"
             v-model="nickname"
+            class="form-control"
+            type="text"
             placeholder="새 닉네임을 입력하세요"
         />
       </div>
 
-      <div class="mb-3">
-        <label class="form-label">이메일</label>
-        <div class="d-flex gap-2 flex-wrap">
-          <input
-              type="text"
-              class="form-control"
-              style="flex: 1"
-              v-model="emailId"
-              placeholder="이메일 아이디 입력"
-          />
-          <span class="align-self-center">@</span>
-          <div v-if="emailDomainSelect !== 'custom'" style="flex: 1">
-            <select class="form-select" v-model="emailDomainSelect">
+      <div class="form-group">
+        <label>이메일</label>
+        <div class="email-row">
+          <input v-model="emailId" class="form-control" placeholder="이메일 아이디 입력" />
+          <span class="at">@</span>
+          <template v-if="emailDomainSelect !== 'custom'">
+            <select v-model="emailDomainSelect" class="form-control">
               <option value="gmail.com">gmail.com</option>
               <option value="naver.com">naver.com</option>
               <option value="daum.net">daum.net</option>
               <option value="custom">직접입력</option>
             </select>
-          </div>
-          <div v-else style="flex: 1">
-            <input
-                type="text"
-                class="form-control"
-                v-model="emailDomainCustom"
-                placeholder="도메인 직접 입력"
-            />
-          </div>
+          </template>
+          <template v-else>
+            <input v-model="emailDomainCustom" class="form-control" placeholder="도메인 직접 입력" />
+          </template>
         </div>
-        <small class="text-muted">현재 이메일: {{ email }}</small>
-        <small class="text-muted">현재 닉네임: {{ nickname }}</small>
+        <p class="text-muted">현재 이메일: {{ email }}</p>
       </div>
 
-      <div class="mb-3">
-        <label for="phone" class="form-label">전화번호</label>
+      <div class="form-group">
+        <label for="phone">전화번호</label>
         <input
             id="phone"
-            type="tel"
-            class="form-control"
             v-model="phone"
+            class="form-control"
+            type="tel"
             placeholder="전화번호를 입력하세요"
         />
       </div>
 
-      <button class="btn btn-primary" @click="updateProfile">
-        프로필 수정
-      </button>
-      <button class="btn btn-danger mt-2" @click="withdrawAccount">
-        회원 탈퇴
-      </button>
+      <div class="btn-group">
+        <button class="btn btn-primary" @click="updateProfile">수정 완료</button>
+        <button class="btn btn-primary" @click="withdrawAccount">회원 탈퇴</button>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.container {
-  max-width: 600px;
+.mypage-wrapper {
+  max-width: 720px;
   margin: 0 auto;
+  padding: 40px 16px;
 }
-.card {
-  background-color: #ffffff;
-  border: 1px solid #e0e0e0;
+.page-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2E4065;
+  margin-bottom: 8px;
+}
+.welcome-msg {
+  font-size: 16px;
+  margin-bottom: 32px;
+}
+.info-card {
+  background: #f9f9f9;
+  border: 1px solid #dcdcdc;
   border-radius: 12px;
+  padding: 24px;
 }
-.btn {
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 8px;
+}
+.form-group {
+  margin-bottom: 20px;
+}
+label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #333;
+}
+.form-control {
   width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
 }
-.btn-sm {
-  width: auto;
+.email-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.at {
+  font-weight: bold;
+  color: #444;
+}
+.btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 24px;
+}
+.btn-primary {
+  background-color: #2E4065;
+  color: white;
+  border: none;
+  font-weight: 600;
+  padding: 10px;
+  border-radius: 6px;
+  transition: background-color 0.3s;
+}
+.btn-primary:hover {
+  background-color: #1f2d4c;
+}
+.text-muted {
+  font-size: 12px;
+  color: #888;
 }
 </style>
