@@ -1,7 +1,7 @@
 <script setup>
 import AdminFrame from "@/components/layout/admin/AdminFrame.vue";
 import CustomTable from "@/components/table/CustomTable.vue";
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
@@ -26,7 +26,6 @@ const statusMap = {
   APPROVED_LEAVE: '탈퇴회원'
 }
 
-// 무한 스크롤
 function handleScroll() {
   const scrollBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 50
   if (scrollBottom && !isLoading.value && hasMore.value) {
@@ -34,7 +33,6 @@ function handleScroll() {
   }
 }
 
-// 데이터 조회
 async function fetchItems() {
   isLoading.value = true
   const params = {
@@ -58,7 +56,6 @@ async function fetchItems() {
   }
 }
 
-// 필터 변경
 function handleFilterChange(newFilters) {
   const reverseStatusMap = Object.fromEntries(Object.entries(statusMap).map(([k, v]) => [v, k]))
   const mapped = { ...newFilters }
@@ -75,16 +72,10 @@ function handleFilterChange(newFilters) {
   fetchItems()
 }
 
-// 상세 모달
 const showModal = ref(false)
 const selectedLawyer = ref(null)
 
 function handleRowClick(row) {
-  console.log("[DEBUG] 선택된 변호사 row:", row)
-  console.log("  👉 profile:", row.profile)
-  console.log("  👉 cardFront:", row.cardFront)
-  console.log("  👉 cardBack:", row.cardBack)
-
   selectedLawyer.value = row
   showModal.value = true
 }
@@ -94,12 +85,10 @@ function closeModal() {
   selectedLawyer.value = null
 }
 
-// 수정
 function handleEdit(row) {
   router.push(`/admin/lawyer/edit/${row.no}`)
 }
 
-// 삭제
 function handleDelete(row) {
   if (!confirm(`'${row?.name}' 변호사를 삭제하시겠습니까?`)) return
   axios.delete(`/api/admin/member/lawyer/${row.no}`)
@@ -112,6 +101,24 @@ function handleDelete(row) {
         alert(e?.response?.data?.message || '삭제 중 오류가 발생했습니다.')
       })
 }
+
+const profileUrl = computed(() =>
+    selectedLawyer.value?.profile?.startsWith('http')
+        ? selectedLawyer.value.profile
+        : `https://kr.object.ncloudstorage.com/law-n-road/${selectedLawyer.value?.profile || ''}`
+)
+
+const cardFrontUrl = computed(() =>
+    selectedLawyer.value?.cardFront?.startsWith('http')
+        ? selectedLawyer.value.cardFront
+        : `https://kr.object.ncloudstorage.com/law-n-road/${selectedLawyer.value?.cardFront || ''}`
+)
+
+const cardBackUrl = computed(() =>
+    selectedLawyer.value?.cardBack?.startsWith('http')
+        ? selectedLawyer.value.cardBack
+        : `https://kr.object.ncloudstorage.com/law-n-road/${selectedLawyer.value?.cardBack || ''}`
+)
 
 onMounted(() => {
   fetchItems()
@@ -156,7 +163,6 @@ onUnmounted(() => {
       <div v-if="!hasMore" class="text-center my-4 text-muted">모든 변호사를 불러왔습니다.</div>
     </div>
 
-    <!-- 상세 모달 -->
     <div v-if="showModal" class="modal-overlay">
       <div class="modal-container">
         <button class="modal-close-btn" @click="closeModal">✕</button>
@@ -173,15 +179,15 @@ onUnmounted(() => {
         <div class="image-section">
           <div>
             <p>프로필 사진</p>
-            <img :src="selectedLawyer?.profile" alt="프로필" @error="e => e.target.style.display='none'" />
+            <img :src="profileUrl" alt="프로필" @error="e => e.target.style.display='none'" />
           </div>
           <div>
             <p>신분증 앞면</p>
-            <img :src="selectedLawyer?.cardFront" alt="신분증 앞" @error="e => e.target.style.display='none'" />
+            <img :src="cardFrontUrl" alt="신분증 앞" @error="e => e.target.style.display='none'" />
           </div>
           <div>
             <p>신분증 뒷면</p>
-            <img :src="selectedLawyer?.cardBack" alt="신분증 뒤" @error="e => e.target.style.display='none'" />
+            <img :src="cardBackUrl" alt="신분증 뒤" @error="e => e.target.style.display='none'" />
           </div>
         </div>
       </div>
