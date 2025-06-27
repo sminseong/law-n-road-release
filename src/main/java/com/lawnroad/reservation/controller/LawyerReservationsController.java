@@ -32,6 +32,7 @@ public class LawyerReservationsController {
         return service.getReservationsByLawyer(no);
     }
     
+
     @PatchMapping("/{reservationNo}/status")
     public ResponseEntity<Void> closeReservation(
             @RequestHeader("Authorization") String authHeader,
