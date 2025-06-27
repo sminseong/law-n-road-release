@@ -138,7 +138,7 @@ watch(
 <!--          내 홈페이지 보기-->
 <!--        </button>-->
         <a
-            :href="`/lawyer/${lawyerNo}/homepage`"
+            :href="`/homepage/${lawyerNo}`"
             target="_blank"
             rel="noopener noreferrer"
             class="btn btn-sm btn-outline-light mt-2"
