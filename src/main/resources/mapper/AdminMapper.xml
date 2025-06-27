@@ -85,4 +85,33 @@
     </update>
 
 
+    <select id="selectLawyerList" resultType="com.lawnroad.account.dto.LawyerDTO">
+        SELECT
+        l.no,
+        l.name,
+        l.lawyer_id AS lawyerId,
+        l.phone,
+        l.email,
+        DATE_FORMAT(l.created_at, '%Y-%m-%d') AS createdAt,
+        l.status,
+        l.profile,
+        l.card_front AS cardFront,
+        l.card_back AS cardBack
+        FROM
+        lawyer l
+        <where>
+            <if test="status != null and status != ''">
+                AND l.status = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (l.name LIKE CONCAT('%', #{keyword}, '%')
+                OR l.lawyer_id LIKE CONCAT('%', #{keyword}, '%')
+                OR l.email LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY l.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+
 </mapper>

@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute,  useRouter } from 'vue-router'
 import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
-import { fetchBoardDetail ,fetchCommentDetail, updateComment , deleteComment   } from '@/service/boardService.js'
+import { fetchBoardDetail ,fetchCommentDetail, updateComment , deleteComment } from '@/service/boardService.js'
 
 const route = useRoute()
 const router = useRouter()

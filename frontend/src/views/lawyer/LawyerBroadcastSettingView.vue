@@ -92,7 +92,7 @@ const saveSelectedQuestions = async () => {
 
   try {
     const token = await getValidToken();
-    await axios.post("/api/preQuestions/save", selectedNos, {
+    await axios.post("/api/lawyer/preQuestions/save", selectedNos, {
       headers: { Authorization: `Bearer ${token}` }
     });
     alert("저장되었습니다.");
@@ -187,7 +187,7 @@ const addNightbotMessage = async () => {
 const deleteNightbotMessage = async (no) => {
   try {
     const token = await getValidToken();
-    await axios.delete(`/api/nightBot/${no}`, {
+    await axios.delete(`/api/lawyer/nightBot/${no}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     await loadNightbotMessages();

@@ -35,7 +35,6 @@
     "vue": "^3.4.21",
     "vue-cal": "^4.10.2",
     "vue-router": "^4.3.0",
-    "vue-toastification": "^2.0.0-rc.5",
     "vue3-markdown-it": "^1.0.10",
     "webm-duration-fix": "^1.0.4"
   },

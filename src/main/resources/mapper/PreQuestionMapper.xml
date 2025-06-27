@@ -10,6 +10,7 @@
         <result property="name" column="name"/>
         <result property="scheduleContent" column="schedule_content"/>
         <result property="thumbnailPath" column="thumbnail_path"/>
+        <result property="profile" column="profile"/>
         <result property="date" column="date"/>
         <result property="startTime" column="start_time"/>
         <result property="endTime" column="end_time"/>
@@ -68,6 +69,7 @@
         bs.start_time,
         bs.end_time,
         l.name AS lawyer_name,
+        l.profile,
         pq.nickname,
         pq.user_no,
         k.keyword
