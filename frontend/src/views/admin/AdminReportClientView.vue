@@ -8,12 +8,14 @@ const rows = ref([]);
 const isLoading = ref(false);
 const userNoKeyword = ref('');
 
+
 // 목록 조회
 async function fetchReports() {
   isLoading.value = true;
   try {
     const response = await axios.get('/api/admin/report/client/penalized');
     rows.value = response.data;
+
   } catch (error) {
     console.error('신고 목록 조회 실패:', error);
   } finally {
@@ -25,7 +27,7 @@ async function fetchReports() {
 function handlePenalty(row) {
   if (!confirm(`신고번호 ${row.no}에 대해 패널티를 부여하시겠습니까?`)) return;
 
-  axios.post('/api/admin/report/penalty_chatNo', { reportNo: row.no })
+  axios.post('/api/admin/report/penalty_chatNo', { reportNo: row.no , userNo : row.userNo })
       .then(() => {
         alert('패널티 부여 완료');
         fetchReports();

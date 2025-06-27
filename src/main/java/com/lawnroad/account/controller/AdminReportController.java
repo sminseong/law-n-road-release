@@ -47,7 +47,9 @@ public class AdminReportController {
     @PostMapping("/penalty_chatNo")
     public ResponseEntity<Void> applyPenalty1(@RequestBody Map<String, Long> body) {
         Long reportNo = body.get("reportNo");
+        Long userNo = body.get("userNo");
         adminReportService.penalizeReport(reportNo);
+        adminReportService.applyPenaltyClient(userNo);
         return ResponseEntity.ok().build();
     }
 

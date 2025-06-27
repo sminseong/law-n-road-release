@@ -46,4 +46,12 @@ public interface LawyerMapper {
 
 
     List<LawyerDTO> selectLawyerList(Map<String, Object> param);
+
+
+    List<LawyerDTO> selectLawyerList(
+            @Param("status") String status,
+            @Param("keyword") String keyword,
+            @Param("offset") int offset,
+            @Param("limit") int limit
+    );
 }

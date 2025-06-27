@@ -3,12 +3,16 @@ import ClientHeader from './ClientHeader.vue'
 import ClientFooter from './ClientFooter.vue'
 import ClientSidebar from './ClientSidebar.vue'
 import ClientPageWrapper from './ClientPageWrapper.vue'
+import ClientChatbotButton from "@/components/layout/client/ClientChatbotButton.vue";
 </script>
 
 <template>
   <div class="layout-wrapper d-flex min-vh-100">
     <!-- 사이드바 -->
     <ClientSidebar />
+
+    <!-- 챗봇 -->
+    <ClientChatbotButton />
 
     <!-- 우측 본문 영역 -->
     <div class="content-wrapper d-flex flex-column flex-grow-1">
@@ -28,3 +32,4 @@ import ClientPageWrapper from './ClientPageWrapper.vue'
   min-height: 100vh;
 }
 </style>
+
