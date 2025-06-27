@@ -1,17 +1,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
-import {makeApiRequest} from "@/libs/axios-auth.js";
 import http from '@/libs/HttpRequester'
 
 const router = useRouter()
 const calendarRef = ref(null)
-const events = ref([])
 
 const colors = ['#ebfde8', '#fff9d6', '#d6eeff', '#ffdfdf', '#eee4ff', '#fdead6']
 
@@ -21,7 +18,49 @@ const calendarOptions = ref({
   height: 'calc(100vh - 150px)',
   locale: 'ko',
   dayMaxEvents: 3,
-  events: events.value,
+
+  // 동적 이벤트 로드: 뷰 범위의 중간 날짜로 'month' 파라미터 계산
+  events: async (fetchInfo, successCallback, failureCallback) => {
+    try {
+      // 뷰에 표시된 전체 기간의 중간 날짜로 기준 월 계산
+      const midTime = (fetchInfo.start.getTime() + fetchInfo.end.getTime()) / 2
+      const midDate = new Date(midTime)
+      const month = midDate.toISOString().slice(0, 7)
+
+      // 월별 스케줄 조회
+      const res = await http.get('/api/public/schedule/month', { month })
+      const list = res.data || []
+
+      // 각 스케줄의 실시간 여부 확인
+      const checkLiveList = await Promise.all(
+          list.map(ev =>
+              http.get(`/api/public/broadcast/live-check/${ev.scheduleNo}`)
+                  .then(r => ({ ...ev, isLive: r.data.live }))
+                  .catch(() => ({ ...ev, isLive: false }))
+          )
+      )
+
+      // FullCalendar 이벤트 형식으로 가공
+      const eventsArr = checkLiveList.map((ev, idx) => ({
+        title: ev.title,
+        start: ev.startTime.slice(0, 10),
+        backgroundColor: colors[idx % colors.length],
+        borderColor: '#dee2e6',
+        textColor: '#212529',
+        extendedProps: {
+          lawyerName: ev.lawyerName,
+          isLive: ev.isLive,
+          original: ev
+        }
+      }))
+
+      successCallback(eventsArr)
+    } catch (err) {
+      console.error('이벤트 로드 실패:', err)
+      failureCallback(err)
+    }
+  },
+
   dateClick: (arg) => {
     const cell = document.querySelector(`td[data-date="${arg.dateStr}"]`)
     if (cell) {
@@ -30,6 +69,7 @@ const calendarOptions = ref({
     }
     router.push(`/broadcasts/schedule/${arg.dateStr}`)
   },
+
   eventClick: (info) => {
     const dateStr = info.event.startStr.slice(0, 10)
     const cell = document.querySelector(`td[data-date="${dateStr}"]`)
@@ -39,6 +79,7 @@ const calendarOptions = ref({
     }
     router.push(`/broadcasts/schedule/${dateStr}`)
   },
+
   eventContent: (info) => {
     const title = info.event.title
     const original = info.event.extendedProps.original
@@ -64,79 +105,27 @@ const calendarOptions = ref({
 
     return {
       html: `
-    <div title="${tooltip}" class="fc-custom-event">
-      ${isLive ? '<div class="live-badge">LIVE</div>' : ''}
-      <div class="fc-event-title text-dark fw-semibold">${title}</div>
-      <div class="fc-lawyer-name text-muted small">${lawyer} 변호사</div>
-    </div>
-  `
+        <div title="${tooltip}" class="fc-custom-event">
+          ${isLive ? '<div class="live-badge">LIVE</div>' : ''}
+          <div class="fc-event-title text-dark fw-semibold">${title}</div>
+          <div class="fc-lawyer-name text-muted small">${lawyer} 변호사</div>
+        </div>
+      `
     }
   }
 })
 
-const fetchMonthlySchedule = async () => {
-  try {
-    const now = new Date()
-    const month = now.toISOString().slice(0, 7)
-
-    // 월별 스케줄 조회
-    const res = await http.get('/api/public/schedule/month', { month })
-
-    if (res?.data) {
-      // 각 스케줄의 실시간 여부 확인
-      const checkLiveList = await Promise.all(
-          res.data.map(ev =>
-              http.get(`/api/public/broadcast/live-check/${ev.scheduleNo}`)
-                  .then(liveRes => ({
-                    ...ev,
-                    isLive: liveRes.data.live
-                  }))
-                  .catch(() => ({
-                    ...ev,
-                    isLive: false
-                  }))
-          )
-      )
-
-      console.log("✅ 이벤트 리스트", checkLiveList)
-
-      events.value = checkLiveList.map((ev, index) => {
-        const startDateOnly = ev.startTime.slice(0, 10)
-        return {
-          title: ev.title,
-          start: startDateOnly,
-          backgroundColor: colors[index % colors.length],
-          borderColor: '#dee2e6',
-          textColor: '#212529',
-          extendedProps: {
-            lawyerName: ev.lawyerName,
-            isLive: ev.isLive,
-            original: ev
-          }
-        }
-      })
-
-      calendarOptions.value.events = events.value
-    }
-  } catch (err) {
-    console.error('스케줄 로드 실패:', err)
-  }
-}
-
+// 최초 마운트 시 방송 상태만 업데이트
 onMounted(async () => {
   try {
-    // 방송 종료 상태 갱신 먼저 수행
     await http.get('/api/public/broadcast/expire-overdue')
     console.log('⏱ 방송 상태 갱신 완료')
   } catch (err) {
     console.warn('방송 만료 처리 실패:', err)
   }
-
-  // 갱신 후 스케줄 목록 불러오기
-  await fetchMonthlySchedule()
 })
-
 </script>
+
 
 <template>
   <ClientFrame>
@@ -213,7 +202,7 @@ onMounted(async () => {
 }
 ::v-deep(.fc-day-past) {
   background-color: #ebedef;
-  opacity: 0.6;
+  opacity: 0.7;
 }
 ::v-deep(.fc-day-past .fc-event) {
   opacity: 0.5;
