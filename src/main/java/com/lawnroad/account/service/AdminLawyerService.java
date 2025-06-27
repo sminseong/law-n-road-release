@@ -15,9 +15,12 @@ public class AdminLawyerService {
 
     private final LawyerMapper lawyerMapper;
 
-    public List<LawyerDTO> getLawyerList(Map<String, Object> param) {
-        return lawyerMapper.selectLawyerList(param);
-    }
+//    public List<LawyerDTO> getLawyerList(Map<String, Object> param) {
+//        return lawyerMapper.selectLawyerList(param);
+//    }
 
+    public List<LawyerDTO> getLawyerList(String status, String keyword, int offset, int limit) {
+        return lawyerMapper.selectLawyerList(status, keyword, offset, limit);
+    }
 
 }

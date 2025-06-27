@@ -51,6 +51,11 @@
         SELECT * FROM client WHERE client_id = #{clientId} and withdrawal_at is null
     </select>
 
+
+<!--    <select id="findByClientId" resultType="ClientEntity">-->
+<!--        SELECT * FROM client WHERE (client_id = #{clientId} and is_stopped = 0) or (client_id = #{clientId} and withdrawal_at = 0)-->
+<!--    </select>-->
+
     <select id="countByEmail" resultType="int">
         SELECT COUNT(*) FROM client WHERE email = #{email}
     </select>
