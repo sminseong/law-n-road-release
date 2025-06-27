@@ -5,6 +5,7 @@ import axios from "axios";
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import {makeApiRequest} from "@/libs/axios-auth.js";
 import http from '@/libs/HttpRequester'
+import { getUserRole } from '@/service/authService.js'
 
 // 라우터에서 방송 번호 가져오기
 const route = useRoute();
@@ -44,6 +45,13 @@ const goToLawyerHomepage = () => {
 
 
 const applyKeywordAlert = async () => {
+  const role = getUserRole()  // null 이면 비회원
+
+  if (!role) {
+    alert('🔒 로그인 후 이용 가능합니다.')
+    return
+  }
+
   const lawyerName = vodInfo.value.lawyerName
 
   if (!lawyerName) {
@@ -55,12 +63,14 @@ const applyKeywordAlert = async () => {
   if (!confirmed) return
 
   try {
-    await http.post('/api/client/keyword-alert/apply', null, {
+    await makeApiRequest({
+      method: 'post',
+      url: '/api/client/keyword-alert/apply',
       params: {
         keyword: lawyerName
       }
     })
-    alert('🔔 알림 신청이 완료되었습니다!')
+      alert('🔔 알림 신청이 완료되었습니다!')
   } catch (err) {
     if (err.response?.status === 400) {
       alert(`⚠️ ${err.response.data}`) // 예: 이미 신청함
