@@ -19,6 +19,13 @@ public class LawyerReservationCreatedService {
   
   private final SolapiConfig solapiConfig;
   
+  /**
+   * #{lawyer} 변호사님, 상담 요청이 접수되었습니다
+   *
+   * 🧑 신청자: #{client}
+   * 🗓 상담 일시: #{datetime}
+   */
+  
   public void send(LawyerReservationCreatedDto dto) {
     // Solapi SDK 초기화
     DefaultMessageService messageService = NurigoApp.INSTANCE.initialize(
@@ -36,7 +43,6 @@ public class LawyerReservationCreatedService {
     variables.put("#{lawyer}", dto.getLawyer());
     variables.put("#{client}", dto.getClient());
     variables.put("#{datetime}", dto.getDatetime());
-    variables.put("#{summary}", dto.getSummary());
     kakaoOption.setVariables(variables);
     
     // 메시지 생성
