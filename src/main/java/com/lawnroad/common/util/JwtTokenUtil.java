@@ -20,12 +20,12 @@ public class  JwtTokenUtil {
 
     private final Map<String, String> refreshTokenStore = new ConcurrentHashMap<>();
 
-    public String generateAccessToken(String clientId,Long no,String role,String nickname) {
-        System.out.println("Access Token 발급!");
+    public String generateAccessToken(String clientId,Long no,String role,String nickname,String phone) {
+//        System.out.println("Access Token 발급!");
         return Jwts.builder()
                 .setSubject(clientId)
                 .claim("no", no)
-
+                .claim("phone", phone)
                 .claim("role",role)
                 .claim("nickname", nickname)
                 .setIssuedAt(new Date())

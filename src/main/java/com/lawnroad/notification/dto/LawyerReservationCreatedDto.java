@@ -14,5 +14,7 @@ public class LawyerReservationCreatedDto {
   private String lawyer; // 변호사 이름 (#{lawyer})
   private String client; // 신청자 이름 (#{client})
   private String datetime; // 상담 일시 (#{datetime})
+  
+  // 사용되지 않지만 확장성을 위해 유지
   private String summary; // 상담 내용 (#{summary})
 }

@@ -12,7 +12,9 @@ export default defineComponent({
     const messageContainer = ref(null); // 메시지 영역 DOM 참조
 
     const connectWebSocket = () => {
-      socket.value = new WebSocket(`ws://localhost:8080/ws/chat?nickname=${encodeURIComponent(nickname)}`);
+      // socket.value = new WebSocket(`ws://localhost:8080/ws/chat?nickname=${encodeURIComponent(nickname)}`);
+      const wsUrl = __API_BASE__.replace(/^http/, 'ws') + `/ws/chat?nickname=${encodeURIComponent(nickname)}`
+      socket.value = new WebSocket(wsUrl)
 
       socket.value.onmessage = (event) => {
         messages.value.push(event.data);
