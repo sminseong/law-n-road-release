@@ -5,6 +5,7 @@ import axios from "axios";
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import { makeApiRequest } from "@/libs/axios-auth.js"
 import basicThumbnail from '@/assets/images/thumbnail/basic_thumbnail.png';
+import http from '@/libs/HttpRequester'
 
 const vodList = ref([]);
 const router = useRouter();
@@ -18,15 +19,13 @@ const selectedCategory = ref(null) // 선택된 카테고리 번호
 
 const fetchCategories = async () => {
   try {
-    const res = await makeApiRequest({
-      method: 'get',
-      url: '/api/public/category/list'
-    })
+    const res = await http.get('/api/public/category/list')
     categories.value = res.data
   } catch (err) {
     console.error("❌ 카테고리 목록 불러오기 실패:", err)
   }
 }
+
 
 const formatDuration = (seconds) => {
   const h = String(Math.floor(seconds / 3600)).padStart(2, "0");
@@ -37,15 +36,11 @@ const formatDuration = (seconds) => {
 
 const fetchVodList = async () => {
   try {
-    const res = await makeApiRequest({
-      method: 'get',
-      url: '/api/public/vod/list',
-      params: {
-        page: currentPage.value,
-        size: 12,
-        sort: sort.value,
-        categoryNo: selectedCategory.value
-      }
+    const res = await http.get('/api/public/vod/list', {
+      page: currentPage.value,
+      size: 12,
+      sort: sort.value,
+      categoryNo: selectedCategory.value
     })
 
     vodList.value = res.data.content
@@ -58,16 +53,14 @@ const fetchVodList = async () => {
 
 const goToVod = async (vod) => {
   try {
-    await makeApiRequest({
-      method: 'put',
-      url: `/api/public/vod/${vod.vodNo}` // 조회수 증가
-    })
+    await http.put(`/api/public/vod/${vod.vodNo}`) // 조회수 증가
   } catch (err) {
     console.error("❌ 조회수 증가 실패:", err)
   }
 
   router.push(`/vod/${vod.broadcastNo}`) // broadcastNo 기준으로 이동
 }
+
 
 
 const setSort = (type) => {

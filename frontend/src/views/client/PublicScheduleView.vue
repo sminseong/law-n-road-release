@@ -7,6 +7,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import {makeApiRequest} from "@/libs/axios-auth.js";
+import http from '@/libs/HttpRequester'
 
 const router = useRouter()
 const calendarRef = ref(null)
@@ -78,27 +79,27 @@ const fetchMonthlySchedule = async () => {
     const now = new Date()
     const month = now.toISOString().slice(0, 7)
 
-    const res = await makeApiRequest({
-      method: 'get',
-      url: `/api/public/schedule/month?month=${month}`
-    })
+    // 월별 스케줄 조회
+    const res = await http.get('/api/public/schedule/month', { month })
 
     if (res?.data) {
+      // 각 스케줄의 실시간 여부 확인
       const checkLiveList = await Promise.all(
           res.data.map(ev =>
-              makeApiRequest({
-                method: 'get',
-                url: `/api/public/broadcast/live-check/${ev.scheduleNo}`
-              }).then(liveRes => ({
-                ...ev,
-                isLive: liveRes.data.live
-              })).catch(() => ({
-                ...ev,
-                isLive: false
-              }))
+              http.get(`/api/public/broadcast/live-check/${ev.scheduleNo}`)
+                  .then(liveRes => ({
+                    ...ev,
+                    isLive: liveRes.data.live
+                  }))
+                  .catch(() => ({
+                    ...ev,
+                    isLive: false
+                  }))
           )
       )
-      console.log("✅ 이벤트 리스트", events.value)
+
+      console.log("✅ 이벤트 리스트", checkLiveList)
+
       events.value = checkLiveList.map((ev, index) => {
         const startDateOnly = ev.startTime.slice(0, 10)
         return {
@@ -122,14 +123,10 @@ const fetchMonthlySchedule = async () => {
   }
 }
 
-
 onMounted(async () => {
   try {
     // 방송 종료 상태 갱신 먼저 수행
-    await makeApiRequest({
-      method: 'get',
-      url: '/api/public/broadcast/expire-overdue'
-    })
+    await http.get('/api/public/broadcast/expire-overdue')
     console.log('⏱ 방송 상태 갱신 완료')
   } catch (err) {
     console.warn('방송 만료 처리 실패:', err)
@@ -138,6 +135,7 @@ onMounted(async () => {
   // 갱신 후 스케줄 목록 불러오기
   await fetchMonthlySchedule()
 })
+
 </script>
 
 <template>
