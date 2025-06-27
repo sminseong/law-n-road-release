@@ -180,7 +180,7 @@ function getTextColorClass(index) {
             <div class="bg-white border rounded-4 shadow p-4 w-100 d-flex flex-row align-items-center gap-4" style="min-height: 230px;">
               <div class="d-flex flex-column align-items-center" style="min-width: 130px;">
                 <img
-                    src="/img/profiles/kim.png"
+                    :src= "preQuestion.profile"
                     alt="프로필"
                     class="rounded-circle border border-2 shadow-sm"
                     style="width: 108px; height: 108px; object-fit: cover;"
@@ -190,6 +190,7 @@ function getTextColorClass(index) {
                 </span>
               </div>
               <!-- 방송 정보 텍스트 -->
+
               <div class="text-start flex-grow-1">
                 <div class="fw-bold fs-2 mb-2">{{ preQuestion.name }}</div>
                 <div class="text-muted fs-5 mb-2">{{ preQuestion.scheduleContent }}</div>
