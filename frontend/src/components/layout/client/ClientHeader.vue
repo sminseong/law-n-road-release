@@ -445,7 +445,7 @@ const logout = async () => {
                   <a class="nav-link" :class="{ active: route.path.startsWith('/client/broadcasts') }" href="/client/broadcasts/list">라이브 방송</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/broadcasts/schedule') }" href="/broadcasts/schedule">방송 스케줄</a>
+                  <a class="nav-link" :class="{ active: route.path.startsWith('/broadcasts/schedule') }"href="/broadcasts/schedule">방송 스케줄</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" :class="{ active: route.path.startsWith('/vod') }" href="/vod/list">방송 다시보기</a>
