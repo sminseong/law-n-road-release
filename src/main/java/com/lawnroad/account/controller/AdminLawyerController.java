@@ -22,21 +22,35 @@ public class AdminLawyerController {
 
     private final AdminLawyerService adminLawyerService;
 
-    @GetMapping
-    public ResponseEntity<?> getLawyers(
-            @RequestParam(defaultValue = "0") int offset,
-            @RequestParam(defaultValue = "20") int limit,
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String keyword
-    ) {
-        Map<String, Object> param = new HashMap<>();
-        param.put("offset", offset);
-        param.put("limit", limit);
-        if (status != null) param.put("status", status);
-        if (keyword != null) param.put("keyword", keyword);
+//    @GetMapping
+//    public ResponseEntity<?> getLawyers(
+//            @RequestParam(defaultValue = "0") int offset,
+//            @RequestParam(defaultValue = "20") int limit,
+//            @RequestParam(required = false) String status,
+//            @RequestParam(required = false) String keyword
+//    ) {
+//        Map<String, Object> param = new HashMap<>();
+//        param.put("offset", offset);
+//        param.put("limit", limit);
+//        if (status != null) param.put("status", status);
+//        if (keyword != null) param.put("keyword", keyword);
+//
+//        List<LawyerDTO> list = adminLawyerService.getLawyerList(param);
+//        return ResponseEntity.ok(Collections.singletonMap("list", list));
+//    }
 
-        List<LawyerDTO> list = adminLawyerService.getLawyerList(param);
-        return ResponseEntity.ok(Collections.singletonMap("list", list));
+    @GetMapping
+    public Map<String, Object> getLawyerList(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "20") int limit
+    ) {
+        List<LawyerDTO> list = adminLawyerService.getLawyerList(status, keyword, offset, limit);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("list", list);
+        return result;
     }
 
 

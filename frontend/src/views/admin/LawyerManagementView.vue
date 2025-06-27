@@ -26,6 +26,7 @@ const statusMap = {
   APPROVED_LEAVE: '탈퇴회원'
 }
 
+// 무한 스크롤
 function handleScroll() {
   const scrollBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 50
   if (scrollBottom && !isLoading.value && hasMore.value) {
@@ -33,6 +34,7 @@ function handleScroll() {
   }
 }
 
+// 데이터 조회
 async function fetchItems() {
   isLoading.value = true
   const params = {
@@ -56,6 +58,7 @@ async function fetchItems() {
   }
 }
 
+// 필터 변경
 function handleFilterChange(newFilters) {
   const reverseStatusMap = Object.fromEntries(Object.entries(statusMap).map(([k, v]) => [v, k]))
   const mapped = { ...newFilters }
@@ -72,15 +75,31 @@ function handleFilterChange(newFilters) {
   fetchItems()
 }
 
+// 상세 모달
+const showModal = ref(false)
+const selectedLawyer = ref(null)
+
 function handleRowClick(row) {
-  if (!row) return
-  router.push(`/admin/lawyer/detail/${row.no}`)
+  console.log("[DEBUG] 선택된 변호사 row:", row)
+  console.log("  👉 profile:", row.profile)
+  console.log("  👉 cardFront:", row.cardFront)
+  console.log("  👉 cardBack:", row.cardBack)
+
+  selectedLawyer.value = row
+  showModal.value = true
 }
 
+function closeModal() {
+  showModal.value = false
+  selectedLawyer.value = null
+}
+
+// 수정
 function handleEdit(row) {
   router.push(`/admin/lawyer/edit/${row.no}`)
 }
 
+// 삭제
 function handleDelete(row) {
   if (!confirm(`'${row?.name}' 변호사를 삭제하시겠습니까?`)) return
   axios.delete(`/api/admin/member/lawyer/${row.no}`)
@@ -136,11 +155,91 @@ onUnmounted(() => {
       <div v-if="isLoading" class="text-center my-4">불러오는 중...</div>
       <div v-if="!hasMore" class="text-center my-4 text-muted">모든 변호사를 불러왔습니다.</div>
     </div>
+
+    <!-- 상세 모달 -->
+    <div v-if="showModal" class="modal-overlay">
+      <div class="modal-container">
+        <button class="modal-close-btn" @click="closeModal">✕</button>
+
+        <h3 class="modal-title">변호사 상세 정보 (#{{ selectedLawyer?.no }})</h3>
+
+        <ul class="info-list">
+          <li><strong>이름:</strong> {{ selectedLawyer?.name }}</li>
+          <li><strong>이메일:</strong> {{ selectedLawyer?.email }}</li>
+          <li><strong>전화번호:</strong> {{ selectedLawyer?.phone }}</li>
+          <li><strong>계정 상태:</strong> {{ statusMap[selectedLawyer?.status] || selectedLawyer?.status }}</li>
+        </ul>
+
+        <div class="image-section">
+          <div>
+            <p>프로필 사진</p>
+            <img :src="selectedLawyer?.profile" alt="프로필" @error="e => e.target.style.display='none'" />
+          </div>
+          <div>
+            <p>신분증 앞면</p>
+            <img :src="selectedLawyer?.cardFront" alt="신분증 앞" @error="e => e.target.style.display='none'" />
+          </div>
+          <div>
+            <p>신분증 뒷면</p>
+            <img :src="selectedLawyer?.cardBack" alt="신분증 뒤" @error="e => e.target.style.display='none'" />
+          </div>
+        </div>
+      </div>
+    </div>
   </AdminFrame>
 </template>
 
 <style scoped>
-img {
-  object-fit: cover;
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+.modal-container {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+.modal-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+.modal-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+.info-list {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 16px;
+}
+.info-list li {
+  margin-bottom: 8px;
+}
+.image-section {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.image-section img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
 </style>
