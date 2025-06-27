@@ -33,10 +33,6 @@ onMounted(async () => {
         </div>
         <a href="/search" class="more-link">더 알아보기 →</a>
       </div>
-      <div class="chatbots">
-        <button @click="openChatbot">과실비율</button>
-        <button @click="$router.push('/chatbot')">고객센터</button>
-      </div>
     </div>
   </aside>
 </template>
@@ -56,7 +52,4 @@ onMounted(async () => {
   }
 }
 
-.chatbots {
-  background-color: #fff;
-}
 </style>

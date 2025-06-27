@@ -4,7 +4,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 @Data
-public class BroadcastReportDTO {
+public class BroadcastReportConfirmDTO {
     private Long no;
     private Long userNo;
     private Long broadcastNo;

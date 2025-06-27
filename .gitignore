@@ -42,6 +42,7 @@ Thumbs.db
 # 환경 변수 파일
 .env
 *.env
+.env*
 
 # 데이터베이스 파일
 *.db

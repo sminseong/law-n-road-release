@@ -1,7 +1,7 @@
 package com.lawnroad.account.service;
 
-import com.lawnroad.account.dto.BroadcastReportDTO;
-import com.lawnroad.account.dto.ChatReportDto;
+import com.lawnroad.account.dto.BroadcastReportConfirmDTO;
+import com.lawnroad.account.dto.ChatReportConfirmDto;
 import com.lawnroad.account.mapper.AdminReportMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -18,7 +17,7 @@ public class AdminReportService {
 
     private final AdminReportMapper adminReportMapper;
 
-    public List<BroadcastReportDTO> getUnpenalizedReports() {
+    public List<BroadcastReportConfirmDTO> getUnpenalizedReports() {
         System.out.println("getUnpenalizedReports");
         return adminReportMapper.selectUnpenalizedReports();
     }
@@ -39,7 +38,7 @@ public class AdminReportService {
     }
 
 
-    public List<ChatReportDto> getPenalizedChatReports() {
+    public List<ChatReportConfirmDto> getPenalizedChatReports() {
         System.out.println("getPenalizedChatReports");
         return adminReportMapper.selectPenalizedChatReports();
     }

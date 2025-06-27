@@ -1,25 +1,24 @@
 package com.lawnroad.account.mapper;
 
 
-import com.lawnroad.account.dto.BroadcastReportDTO;
-import com.lawnroad.account.dto.ChatReportDto;
+import com.lawnroad.account.dto.BroadcastReportConfirmDTO;
+import com.lawnroad.account.dto.ChatReportConfirmDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface AdminReportMapper {
 
-    List<BroadcastReportDTO> selectUnpenalizedReports();
+    List<BroadcastReportConfirmDTO> selectUnpenalizedReports();
 
 
     void deductLawyerPoint(@Param("broadcastNo") Long broadcastNo);
     void markReportAsPenalized(@Param("broadcastNo") Long broadcastNo);
 
-    List<ChatReportDto> selectPenalizedChatReports();
+    List<ChatReportConfirmDto> selectPenalizedChatReports();
 
 
     void updateClientPenalty(@Param("userNo") Long userNo, @Param("stopDate") LocalDate stopDate);

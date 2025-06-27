@@ -1,8 +1,8 @@
 package com.lawnroad.account.controller;
 
 
-import com.lawnroad.account.dto.BroadcastReportDTO;
-import com.lawnroad.account.dto.ChatReportDto;
+import com.lawnroad.account.dto.BroadcastReportConfirmDTO;
+import com.lawnroad.account.dto.ChatReportConfirmDto;
 import com.lawnroad.account.service.AdminReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,7 @@ public class AdminReportController {
 
 
     @GetMapping("/unpenalized")
-    public List<BroadcastReportDTO> getUnpenalizedReports() {
+    public List<BroadcastReportConfirmDTO> getUnpenalizedReports() {
         return adminReportService.getUnpenalizedReports();
     }
 
@@ -33,7 +33,7 @@ public class AdminReportController {
     }
 
     @GetMapping("/client/penalized")
-    public List<ChatReportDto> getPenalizedChatReports() {
+    public List<ChatReportConfirmDto> getPenalizedChatReports() {
         return adminReportService.getPenalizedChatReports();
     }
 

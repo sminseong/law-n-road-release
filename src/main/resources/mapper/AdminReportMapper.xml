@@ -6,7 +6,7 @@
 
 
 
-    <select id="selectUnpenalizedReports" resultType="com.lawnroad.account.dto.BroadcastReportDTO">
+    <select id="selectUnpenalizedReports" resultType="com.lawnroad.account.dto.BroadcastReportConfirmDTO">
         SELECT
             br.no,
             br.user_no AS userNo,
@@ -44,7 +44,7 @@
 
 
 
-    <select id="selectPenalizedChatReports" resultType="com.lawnroad.account.dto.ChatReportDto">
+    <select id="selectPenalizedChatReports" resultType="com.lawnroad.account.dto.ChatReportConfirmDto">
         SELECT
             cr.no,
             cr.reported_user_no AS reportedUserNo,
