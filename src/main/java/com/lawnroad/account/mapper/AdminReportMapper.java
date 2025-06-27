@@ -30,6 +30,8 @@ public interface AdminReportMapper {
 
     void applyPenaltyClient_M(@Param("userNo") Long userNo);
 
+    void applyPenaltyClient_M1(@Param("userNo") Long userNo);
+
 
 
 

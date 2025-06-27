@@ -53,8 +53,8 @@
             cr.message,
             cr.report_status    AS reportStatus,
             cr.created_at       AS createdAt
-        FROM chat_report cr
-        where cr.report_status = 0
+        FROM chat_report cr inner join client cl on cr.nickname = cl.nickname where is_stopped = 0;
+
 
 
     </select>
@@ -94,11 +94,8 @@
 
     </update>
 
-
-
-
-
-
-
+    <update id = "applyPenaltyClient_M1" parameterType="long">
+        update chat_report set report_status = 1 where user_no = #{userNo}
+    </update>
 
 </mapper>

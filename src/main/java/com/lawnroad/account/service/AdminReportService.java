@@ -32,9 +32,10 @@ public class AdminReportService {
         // 해당 신고건 status = 1로 처리
         adminReportMapper.markReportAsPenalized(broadcastNo);
     }
-
+    @Transactional
     public void applyPenaltyClient(Long userNo) {
         adminReportMapper.applyPenaltyClient_M(userNo);
+        adminReportMapper.applyPenaltyClient_M1(userNo);
     }
 
 
