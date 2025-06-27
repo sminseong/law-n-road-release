@@ -1,7 +1,8 @@
 <script setup>
-import { ref } from 'vue'
+import {computed, ref} from 'vue'
 import { useRouter } from 'vue-router'
 import basicThumbnail from '@/assets/images/thumbnail/basic_thumbnail.png';
+import { getUserRole } from '@/service/authService.js'
 
 const props = defineProps({
   broadcast: {
@@ -16,12 +17,26 @@ const props = defineProps({
 
 // 로그인 여부 확인
 const isLoggedIn = ref(!!localStorage.getItem('token'))
+// role 확인
+const userRole = ref(getUserRole())
+const isClientUser = computed(() => isLoggedIn.value && userRole.value === 'CLIENT')
+const isLawyerUser = computed(() => isLoggedIn.value && userRole.value === 'LAWYER')
+
 const router = useRouter()
 
 // 비회원 재생 버튼 클릭 시 로그인으로 이동
 const handleLoginRedirect = () => {
   router.push('/login')
 }
+
+// 사용자 상태별 안내 문구
+const placeholderMessage = computed(() => {
+  if (isLawyerUser.value) {
+    return '의뢰인 전용 방송입니다'
+  } else {
+    return '로그인 후 방송을 시청하세요'
+  }
+})
 // 예상 데이터 구조 예시
 // broadcast = {
 //   isLive: true,
@@ -47,20 +62,20 @@ const handleLoginRedirect = () => {
 
             <!-- ✅ 로그인 유저는 iframe 영상 출력 -->
             <iframe
-                v-if="broadcast.isLive && isLoggedIn"
+                v-if="broadcast.isLive && isClientUser"
                 :src="broadcast.videoEmbedUrl"
                 frameborder="0"
                 allow="autoplay; fullscreen; camera; microphone"
                 allowfullscreen
                 class="media-iframe"
-            ></iframe>
+            />
 
-            <!-- 🚫 비회원은 썸네일 + 재생 버튼 -->
+            <!-- 🚫 비회원 또는 변호사: 썸네일 + 재생버튼 -->
             <div v-else class="media-thumbnail-wrapper" @click="handleLoginRedirect">
               <img :src="broadcast.thumbnail || basicThumbnail" alt="방송 썸네일" class="media-thumbnail" />
               <div class="loading-overlay">
                 <i class="fas fa-play-circle text-white" style="font-size: 4rem;"></i>
-                <p class="placeholder-text mt-2">로그인 후 방송을 시청하세요</p>
+                <p class="placeholder-text mt-2">{{ placeholderMessage }}</p>
               </div>
             </div>
 
