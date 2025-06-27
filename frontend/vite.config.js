@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
     // 개발자는 .env.development에서 값 읽고,
     // 그 외(배포 등)는 하드코딩된 값 사용
     const apiBase = mode === 'development'
-        ? env.VITE_API_BASE
+        ? env.VITE_API_BASE || 'http://10.0.2.6:8080'
         : 'http://10.0.2.6:8080'
 
     console.log("apiBase -> ", apiBase)
