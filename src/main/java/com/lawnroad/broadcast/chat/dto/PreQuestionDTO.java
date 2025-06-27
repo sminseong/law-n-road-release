@@ -16,6 +16,7 @@ public class PreQuestionDTO {
     private Long userNo;
     private Long scheduleNo;
     private String lawyerName;
+    private String profile;
     private String name;
     private String scheduleContent;
     private String thumbnailPath;

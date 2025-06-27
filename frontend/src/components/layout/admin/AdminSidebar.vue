@@ -53,9 +53,7 @@ watch(
     <div class="w-100">
       <!-- 로고 -->
       <div class="logo-box mb-5 text-center">
-        <a href="/">
-          <img src="@/assets/images/logo/logo-dark.png" alt="로앤로드 로고" class="logo-img" />
-        </a>
+        <img src="@/assets/images/logo/logo-dark.png" alt="로앤로드 로고" class="logo-img" />
       </div>
 
       <!-- 프로필 -->

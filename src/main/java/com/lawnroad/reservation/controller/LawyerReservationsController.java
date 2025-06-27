@@ -31,12 +31,8 @@ public class LawyerReservationsController {
 
         return service.getReservationsByLawyer(no);
     }
+    
 
-    @CrossOrigin(
-            origins = "http://localhost:5173",
-            allowedHeaders = "*",
-            methods = { RequestMethod.PATCH, RequestMethod.GET, RequestMethod.POST }
-    )
     @PatchMapping("/{reservationNo}/status")
     public ResponseEntity<Void> closeReservation(
             @RequestHeader("Authorization") String authHeader,

@@ -3173,7 +3173,7 @@
 
 .bg-light-primary {
   --fc-bg-opacity: 1;
-  background-color: rgba(var(--fc-light-primary-rgb), var(--fc-bg-opacity)) !important;
+  background-color: rgba(228,230,236, var(--fc-bg-opacity)) !important;
 }
 
 .bg-light-secondary {
@@ -12479,7 +12479,7 @@ div.zoom img {
   --fc-primary: #353f8e !important;
   --fc-primary-rgb: 53, 63, 142 !important;
   --fc-primary-text: #2a326e !important;
-  --fc-light-primary: #d2d6f2 !important;
+  --fc-light-primary: #a8abc1 !important;
   --fc-dark-primary: #1c1f4d !important;
 
   /* 링크 컬러 흐름 개선 */
@@ -15990,21 +15990,46 @@ textarea.form-control-lg {
 }
 
 .btn-primary {
+  /* 기본 */
   --fc-btn-color: #fff;
-  --fc-btn-bg: #353f8e;
-  --fc-btn-border-color: #353f8e;
+  --fc-btn-bg: #3e4a90;           /* #353f8e 보다 채도 유지하면서 10% 정도 밝게 */
+  --fc-btn-border-color: #3e4a90;
+
+  /* Hover */
   --fc-btn-hover-color: #fff;
-  --fc-btn-hover-bg: #2a326e ;
-  --fc-btn-hover-border-color: #2b3475;
-  --fc-btn-focus-shadow-rgb: 53, 63, 142;
+  --fc-btn-hover-bg: #35407a;     /* #2a326e 보다 15% 정도 밝게 */
+  --fc-btn-hover-border-color: #2f3a6c;
+
+  /* Focus 링 */
+  --fc-btn-focus-shadow-rgb: 62, 74, 144;  /* #3e4a90 의 RGB */
+
+  /* Active */
   --fc-btn-active-color: #fff;
-  --fc-btn-active-bg: #2a326e;
-  --fc-btn-active-border-color: #262f67;
-  --fc-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --fc-btn-active-bg: #323b6e;     /* #2a326e 보다 10% 정도 밝게 */
+  --fc-btn-active-border-color: #2a3161;
+
+  /* Disabled (기존과 동일) */
   --fc-btn-disabled-color: #fff;
-  --fc-btn-disabled-bg: #353f8e;
-  --fc-btn-disabled-border-color: #353f8e;
+  --fc-btn-disabled-bg: #3e4a90;
+  --fc-btn-disabled-border-color: #3e4a90;
 }
+
+/*.btn-primary {*/
+/*  --fc-btn-color: #fff;*/
+/*  --fc-btn-bg: #353f8e;*/
+/*  --fc-btn-border-color: #353f8e;*/
+/*  --fc-btn-hover-color: #fff;*/
+/*  --fc-btn-hover-bg: #2a326e ;*/
+/*  --fc-btn-hover-border-color: #2b3475;*/
+/*  --fc-btn-focus-shadow-rgb: 53, 63, 142;*/
+/*  --fc-btn-active-color: #fff;*/
+/*  --fc-btn-active-bg: #2a326e;*/
+/*  --fc-btn-active-border-color: #262f67;*/
+/*  --fc-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);*/
+/*  --fc-btn-disabled-color: #fff;*/
+/*  --fc-btn-disabled-bg: #353f8e;*/
+/*  --fc-btn-disabled-border-color: #353f8e;*/
+/*}*/
 
 /* .btn-primary {
   --fc-btn-color: #fff;

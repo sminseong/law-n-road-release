@@ -8,6 +8,7 @@ import com.lawnroad.common.util.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -20,7 +21,10 @@ import java.nio.charset.StandardCharsets;
 @Component
 @RequiredArgsConstructor
 public class  OAuth2SuccessHandler implements AuthenticationSuccessHandler {
-
+    
+    // 개발인지 배포인지 검사
+    @Value("${spring.profiles.active:}")
+    private String activeProfile;
 
     private final JwtTokenUtil jwtTokenUtil;
     private final ClientMapper clientMapper;
@@ -78,9 +82,14 @@ public void onAuthenticationSuccess(HttpServletRequest request,
 
     // ✅ 한글 nickname 인코딩
     String encodedNickname = URLEncoder.encode(client.getNickname(), StandardCharsets.UTF_8);
-
+    
+    // 프로필에 따라 redirect URI 분기
+    String baseUrl = "dev".equals(activeProfile)
+        ? "http://localhost:5173/naver-login"
+        : "https://lawnroad.kr/naver-login";
+    
     // ✅ 추가 정보 포함한 URI 조합
-    String redirectUri = "http://localhost:5173/naver-login"
+    String redirectUri = baseUrl
             + "?token=" + accessToken
             + "&refresh=" + refreshToken
             + "&nickname=" + encodedNickname

@@ -13,25 +13,40 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
   @Value("${file.upload-dir}")
   private String uploadDir;
+  
+  // spring.profiles.active 값이 있으면 그걸 쓰고,
+  // 없으면 빈 문자열 ""을 기본값으로 사용해라.
+  @Value("${spring.profiles.active:}")
+  private String activeProfile;
+  
 
   // ✅ CORS 에러애 대해 -> proxy로 해결하는 클래스
   @Override
   public void addCorsMappings(CorsRegistry registry) {
+    // spring.profiles.active가 없거나 비어 있으면 prod로 간주
+    boolean isProd = activeProfile == null || activeProfile.isBlank();
+    
+    String allowedOrigin = isProd
+        ? "http://101.79.9.137"
+        : "http://localhost:5173";
+    
+    System.out.println( "allowedOrigin -> " + allowedOrigin);
+    
     // 어떤 URL에 대해 어디서 요청을 허용할지 설정
     registry.addMapping("/mail/**")
-            .allowedOrigins("http://localhost:5173") // 어디에서 온 요청을 허용
+            .allowedOrigins(allowedOrigin) // 어디에서 온 요청을 허용
             .allowedMethods("GET", "POST", "OPTIONS") // ✅ OPTIONS 추가!
             .allowedHeaders("*") // 모든 헤더 허용
             .allowCredentials(false);
 
     registry.addMapping("/api/**")
-            .allowedOrigins("http://localhost:5173")
+            .allowedOrigins(allowedOrigin)
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("*") // 모든 헤더 허용
             .allowCredentials(false);
 
     registry.addMapping("/**")
-            .allowedOrigins("http://localhost:5173") // Vue 개발 서버 주소
+            .allowedOrigins(allowedOrigin) // Vue 개발 서버 주소
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("*")
             .allowCredentials(true);

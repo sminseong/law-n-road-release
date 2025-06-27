@@ -27,7 +27,7 @@ public class AutoReplyController {
         return autoReplyService.findByAutoReply(scheduleNo);
     }
 
-    @DeleteMapping("/api/nightBot/{no}")
+    @DeleteMapping("/api/lawyer/nightBot/{no}")
     public void deleteAutoReply(@PathVariable Long no) {
         autoReplyService.deleteAutoReply(no);
     }

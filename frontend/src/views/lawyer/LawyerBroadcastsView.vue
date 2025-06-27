@@ -455,6 +455,15 @@ async function fetchMyNo() {
                     }
                     return;
                   }
+
+                  if (data.no !== undefined && data.no !== null) {
+                    const idx = messages.value.findIndex((m) => m.no === data.no);
+                    if (idx !== -1) {
+                      // 기존 메시지 내용을 갱신 (메시지, blind 등 모든 필드 교체)
+                      messages.value[idx] = { ...messages.value[idx], ...data };
+                      return;
+                    }
+                  }
                   // 그 외(일반 채팅)는 채팅창에 추가
                   messages.value.push(data);
                   scrollToBottom();

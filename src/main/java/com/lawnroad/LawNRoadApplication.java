@@ -21,7 +21,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
         "com.lawnroad.mainsearch.mapper",
         "com.lawnroad.advertisement.mapper",
         "com.lawnroad.admin.mapper",
-        "com.lawnroad.keyword.mapper"
+        "com.lawnroad.keyword.mapper",
+        "com.lawnroad.dashboard.mapper"
 })
 public class LawNRoadApplication {
     public static void main(String[] args) {

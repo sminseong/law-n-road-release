@@ -1,7 +1,7 @@
 <script setup>
 import AdminFrame from "@/components/layout/admin/AdminFrame.vue";
 import CustomTable from "@/components/table/CustomTable.vue";
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
@@ -72,9 +72,17 @@ function handleFilterChange(newFilters) {
   fetchItems()
 }
 
+const showModal = ref(false)
+const selectedLawyer = ref(null)
+
 function handleRowClick(row) {
-  if (!row) return
-  router.push(`/admin/lawyer/detail/${row.no}`)
+  selectedLawyer.value = row
+  showModal.value = true
+}
+
+function closeModal() {
+  showModal.value = false
+  selectedLawyer.value = null
 }
 
 function handleEdit(row) {
@@ -93,6 +101,24 @@ function handleDelete(row) {
         alert(e?.response?.data?.message || '삭제 중 오류가 발생했습니다.')
       })
 }
+
+const profileUrl = computed(() =>
+    selectedLawyer.value?.profile?.startsWith('http')
+        ? selectedLawyer.value.profile
+        : `https://kr.object.ncloudstorage.com/law-n-road/${selectedLawyer.value?.profile || ''}`
+)
+
+const cardFrontUrl = computed(() =>
+    selectedLawyer.value?.cardFront?.startsWith('http')
+        ? selectedLawyer.value.cardFront
+        : `https://kr.object.ncloudstorage.com/law-n-road/${selectedLawyer.value?.cardFront || ''}`
+)
+
+const cardBackUrl = computed(() =>
+    selectedLawyer.value?.cardBack?.startsWith('http')
+        ? selectedLawyer.value.cardBack
+        : `https://kr.object.ncloudstorage.com/law-n-road/${selectedLawyer.value?.cardBack || ''}`
+)
 
 onMounted(() => {
   fetchItems()
@@ -136,11 +162,90 @@ onUnmounted(() => {
       <div v-if="isLoading" class="text-center my-4">불러오는 중...</div>
       <div v-if="!hasMore" class="text-center my-4 text-muted">모든 변호사를 불러왔습니다.</div>
     </div>
+
+    <div v-if="showModal" class="modal-overlay">
+      <div class="modal-container">
+        <button class="modal-close-btn" @click="closeModal">✕</button>
+
+        <h3 class="modal-title">변호사 상세 정보 (#{{ selectedLawyer?.no }})</h3>
+
+        <ul class="info-list">
+          <li><strong>이름:</strong> {{ selectedLawyer?.name }}</li>
+          <li><strong>이메일:</strong> {{ selectedLawyer?.email }}</li>
+          <li><strong>전화번호:</strong> {{ selectedLawyer?.phone }}</li>
+          <li><strong>계정 상태:</strong> {{ statusMap[selectedLawyer?.status] || selectedLawyer?.status }}</li>
+        </ul>
+
+        <div class="image-section">
+          <div>
+            <p>프로필 사진</p>
+            <img :src="profileUrl" alt="프로필" @error="e => e.target.style.display='none'" />
+          </div>
+          <div>
+            <p>신분증 앞면</p>
+            <img :src="cardFrontUrl" alt="신분증 앞" @error="e => e.target.style.display='none'" />
+          </div>
+          <div>
+            <p>신분증 뒷면</p>
+            <img :src="cardBackUrl" alt="신분증 뒤" @error="e => e.target.style.display='none'" />
+          </div>
+        </div>
+      </div>
+    </div>
   </AdminFrame>
 </template>
 
 <style scoped>
-img {
-  object-fit: cover;
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+.modal-container {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+.modal-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+.modal-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+.info-list {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 16px;
+}
+.info-list li {
+  margin-bottom: 8px;
+}
+.image-section {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.image-section img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
 </style>

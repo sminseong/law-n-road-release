@@ -46,7 +46,7 @@ public class PreQuestionController {
        return preQuestionService.findByPreQuestionLawyer(scheduleNo);
     }
 
-    @PostMapping("/api/client/preQuestions/save")
+    @PostMapping("/api/lawyer/preQuestions/save")
     public void deleteLawyerPreQuestion(@RequestBody List<Long> preQuestionNo) {
         preQuestionService.deleteLawyerPreQuestion(preQuestionNo);
     }
