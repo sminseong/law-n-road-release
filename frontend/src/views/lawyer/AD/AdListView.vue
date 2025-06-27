@@ -169,7 +169,7 @@ function handlePageChange(newPage) {
           :filters="[]"
           :image-config="{ enabled: true, key: 'imagePath', targetKey: 'imagePath' }"
           :action-buttons="{
-            delete: (row) => row.approvalStatus !== '승인 완료'
+            delete: (row) => row.approvalStatus === '승인 대기'
           }"
           :current-page="page"
           :total-pages="totalPages"
