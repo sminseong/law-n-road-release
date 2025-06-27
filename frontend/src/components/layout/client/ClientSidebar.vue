@@ -25,7 +25,7 @@ onMounted(async () => {
               v-for="lawyer in topLawyers"
               :key="lawyer.lawyerNo"
               class="lawyer-card"
-              @click="$router.push(`/lawyer/${lawyer.lawyerNo}/homepage`)"
+              @click="$router.push(`/homepage/${lawyer.lawyerNo}`)"
           >
             <img :src="lawyer.profileImage || '/img/default-profile.png'" :alt="lawyer.name" />
             <span>{{ lawyer.name }}</span>

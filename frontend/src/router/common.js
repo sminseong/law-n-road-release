@@ -29,6 +29,11 @@ export default [
         name: 'BrandValue',
         component: () => import('@/views/common/BrandValueView.vue')
     },
+    {
+        path: '/homepage/:lawyerNo',
+        name: 'LawyerHomePage',
+        component: () => import('@/views/lawyer/LawyerHomePageView.vue')
+    },
 
     // ---------- QNA ----------
     {
