@@ -44,7 +44,7 @@ public class OrdersServiceIntegrationTest {
         // DTO 준비
         OrdersCreateDTO dto = new OrdersCreateDTO();
         dto.setUserNo(TEST_USER);
-        dto.setTotalAmount(15000L);
+        dto.setAmount(15000L);
         dto.setStatus("ORDERED");
         dto.setOrderType("RESERVATION");
 
@@ -77,7 +77,7 @@ public class OrdersServiceIntegrationTest {
         // 검증
         assertEquals(createdOrderNo, vo.getNo());
         assertEquals(TEST_USER, vo.getUserNo());
-        assertEquals(15000L, vo.getTotalAmount());
+        assertEquals(15000L, vo.getAmount());
         assertEquals("ORDERED", vo.getStatus());
         assertEquals("RESERVATION", vo.getOrderType());
         assertTrue(vo.getCreatedAt().isBefore(LocalDateTime.now().plusSeconds(1)));
