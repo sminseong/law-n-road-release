@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import {makeApiRequest} from "@/libs/axios-auth.js";
+import http from '@/libs/HttpRequester'
 
 // 라우터에서 방송 번호 가져오기
 const route = useRoute();
@@ -24,10 +25,7 @@ const formatDuration = (seconds) => {
 // vod 가져오는 함수
 const fetchVodInfo = async () => {
   try {
-    const res = await makeApiRequest({
-      method: 'get',
-      url: `/api/public/vod/view/${broadcastNo}`
-    })
+    const res = await http.get(`/api/public/vod/view/${broadcastNo}`)
     vodInfo.value = res.data
   } catch (err) {
     console.error("❌ VOD 정보 가져오기 실패:", err)
@@ -57,9 +55,7 @@ const applyKeywordAlert = async () => {
   if (!confirmed) return
 
   try {
-    await makeApiRequest({
-      method: 'post',
-      url: '/api/client/keyword-alert/apply',
+    await http.post('/api/client/keyword-alert/apply', null, {
       params: {
         keyword: lawyerName
       }

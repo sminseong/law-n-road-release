@@ -3,6 +3,7 @@ import {onMounted, ref} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import {makeApiRequest} from "@/libs/axios-auth.js";
+import http from '@/libs/HttpRequester'
 
 const route = useRoute()
 const router = useRouter()
@@ -20,10 +21,7 @@ const liveScheduleMap = ref({})
 
 onMounted(async () => {
   try {
-    const res = await makeApiRequest({
-      method: 'get',
-      url: `/api/public/schedule/${dateStr}`
-    })
+    const res = await http.get(`/api/public/schedule/${dateStr}`)
 
     if (res?.data) {
       const rawSchedules = res.data
@@ -31,16 +29,15 @@ onMounted(async () => {
       // 라이브 여부 병렬 조회
       const liveChecks = await Promise.all(
           rawSchedules.map(schedule =>
-              makeApiRequest({
-                method: 'get',
-                url: `/api/public/broadcast/live-check/${schedule.no}`
-              }).then(res => ({
-                scheduleNo: schedule.no,
-                live: res.data.live
-              })).catch(() => ({
-                scheduleNo: schedule.no,
-                live: false
-              }))
+              http.get(`/api/public/broadcast/live-check/${schedule.no}`)
+                  .then(res => ({
+                    scheduleNo: schedule.no,
+                    live: res.data.live
+                  }))
+                  .catch(() => ({
+                    scheduleNo: schedule.no,
+                    live: false
+                  }))
           )
       )
 
@@ -56,6 +53,7 @@ onMounted(async () => {
     console.error('스케줄 불러오기 실패:', e)
   }
 })
+
 
 
 
@@ -79,30 +77,27 @@ function arrangeSchedulePositions(scheduleList) {
 const goToSchedule = async (scheduleNo) => {
   try {
     // 방송 상태 조회 (RECORD / DONE / null)
-    const res = await makeApiRequest({
-      method: 'get',
-      url: `/api/public/broadcast/status/${scheduleNo}`
-    })
+    const res = await http.get(`/api/public/broadcast/status/${scheduleNo}`)
 
-    const { status, broadcastNo } = res.data;
+    const { status, broadcastNo } = res.data
 
     if (status === 'DONE' && broadcastNo) {
       // 방송이 종료된 경우 → VOD로 이동
-      router.push(`/vod/${broadcastNo}`);
+      router.push(`/vod/${broadcastNo}`)
     } else if (status === 'RECORD' && broadcastNo) {
       // 방송이 진행 중인 경우 → 방송 시청 페이지
-      router.push(`/client/broadcasts/${broadcastNo}`);
+      router.push(`/client/broadcasts/${broadcastNo}`)
     } else {
       // 방송이 시작되지 않은 경우 → 사전 질문 페이지
-      router.push(`/client/broadcasts/schedule/${scheduleNo}/preQuestion`);
+      router.push(`/client/broadcasts/schedule/${scheduleNo}/preQuestion`)
     }
 
   } catch (err) {
-    console.error('방송 상태 확인 실패:', err);
+    console.error('방송 상태 확인 실패:', err)
     // fallback - 기본 이동
-    router.push(`/client/broadcasts/schedule/${scheduleNo}/preQuestion`);
+    router.push(`/client/broadcasts/schedule/${scheduleNo}/preQuestion`)
   }
-};
+}
 
 
 const goBackToCalendar = () => {
