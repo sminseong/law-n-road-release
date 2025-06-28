@@ -36,7 +36,7 @@ defineProps({
                   {{ banner.desc }}
                   <span class="fw-bold">{{ banner.badge }}</span>
                 </p>
-                <a :href="banner.link" class="btn btn-light fw-bold">
+                <a :href="banner.link" target="_blank" rel="noopener noreferrer" class="btn btn-light fw-bold">
                   변호사 보기
                 </a>
               </div>
