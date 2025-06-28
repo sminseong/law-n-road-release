@@ -5,8 +5,8 @@ import httpRequester from "@/libs/HttpRequester.js";
  */
 
 /** [Lawyer] 오늘 일정 조회 */
-export async function fetchTodaySchedule(lawyerNo) {
-    return await httpRequester.get(`/api/lawyer/dashboard/${lawyerNo}/schedule`);
+export async function fetchTodaySchedule() {
+    return await httpRequester.get('/api/lawyer/dashboard/schedule');
 }
 /** [Lawyer] 내일 상담 신청 목록 조회 */
 export async function fetchTomorrowConsultationRequests() {
@@ -16,25 +16,14 @@ export async function fetchTomorrowConsultationRequests() {
 export async function fetchTomorrowBroadcasts() {
     return await httpRequester.get(`/api/lawyer/dashboard/broadcasts/tomorrow`);
 }
-/**
- * 주간 상담 & 방송 통계 조회
- */
-export async function fetchWeeklyStats() {
-    try {
-        // console.log('주간 통계 API 요청')
-        const response = await httpRequester.get('/api/lawyer/dashboard/weekly-stats')
-        // console.log('주간 통계 API 응답:', response)
-        return response
-    } catch (error) {
-        // console.error('주간 통계 조회 실패:', error)
-        // 오류 시 기본값 반환
-        return {
-            success: false,
-            message: '주간 통계 조회 실패',
-            data: {
-                consultations: [0, 0, 0, 0, 0, 0, 0],
-                broadcasts: [0, 0, 0, 0, 0, 0, 0]
-            }
-        }
-    }
+// 주간 상담 건수
+export async function fetchWeeklyConsultations() {
+    const { data } = await httpRequester.get('/api/lawyer/dashboard/weekly-consultations');
+    return data;  // DailyCountDto[] 반환
+}
+
+// 주간 방송 건수
+export async function fetchWeeklyBroadcasts() {
+    const { data } = await httpRequester.get('/api/lawyer/dashboard/weekly-broadcasts');
+    return data;  // DailyCountDto[] 반환
 }

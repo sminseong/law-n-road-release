@@ -1,26 +1,20 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import LawyerFrame from "@/components/layout/lawyer/LawyerFrame.vue";
-import { fetchTodaySchedule, fetchTomorrowConsultationRequests, fetchTomorrowBroadcasts, fetchWeeklyStats  } from '@/service/dashboardService.js'
+import { fetchTodaySchedule, fetchTomorrowConsultationRequests, fetchTomorrowBroadcasts, fetchWeeklyConsultations , fetchWeeklyBroadcasts } from '@/service/dashboardService.js'
+import { getUserNo } from '@/service/authService.js'
 
-import {
-  Chart, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip,
-  Legend, Filler, BarController, LineController
-} from 'chart.js'
+import { Chart, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip,
+  Legend, Filler, BarController, LineController} from 'chart.js'
 
 // Chart.js 컴포넌트 등록
-Chart.register(
-    CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend,
-    Filler, BarController, LineController
-)
+Chart.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend,
+    Filler, BarController, LineController)
 
+const userNo = ref( getUserNo() )
 // 반응형 데이터
 const currentTime = ref('')
 const loading = ref(false)
-const lawyerInfo = ref({
-  name: '강민영',
-  id: 32
-})
 
 const dashboardStats = ref([
   {
@@ -61,12 +55,12 @@ const dashboardStats = ref([
   }
 ])
 
+//오늘 일정
 const todaySchedule = ref([])
 const scheduleLoading = ref(false)
-
+//내일 상담 예약
 const tomorrowConsultationRequests = ref([])
 const consultationLoading = ref(false)
-
 // 예정된 방송 데이터
 const tomorrowBroadcasts = ref([])
 const broadcastLoading = ref(false)
@@ -289,25 +283,26 @@ const createRevenueChart = (data = null) => {
 const loadTodaySchedule = async () => {
   scheduleLoading.value = true
   try {
-    // console.log('오늘 일정 로드 시작 - lawyerNo:', lawyerInfo.value.id)
+    console.log('오늘 일정 로드 시작')
 
-    const response = await fetchTodaySchedule (lawyerInfo.value.id)
-    // console.log('API 응답:', response)
+    const response = await fetchTodaySchedule()
+    console.log('오늘 일정 API 응답:', response)
 
-    if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
-      todaySchedule.value = response.data.map(item => ({
-        time: item.time,
-        event: item.event,
-        type: item.type,
-        clientName: item.clientName || null
-      }))
-      // console.log('일정 데이터 매핑 완료:', todaySchedule.value)
+    // 응답 구조에 맞게 수정
+    if (response && response.data && Array.isArray(response.data)) {
+      todaySchedule.value = response.data
+    } else if (response && Array.isArray(response)) {
+      // 직접 배열로 반환되는 경우
+      todaySchedule.value = response
     } else {
-      // console.log('일정 데이터 없음')
+      console.warn('예상과 다른 응답 구조:', response)
       todaySchedule.value = []
     }
+
+    console.log('최종 일정 데이터:', todaySchedule.value)
+
   } catch (error) {
-    // console.error('오늘 일정 로딩 실패:', error)
+    console.error('오늘 일정 로딩 에러:', error)
     todaySchedule.value = []
   } finally {
     scheduleLoading.value = false
@@ -382,69 +377,84 @@ const loadTomorrowBroadcasts = async () => {
 }
 
 
-
-const loadWeeklyChartData = async () => {
-  try {
-    // console.log(' 주간 차트 데이터 로드 시작')
-
-    const response = await fetchWeeklyStats()
-    // console.log('주간 통계 API 전체 응답:', response)
-
-    // 올바른 데이터 접근 경로: response.data.data
-    if (response && response.data && response.data.data) {
-      // console.log(' response.data.data:', response.data.data)
-      // console.log(' response.data.data.consultations:', response.data.data.consultations)
-      // console.log(' response.data.data.broadcasts:', response.data.data.broadcasts)
-
-      const chartData = {
-        consultations: response.data.data.consultations || [0, 0, 0, 0, 0, 0, 0],
-        broadcasts: response.data.data.broadcasts || [0, 0, 0, 0, 0, 0, 0]
-      }
-
-      // console.log(' 차트에 적용할 최종 데이터:', chartData)
-
-      // 즉시 차트 업데이트
-      updateWeeklyChart(chartData)
-
-    } else {
-      // console.log(' 응답 데이터 구조 이상:', response)
-      updateWeeklyChart({
-        consultations: [1, 2, 3, 4, 5, 6, 7], // 테스트용 더미 데이터
-        broadcasts: [2, 1, 4, 3, 6, 5, 8]
-      })
-    }
-  } catch (error) {
-    // console.error(' 주간 차트 데이터 로딩 실패:', error)
-    // 테스트용 더미 데이터
-    updateWeeklyChart({
-      consultations: [1, 2, 3, 4, 5, 6, 7],
-      broadcasts: [2, 1, 4, 3, 6, 5, 8]
-    })
+const updateWeeklyChart = ({ consultations, broadcasts }) => {
+  if (weeklyChartInstance) {
+    weeklyChartInstance.data.datasets[0].data = consultations
+    weeklyChartInstance.data.datasets[1].data = broadcasts
+    weeklyChartInstance.update('active')
+  } else {
+    createWeeklyChart({ consultations, broadcasts })
   }
 }
 
-const updateWeeklyChart = (data) => {
-  // console.log(' updateWeeklyChart 호출됨, 데이터:', data)
-  // console.log(' weeklyChartInstance 존재 여부:', !!weeklyChartInstance)
+//주간 차트
+const loadWeeklyChartData = async () => {
+  try {
+    console.log('주간 차트 데이터 로드 시작')
 
-  if (weeklyChartInstance) {
-    // console.log(' 기존 차트 데이터 업데이트')
-    // console.log(' 업데이트 전 차트 데이터:', {
-    //   consultations: weeklyChartInstance.data.datasets[0].data,
-    //   broadcasts: weeklyChartInstance.data.datasets[1].data
-    // })
+    // ① 주간 상담/방송 각각 API 호출
+    const [consultResponse, broadcastResponse] = await Promise.all([
+      fetchWeeklyConsultations(),
+      fetchWeeklyBroadcasts()
+    ])
 
-    weeklyChartInstance.data.datasets[0].data = data.consultations
-    weeklyChartInstance.data.datasets[1].data = data.broadcasts
-    weeklyChartInstance.update('active') // 애니메이션 모드
+    console.log('상담 API 응답:', consultResponse)
+    console.log('방송 API 응답:', broadcastResponse)
 
-    // console.log(' 업데이트 후 차트 데이터:', {
-    //   consultations: weeklyChartInstance.data.datasets[0].data,
-    //   broadcasts: weeklyChartInstance.data.datasets[1].data
-    // })
-  } else {
-    // console.log(' 차트 인스턴스가 없어서 새로 생성')
-    createWeeklyChart(data)
+    // ② 배열 초기화 (월~일: 0~6 인덱스)
+    const consultations = [0, 0, 0, 0, 0, 0, 0]
+    const broadcasts = [0, 0, 0, 0, 0, 0, 0]
+
+    // ③ 상담 데이터 매핑
+    if (Array.isArray(consultResponse)) {
+      consultResponse.forEach(item => {
+        console.log('상담 데이터:', item)
+
+        // LocalDate를 JavaScript Date로 변환
+        const date = new Date(item.date)
+        const dayOfWeek = date.getDay() // 0=일요일, 1=월요일, ..., 6=토요일
+
+        // 배열 인덱스 변환: 월요일(0) ~ 일요일(6)
+        const arrayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+
+        if (arrayIndex >= 0 && arrayIndex < 7) {
+          consultations[arrayIndex] = item.count
+        }
+      })
+    }
+
+    // ④ 방송 데이터 매핑
+    if (Array.isArray(broadcastResponse)) {
+      broadcastResponse.forEach(item => {
+        console.log('방송 데이터:', item)
+
+        const date = new Date(item.date)
+        const dayOfWeek = date.getDay() // 0=일요일, 1=월요일, ..., 6=토요일
+
+        // 배열 인덱스 변환: 월요일(0) ~ 일요일(6)
+        const arrayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+
+        if (arrayIndex >= 0 && arrayIndex < 7) {
+          broadcasts[arrayIndex] = item.count
+        }
+      })
+    }
+
+    console.log('최종 상담 배열:', consultations)
+    console.log('최종 방송 배열:', broadcasts)
+
+    // ⑤ 차트에 데이터 반영
+    updateWeeklyChart({ consultations, broadcasts })
+
+  } catch (error) {
+    console.error('주간 차트 로드 실패:', error)
+    console.error('에러 상세:', error.message)
+
+    // 에러 시 더미 데이터
+    updateWeeklyChart({
+      consultations: [1, 2, 3, 4, 5, 2, 1],
+      broadcasts: [2, 1, 4, 3, 2, 3, 2]
+    })
   }
 }
 
@@ -452,19 +462,12 @@ onMounted(() => {
   updateTime()
   timeInterval = setInterval(updateTime, 1000)
 
-  // 차트 생성과 데이터 로드를 순차적으로 실행
-  setTimeout(() => {
-    // console.log(' 차트 생성 시작')
-    createWeeklyChart() // 빈 차트 먼저 생성
-    createRevenueChart()
+  // 1) 빈 차트 먼저 그리기
+  createWeeklyChart()
+  createRevenueChart()
 
-    // 차트 생성 후 약간의 지연을 두고 데이터 로드
-    setTimeout(() => {
-      // console.log(' 데이터 로드 시작')
-      loadWeeklyChartData() // 실제 데이터로 업데이트
-    }, 200)
-  }, 100)
-
+  // 2) 실제 데이터로 업데이트
+  loadWeeklyChartData()
   loadTodaySchedule()
   loadTomorrowConsultationRequests()
   loadTomorrowBroadcasts()
@@ -500,7 +503,7 @@ onUnmounted(() => {
             </div>
             <div class="flex items-center">
               <div class="text-right">
-                <p class="text-xs text-gray-600 mb-1">안녕하세요, {{ lawyerInfo.name }} 변호사님</p>
+                <p class="text-xs text-gray-600 mb-1">안녕하세요, {{ userNo }}번 변호사님</p>
                 <p class="text-lg font-bold text-blue-600 font-mono">{{ currentTime }}</p>
               </div>
             </div>
@@ -526,7 +529,7 @@ onUnmounted(() => {
               <p class="text-gray-500 text-base">오늘 일정이 없습니다</p>
             </div>
 
-            <!-- 수정: 2열 그리드 -->
+            <!-- 2열 그리드 -->
             <div v-else style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
               <div v-for="(schedule, index) in todaySchedule" :key="index"
                    class="flex items-center p-2.5 rounded-lg border-2 transition-all duration-200 hover:shadow-lg cursor-pointer"
@@ -545,19 +548,48 @@ onUnmounted(() => {
 
 
         <!-- 주요 지표 카드 -->
-        <div class="overflow-x-auto">
-          <div class="flex gap-6 mb-10 min-w-[1024px] px-1">
-            <div v-for="stat in dashboardStats"
-                 :key="stat.title"
-                 class="w-[240px] flex-shrink-0 bg-white rounded-xl shadow p-4 border-l-4 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                 :style="{ borderLeftColor: stat.color }">
-              <div class="flex flex-col">
-                <p class="text-gray-600 text-sm font-medium">{{ stat.title }}</p>
-                <div class="mt-1 flex items-center gap-2 text-nowrap leading-tight"
-                     :style="{ backgroundColor: stat.color + '15' }">
-                  <span class="text-xl">{{ stat.icon }}</span>
-                  <span class="text-xl font-bold"
-                        :style="{ color: stat.value === '데이터 없음' ? '#9ca3af' : stat.color }">{{ stat.value }}</span>
+        <div class="mb-10">
+          <div style="display: flex; flex-direction: row; gap: 1rem;">
+            <!-- 내일 상담신청 -->
+            <div style="flex: 1; background: white; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); padding: 1rem; border-left: 4px solid #3b82f6;">
+              <div style="display: flex; flex-direction: column;">
+                <p style="color: #6b7280; font-size: 0.875rem; font-weight: 500;">내일 상담신청</p>
+                <div style="margin-top: 0.25rem; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
+                  <span style="font-size: 1.25rem;">👥</span>
+                  <span style="font-size: 1.25rem; font-weight: 700; color: #3b82f6;">{{ dashboardStats[0].value }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 예정된 방송 -->
+            <div style="flex: 1; background: white; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); padding: 1rem; border-left: 4px solid #10b981;">
+              <div style="display: flex; flex-direction: column;">
+                <p style="color: #6b7280; font-size: 0.875rem; font-weight: 500;">예정된 방송</p>
+                <div style="margin-top: 0.25rem; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
+                  <span style="font-size: 1.25rem;">📺</span>
+                  <span style="font-size: 1.25rem; font-weight: 700; color: #10b981;">{{ dashboardStats[1].value }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 이달의 수익 -->
+            <div style="flex: 1; background: white; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); padding: 1rem; border-left: 4px solid #f59e0b;">
+              <div style="display: flex; flex-direction: column;">
+                <p style="color: #6b7280; font-size: 0.875rem; font-weight: 500;">이달의 수익</p>
+                <div style="margin-top: 0.25rem; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
+                  <span style="font-size: 1.25rem;">💰</span>
+                  <span style="font-size: 1.25rem; font-weight: 700; color: #f59e0b;">{{ dashboardStats[2].value }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 템플릿 판매 수 -->
+            <div style="flex: 1; background: white; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); padding: 1rem; border-left: 4px solid #8b5cf6;">
+              <div style="display: flex; flex-direction: column;">
+                <p style="color: #6b7280; font-size: 0.875rem; font-weight: 500;">템플릿 판매 수</p>
+                <div style="margin-top: 0.25rem; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
+                  <span style="font-size: 1.25rem;">📄</span>
+                  <span style="font-size: 1.25rem; font-weight: 700; color: #8b5cf6;">{{ dashboardStats[3].value }}</span>
                 </div>
               </div>
             </div>
