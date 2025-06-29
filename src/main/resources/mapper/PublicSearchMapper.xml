@@ -7,7 +7,7 @@
   <!-- 1) 변호사 상위 10개 (키워드 검색 후 포인트 순 fallback, 중복 제외) -->
   <select id="searchLawyers" resultType="com.lawnroad.mainsearch.dto.SearchLawyerDto">
     SELECT * FROM (
-    <!-- 1-1) 키워드 검색 그룹 -->
+    <!-- 1-1) 키워드 매칭 그룹 -->
     SELECT
     l.no,
     l.profile,
@@ -15,31 +15,35 @@
     l.consult_price   AS consultPrice,
     l.office_name     AS officeName,
     l.lawyer_intro    AS lawyerIntro,
-    <choose>
-      <when test="keywords != null and keywords.size() &gt; 0">
-        <foreach collection="keywords" item="kw" separator=" + ">
-          (l.name LIKE CONCAT('%', #{kw}, '%'))
-        </foreach>
-        AS score,
-      </when>
-      <otherwise>
-        0 AS score,
-      </otherwise>
-    </choose>
+    (
+    <foreach collection="keywords" item="kw" separator=" + ">
+      CASE
+      WHEN l.name LIKE CONCAT('%', #{kw}, '%') THEN 10
+      WHEN l.office_name LIKE CONCAT('%', #{kw}, '%') THEN 5
+      WHEN l.lawyer_intro LIKE CONCAT('%', #{kw}, '%') THEN 3
+      ELSE 0
+      END
+    </foreach>
+    ) AS score,
     l.point AS point,
+    (SELECT COUNT(*) FROM template t WHERE t.user_no = l.no) AS templateCount,
+    (SELECT COUNT(*) FROM comment c WHERE c.user_no = l.no)  AS qnaAnswerCount,
     1       AS grp
     FROM lawyer l
-    <where>
-      <if test="keywords != null and keywords.size() &gt; 0">
-        <foreach collection="keywords" item="kw" open="(" separator=" OR " close=")">
-          l.name LIKE CONCAT('%', #{kw}, '%')
-        </foreach>
-      </if>
-    </where>
+    WHERE l.status = 'APPROVED_JOIN'
+    <if test="keywords != null and keywords.size() > 0">
+      AND (
+      <foreach collection="keywords" item="kw" separator=" OR ">
+        l.name LIKE CONCAT('%', #{kw}, '%')
+        OR l.office_name LIKE CONCAT('%', #{kw}, '%')
+        OR l.lawyer_intro LIKE CONCAT('%', #{kw}, '%')
+      </foreach>
+      )
+    </if>
 
     UNION ALL
 
-    <!-- 1-2) 포인트 순 fallback 그룹 (키워드 매칭 제외) -->
+    <!-- 1-2) 포인트 순 fallback 그룹 (키워드 미포함 + 중복 제거) -->
     SELECT
     l.no,
     l.profile,
@@ -49,17 +53,25 @@
     l.lawyer_intro    AS lawyerIntro,
     0       AS score,
     l.point AS point,
+    (SELECT COUNT(*) FROM template t WHERE t.user_no = l.no) AS templateCount,
+    (SELECT COUNT(*) FROM comment c WHERE c.user_no = l.no)  AS qnaAnswerCount,
     2       AS grp
     FROM lawyer l
-    <where>
-      <if test="keywords != null and keywords.size() &gt; 0">
-        NOT (
-        <foreach collection="keywords" item="kw" open="" separator=" OR " close="">
-          l.name LIKE CONCAT('%', #{kw}, '%')
-        </foreach>
-        )
-      </if>
-    </where>
+    WHERE l.status = 'APPROVED_JOIN'
+    AND l.no NOT IN (
+    SELECT l2.no
+    FROM lawyer l2
+    WHERE l2.status = 'APPROVED_JOIN'
+    <if test="keywords != null and keywords.size() > 0">
+      AND (
+      <foreach collection="keywords" item="kw" separator=" OR ">
+        l2.name LIKE CONCAT('%', #{kw}, '%')
+        OR l2.office_name LIKE CONCAT('%', #{kw}, '%')
+        OR l2.lawyer_intro LIKE CONCAT('%', #{kw}, '%')
+      </foreach>
+      )
+    </if>
+    )
     ) AS combined
     ORDER BY grp ASC, score DESC, point DESC
     LIMIT 10
@@ -79,73 +91,104 @@
     t.price,
     t.thumbnail_path AS thumbnailPath,
     t.discount_rate  AS discountRate,
-    <choose>
-      <when test="keywords != null and keywords.size() &gt; 0">
-        <foreach collection="keywords" item="kw" separator=" + ">
-          ((t.name LIKE CONCAT('%', #{kw}, '%'))
-          + (t.description LIKE CONCAT('%', #{kw}, '%')))
-        </foreach>
-        AS score,
-      </when>
-      <otherwise>
-        0 AS score,
-      </otherwise>
-    </choose>
-    1       AS grp
+    (
+    <foreach collection="keywords" item="kw" separator=" + ">
+      CASE
+      WHEN t.name LIKE CONCAT('%', #{kw}, '%') THEN 10
+      WHEN t.description LIKE CONCAT('%', #{kw}, '%') THEN 5
+      ELSE 0
+      END
+    </foreach>
+    ) AS score,
+    1 AS grp
     FROM template t
     <where>
       <if test="category != null">
         t.category_no = #{category}
       </if>
-      <if test="keywords != null and keywords.size() &gt; 0">
-        AND
-        <foreach collection="keywords" item="kw" open="(" separator=" OR " close=")">
-          t.name        LIKE CONCAT('%', #{kw}, '%')
+      <if test="keywords != null and keywords.size() > 0">
+        AND (
+        <foreach collection="keywords" item="kw" separator=" OR ">
+          t.name LIKE CONCAT('%', #{kw}, '%')
           OR t.description LIKE CONCAT('%', #{kw}, '%')
         </foreach>
+        )
       </if>
     </where>
 
     UNION ALL
 
-    <!-- 2-2) 키워드만 그룹 (카테고리 외 fallback, 중복 제외) -->
+    <!-- 2-2) 키워드만 일치 그룹 (카테고리 제외, 중복 제거 없음) -->
     SELECT
     t.no,
-    t.user_no       AS userNo,
-    t.category_no   AS categoryNo,
+    t.user_no,
+    t.category_no,
     t.type,
     t.name,
     t.description,
     t.price,
-    t.thumbnail_path AS thumbnailPath,
-    t.discount_rate  AS discountRate,
-    <choose>
-      <when test="keywords != null and keywords.size() &gt; 0">
-        <foreach collection="keywords" item="kw" separator=" + ">
-          ((t.name LIKE CONCAT('%', #{kw}, '%'))
-          + (t.description LIKE CONCAT('%', #{kw}, '%')))
-        </foreach>
-        AS score,
-      </when>
-      <otherwise>
-        0 AS score,
-      </otherwise>
-    </choose>
-    2       AS grp
+    t.thumbnail_path,
+    t.discount_rate,
+    (
+    <foreach collection="keywords" item="kw" separator=" + ">
+      CASE
+      WHEN t.name LIKE CONCAT('%', #{kw}, '%') THEN 10
+      WHEN t.description LIKE CONCAT('%', #{kw}, '%') THEN 5
+      ELSE 0
+      END
+    </foreach>
+    ) AS score,
+    2 AS grp
     FROM template t
     <where>
-      <if test="keywords != null and keywords.size() &gt; 0">
-        <foreach collection="keywords" item="kw" open="(" separator=" OR " close=")">
-          t.name        LIKE CONCAT('%', #{kw}, '%')
+      <if test="keywords != null and keywords.size() > 0">
+        (
+        <foreach collection="keywords" item="kw" separator=" OR ">
+          t.name LIKE CONCAT('%', #{kw}, '%')
           OR t.description LIKE CONCAT('%', #{kw}, '%')
         </foreach>
+        )
       </if>
       <if test="category != null">
         AND t.category_no != #{category}
       </if>
     </where>
+
+    UNION ALL
+
+    <!-- 2-3) 조건 없는 최신순 fallback (중복 제거) -->
+    SELECT
+    t.no,
+    t.user_no,
+    t.category_no,
+    t.type,
+    t.name,
+    t.description,
+    t.price,
+    t.thumbnail_path,
+    t.discount_rate,
+    0 AS score,
+    3 AS grp
+    FROM template t
+    WHERE t.no NOT IN (
+    SELECT t2.no
+    FROM template t2
+    <where>
+      <if test="category != null">
+        t2.category_no = #{category}
+      </if>
+      <if test="keywords != null and keywords.size() > 0">
+        AND (
+        <foreach collection="keywords" item="kw" separator=" OR ">
+          t2.name LIKE CONCAT('%', #{kw}, '%')
+          OR t2.description LIKE CONCAT('%', #{kw}, '%')
+        </foreach>
+        )
+      </if>
+    </where>
+    )
     ) AS combined
-    ORDER BY grp ASC, score DESC
+    ORDER BY grp ASC, score DESC, no DESC
     LIMIT 20
   </select>
 
@@ -160,69 +203,96 @@
     b.user_no       AS userNo,
     b.title,
     b.content,
-    <choose>
-      <when test="keywords != null and keywords.size() &gt; 0">
-        <foreach collection="keywords" item="kw" separator=" + ">
-          ((b.title LIKE CONCAT('%', #{kw}, '%'))
-          + (b.content LIKE CONCAT('%', #{kw}, '%')))
-        </foreach>
-        AS score,
-      </when>
-      <otherwise>
-        0 AS score,
-      </otherwise>
-    </choose>
-    1       AS grp
+    (
+    <foreach collection="keywords" item="kw" separator=" + ">
+      CASE
+      WHEN b.title LIKE CONCAT('%', #{kw}, '%') THEN 10
+      WHEN b.content LIKE CONCAT('%', #{kw}, '%') THEN 5
+      ELSE 0
+      END
+    </foreach>
+    ) AS score,
+    1 AS grp
     FROM board b
     <where>
       <if test="category != null">
         b.category_no = #{category}
       </if>
-      <if test="keywords != null and keywords.size() &gt; 0">
-        AND
-        <foreach collection="keywords" item="kw" open="(" separator=" OR " close=")">
-          b.title   LIKE CONCAT('%', #{kw}, '%')
+      <if test="keywords != null and keywords.size() > 0">
+        AND (
+        <foreach collection="keywords" item="kw" separator=" OR ">
+          b.title LIKE CONCAT('%', #{kw}, '%')
           OR b.content LIKE CONCAT('%', #{kw}, '%')
         </foreach>
+        )
       </if>
     </where>
 
     UNION ALL
 
-    <!-- 3-2) 키워드만 그룹 (카테고리 외 fallback, 중복 제외) -->
+    <!-- 3-2) 키워드만 그룹 (카테고리 제외) -->
     SELECT
     b.no,
-    b.category_no   AS categoryNo,
-    b.user_no       AS userNo,
+    b.category_no,
+    b.user_no,
     b.title,
     b.content,
-    <choose>
-      <when test="keywords != null and keywords.size() &gt; 0">
-        <foreach collection="keywords" item="kw" separator=" + ">
-          ((b.title LIKE CONCAT('%', #{kw}, '%'))
-          + (b.content LIKE CONCAT('%', #{kw}, '%')))
-        </foreach>
-        AS score,
-      </when>
-      <otherwise>
-        0 AS score,
-      </otherwise>
-    </choose>
-    2       AS grp
+    (
+    <foreach collection="keywords" item="kw" separator=" + ">
+      CASE
+      WHEN b.title LIKE CONCAT('%', #{kw}, '%') THEN 10
+      WHEN b.content LIKE CONCAT('%', #{kw}, '%') THEN 5
+      ELSE 0
+      END
+    </foreach>
+    ) AS score,
+    2 AS grp
     FROM board b
     <where>
-      <if test="keywords != null and keywords.size() &gt; 0">
-        <foreach collection="keywords" item="kw" open="(" separator=" OR " close=")">
-          b.title   LIKE CONCAT('%', #{kw}, '%')
+      <if test="keywords != null and keywords.size() > 0">
+        (
+        <foreach collection="keywords" item="kw" separator=" OR ">
+          b.title LIKE CONCAT('%', #{kw}, '%')
           OR b.content LIKE CONCAT('%', #{kw}, '%')
         </foreach>
+        )
       </if>
       <if test="category != null">
         AND b.category_no != #{category}
       </if>
     </where>
+
+    UNION ALL
+
+    <!-- 3-3) 조건 없는 최신순 fallback -->
+    SELECT
+    b.no,
+    b.category_no,
+    b.user_no,
+    b.title,
+    b.content,
+    0 AS score,
+    3 AS grp
+    FROM board b
+    WHERE b.no NOT IN (
+    SELECT b2.no
+    FROM board b2
+    <where>
+      <if test="category != null">
+        b2.category_no = #{category}
+      </if>
+      <if test="keywords != null and keywords.size() > 0">
+        AND (
+        <foreach collection="keywords" item="kw" separator=" OR ">
+          b2.title LIKE CONCAT('%', #{kw}, '%')
+          OR b2.content LIKE CONCAT('%', #{kw}, '%')
+        </foreach>
+        )
+      </if>
+    </where>
+    )
     ) AS combined
-    ORDER BY grp ASC, score DESC
+    ORDER BY grp ASC, score DESC, no DESC
     LIMIT 10
   </select>
 

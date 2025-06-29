@@ -11,4 +11,8 @@ public class SearchLawyerDto {
   private Integer consultPrice;
   private String officeName;
   private String lawyerIntro;
+  private Integer score;
+  private Integer point;
+  private Integer templateCount;
+  private Integer qnaAnswerCount;
 }

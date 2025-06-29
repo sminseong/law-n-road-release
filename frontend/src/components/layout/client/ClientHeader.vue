@@ -120,10 +120,14 @@ function onSearch() {
   const q = searchKeyword.value.trim()
   if (!q) return // 키워드가 비어있으면 return
 
-  router.push({
-    path: '/search',
-    query: { keyword: q }
-  })
+  if (route.path === '/search') {
+    // 같은 라우트면 강제 리로드
+    router.replace({ path: '/search', query: { keyword: q } }).then(() => {
+      location.reload()
+    })
+  } else {
+    router.push({ path: '/search', query: { keyword: q } })
+  }
 }
 
 </script>

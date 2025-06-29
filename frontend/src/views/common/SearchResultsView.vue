@@ -1,7 +1,9 @@
 <script setup>
-import { defineProps, toRefs, onMounted, ref } from 'vue'
+import { defineProps, toRefs, ref, computed, onMounted } from 'vue'
 import http from '@/libs/HttpRequester'
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
+import ProductCard from "@/components/common/ProductCard.vue"
+import CardTable   from "@/components/table/CardTable.vue"
 
 // 라우터가 계산해서 뿌려주는 값
 const props = defineProps({
@@ -13,10 +15,13 @@ const props = defineProps({
 // props 안의 값들을 ref 형태로 분해
 const { keyword, category, onlyLawyers } = toRefs(props)
 
-const results = ref([])
+const results = ref({
+  lawyers:   [],
+  qnas:      [],
+  templates: []
+})
 
 async function fetchResults() {
-  // keyword.value, category.value, onlyLawyers.value 로 사용
   const params = { q: keyword.value }
   if (category.value != null) params.category = category.value
   if (onlyLawyers.value) params.onlyLawyers = true
@@ -27,93 +32,131 @@ async function fetchResults() {
     console.log("🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴 \n", results.value)
   } catch (e) {
     console.error('검색 실패:', e)
-    results.value = []
+    results.value = { lawyers: [], qnas: [], templates: [] }
   }
 }
 
 onMounted(fetchResults)
+
+// 1) 첫 번째 변호사에게만 featured=true 주기
+const displayedLawyers = computed(() =>
+    results.value.lawyers.map((lawyer, idx) => ({
+      ...lawyer,
+      featured: idx === 0
+    }))
+)
+
+// 2) 나머지 섹션들은 그대로 배열 바인딩
+const qnaList      = computed(() => results.value.qnas)
+const templateList = computed(() => results.value.templates)
+
 </script>
 
 <template>
   <ClientFrame>
-    <ul>
-      <li v-for="item in results" :key="item.id">
-        {{ item.title }}
-      </li>
-    </ul>
+    <div class="search-results-header mb-10">
+      <h1 class="fs-4 fw-bold">"{{ keyword }}" 검색 결과</h1>
+    </div>
 
-    <div class="search-results-header">
-      <!-- 검색 결과 타이틀 -->
-      <div class="search-title-section">
-        <h1 class="search-title">
-          "{{ keyword }}" 검색 결과
-        </h1>
-        <p class="search-info">
-          총 {{ totalResults }}개의 검색 결과를 찾았습니다.
-        </p>
+    <div class="lawyers-section mb-5">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fs-5 fw-bold mb-0">추천 변호사 리스트</h2>
+        <a href="#" class="text-primary small" @click.prevent="viewAllLawyers">전체보기 →</a>
       </div>
 
-      <!-- 전문 변호사 섹션 -->
-      <div class="lawyers-section">
-        <div class="section-header">
-          <div class="section-title-wrapper">
-            <h2 class="section-title">전문 변호사</h2>
-          </div>
-          <a href="#" class="view-all-link" @click.prevent="viewAllLawyers">
-            전체보기 →
-          </a>
-        </div>
-
-        <!-- 변호사 카드 그리드 -->
-        <div class="lawyers-grid">
-          <div
-              v-for="lawyer in displayedLawyers"
-              :key="lawyer.id"
-              class="lawyer-card"
-              :class="{ 'featured': lawyer.featured }"
-              @click="selectLawyer(lawyer)"
-          >
+      <div class="row g-4">
+        <div
+            v-for="lawyer in displayedLawyers"
+            :key="lawyer.no"
+            class="col-12 col-md-6 col-lg-4"
+        >
+          <div class="card h-100 shadow-sm position-relative p-3 border border-light"
+               :class="{ 'border-primary': lawyer.featured }"
+               @click="selectLawyer(lawyer)"
+               style="cursor: pointer;">
             <!-- 추천 뱃지 -->
-            <div v-if="lawyer.featured" class="featured-badge">추천</div>
+            <span
+                v-if="lawyer.featured"
+                class="badge bg-primary position-absolute top-0 end-0 m-2"
+            >추천</span>
 
-            <!-- 변호사 정보 -->
-            <div class="lawyer-header">
-              <div class="lawyer-avatar">
+            <!-- 프로필 영역 -->
+            <div class="d-flex align-items-center mb-2">
+              <div
+                  class="rounded-circle d-flex align-items-center justify-content-center me-3"
+                  style="width: 48px; height: 48px; background: #6f42c1; color: #fff; font-weight: bold;"
+              >
                 {{ lawyer.name.charAt(0) }}
               </div>
-              <div class="lawyer-info">
-                <h3 class="lawyer-name">{{ lawyer.name }}</h3>
-                <p class="lawyer-specialty">{{ lawyer.specialty }}</p>
+              <div>
+                <h5 class="fw-bold mb-0">{{ lawyer.name }}</h5>
+                <small class="text-muted">{{ lawyer.specialty || '전문 분야 미입력' }}</small>
               </div>
             </div>
 
-            <!-- 변호사 통계 -->
-            <div class="lawyer-stats">
-            <span class="stat-item">
-              📋 {{ lawyer.cases }}건
-            </span>
-              <span class="stat-item">
-              ⭐ {{ lawyer.rating }}건
-            </span>
+            <!-- 통계 -->
+            <div class="mb-2 small text-muted">
+              📋 {{ lawyer.point || 0 }}건 &nbsp; ⭐ {{ lawyer.consultPrice || 0 }} 원
             </div>
 
-            <!-- 변호사 설명 -->
-            <p class="lawyer-description">
-              {{ lawyer.description }}
+            <!-- 소개글 -->
+            <p class="mb-0 text-truncate-2">
+              {{ lawyer.lawyerIntro || '소개글이 없습니다.' }}
             </p>
           </div>
-
-          <!-- 라이브방송 그리드 -->
-          <!-- VOD 그리드 -->
-
-          <!-- QNA 그리드 - 키워드 관련 내용 상위 10개 -->
-
-          <!-- 템플릿 그리드 - 키워드 관련 내용 상위 20개 -->
-
-          <!-- 서브베너 그리드 - 2개 (활성/승인/기한내 광고 상품 중 랜덤) -->
-
         </div>
       </div>
     </div>
+
+<!--    &lt;!&ndash; 3) Templates &ndash;&gt;-->
+<!--    <div class="card mb-4 p-4">-->
+<!--      <h5>{{ /* e.g. results.value.lawyers[0].name */ }} 변호사의 법률 템플릿</h5>-->
+<!--      <div v-if="templateList.length" class="row g-4 row-cols-lg-5 row-cols-2 row-cols-md-3">-->
+<!--        <div-->
+<!--            class="col-md-3 mb-4"-->
+<!--            v-for="product in templateList"-->
+<!--            :key="product.no"-->
+<!--        >-->
+<!--          <ProductCard-->
+<!--              :no="product.no"-->
+<!--              :imageUrl="product.imageUrl"-->
+<!--              :title="product.title"-->
+<!--              :originalPrice="product.originalPrice"-->
+<!--              :discountPercent="product.discountPercent"-->
+<!--              :discountedPrice="product.discountedPrice"-->
+<!--          />-->
+<!--        </div>-->
+<!--      </div>-->
+<!--      <div v-else class="text-center text-muted py-5">-->
+<!--        등록된 상품이 없습니다.-->
+<!--      </div>-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; 4) QNA &ndash;&gt;-->
+<!--    <div class="card mb-4 p-4">-->
+<!--      <h5>{{ /* 동일 */ }} 변호사가 답변한 상담글</h5>-->
+<!--      <CardTable-->
+<!--          v-if="qnaList.length"-->
+<!--          :List="qnaList"-->
+<!--          :maxLines="4"-->
+<!--      />-->
+<!--      <div v-else class="text-center text-muted py-5">-->
+<!--        답변한 게시글이 없습니다.-->
+<!--      </div>-->
+<!--    </div>-->
   </ClientFrame>
 </template>
+
+<style scoped>
+.lawyer-card { position: relative; /* … */ }
+.lawyer-card.featured { border-color: gold; }
+.featured-badge {
+  position: absolute;
+  top: 0.5rem; right: 0.5rem;
+  background: #ffca28;
+  color: #fff;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.2rem;
+  font-size: 0.8rem;
+}
+</style>
