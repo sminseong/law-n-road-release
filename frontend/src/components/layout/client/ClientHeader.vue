@@ -118,7 +118,8 @@ const searchKeyword = ref('')
 
 function onSearch() {
   const q = searchKeyword.value.trim()
-  if (!q) return
+  if (!q) return // 키워드가 비어있으면 return
+
   router.push({
     path: '/search',
     query: { keyword: q }

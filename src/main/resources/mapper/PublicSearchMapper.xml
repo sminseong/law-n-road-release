@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lawnroad.mainsearch.mapper.PublicSearchMapper">
+
+  <!-- 1) 변호사 상위 10개 (키워드 검색 후 포인트 순 fallback, 중복 제외) -->
+  <select id="searchLawyers" resultType="com.lawnroad.mainsearch.dto.SearchLawyerDto">
+    SELECT * FROM (
+    <!-- 1-1) 키워드 검색 그룹 -->
+    SELECT
+    l.no,
+    l.profile,
+    l.name,
+    l.consult_price   AS consultPrice,
+    l.office_name     AS officeName,
+    l.lawyer_intro    AS lawyerIntro,
+    <choose>
+      <when test="keywords != null and keywords.size() &gt; 0">
+        <foreach collection="keywords" item="kw" separator=" + ">
+          (l.name LIKE CONCAT('%', #{kw}, '%'))
+        </foreach>
+        AS score,
+      </when>
+      <otherwise>
+        0 AS score,
+      </otherwise>
+    </choose>
+    l.point AS point,
+    1       AS grp
+    FROM lawyer l
+    <where>
+      <if test="keywords != null and keywords.size() &gt; 0">
+        <foreach collection="keywords" item="kw" open="(" separator=" OR " close=")">
+          l.name LIKE CONCAT('%', #{kw}, '%')
+        </foreach>
+      </if>
+    </where>
+
+    UNION ALL
+
+    <!-- 1-2) 포인트 순 fallback 그룹 (키워드 매칭 제외) -->
+    SELECT
+    l.no,
+    l.profile,
+    l.name,
+    l.consult_price   AS consultPrice,
+    l.office_name     AS officeName,
+    l.lawyer_intro    AS lawyerIntro,
+    0       AS score,
+    l.point AS point,
+    2       AS grp
+    FROM lawyer l
+    <where>
+      <if test="keywords != null and keywords.size() &gt; 0">
+        NOT (
+        <foreach collection="keywords" item="kw" open="" separator=" OR " close="">
+          l.name LIKE CONCAT('%', #{kw}, '%')
+        </foreach>
+        )
+      </if>
+    </where>
+    ) AS combined
+    ORDER BY grp ASC, score DESC, point DESC
+    LIMIT 10
+  </select>
+
+  <!-- 2) 템플릿 상위 20개 (카테고리·키워드 검색 후 fallback, 중복 제외) -->
+  <select id="searchTemplates" resultType="com.lawnroad.mainsearch.dto.SearchTemplateDto">
+    SELECT * FROM (
+    <!-- 2-1) 카테고리 + 키워드 그룹 -->
+    SELECT
+    t.no,
+    t.user_no       AS userNo,
+    t.category_no   AS categoryNo,
+    t.type,
+    t.name,
+    t.description,
+    t.price,
+    t.thumbnail_path AS thumbnailPath,
+    t.discount_rate  AS discountRate,
+    <choose>
+      <when test="keywords != null and keywords.size() &gt; 0">
+        <foreach collection="keywords" item="kw" separator=" + ">
+          ((t.name LIKE CONCAT('%', #{kw}, '%'))
+          + (t.description LIKE CONCAT('%', #{kw}, '%')))
+        </foreach>
+        AS score,
+      </when>
+      <otherwise>
+        0 AS score,
+      </otherwise>
+    </choose>
+    1       AS grp
+    FROM template t
+    <where>
+      <if test="category != null">
+        t.category_no = #{category}
+      </if>
+      <if test="keywords != null and keywords.size() &gt; 0">
+        AND
+        <foreach collection="keywords" item="kw" open="(" separator=" OR " close=")">
+          t.name        LIKE CONCAT('%', #{kw}, '%')
+          OR t.description LIKE CONCAT('%', #{kw}, '%')
+        </foreach>
+      </if>
+    </where>
+
+    UNION ALL
+
+    <!-- 2-2) 키워드만 그룹 (카테고리 외 fallback, 중복 제외) -->
+    SELECT
+    t.no,
+    t.user_no       AS userNo,
+    t.category_no   AS categoryNo,
+    t.type,
+    t.name,
+    t.description,
+    t.price,
+    t.thumbnail_path AS thumbnailPath,
+    t.discount_rate  AS discountRate,
+    <choose>
+      <when test="keywords != null and keywords.size() &gt; 0">
+        <foreach collection="keywords" item="kw" separator=" + ">
+          ((t.name LIKE CONCAT('%', #{kw}, '%'))
+          + (t.description LIKE CONCAT('%', #{kw}, '%')))
+        </foreach>
+        AS score,
+      </when>
+      <otherwise>
+        0 AS score,
+      </otherwise>
+    </choose>
+    2       AS grp
+    FROM template t
+    <where>
+      <if test="keywords != null and keywords.size() &gt; 0">
+        <foreach collection="keywords" item="kw" open="(" separator=" OR " close=")">
+          t.name        LIKE CONCAT('%', #{kw}, '%')
+          OR t.description LIKE CONCAT('%', #{kw}, '%')
+        </foreach>
+      </if>
+      <if test="category != null">
+        AND t.category_no != #{category}
+      </if>
+    </where>
+    ) AS combined
+    ORDER BY grp ASC, score DESC
+    LIMIT 20
+  </select>
+
+
+  <!-- 3) QnA 상위 10개 (카테고리·키워드 검색 후 fallback, 중복 제외) -->
+  <select id="searchBoards" resultType="com.lawnroad.mainsearch.dto.SearchBoardDto">
+    SELECT * FROM (
+    <!-- 3-1) 카테고리 + 키워드 그룹 -->
+    SELECT
+    b.no,
+    b.category_no   AS categoryNo,
+    b.user_no       AS userNo,
+    b.title,
+    b.content,
+    <choose>
+      <when test="keywords != null and keywords.size() &gt; 0">
+        <foreach collection="keywords" item="kw" separator=" + ">
+          ((b.title LIKE CONCAT('%', #{kw}, '%'))
+          + (b.content LIKE CONCAT('%', #{kw}, '%')))
+        </foreach>
+        AS score,
+      </when>
+      <otherwise>
+        0 AS score,
+      </otherwise>
+    </choose>
+    1       AS grp
+    FROM board b
+    <where>
+      <if test="category != null">
+        b.category_no = #{category}
+      </if>
+      <if test="keywords != null and keywords.size() &gt; 0">
+        AND
+        <foreach collection="keywords" item="kw" open="(" separator=" OR " close=")">
+          b.title   LIKE CONCAT('%', #{kw}, '%')
+          OR b.content LIKE CONCAT('%', #{kw}, '%')
+        </foreach>
+      </if>
+    </where>
+
+    UNION ALL
+
+    <!-- 3-2) 키워드만 그룹 (카테고리 외 fallback, 중복 제외) -->
+    SELECT
+    b.no,
+    b.category_no   AS categoryNo,
+    b.user_no       AS userNo,
+    b.title,
+    b.content,
+    <choose>
+      <when test="keywords != null and keywords.size() &gt; 0">
+        <foreach collection="keywords" item="kw" separator=" + ">
+          ((b.title LIKE CONCAT('%', #{kw}, '%'))
+          + (b.content LIKE CONCAT('%', #{kw}, '%')))
+        </foreach>
+        AS score,
+      </when>
+      <otherwise>
+        0 AS score,
+      </otherwise>
+    </choose>
+    2       AS grp
+    FROM board b
+    <where>
+      <if test="keywords != null and keywords.size() &gt; 0">
+        <foreach collection="keywords" item="kw" open="(" separator=" OR " close=")">
+          b.title   LIKE CONCAT('%', #{kw}, '%')
+          OR b.content LIKE CONCAT('%', #{kw}, '%')
+        </foreach>
+      </if>
+      <if test="category != null">
+        AND b.category_no != #{category}
+      </if>
+    </where>
+    ) AS combined
+    ORDER BY grp ASC, score DESC
+    LIMIT 10
+  </select>
+
+</mapper>
