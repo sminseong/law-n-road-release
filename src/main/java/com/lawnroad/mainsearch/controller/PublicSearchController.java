@@ -21,8 +21,8 @@ public class PublicSearchController {
       @RequestParam(value = "category",    required = false) Long category,
       @RequestParam(value = "onlyLawyers", defaultValue = "false") boolean onlyLawyers
   ) {
-    System.out.printf("search() called → q=%s, category=%s, onlyLawyers=%s%n",
-        keyword, category, onlyLawyers);
+//    System.out.printf("search() called → q=%s, category=%s, onlyLawyers=%s%n",
+//        keyword, category, onlyLawyers);
     
     if (onlyLawyers) {
       // 추후에 검색·페이징 로직이 필요하면 service.searchOnlyLawyers(...) 구현
