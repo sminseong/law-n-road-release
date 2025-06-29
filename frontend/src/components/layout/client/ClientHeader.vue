@@ -333,7 +333,7 @@ function onSearch() {
                       <circle cx="12" cy="7" r="4"></circle>
                     </svg>
                   </a>
-                </div>f
+                </div>
 
                 <div v-if="role === 'client'" class="list-inline-item">
                   <!-- 장바구니 아이콘 -->
