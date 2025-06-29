@@ -27,3 +27,13 @@ export async function fetchWeeklyBroadcasts() {
     const { data } = await httpRequester.get('/api/lawyer/dashboard/weekly-broadcasts');
     return data;  // DailyCountDto[] 반환
 }
+
+/** [Lawyer] 이달의 수익 조회 */
+export async function fetchMonthlyRevenue() {
+    return await httpRequester.get('/api/lawyer/dashboard/monthly-revenue');
+}
+
+/** [Lawyer] 이달의 템플릿 판매 건수 조회 */
+export async function fetchMonthlyTemplateSales() {
+    return await httpRequester.get('/api/lawyer/dashboard/monthly-template-sales');
+}

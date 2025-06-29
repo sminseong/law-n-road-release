@@ -26,10 +26,12 @@ public interface LawyerDashboardService {
 
     List<DailyCountDto> getWeeklyConsultations(Long userNo);
     List<DailyCountDto> getWeeklyBroadcasts(Long userNo);
-    /**
-     * 특정 변호사의 주간 상담 & 방송 통계 조회
-     * @param userNo 변호사(유저) 번호
-     * @return 주간 통계 맵 (consultations, broadcasts 배열 포함)
-     */
+
     MonthlyRevenueDto getMonthlyRevenue(Long userNo);
+    /**
+     * 이달의 템플릿 판매 건수 조회
+     * @param userNo 변호사 번호
+     * @return 이달의 템플릿 판매 건수
+     */
+    MonthlyTemplateSalesDto getMonthlyTemplateSales(Long userNo);
 }

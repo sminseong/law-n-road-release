@@ -28,4 +28,6 @@ public interface LawyerDashboardMapper {
     List<DailyCountDto> selectWeeklyBroadcasts(@Param("userNo") Long userNo);
 
     MonthlyRevenueDto getMonthlyRevenue(Long userNo);
+
+    MonthlyTemplateSalesDto getMonthlyTemplateSales(@Param("userNo") Long userNo);
 }

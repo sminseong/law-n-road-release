@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import LawyerFrame from "@/components/layout/lawyer/LawyerFrame.vue";
-import { fetchTodaySchedule, fetchTomorrowConsultationRequests, fetchTomorrowBroadcasts, fetchWeeklyConsultations , fetchWeeklyBroadcasts } from '@/service/dashboardService.js'
+import { fetchTodaySchedule, fetchTomorrowConsultationRequests, fetchTomorrowBroadcasts, fetchWeeklyConsultations , fetchWeeklyBroadcasts , fetchMonthlyRevenue , fetchMonthlyTemplateSales   } from '@/service/dashboardService.js'
 import { getUserNo } from '@/service/authService.js'
 
 import { Chart, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip,
@@ -363,13 +363,13 @@ const loadTomorrowBroadcasts = async () => {
     } else {
       // console.log('내일 방송 데이터 없음')
       tomorrowBroadcasts.value = []
-      dashboardStats.value[1].value = '데이터 없음'
+      dashboardStats.value[1].value = '방송 없음'
       dashboardStats.value[1].loading = false
     }
   } catch (error) {
     // console.error('내일 방송 로딩 실패:', error)
     tomorrowBroadcasts.value = []
-    dashboardStats.value[1].value = '데이터 없음'
+    dashboardStats.value[1].value = '방송 없음'
     dashboardStats.value[1].loading = false
   } finally {
     broadcastLoading.value = false
@@ -458,6 +458,87 @@ const loadWeeklyChartData = async () => {
   }
 }
 
+// 이달의 수익 로드 함수 추가
+const loadMonthlyRevenue = async () => {
+  try {
+    console.log('이달의 수익 로드 시작')
+
+    const response = await fetchMonthlyRevenue()
+    console.log('이달의 수익 API 응답:', response)
+
+    if (response && response.data) {
+      const revenue = response.data
+
+      // 총 수익을 원 단위로 포맷팅
+      const totalRevenueInWon = revenue.totalRevenue || 0
+      const formattedRevenue = totalRevenueInWon.toLocaleString('ko-KR') + '원'
+
+      dashboardStats.value[2].value = formattedRevenue
+      dashboardStats.value[2].loading = false
+
+      console.log('이달의 수익 데이터 매핑 완료:', formattedRevenue)
+    } else {
+      console.log('이달의 수익 데이터 없음')
+      dashboardStats.value[2].value = '0원'
+      dashboardStats.value[2].loading = false
+    }
+  } catch (error) {
+    console.error('이달의 수익 로딩 실패:', error)
+
+    // 더 자세한 에러 정보 출력
+    if (error.response) {
+      // 서버가 응답을 했지만 에러 상태 코드
+      console.error('응답 에러:', {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data,
+        headers: error.response.headers
+      })
+    } else if (error.request) {
+      // 요청이 만들어졌지만 응답을 받지 못함
+      console.error('요청 에러:', error.request)
+    } else {
+      // 요청 설정에서 에러 발생
+      console.error('설정 에러:', error.message)
+    }
+
+    dashboardStats.value[2].value = '0원'
+    dashboardStats.value[2].loading = false
+  }
+}
+
+// 이달의 템플릿 판매 건수 로드 함수
+const loadMonthlyTemplateSales = async () => {
+  try {
+    console.log('이달의 템플릿 판매 건수 로드 시작')
+    console.log('요청 URL:', '/api/lawyer/dashboard/monthly-template-sales')
+
+    const response = await fetchMonthlyTemplateSales()
+    console.log('이달의 템플릿 판매 건수 API 응답:', response)
+
+    if (response && response.data) {
+      const sales = response.data
+      const monthlySalesCount = sales.monthlySalesCount || 0
+      dashboardStats.value[3].value = `${monthlySalesCount}건`
+      dashboardStats.value[3].loading = false
+      console.log('이달의 템플릿 판매 건수 데이터 매핑 완료:', `${monthlySalesCount}건`)
+    } else {
+      console.log('이달의 템플릿 판매 건수 데이터 없음')
+      dashboardStats.value[3].value = '0건'
+      dashboardStats.value[3].loading = false
+    }
+  } catch (error) {
+    console.error('이달의 템플릿 판매 건수 로딩 실패:', error)
+    console.error('에러 상세:', error.message)
+    console.error('에러 코드:', error.code)
+    console.error('요청 정보:', error.config)
+
+    dashboardStats.value[3].value = '0건'
+    dashboardStats.value[3].loading = false
+  }
+}
+
+
 onMounted(() => {
   updateTime()
   timeInterval = setInterval(updateTime, 1000)
@@ -471,6 +552,9 @@ onMounted(() => {
   loadTodaySchedule()
   loadTomorrowConsultationRequests()
   loadTomorrowBroadcasts()
+  loadMonthlyRevenue() // 이달의 수익
+  loadMonthlyTemplateSales()  // 이달의 템플릿
+
 })
 
 
@@ -490,11 +574,11 @@ onUnmounted(() => {
 
 <template>
   <LawyerFrame>
-    <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div class="min-h-screen bg-gradient-custom rounded-3xl overflow-hidden">
 
-      <!-- 헤더 -->
-      <div class="bg-white shadow-md border-b border-gray-200 mb-4">
-        <div class="max-w-7xl mx-auto px-6 py-1">
+      <!-- 헤더 (시간) -->
+      <div class="bg-white shadow-md border-b border-gray-200 mb-0">
+        <div class="w-full px-6 py-1">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
               <div>
@@ -503,33 +587,34 @@ onUnmounted(() => {
             </div>
             <div class="flex items-center">
               <div class="text-right">
-                <p class="text-xs text-gray-600 mb-1">안녕하세요, {{ userNo }}번 변호사님</p>
-                <p class="text-lg font-bold text-blue-600 font-mono">{{ currentTime }}</p>
+                <p class="text-xs text-gray-600 mb-0">안녕하세요, {{ userNo }}번 변호사님</p>
+                <p class="text-lg font-bold text-blue-600 font-mono mb-0">{{ currentTime }}</p>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="max-w-7xl mx-auto px-6 py-4">
+
+      <div class="max-w-7xl mx-auto px-6 py-1">
 
         <!-- 오늘 일정 -->
-        <div class="mb-6">
-          <div class="bg-white rounded-2xl shadow-xl p-6">
-            <div class="flex items-center mb-4">
+        <div class="mb-2">
+          <div class="bg-white rounded	 shadow-xl p-4">
+            <div class="flex items-center mb-2">
               <span class="text-xl mr-2">📅</span>
               <h3 class="text-xl font-bold text-gray-800">오늘 일정</h3>
             </div>
 
-            <div v-if="scheduleLoading" class="flex justify-center py-6">
+            <div v-if="scheduleLoading" class="flex justify-center py-3">
               <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
             </div>
 
-            <div v-else-if="todaySchedule.length === 0" class="text-center py-6">
-              <span class="text-4xl mb-3 block">📭</span>
+            <div v-else-if="todaySchedule.length === 0" class="text-center py-3">  <!-- py-6 → py-4 로 줄임 -->
+              <span class="text-4xl mb-2 block">📭</span>  <!-- mb-3 → mb-2 로 줄임 -->
               <p class="text-gray-500 text-base">오늘 일정이 없습니다</p>
             </div>
 
-            <!-- 2열 그리드 -->
+            <!-- 수정: 2열 그리드 -->
             <div v-else style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
               <div v-for="(schedule, index) in todaySchedule" :key="index"
                    class="flex items-center p-2.5 rounded-lg border-2 transition-all duration-200 hover:shadow-lg cursor-pointer"
@@ -538,7 +623,7 @@ onUnmounted(() => {
                   <span class="text-base">{{ getScheduleIcon(schedule.type) }}</span>
                 </div>
                 <div class="flex-1">
-                  <p class="text-xs font-bold text-gray-800 mb-0.5">{{ schedule.time }}</p>
+                  <p class="text-xs font-bold text-gray-800 mb-0">{{ schedule.time }}</p>
                   <p class="text-xs text-gray-600 leading-tight">{{ schedule.event }}</p>
                 </div>
               </div>
@@ -546,9 +631,8 @@ onUnmounted(() => {
           </div>
         </div>
 
-
-        <!-- 주요 지표 카드 -->
-        <div class="mb-10">
+        <!-- 주요 지표 카드 - 1행 4열 레이아웃 -->
+        <div class="mb-2">
           <div style="display: flex; flex-direction: row; gap: 1rem;">
             <!-- 내일 상담신청 -->
             <div style="flex: 1; background: white; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); padding: 1rem; border-left: 4px solid #3b82f6;">
@@ -564,7 +648,7 @@ onUnmounted(() => {
             <!-- 예정된 방송 -->
             <div style="flex: 1; background: white; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); padding: 1rem; border-left: 4px solid #10b981;">
               <div style="display: flex; flex-direction: column;">
-                <p style="color: #6b7280; font-size: 0.875rem; font-weight: 500;">예정된 방송</p>
+                <p style="color: #6b7280; font-size: 0.875rem; font-weight: 500;">내일 예정된 방송</p>
                 <div style="margin-top: 0.25rem; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
                   <span style="font-size: 1.25rem;">📺</span>
                   <span style="font-size: 1.25rem; font-weight: 700; color: #10b981;">{{ dashboardStats[1].value }}</span>
@@ -586,7 +670,7 @@ onUnmounted(() => {
             <!-- 템플릿 판매 수 -->
             <div style="flex: 1; background: white; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); padding: 1rem; border-left: 4px solid #8b5cf6;">
               <div style="display: flex; flex-direction: column;">
-                <p style="color: #6b7280; font-size: 0.875rem; font-weight: 500;">템플릿 판매 수</p>
+                <p style="color: #6b7280; font-size: 0.875rem; font-weight: 500;">이달의 템플릿 판매 수</p>
                 <div style="margin-top: 0.25rem; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
                   <span style="font-size: 1.25rem;">📄</span>
                   <span style="font-size: 1.25rem; font-weight: 700; color: #8b5cf6;">{{ dashboardStats[3].value }}</span>
@@ -597,10 +681,10 @@ onUnmounted(() => {
         </div>
 
         <!-- 차트 영역 -->
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
           <!-- 주간 상담 & 방송 현황 -->
-          <div class="bg-white rounded-2xl shadow-xl p-8">
-            <div class="flex items-center mb-8">
+          <div class="bg-white rounded-xl shadow-xl p-4">
+            <div class="flex items-center mb-3">
               <span class="text-2xl mr-3">📊</span>
               <h3 class="text-2xl font-bold text-gray-800">주간 상담 & 방송 현황</h3>
             </div>
@@ -610,8 +694,8 @@ onUnmounted(() => {
           </div>
 
           <!-- 월별 수익 트렌드 -->
-          <div class="bg-white rounded-2xl shadow-xl p-8">
-            <div class="flex items-center mb-8">
+          <div class="bg-white rounded-xl shadow-xl p-5">
+            <div class="flex items-center mb-4">
               <span class="text-2xl mr-3">💰</span>
               <h3 class="text-2xl font-bold text-gray-800">월별 수익 트렌드</h3>
             </div>
@@ -625,25 +709,14 @@ onUnmounted(() => {
   </LawyerFrame>
 </template>
 
-<style scoped>
-.bg-gradient-to-br {
-  background: linear-gradient(to bottom right, #f8fafc, #dbeafe, #e0e7ff);
-}
 
-.hover\:shadow-2xl:hover {
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+<style scoped>
+.bg-gradient-custom {
+  background: #f9f9f9;
 }
 
 .transition-all {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.transform {
-  transform: translateZ(0);
-}
-
-.hover\:-translate-y-1:hover {
-  transform: translateY(-0.25rem);
 }
 
 .font-mono {
