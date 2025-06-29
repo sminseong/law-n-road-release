@@ -3,19 +3,20 @@ import { onMounted, onBeforeUnmount } from 'vue'
 
 let observer
 
-onMounted(() => {
+function updatePadding() {
   const header = document.querySelector('header')
   const page = document.querySelector('.client-page-wrapper')
 
-  function updatePadding() {
-    if (header && page) {
-      const headerHeight = header.getBoundingClientRect().height
-      page.style.paddingTop = `${headerHeight + 20}px`
-    }
+  if (header && page) {
+    const headerHeight = header.getBoundingClientRect().height
+    page.style.paddingTop = `${headerHeight + 20}px`
   }
+}
 
+onMounted(() => {
   updatePadding()
 
+  const header = document.querySelector('header')
   if (header && window.ResizeObserver) {
     observer = new ResizeObserver(updatePadding)
     observer.observe(header)
@@ -26,7 +27,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (observer) observer.disconnect()
-  window.removeEventListener('resize', updatePadding)
+  window.removeEventListener('resize', updatePadding) // 이제 됨 ✅
 })
 </script>
 

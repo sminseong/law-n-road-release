@@ -439,22 +439,46 @@ const logout = async () => {
             <div class="d-none d-lg-block mb-2">
               <ul class="navbar-nav align-items-center">
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path === '/' }" href="/">홈</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path === '/' }"
+                      to="/"
+                  >홈</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/client/broadcasts') }" href="/client/broadcasts">라이브 방송</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/client/broadcasts') }"
+                      to="/client/broadcasts"
+                  >라이브 방송</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/replay') }" href="/replay">방송 다시보기</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/replay') }"
+                      to="/replay"
+                  >방송 다시보기</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/templates') }" href="/templates">법률서류 템플릿</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/templates') }"
+                      to="/templates"
+                  >법률서류 템플릿</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/qna') }" href="/qna">법률Q&A</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/qna') }"
+                      to="/qna"
+                  >법률Q&A</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/ci') }" href="/ci">브랜드 가치</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/ci') }"
+                      to="/ci"
+                  >브랜드 가치</router-link>
                 </li>
               </ul>
             </div>
@@ -463,22 +487,46 @@ const logout = async () => {
             <div class="d-block d-lg-none h-100" data-simplebar="">
               <ul class="navbar-nav">
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path === '/' }" href="/">홈</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path === '/' }"
+                      to="/"
+                  >홈</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/client/broadcasts') }" href="/client/broadcasts">라이브 방송</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/client/broadcasts') }"
+                      to="/client/broadcasts"
+                  >라이브 방송</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/replay') }" href="/replay">방송 다시보기</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/replay') }"
+                      to="/replay"
+                  >방송 다시보기</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/templates') }" href="/templates">법률서류 템플릿</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/templates') }"
+                      to="/templates"
+                  >법률서류 템플릿</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/qna') }" href="/qna">법률Q&A</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/qna') }"
+                      to="/qna"
+                  >법률Q&A</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/ci') }" href="/ci">브랜드 가치</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/ci') }"
+                      to="/ci"
+                  >브랜드 가치</router-link>
                 </li>
               </ul>
             </div>

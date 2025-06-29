@@ -14,7 +14,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <router-view />
+  <router-view :key="$route.fullPath" />
   <ClientChatbot v-if="isChatOpen" @close="toggleChatbot" class="floating-chatbot" />
 </template>
 
