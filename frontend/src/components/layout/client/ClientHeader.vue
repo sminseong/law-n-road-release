@@ -54,8 +54,6 @@ onMounted(() => {
     nickname.value = nick
   }
 
-  document.addEventListener('mousemove', updateGradient)
-
   // 백드롭 클릭 시 offcanvas 숨기기
   const backdropHandler = (e) => {
     if (e.target.classList.contains('offcanvas-backdrop')) {
@@ -122,7 +120,7 @@ function onSearch() {
   const q = searchKeyword.value.trim()
   if (!q) return
   router.push({
-    name: 'SearchResults',
+    path: '/search',
     query: { keyword: q }
   })
 }

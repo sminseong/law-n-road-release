@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import http from '@/libs/HttpRequester'
+import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 
 const route = useRoute()
 const topLawyers = ref([])
