@@ -4,8 +4,8 @@ import http from '@/libs/HttpRequester'
 
 const topLawyers = ref([])
 
-const openChatbot = () => {
-  window.dispatchEvent(new Event('open-chatbot'))
+function openInNewTab(lawyerNo) {
+  window.open(`/homepage/${lawyerNo}`, '_blank')
 }
 
 onMounted(async () => {
@@ -25,7 +25,7 @@ onMounted(async () => {
               v-for="lawyer in topLawyers"
               :key="lawyer.lawyerNo"
               class="lawyer-card"
-              @click="$router.push(`/homepage/${lawyer.lawyerNo}`)"
+              @click="openInNewTab(lawyer.lawyerNo)"
           >
             <img :src="lawyer.profileImage || '/img/default-profile.png'" :alt="lawyer.name" />
             <span>{{ lawyer.name }}</span>
