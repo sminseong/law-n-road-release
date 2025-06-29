@@ -294,7 +294,7 @@ const logout = async () => {
             <!-- 장바구니, 유저정보 등 아이콘 -->
             <div class="col-md-2 col-xxl-1 text-end d-none d-lg-block">
               <div v-if="isLoggedIn" class="d-flex align-items-center justify-content-end gap-2">
-                <span class="text-muted me-1" style="min-width: 150px;">
+                <span class="text-muted me-1" style="min-width: 200px;">
                   <strong class="text-white">{{ nickname }}</strong> 님 환영합니다.
                 </span>
                 <div class="list-inline-item">
