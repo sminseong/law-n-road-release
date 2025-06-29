@@ -115,6 +115,17 @@ const logout = async () => {
   }
 }
 
+// 검색창
+const searchKeyword = ref('')
+
+function onSearch() {
+  const q = searchKeyword.value.trim()
+  if (!q) return
+  router.push({
+    name: 'SearchResults',
+    query: { keyword: q }
+  })
+}
 
 </script>
 
@@ -255,18 +266,19 @@ const logout = async () => {
 
             <!-- 검색창 -->
             <div class="col-xxl-6 col-lg-5 d-none d-lg-block">
-              <form action="#">
+              <form @submit.prevent="onSearch">
                 <div class="input-group">
                   <input
+                      v-model="searchKeyword"
                       class="form-control rounded-start"
                       type="search"
-                      name="search"
+                      @keyup.enter="onSearch"
                       placeholder="궁금하신 법률 문제를 검색해보세요"
                   />
                   <button
                       class="btn border border-start-0 rounded-end text-dark"
                       style="background-color: #a8abc1;"
-                      type="button"
+                      type="submit"
                   >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -321,7 +333,7 @@ const logout = async () => {
                       <circle cx="12" cy="7" r="4"></circle>
                     </svg>
                   </a>
-                </div>
+                </div>f
 
                 <div v-if="role === 'client'" class="list-inline-item">
                   <!-- 장바구니 아이콘 -->
@@ -402,18 +414,19 @@ const logout = async () => {
 
             <!-- 햄버거창 검색창 -->
             <div class="d-block d-lg-none my-4">
-              <form action="#">
+              <form @submit.prevent="onSearch">
                 <div class="input-group">
                   <input
+                      v-model="searchKeyword"
                       class="form-control rounded-start"
                       type="search"
-                      name="search"
+                      @keyup.enter="onSearch"
                       placeholder="궁금하신 법률 문제를 검색해보세요"
                   />
                   <button
                       class="btn border border-start-0 rounded-end text-dark"
                       style="background-color: #a8abc1;"
-                      type="button"
+                      type="submit"
                   >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -686,6 +699,13 @@ header {
 .input-group .form-control:focus {
   outline: none !important;
   box-shadow: none !important;
+}
+
+.offcanvas input.form-control {
+  color: #24364a !important;            /* 입력 텍스트용 */
+}
+.offcanvas input.form-control::placeholder {
+  color: #6c757d !important;            /* 플레이스홀더용 */
 }
 
 </style>

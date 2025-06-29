@@ -135,12 +135,12 @@
 
   // 동그라미 카테고리
   const roundCategories = [
-    { icon: 'fas fa-car-crash', label: '사고 발생/처리', link: '/search?category=1' },
-    { icon: 'fas fa-balance-scale', label: '중대사고·형사처벌', link: '/search?category=2' },
-    { icon: 'fas fa-beer', label: '음주·무면허 운전', link: '/search?category=3' },
-    { icon: 'fas fa-gavel', label: '보험·행정처분', link: '/search?category=4' },
-    { icon: 'fas fa-search', label: '과실 분쟁', link: '/search?category=5' },
-    { icon: 'fas fa-bicycle', label: '차량 외 사고', link: '/search?category=6' },
+    { icon: 'fas fa-car-crash', label: '사고 발생/처리', link: '/search?keyword=사고 발생/처리' },
+    { icon: 'fas fa-balance-scale', label: '중대사고·형사처벌', link: '/search?keyword=중대사고·형사처벌' },
+    { icon: 'fas fa-beer', label: '음주·무면허 운전', link: '/search?keyword=음주·무면허 운전' },
+    { icon: 'fas fa-gavel', label: '보험·행정처분', link: '/search?keyword=보험·행정처분' },
+    { icon: 'fas fa-search', label: '과실 분쟁', link: '/search?keyword=과실 분쟁' },
+    { icon: 'fas fa-bicycle', label: '차량 외 사고', link: '/search?keyword=차량 외 사고' },
   ]
 
   // 라이브 방송박스 (대기화면)
@@ -297,7 +297,11 @@
         </div>
       </div>
     </div>
-    <CardTable :List="qnaSampleList" :maxLines="4" />
+    <CardTable v-if="qnaSampleList.length > 0" :List="qnaSampleList" :maxLines="4" />
+
+    <div v-else class="text-center text-muted py-5">
+      등록된 상담글이 없습니다.
+    </div>
 
     <!-- 서브 베너 -->
     <AdBannerPair :banners="banners" />
