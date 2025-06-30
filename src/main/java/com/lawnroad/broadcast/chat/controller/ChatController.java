@@ -75,18 +75,6 @@ public class ChatController {
 
         // ----------------- AI 욕설/금칙어 검사 -----------------
         String msg = chatDTO.getMessage();
-//        boolean hasProhibited = clovaForbiddenService.containsProhibitedWords(msg);
-//
-//        // 컨트롤러에서 메시지 전송 시
-//        if (hasProhibited) {
-//            ChatDTO warning = ChatDTO.builder()
-//                    .type("WARNING")
-//                    .userNo(no)
-//                    .message("⚠️ 욕설 또는 금칙어가 포함된 메시지는 전송할 수 없습니다.")
-//                    .build();
-//            messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), warning);
-//            return;
-//        }
 
         // Redis 장애시 MongoDB fallback
         try {
@@ -105,17 +93,6 @@ public class ChatController {
             if (keyword.equals("자동응답")) {
                 // 프론트에서 scheduleNo를 꼭 보내주세요!
                 Long scheduleNo = chatDTO.getScheduleNo();
-                if (scheduleNo == null) {
-                    ChatDTO reply = ChatDTO.builder()
-                            .broadcastNo(chatDTO.getBroadcastNo())
-                            .nickname("AutoReply")
-                            .message("자동응답 정보 조회에 실패했습니다. (스케줄번호 없음)")
-                            .type("AUTO_REPLY")
-                            .createdAt(LocalDateTime.now())
-                            .build();
-                    messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), reply);
-                    return;
-                }
 
                 List<AutoReplyDTO> allReplies = autoReplyService.findByAutoReply(scheduleNo);
                 if (allReplies != null && !allReplies.isEmpty()) {
