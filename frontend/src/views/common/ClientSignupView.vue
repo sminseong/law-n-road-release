@@ -70,9 +70,10 @@ async function requestEmailCode() {
       return;
     }
 
-    const verifyRes = await axios.post('/mail/send', null, {
+    const verifyRes = await axios.post('/api/mail/send', null, {
       params: { email: email.value }
     });
+
 
     alert("✅ 인증번호가 전송되었습니다.");
   } catch (err) {

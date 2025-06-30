@@ -53,4 +53,6 @@ public interface LawyerMapper {
 
     void updateStatus(@Param("no") Long no, @Param("status") String status);
 
+    int markAsWithdrawn(@Param("userNo") Long userNo);
+
 }
