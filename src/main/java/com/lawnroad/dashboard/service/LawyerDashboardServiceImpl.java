@@ -1,5 +1,6 @@
 package com.lawnroad.dashboard.service;
 
+import com.lawnroad.dashboard.dto.MonthlyRevenueDto;
 import com.lawnroad.dashboard.dto.TodayScheduleDto;
 import com.lawnroad.dashboard.dto.TomorrowBroadcastDto;
 import com.lawnroad.dashboard.dto.TomorrowConsultationRequestDto;
@@ -38,10 +39,10 @@ public class LawyerDashboardServiceImpl implements LawyerDashboardService {
     }
 
     @Override
-    public List<TomorrowConsultationRequestDto> getTomorrowConsultationRequests() {
+    public List<TomorrowConsultationRequestDto> getTomorrowConsultationRequests(Long lawyerNo) {
         try {
             log.info("내일 상담 신청 목록 조회 시작");
-            List<TomorrowConsultationRequestDto> requests = lawyerDashboardMapper.selectTomorrowConsultationRequests();
+            List<TomorrowConsultationRequestDto> requests = lawyerDashboardMapper.selectTomorrowConsultationRequests(lawyerNo);
             log.info("내일 상담 신청 목록 조회 완료. 총 {}건", requests.size());
             return requests;
         } catch (Exception e) {
@@ -55,6 +56,13 @@ public class LawyerDashboardServiceImpl implements LawyerDashboardService {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
         log.info("내일 방송 조회 - date={}", tomorrow);
         return lawyerDashboardMapper.selectTomorrowBroadcasts(tomorrow);
+    }
+    
+    
+    // 거니짱 - 대시보드 최하단 월별 수익
+    @Override
+    public List<MonthlyRevenueDto> getMonthlySalesRevenue(Long lawyerNo) {
+        return lawyerDashboardMapper.selectMonthlySalesRevenue(lawyerNo);
     }
 
 }

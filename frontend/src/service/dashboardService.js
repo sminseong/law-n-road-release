@@ -16,3 +16,8 @@ export async function fetchTomorrowConsultationRequests() {
 export async function fetchTomorrowBroadcasts() {
     return await httpRequester.get(`/api/lawyer/dashboard/broadcasts/tomorrow`);
 }
+
+/** [Lawyer] 거니짱 - 월별 상담예약 + 템플릿 판매 매출 조회 */
+export async function fetchMonthlySalesRevenue() {
+    return await httpRequester.get(`/api/lawyer/dashboard/revenue/sales/monthly`);
+}

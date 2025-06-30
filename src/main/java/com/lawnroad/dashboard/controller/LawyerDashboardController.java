@@ -1,6 +1,7 @@
 package com.lawnroad.dashboard.controller;
 
 import com.lawnroad.common.util.JwtTokenUtil;
+import com.lawnroad.dashboard.dto.MonthlyRevenueDto;
 import com.lawnroad.dashboard.dto.TodayScheduleDto;
 import com.lawnroad.dashboard.dto.TomorrowBroadcastDto;
 import com.lawnroad.dashboard.dto.TomorrowConsultationRequestDto;
@@ -61,7 +62,7 @@ public class LawyerDashboardController {
         log.info("추출된 lawyerNo: {}", lawyerNo); // 🔥 추가
 
         try {
-            List<TomorrowConsultationRequestDto> requests = lawyerDashboardService.getTomorrowConsultationRequests();
+            List<TomorrowConsultationRequestDto> requests = lawyerDashboardService.getTomorrowConsultationRequests(lawyerNo);
 
             log.info("내일 상담 신청 목록 조회 성공 - lawyerNo: {}, 신청 수: {}", lawyerNo, requests.size());
 
@@ -93,5 +94,24 @@ public class LawyerDashboardController {
             log.error("내일 방송 조회 실패 - lawyerNo: {}", lawyerNo, e);
             return ResponseEntity.internalServerError().build();
         }
+    }
+    
+    
+    /** 거니짱
+     * 월별 상담 예약 + 템플릿 판매 수익 조회
+     * GET /api/lawyer/dashboard/revenue/sales/monthly
+     */
+    @GetMapping("/revenue/sales/monthly")
+    public ResponseEntity<List<MonthlyRevenueDto>> getMonthlySalesRevenue(
+        @RequestHeader("Authorization") String authHeader
+    ) {
+        String token    = authHeader.replace("Bearer ", "");
+        Claims claims   = jwtUtil.parseToken(token);
+        Long lawyerNo   = claims.get("no", Long.class);
+        
+        List<MonthlyRevenueDto> data =
+            lawyerDashboardService.getMonthlySalesRevenue(lawyerNo);
+        
+        return ResponseEntity.ok(data);
     }
 }

@@ -1,5 +1,6 @@
 package com.lawnroad.dashboard.service;
 
+import com.lawnroad.dashboard.dto.MonthlyRevenueDto;
 import com.lawnroad.dashboard.dto.TodayScheduleDto;
 import com.lawnroad.dashboard.dto.TomorrowBroadcastDto;
 import com.lawnroad.dashboard.dto.TomorrowConsultationRequestDto;
@@ -19,7 +20,15 @@ public interface LawyerDashboardService {
      * 내일 상담 신청 목록 조회
      * @return 내일 상담 신청 목록
      */
-    List<TomorrowConsultationRequestDto> getTomorrowConsultationRequests();
+    List<TomorrowConsultationRequestDto> getTomorrowConsultationRequests(Long lawyerNo);
+    
     // 파라미터 없이 내일 방송을 조회
     List<TomorrowBroadcastDto> getTomorrowBroadcasts();
+    
+    /** 거니짱
+     * 월별 상담 예약 + 템플릿 판매 수익 조회
+     * @param lawyerNo 변호사 번호
+     * @return 월별 매출 리스트
+     */
+    List<MonthlyRevenueDto> getMonthlySalesRevenue(Long lawyerNo);
 }
