@@ -30,13 +30,22 @@ defineProps({
               <div class="banner-overlay"></div>
 
               <!-- 텍스트 콘텐츠 -->
-              <div class="position-relative z-1">
-                <h3 class="fw-bold mb-1 text-white shadow-text">{{ banner.title }}</h3>
-                <p class="mb-4 text-white shadow-text">
+              <div class="position-relative z-1 text-white">
+                <h3 class="fw-bold mb-2 shadow-text fs-2 text-white">
+                  {{ banner.title }}
+                </h3>
+                <p class="mb-2 shadow-text fs-5">
                   {{ banner.desc }}
-                  <span class="fw-bold">{{ banner.badge }}</span>
                 </p>
-                <a :href="banner.link" class="btn btn-light fw-bold">
+                <p class="mb-4 shadow-text fw-semibold">
+                  <i class="bi bi-award-fill me-1"></i>{{ banner.badge }}
+                </p>
+                <a
+                    :href="banner.link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn btn-light px-4 py-2 fw-bold rounded-pill shadow"
+                >
                   변호사 보기
                 </a>
               </div>
@@ -51,13 +60,5 @@ defineProps({
 <style scoped>
 .shadow-text {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-}
-
-.banner-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to right, rgba(4, 57, 110, 0.4), rgba(0, 77, 153, 0));
-  z-index: 1;
-  border-radius: 0.5rem;
 }
 </style>
