@@ -160,7 +160,9 @@
         bs.name AS title,
         bs.thumbnail_path AS thumbnailPath,
         v.vod_path AS vodPath,
-        v.duration AS duration
+        v.view_count AS viewCount,
+        v.duration AS duration,
+        v.created_at AS createdAt
         FROM broadcast_vod v
         JOIN broadcast b ON v.broadcast_no = b.no
         JOIN broadcast_schedule bs ON b.schedule_no = bs.no

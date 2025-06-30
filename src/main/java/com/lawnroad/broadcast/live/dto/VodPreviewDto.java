@@ -10,5 +10,7 @@ public class VodPreviewDto {
     private String title;
     private String thumbnailPath;
     private String vodPath;
+    private Long viewCount;
     private Integer duration;
+    private String createdAt;
 }

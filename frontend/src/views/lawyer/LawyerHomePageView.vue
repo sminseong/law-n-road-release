@@ -221,9 +221,12 @@ onMounted(async () => {
                       </span>
                     </div>
                     <div class="card-body p-2">
-                      <h6 class="card-title fs-6 fw-bold text-truncate mb-1">
+                      <h6 class="card-title fs-6 fw-bold text-dark-gray mb-1">
                         {{ vod.title }}
                       </h6>
+                      <p class="mt-0 mb-0 fs-7 text-muted">
+                        조회수 {{ vod.viewCount }}회 <span class="mx-1">·</span> {{ vod.createdAt.slice(0, 10) }}
+                      </p>
                     </div>
                   </div>
                 </div>
