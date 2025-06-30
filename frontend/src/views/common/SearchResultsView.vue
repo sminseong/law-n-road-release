@@ -56,7 +56,7 @@ onMounted(async () => {
 
   try {
     const res4 = await http.get('/api/public/main/sub-banners')
-    console.log(res4.data)
+    // console.log(res4.data)
     banners.value = res4.data;
   } catch (e) {
     console.error('서브 베너 조회 실패:', e)
@@ -95,7 +95,7 @@ const templateList = computed(() => results.value.templates)
 
 <template>
   <ClientFrame>
-    <div class="search-results-header mb-10">
+    <div class="search-results-header mb-7">
       <h1 class="fs-3 fw-bold">"{{ keyword }}" 검색 결과</h1>
     </div>
 
@@ -165,11 +165,12 @@ const templateList = computed(() => results.value.templates)
       >
         <ProductCard
             :no="product.no"
-            :imageUrl="product.imageUrl"
-            :title="product.title"
-            :originalPrice="product.originalPrice"
-            :discountPercent="product.discountPercent"
-            :discountedPrice="product.discountedPrice"
+            :title="product.name"
+            :imageUrl="product.thumbnailPath"
+            :originalPrice="product.price.toLocaleString() + '원'"
+            :discountPercent="product.discountRate"
+            :discountAmount="(product.price * product.discountRate / 100).toLocaleString() + '원'"
+            :discountedPrice="(product.price - (product.price * product.discountRate / 100)).toLocaleString() + '원'"
         />
       </div>
     </div>
