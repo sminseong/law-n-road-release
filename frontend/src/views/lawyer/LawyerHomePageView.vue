@@ -147,7 +147,11 @@ onMounted(async () => {
 
           <div class="card shadow-sm mb-4 p-4 d-flex">
             <h5 class="fw-bold">{{ data.name }} 변호사가 답변한 상담글</h5>
-            <CardTable :List="data.recentBoards" :maxLines="4" />
+            <CardTable v-if="data.recentBoards.length > 0" :List="data.recentBoards" :maxLines="4" />
+
+            <div v-else class="text-center text-muted py-5">
+              답변한 게시글이 없습니다.
+            </div>
           </div>
         </div>
       </div>

@@ -87,7 +87,7 @@
           thumbnail: data.thumbnailPath || basicThumbnail,
           title: data.title,
           tags: data.keywords || [],
-          hostImage: data.lawyerProfilePath,
+          hostImage: data.lawyerProfile,
           hostName: data.lawyerName,
           hostDesc: data.categoryName,
           broadcastNo: data.broadcastNo
