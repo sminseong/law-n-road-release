@@ -85,7 +85,8 @@ public class VodServiceImpl implements VodService {
         return vodMapper.findVodListByLawyer(
                 lawyerNo,
                 requestDto.getOffset(),
-                requestDto.getSize()
+                requestDto.getSize(),
+                requestDto.getSort()
         );
     }
 
