@@ -27,7 +27,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     boolean isProd = activeProfile == null || activeProfile.isBlank();
     
     String allowedOrigin = isProd
-        ? "http://101.79.9.137"
+        ? "https://lawnroad.kr"
         : "http://localhost:5173";
     
     System.out.println( "allowedOrigin -> " + allowedOrigin);

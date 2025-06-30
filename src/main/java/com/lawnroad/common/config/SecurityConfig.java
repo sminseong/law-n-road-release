@@ -53,7 +53,7 @@ public class SecurityConfig {
 //    return http.build();
 //  }
 
-    //    @Bean
+//    @Bean
 //    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 //
 //        http.csrf(csrf -> csrf.disable())
@@ -92,35 +92,35 @@ public class SecurityConfig {
 //
 //        return http.build();
 //    }
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/**", "/api/public/**", "/api/find-id", "/api/reset-password",
-                                "/mail/**", "/api/user/**", "/api/auth/nickname", "/api/notification/**",
-                                "/uploads/**", "/api/webhook/**", "/api/signuplawyer",
-                                "/login/oauth2/**", "/oauth2/**"
-                        ).permitAll()
+@Bean
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                    .requestMatchers(
+                            "/api/auth/**", "/api/public/**", "/api/find-id", "/api/reset-password",
+                            "/mail/**", "/api/user/**", "/api/auth/nickname", "/api/notification/**",
+                            "/uploads/**", "/api/webhook/**", "/api/signuplawyer",
+                            "/login/oauth2/**", "/oauth2/**", "/api/confirm/cancel"
+                    ).permitAll()
 
-                        .requestMatchers("/api/ai/**", "/api/lawyer/*/slots", "/api/confirm/payment", "/api/confirm/cancel","/api/refresh")
-
-                        .hasAnyRole("CLIENT", "LAWYER")
-
-                        .requestMatchers("/api/client/**").hasRole("CLIENT")
-
-                        .requestMatchers("/api/lawyer/**").hasRole("LAWYER")
-
-                        .requestMatchers("/api/admin/**","/api/refresh").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                )
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService))
-                        .successHandler((AuthenticationSuccessHandler) oAuth2SuccessHandler) // ✅ 소셜 로그인 성공 처리
-                )
-                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                    .requestMatchers("/api/ai/**", "/api/lawyer/*/slots", "/api/confirm/payment","/api/refresh")
+                
+                    .hasAnyRole("CLIENT", "LAWYER")
+                
+                    .requestMatchers("/api/client/**").hasRole("CLIENT")
+                
+                    .requestMatchers("/api/lawyer/**").hasRole("LAWYER")
+                
+                    .requestMatchers("/api/admin/**","/api/refresh").hasRole("ADMIN")
+                    .anyRequest().authenticated()
+            )
+            .oauth2Login(oauth2 -> oauth2
+                    .userInfoEndpoint(userInfo -> userInfo
+                            .userService(customOAuth2UserService))
+                    .successHandler((AuthenticationSuccessHandler) oAuth2SuccessHandler) // ✅ 소셜 로그인 성공 처리
+            )
+            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
