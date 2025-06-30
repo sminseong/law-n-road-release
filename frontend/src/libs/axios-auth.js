@@ -52,6 +52,7 @@ export const refreshAccessToken = async () => {
     }
 }
 
+
 export const makeApiRequest = async (config) => {
     let token = localStorage.getItem('token')
     if (!token) {
@@ -91,4 +92,6 @@ export const makeApiRequest = async (config) => {
 
         throw error
     }
+
+
 }

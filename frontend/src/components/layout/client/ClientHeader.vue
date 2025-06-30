@@ -465,14 +465,21 @@ function onSearch() {
                   <router-link
                       class="nav-link"
                       :class="{ active: route.path.startsWith('/client/broadcasts') }"
-                      to="/client/broadcasts"
+                      to="/client/broadcasts/list"
                   >라이브 방송</router-link>
                 </li>
                 <li class="nav-item">
                   <router-link
                       class="nav-link"
-                      :class="{ active: route.path.startsWith('/replay') }"
-                      to="/replay"
+                      :class="{ active: route.path.startsWith('/broadcasts/schedule') }"
+                      to="/broadcasts/schedule"
+                  >방송 스케줄</router-link>
+                </li>
+                <li class="nav-item">
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/vod') }"
+                      to="/vod/list"
                   >방송 다시보기</router-link>
                 </li>
                 <li class="nav-item">
@@ -513,14 +520,21 @@ function onSearch() {
                   <router-link
                       class="nav-link"
                       :class="{ active: route.path.startsWith('/client/broadcasts') }"
-                      to="/client/broadcasts"
+                      to="/client/broadcasts/list"
                   >라이브 방송</router-link>
                 </li>
                 <li class="nav-item">
                   <router-link
                       class="nav-link"
-                      :class="{ active: route.path.startsWith('/replay') }"
-                      to="/replay"
+                      :class="{ active: route.path.startsWith('/broadcasts/schedule') }"
+                      to="/broadcasts/schedule"
+                  >방송 스케줄</router-link>
+                </li>
+                <li class="nav-item">
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/vod') }"
+                      to="/vod/list"
                   >방송 다시보기</router-link>
                 </li>
                 <li class="nav-item">

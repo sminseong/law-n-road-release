@@ -1,11 +1,42 @@
 <script setup>
+import {computed, ref} from 'vue'
+import { useRouter } from 'vue-router'
+import basicThumbnail from '@/assets/images/thumbnail/basic_thumbnail.png';
+import { getUserRole } from '@/service/authService.js'
+
 const props = defineProps({
-    broadcast: {
-        type: Object,
-        required: true
-    }
+  broadcast: {
+    type: Object,
+    required: true
+  },
+  onJoin: {
+    type: Function,
+    default: null,
+  }
 })
 
+// 로그인 여부 확인
+const isLoggedIn = ref(!!localStorage.getItem('token'))
+// role 확인
+const userRole = ref(getUserRole())
+const isClientUser = computed(() => isLoggedIn.value && userRole.value === 'CLIENT')
+const isLawyerUser = computed(() => isLoggedIn.value && userRole.value === 'LAWYER')
+
+const router = useRouter()
+
+// 비회원 재생 버튼 클릭 시 로그인으로 이동
+const handleLoginRedirect = () => {
+  router.push('/login')
+}
+
+// 사용자 상태별 안내 문구
+const placeholderMessage = computed(() => {
+  if (isLawyerUser.value) {
+    return '의뢰인 전용 방송입니다'
+  } else {
+    return '로그인 후 방송을 시청하세요'
+  }
+})
 // 예상 데이터 구조 예시
 // broadcast = {
 //   isLive: true,
@@ -21,61 +52,74 @@ const props = defineProps({
 </script>
 
 <template>
-    <section class="mb-10">
-        <div class="container">
-            <div class="live-card mx-auto position-relative rounded shadow-sm overflow-hidden">
+  <section class="mb-10">
+    <div class="container">
+      <div class="live-card mx-auto position-relative rounded shadow-sm overflow-hidden">
 
-                <!-- 🎥 영상 or 썸네일 영역 (고정 높이) -->
-                <div class="live-media-wrapper">
-                    <div class="media-inner">
-                        <iframe v-if="broadcast.isLive" :src="broadcast.videoEmbedUrl" frameborder="0"
-                            allow="autoplay; fullscreen" allowfullscreen class="media-iframe"></iframe>
+        <!-- 🎥 영상 or 썸네일 영역 (고정 높이) -->
+        <div class="live-media-wrapper">
+          <div class="media-inner">
 
-                        <div v-else class="media-thumbnail-wrapper">
-                            <img :src="broadcast.thumbnail" alt="방송 썸네일" class="media-thumbnail" />
-                            
-                            <div class="loading-overlay">
-                                <div class="dots-loader">
-                                    <span></span><span></span><span></span>
-                                    <p class="placeholder-text">라이브 방송 준비 중…</p>
-                                </div>
-                            </div>
-                        </div>
+            <!-- ✅ 로그인 유저는 iframe 영상 출력 -->
+            <iframe
+                v-if="broadcast.isLive && isClientUser"
+                :src="broadcast.videoEmbedUrl"
+                frameborder="0"
+                allow="autoplay; fullscreen; camera; microphone"
+                allowfullscreen
+                class="media-iframe"
+            />
 
-                        <span class="badge live-badge">
-                            {{ broadcast.isLive ? 'LIVE ON' : '' }}
-                        </span>
-                    </div>
-                </div>
-
-                <!-- 📄 본문 영역 -->
-                <div class="live-body position-relative bg-white p-4">
-                    <h4 class="live-title">
-                        {{ broadcast.title }}
-                        <div class="live-tags">
-                            <span v-for="(tag, index) in broadcast.tags" :key="index" class="tag">
-                                {{ tag }}
-                            </span>
-                        </div>
-                    </h4>
-
-                    <div class="live-footer">
-                        <div class="host-info d-flex align-items-center mb-4">
-                            <img :src="broadcast.hostImage" :alt="broadcast.hostName" class="host-avatar me-2" />
-                            <div class="host-meta">
-                                <strong>{{ broadcast.hostName }}</strong><br />
-                                <small>{{ broadcast.hostDesc }}</small>
-                            </div>
-                        </div>
-
-                        <a :href="broadcast.link" class="btn btn-primary live-btn">
-                            {{ broadcast.isLive ? '방송 보러가기' : '사전질문 하러가기' }}
-                        </a>
-                    </div>
-                </div>
+            <!-- 🚫 비회원 또는 변호사: 썸네일 + 재생버튼 -->
+            <div v-else class="media-thumbnail-wrapper" @click="handleLoginRedirect">
+              <img :src="broadcast.thumbnail || basicThumbnail" alt="방송 썸네일" class="media-thumbnail" />
+              <div class="loading-overlay">
+                <i class="fas fa-play-circle text-white" style="font-size: 4rem;"></i>
+                <p class="placeholder-text mt-2">{{ placeholderMessage }}</p>
+              </div>
             </div>
+
+            <!-- LIVE 뱃지 -->
+            <span class="badge live-badge">
+              {{ broadcast.isLive ? 'LIVE ON' : '' }}
+            </span>
+          </div>
         </div>
-    </section>
+
+        <!-- 📄 본문 영역 -->
+        <div class="live-body position-relative bg-white p-4">
+          <h4 class="live-title">
+            {{ broadcast.title }}
+            <div class="live-tags">
+              <span v-for="(tag, index) in broadcast.tags" :key="index" class="tag">
+                {{ tag }}
+              </span>
+            </div>
+          </h4>
+
+          <div class="live-footer">
+            <div class="host-info d-flex align-items-center mb-4">
+              <img :src="broadcast.hostImage" :alt="broadcast.hostName" class="host-avatar me-2" />
+              <div class="host-meta">
+                <strong>{{ broadcast.hostName }}</strong><br />
+                <small>{{ broadcast.hostDesc }}</small>
+              </div>
+            </div>
+
+            <!-- 하단 버튼 (사전질문 or 방송 참여) -->
+            <a
+                href="#"
+                @click.prevent="isLoggedIn ? onJoin() : handleLoginRedirect()"
+                class="btn btn-primary live-btn"
+            >
+              방송 보러가기
+            </a>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </template>
 
 <style scoped>

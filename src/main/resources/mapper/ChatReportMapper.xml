@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lawnroad.broadcast.chat.mapper.ChatReportMapper">
+
+    <insert id="insertChatReport" parameterType="ChatReportDTO">
+        INSERT INTO chat_report
+        (user_no, reported_user_no, nickname, message, created_at)
+        VALUES
+            (#{userNo}, #{reportedUserNo} ,#{nickname}, #{message}, NOW())
+    </insert>
+
+    <select id="selectIsStoppedByUserNo" resultType="int" parameterType="long">
+        SELECT is_stopped
+        FROM client
+        WHERE no = #{userNo}
+    </select>
+</mapper>

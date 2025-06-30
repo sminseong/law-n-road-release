@@ -46,9 +46,30 @@ export default [
     // ---------- 방송 ----------
     {
         path: '/lawyer/broadcasts/schedule',
-        name: 'LawyerBroadcasts',
-        component: () => import('@/views/lawyer/BroadcastScheduleView.vue')
+        name: 'LawyerBroadcastsSchedule',
+        component: () => import('@/views/lawyer/LawyerScheduleView.vue')
     },
+    {
+        path: '/lawyer/broadcasts/live',
+        name: 'LawyerBroadcastsLive',
+        component: () => import('@/views/lawyer/LawyerBroadcastsView.vue')
+    },
+    {
+        path: '/lawyer/broadcasts/schedule/register',
+        name: 'LawyerBroadcastsScheduleRegister',
+        component: () => import('@/views/lawyer/LawyerScheduleRegisterView.vue')
+    },
+    {
+        path: '/lawyer/broadcasts/setting/:scheduleNo',
+        name: 'LawyerBroadcastSetting',
+        component: () => import('@/views/lawyer/LawyerBroadcastSettingView.vue')
+    },
+    {
+        path: '/lawyer/broadcasts/schedule/:scheduleNo',
+        name: 'LawyerBroadcastsScheduleDetail',
+        component: () => import('@/views/lawyer/LawyerScheduleDetailView.vue')
+    },
+
 
     // ---------- 템플릿 ----------
     {

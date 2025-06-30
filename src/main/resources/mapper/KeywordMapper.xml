@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lawnroad.broadcast.live.mapper.KeywordMapper">
+
+    <insert id="insertKeyword" parameterType="com.lawnroad.broadcast.live.model.KeywordVo" useGeneratedKeys="true" keyProperty="no">
+        INSERT INTO keyword (schedule_no, keyword, created_at)
+        VALUES (#{scheduleNo}, #{keyword}, NOW())
+    </insert>
+
+    <delete id="deleteByScheduleNo" parameterType="long">
+        DELETE FROM keyword WHERE schedule_no = #{scheduleNo}
+    </delete>
+
+    <insert id="insertKeywordAlert">
+        INSERT INTO keyword_alert (user_no, keyword)
+        VALUES (#{userNo}, #{keyword})
+    </insert>
+
+    <select id="existsByUserNoAndKeyword" resultType="boolean">
+        SELECT EXISTS (
+        SELECT 1 FROM keyword_alert
+        WHERE user_no = #{userNo} AND keyword = #{keyword}
+        )
+    </select>
+
+    <select id="findKeywordsByScheduleNo" resultType="string">
+        SELECT keyword
+        FROM keyword
+        WHERE schedule_no = #{scheduleNo}
+    </select>
+
+    <select id="findLawyerNameByScheduleNo" resultType="string">
+        SELECT l.name
+        FROM broadcast_schedule s
+        JOIN user u ON s.user_no = u.no
+        JOIN lawyer l ON u.no = l.no
+        WHERE s.no = #{scheduleNo}
+    </select>
+
+    <select id="findUsersByKeywords" resultType="com.lawnroad.broadcast.live.dto.KeywordAlertMatchDto">
+        SELECT ka.user_no, c.name, c.phone, ka.keyword
+        FROM keyword_alert ka
+        JOIN user u ON ka.user_no = u.no
+        JOIN client c ON u.no = c.no
+        WHERE ka.keyword IN
+        <foreach item="kw" collection="keywords" open="(" separator="," close=")">
+            #{kw}
+        </foreach>
+    </select>
+
+
+</mapper>

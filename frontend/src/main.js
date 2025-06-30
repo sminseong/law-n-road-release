@@ -23,7 +23,6 @@ if (token) {
 
 // ✅ Vue 앱 생성 및 마운트
 const app = createApp(App)
-
 app.use(createPinia())
 app.use(router)
 
@@ -36,3 +35,6 @@ app.use(router)
 
 
 app.mount('#app')
+
+window.global = window;
+

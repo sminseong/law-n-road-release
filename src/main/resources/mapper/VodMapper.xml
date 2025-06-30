@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lawnroad.broadcast.live.mapper.VodMapper">
+
+    <resultMap id="VodListResultMap" type="com.lawnroad.broadcast.live.dto.VodListDto">
+        <id property="vodNo" column="vod_no"/>
+        <result property="broadcastNo" column="broadcast_no"/>
+        <result property="title" column="title"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="thumbnailPath" column="thumbnail_path"/>
+        <result property="lawyerName" column="lawyer_name"/>
+        <result property="lawyerProfile" column="lawyer_profile"/>
+        <result property="vodPath" column="vod_path"/>
+        <result property="duration" column="duration"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="createdAt" column="created_at"/>
+        <collection property="keywords" ofType="string" column="schedule_no"
+                    select="com.lawnroad.broadcast.live.mapper.BroadcastMapper.findKeywordsByScheduleNo"/>
+    </resultMap>
+
+    <resultMap id="VodDetailResultMap" type="com.lawnroad.broadcast.live.dto.VodDetailDto">
+        <id property="vodNo" column="vod_no"/>
+        <result property="broadcastNo" column="broadcast_no"/>
+        <result property="vodPath" column="vod_path"/>
+        <result property="duration" column="duration"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="createdAt" column="created_at"/>
+
+        <result property="scheduleNo" column="schedule_no"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="date" column="date"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="thumbnailPath" column="thumbnail_path"/>
+
+        <result property="categoryName" column="category_name"/>
+        <result property="lawyerNo" column="lawyer_no"/>
+        <result property="lawyerName" column="lawyer_name"/>
+        <result property="lawyerProfile" column="lawyer_profile"/>
+
+        <collection property="keywords"
+                    ofType="string"
+                    column="schedule_no"
+                    select="com.lawnroad.broadcast.live.mapper.BroadcastMapper.findKeywordsByScheduleNo"/>
+    </resultMap>
+
+
+    <insert id="insertVod" parameterType="com.lawnroad.broadcast.live.model.BroadcastVodVo">
+        INSERT INTO broadcast_vod (broadcast_no, vod_path, duration, status)
+        VALUES (#{broadcastNo}, #{vodPath}, #{duration}, #{status})
+    </insert>
+
+    <select id="findVodListPaged" resultMap="VodListResultMap">
+        SELECT
+        v.no AS vod_no,
+        v.broadcast_no,
+        bs.no AS schedule_no,
+        bs.name AS title,
+        c.name AS category_name,
+        bs.thumbnail_path,
+        l.name AS lawyer_name,
+        l.profile AS lawyer_profile,
+        v.vod_path,
+        v.duration,
+        v.view_count,
+        v.created_at
+        FROM broadcast_vod v
+        JOIN broadcast b ON v.broadcast_no = b.no
+        JOIN broadcast_schedule bs ON b.schedule_no = bs.no
+        JOIN category c ON bs.category_no = c.no
+        JOIN lawyer l ON b.user_no = l.no
+        WHERE v.status = 0
+        <if test="categoryNo != null">
+            AND c.no = #{categoryNo}
+        </if>
+        <choose>
+            <when test="sort == 'popular'">
+                ORDER BY v.view_count DESC
+            </when>
+            <otherwise>
+                ORDER BY v.created_at DESC
+            </otherwise>
+        </choose>
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <update id="increaseViewCount">
+        UPDATE broadcast_vod
+        SET view_count = view_count + 1
+        WHERE no = #{vodNo}
+    </update>
+
+    <!--  vod 상세  -->
+    <select id="findVodDetailByBroadcastNo" resultMap="VodDetailResultMap">
+        SELECT
+        v.no AS vod_no,
+        v.broadcast_no,
+        v.vod_path,
+        v.duration,
+        v.view_count,
+        v.created_at,
+        b.start_time,
+        b.end_time,
+        bs.no AS schedule_no,
+        bs.name AS title,
+        bs.content,
+        bs.date,
+        bs.thumbnail_path,
+        c.name AS category_name,
+        l.no AS lawyer_no,
+        l.name AS lawyer_name,
+        l.profile AS lawyer_profile
+        FROM broadcast_vod v
+        JOIN broadcast b ON v.broadcast_no = b.no
+        JOIN broadcast_schedule bs ON b.schedule_no = bs.no
+        JOIN category c ON bs.category_no = c.no
+        JOIN lawyer l ON b.user_no = l.no
+        WHERE v.status = 0 AND v.broadcast_no = #{broadcastNo}
+    </select>
+
+    <select id="countVodByCondition" resultType="long">
+        SELECT COUNT(*) FROM broadcast_vod v
+        JOIN broadcast b ON v.broadcast_no = b.no
+        JOIN broadcast_schedule bs ON b.schedule_no = bs.no
+        WHERE v.status = 0
+        <if test="categoryNo != null">
+            AND bs.category_no = #{categoryNo}
+        </if>
+    </select>
+
+    <!-- 채팅 변호사 이름 가져오기-->
+    <select id="selectNameByUserNo" parameterType="long" resultType="string">
+        SELECT name
+        FROM lawyer
+        WHERE no = #{userNo}
+    </select>
+
+    <select id="findAllVods" resultType="com.lawnroad.broadcast.live.dto.VodListItemDto">
+        SELECT
+        v.no AS vodNo,
+        bs.name AS title,
+        bs.thumbnail_path AS thumbnailPath,
+        b.no AS broadcastNo
+        FROM broadcast_vod v
+        JOIN broadcast b ON v.broadcast_no = b.no
+        JOIN broadcast_schedule bs ON b.schedule_no = bs.no
+        WHERE v.status = 0
+        ORDER BY v.created_at DESC
+    </select>
+
+</mapper>

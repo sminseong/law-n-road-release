@@ -49,9 +49,19 @@ export default [
 
     // ---------- 방송 ----------
     {
-        path: '/client/broadcasts',
+        path: '/client/broadcasts/:broadcastNo',
         name: 'ClientBroadcasts',
         component: () => import('@/views/client/ClientBroadcastsView.vue')
+    },
+    {
+        path: '/client/broadcasts/schedule/:scheduleNo/preQuestion',
+        name: 'ClientBroadCastsPreQuestion',
+        component: () => import('@/views/client/ClientPreQuestionView.vue')
+    },
+    {
+        path: '/client/broadcasts/list',
+        name: 'ClientBroadCastsList',
+        component: () => import('@/views/client/ClientBroadcastListView.vue')
     },
 
     // ---------- 템플릿 ----------

@@ -1,15 +1,12 @@
 package com.lawnroad.broadcast.chat.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
-
-@Getter @Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ChatDTO {
 
     /** PK */
@@ -18,8 +15,12 @@ public class ChatDTO {
     /** 사용자 번호 (user_no) */
     private Long userNo;
 
-    /** 방송(채팅룸) 번호 (broadcast_no) */
+    private String name;
+    /// 방송 번호
     private Long broadcastNo;
+
+    /** 스케줄 번호 */
+    private Long scheduleNo;
 
     /** 채팅 보낸 사람 닉네임 */
     private String nickname;
@@ -27,9 +28,12 @@ public class ChatDTO {
     /** 메시지 내용 */
     private String message;
 
-    /** 신고 여부 (TINYINT) */
-    private Integer reportCount;
-
     /** 생성 일시 */
     private LocalDateTime createdAt;
+
+    /** 채팅 타입 */
+    private String type;
+    private boolean blind = false;  // 블라인드 여부
+    private boolean checked = false; // 금칙어 검사 여부
+
 }

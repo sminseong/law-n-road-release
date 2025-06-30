@@ -123,6 +123,29 @@ export default [
     },
 
 
+    // ---------- 방송 ----------
+    {
+        path: '/vod/list',
+        name: 'VodList',
+        component: () => import('@/views/client/PublicVodListView.vue'),
+        props: true
+    },
+    {
+        path: '/vod/:broadcastNo',
+        name: 'VodView',
+        component: () => import('@/views/client/PublicVodView.vue')
+    },
+    {
+        path: '/broadcasts/schedule',
+        name: 'BroadCastsSchedule',
+        component: () => import('@/views/client/PublicScheduleView.vue')
+    },
+    {
+        path: '/broadcasts/schedule/:date',
+        name: 'ScheduleDetailView',
+        component: () => import('@/views/client/PublicScheduleDetailView.vue'),
+        props: true
+    },
 
 
     // ---------- 템플릿 ----------
