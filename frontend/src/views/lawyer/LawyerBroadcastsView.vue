@@ -19,7 +19,7 @@ const publisher = ref(null);
 const videoContainer = ref(null);
 
 const broadcastInfo = ref({});
-const broadcastNo = ref(null);
+const broadcastNo = ref(33); // 하드코딩
 const elapsedTime = ref("00:00:00");
 const viewerCount = ref(1);
 let timerInterval = null;
@@ -365,9 +365,14 @@ onMounted(async () => {
     return;
   }
 
-  await loadBroadcastInfo();
-  await connectSession();
-  connect();
+    connect(); // 무조건 채팅 연결 시도
+
+
+
+
+  // await loadBroadcastInfo();
+  // await connectSession();
+ // connect();
 });
 
 onBeforeUnmount(() => {

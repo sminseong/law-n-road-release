@@ -75,18 +75,6 @@ public class ChatController {
 
         // ----------------- AI 욕설/금칙어 검사 -----------------
         String msg = chatDTO.getMessage();
-//        boolean hasProhibited = clovaForbiddenService.containsProhibitedWords(msg);
-//
-//        // 컨트롤러에서 메시지 전송 시
-//        if (hasProhibited) {
-//            ChatDTO warning = ChatDTO.builder()
-//                    .type("WARNING")
-//                    .userNo(no)
-//                    .message("⚠️ 욕설 또는 금칙어가 포함된 메시지는 전송할 수 없습니다.")
-//                    .build();
-//            messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), warning);
-//            return;
-//        }
 
         // Redis 장애시 MongoDB fallback
         try {
