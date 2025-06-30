@@ -1,12 +1,15 @@
 <script setup>
 import HomepageFrame from "@/components/layout/homepage/HomepageFrame.vue"
-import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted, computed, watch} from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import http from '@/libs/HttpRequester'
 import ProductCard from "@/components/common/ProductCard.vue";
 import CardTable from "@/components/table/CardTable.vue";
+import basicThumbnail from '@/assets/images/thumbnail/basic_thumbnail.png';
+import { getUserNo } from '@/service/authService.js'
 
 const route = useRoute()
+const router = useRouter()
 const data = ref({
   name: '',
   shortIntro: '',
@@ -21,6 +24,11 @@ const data = ref({
   recentBoards: [],
   lawyerNo: null
 })
+// vod
+const vods = ref([]);
+const currentPage = ref(1);
+const totalPages = ref(0);
+const pageSize = 4;
 
 const productList = computed(() => {
   return (data.value.recentTemplates || []).map(tmpl => {
@@ -50,8 +58,63 @@ async function fetchLawyerHomepage(lawyerNo) {
   }
 }
 
+// VOD 가져오는 함수
+async function fetchVodPreview(page = 1) {
+  try {
+    const res = await http.get(
+        `/api/public/vod/lawyer/${route.params.lawyerNo}`,
+        { page, size: pageSize }
+    )
+    vods.value = res.data.vods
+    totalPages.value = res.data.totalPages
+    currentPage.value = res.data.page
+  } catch (err) {
+    console.error('❌ VOD 불러오기 실패:', err)
+  }
+}
+
+// duration 포맷터
+const formatDuration = (seconds) => {
+  const m = String(Math.floor(seconds / 60)).padStart(2, "0")
+  const s = String(seconds % 60).padStart(2, "0")
+  return `${m}:${s}`
+}
+
+// **페이지 그룹 계산** (5개씩 묶음)
+const pageGroup = computed(() => {
+  const groupSize = 5
+  const gIndex = Math.floor((currentPage.value - 1) / groupSize)
+  const start = gIndex * groupSize + 1
+  const end = Math.min(start + groupSize - 1, totalPages.value)
+  const pages = Array.from({ length: end - start + 1 }, (_, i) => start + i)
+  return {
+    pages,
+    hasPrevGroup: start > 1,
+    hasNextGroup: end < totalPages.value,
+    prevPage: start - 1,
+    nextPage: end + 1
+  }
+})
+
+// **페이지 이동 핸들러**
+function changePage(page) {
+  if (page >= 1 && page <= totalPages.value && page !== currentPage.value) {
+    currentPage.value = page
+  }
+}
+
+function goToVod(vod) {
+  router.push(`/vod/${vod.broadcastNo}`)
+}
+
+// currentPage가 바뀔 때마다 데이터 재요청
+watch(currentPage, (newPage) => {
+  fetchVodPreview(newPage)
+})
+
 onMounted(async () => {
   fetchLawyerHomepage(route.params.lawyerNo);
+  fetchVodPreview(currentPage.value);
 })
 
 </script>
@@ -121,6 +184,87 @@ onMounted(async () => {
           <div class="card shadow-sm mb-4 p-4 d-flex">
             <h5 class="fw-bold">{{ data.name }} 변호사의 방송 다시보기</h5>
             <p class="mb-0">{{  }}</p>
+
+            <!-- VOD 목록 -->
+            <div v-if="vods.length > 0" class="row row-cols-md-4 row-cols-2 g-4 my-3">
+              <template v-for="vod in vods" :key="vod.vodNo">
+                <div class="col">
+                  <div
+                      class="card h-100 shadow-sm border-0 cursor-pointer"
+                      @click="goToVod(vod)"
+                  >
+                    <div class="position-relative">
+                      <img
+                          :src="vod.thumbnailPath || basicThumbnail"
+                          class="card-img-top"
+                          alt="방송 썸네일"
+                          style="height: 160px; object-fit: cover;"
+                      />
+                      <!-- 다시보기 + 카테고리 뱃지 -->
+                      <div class="position-absolute top-0 start-0 m-2 d-flex gap-2">
+                        <span
+                            class="badge bg-primary"
+                            style="font-size: 0.7rem; padding: 0.35em 0.6em;"
+                        >다시보기</span>
+                        <span
+                            v-if="vod.categoryName"
+                            class="badge bg-secondary"
+                            style="font-size: 0.7rem; padding: 0.35em 0.6em;"
+                        >{{ vod.categoryName }}</span>
+                      </div>
+                      <!-- 영상 길이 -->
+                      <span
+                          class="position-absolute bottom-0 end-0 m-2 px-2 py-1 bg-dark bg-opacity-50 text-white rounded small"
+                          style="font-size: 0.75rem;"
+                      >
+                      {{ formatDuration(vod.duration) }}
+                      </span>
+                    </div>
+                    <div class="card-body p-2">
+                      <h6 class="card-title fs-6 fw-bold text-truncate mb-1">
+                        {{ vod.title }}
+                      </h6>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+
+            <!-- VOD 없을 때 -->
+            <div v-else class="text-center text-muted py-5 w-100">
+              재생 가능한 VOD가 없습니다.
+            </div>
+
+            <!-- 페이지네이션 -->
+            <nav v-if="totalPages > 1" class="d-flex justify-content-center mt-3 w-100">
+              <ul class="pagination mb-0">
+                <!-- 이전 페이지 -->
+                <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                  <a class="page-link" @click="changePage(currentPage - 1)">Previous</a>
+                </li>
+                <!-- 이전 그룹 -->
+                <li class="page-item" :class="{ disabled: !pageGroup.hasPrevGroup }">
+                  <a class="page-link" @click="changePage(pageGroup.prevPage)">«</a>
+                </li>
+                <!-- 그룹 내 페이지 번호 -->
+                <li
+                    v-for="p in pageGroup.pages"
+                    :key="p"
+                    class="page-item"
+                    :class="{ active: currentPage === p }"
+                >
+                  <a class="page-link" @click="changePage(p)">{{ p }}</a>
+                </li>
+                <!-- 다음 그룹 -->
+                <li class="page-item" :class="{ disabled: !pageGroup.hasNextGroup }">
+                  <a class="page-link" @click="changePage(pageGroup.nextPage)">»</a>
+                </li>
+                <!-- 다음 페이지 -->
+                <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                  <a class="page-link" @click="changePage(currentPage + 1)">Next</a>
+                </li>
+              </ul>
+            </nav>
           </div>
 
           <div class="card shadow-sm mb-4 p-4 d-flex">
@@ -158,3 +302,15 @@ onMounted(async () => {
     </div>
   </HomepageFrame>
 </template>
+
+<style scoped>
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.card.cursor-pointer:hover {
+  box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.15);
+  transform: scale(1.01);
+  transition: all 0.2s;
+}
+</style>

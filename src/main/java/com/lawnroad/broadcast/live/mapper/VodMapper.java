@@ -3,6 +3,7 @@ package com.lawnroad.broadcast.live.mapper;
 import com.lawnroad.broadcast.live.dto.VodDetailDto;
 import com.lawnroad.broadcast.live.dto.VodListDto;
 import com.lawnroad.broadcast.live.dto.VodListItemDto;
+import com.lawnroad.broadcast.live.dto.VodPreviewDto;
 import com.lawnroad.broadcast.live.model.BroadcastVodVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -27,4 +28,9 @@ public interface VodMapper {
     String selectNameByUserNo(Long userNo);
     // 홈에 띄울 vod
     List<VodListItemDto> findAllVods();
+    // 마이페이지에 띄울 vod
+    List<VodPreviewDto> findVodListByLawyer(@Param("lawyerNo") Long lawyerNo,
+                                            @Param("offset") int offset,
+                                            @Param("limit") int limit);
+    int countVodByLawyer(@Param("lawyerNo") Long lawyerNo);
 }

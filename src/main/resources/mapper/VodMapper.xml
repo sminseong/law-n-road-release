@@ -152,4 +152,29 @@
         ORDER BY v.created_at DESC
     </select>
 
+    <select id="findVodListByLawyer" resultType="com.lawnroad.broadcast.live.dto.VodPreviewDto">
+        SELECT
+        v.no AS vodNo,
+        v.broadcast_no AS broadcastNo,
+        c.name AS category_name,
+        bs.name AS title,
+        bs.thumbnail_path AS thumbnailPath,
+        v.vod_path AS vodPath,
+        v.duration AS duration
+        FROM broadcast_vod v
+        JOIN broadcast b ON v.broadcast_no = b.no
+        JOIN broadcast_schedule bs ON b.schedule_no = bs.no
+        JOIN category c ON bs.category_no = c.no
+        WHERE b.user_no = #{lawyerNo}
+        ORDER BY v.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countVodByLawyer" resultType="int">
+        SELECT COUNT(*)
+        FROM broadcast_vod v
+        JOIN broadcast b ON v.broadcast_no = b.no
+        WHERE b.user_no = #{lawyerNo}
+    </select>
+
 </mapper>
