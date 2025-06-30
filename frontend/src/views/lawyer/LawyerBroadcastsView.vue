@@ -19,7 +19,7 @@ const publisher = ref(null);
 const videoContainer = ref(null);
 
 const broadcastInfo = ref({});
-const broadcastNo = ref(33); // 하드코딩
+const broadcastNo = ref(null);
 const elapsedTime = ref("00:00:00");
 const viewerCount = ref(1);
 let timerInterval = null;
@@ -364,15 +364,9 @@ onMounted(async () => {
     alert("❌ 유효하지 않은 스케줄 번호입니다.");
     return;
   }
-
-    connect(); // 무조건 채팅 연결 시도
-
-
-
-
-  // await loadBroadcastInfo();
-  // await connectSession();
- // connect();
+  await loadBroadcastInfo();
+  await connectSession();
+ connect();
 });
 
 onBeforeUnmount(() => {
@@ -440,10 +434,26 @@ async function fetchMyNo() {
         alert("로그인이 필요합니다!");
         return;
       }
+      setInterval(() => {
+        if (stompClient.value?.connected) {
+          stompClient.value.publish({
+            destination: "/app/chat.sendMessage",
+            body: JSON.stringify({
+              broadcastNo: broadcastNo.value,
+              message: "📢 !자동응답이라고 입력하면\n사용 가능한 자동응답 키워드 목록을 안내해드려요!\n\n예) !예약, !상담 등",
+              type: "NOTICE",
+            }),
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+        }
+      }, 30000); // 30초마다 반복
+
       fetchMyNo().then((ok) => {
         if (!ok) return;
         stompClient.value = new Client({
-          webSocketFactory: () => new SockJS("/ws"),
+          webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
           reconnectDelay: 5000,
           connectHeaders: {
             Authorization: `Bearer ${token}`,
@@ -475,6 +485,7 @@ async function fetchMyNo() {
                 }
             );
 
+
         //입장 시 type: "ENTER"만 전달
         stompClient.value.publish({
           destination: "/app/chat.addUser",
@@ -482,12 +493,12 @@ async function fetchMyNo() {
             broadcastNo: broadcastNo.value,
             name: broadcastInfo.value.lawyerName
           }),
-
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
       },
+
       onStompError: (frame) => {
         if (frame.body && frame.body.includes("expired")) {
           alert("로그인이 만료되었습니다. 다시 로그인 해주세요.");
@@ -516,6 +527,7 @@ const sendMessage = async () => {
     body: JSON.stringify({
       broadcastNo: broadcastNo.value,
       message: trimmed,
+      scheduleNo: scheduleNo,
       type: "Lawyer",
       userNo: myNo.value,
     }),
@@ -523,6 +535,7 @@ const sendMessage = async () => {
       Authorization: `Bearer ${token}`,
     },
   });
+
   message.value = "";
   scrollToBottom();
 };

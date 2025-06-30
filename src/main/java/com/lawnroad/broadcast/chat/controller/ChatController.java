@@ -93,17 +93,6 @@ public class ChatController {
             if (keyword.equals("자동응답")) {
                 // 프론트에서 scheduleNo를 꼭 보내주세요!
                 Long scheduleNo = chatDTO.getScheduleNo();
-                if (scheduleNo == null) {
-                    ChatDTO reply = ChatDTO.builder()
-                            .broadcastNo(chatDTO.getBroadcastNo())
-                            .nickname("AutoReply")
-                            .message("자동응답 정보 조회에 실패했습니다. (스케줄번호 없음)")
-                            .type("AUTO_REPLY")
-                            .createdAt(LocalDateTime.now())
-                            .build();
-                    messagingTemplate.convertAndSend("/topic/" + chatDTO.getBroadcastNo(), reply);
-                    return;
-                }
 
                 List<AutoReplyDTO> allReplies = autoReplyService.findByAutoReply(scheduleNo);
                 if (allReplies != null && !allReplies.isEmpty()) {
