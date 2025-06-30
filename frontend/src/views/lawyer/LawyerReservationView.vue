@@ -42,6 +42,7 @@ onMounted(async () => {
           }
         })
     reservations.value = res.data
+    console.log(reservations.value)
   } catch (err) {
     console.error('상담 내역 불러오기 실패', err)
     alert('상담 내역 조회에 실패했습니다.')
