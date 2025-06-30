@@ -28,11 +28,11 @@
               <button
                   v-for="slot in day.slots.filter(s => +s.slotTime.slice(0,2) < 12)"
                   :key="slot.no"
-                  :disabled="slot.status !== 1"
+                  :disabled="slot.status !== 1 || isPast(slot)"
                   @click="select(slot)"
                   :class="[
                   'px-3 py-2 rounded border',
-                  slot.status !== 1
+                  (slot.status !== 1 || isPast(slot))
                     ? 'bg-gray-200 cursor-not-allowed'
                     : selectedNo === slot.no
                       ? 'bg-green-200 border-green-500'
@@ -53,11 +53,11 @@
               <button
                   v-for="slot in day.slots.filter(s => +s.slotTime.slice(0,2) >= 12)"
                   :key="slot.no"
-                  :disabled="slot.status !== 1"
+                  :disabled="slot.status !== 1 || isPast(slot)"
                   @click="select(slot)"
                   :class="[
                   'px-3 py-2 rounded border',
-                  slot.status !== 1
+                  (slot.status !== 1 || isPast(slot))
                     ? 'bg-gray-200 cursor-not-allowed'
                     : selectedNo === slot.no
                       ? 'bg-green-200 border-green-500'
@@ -90,19 +90,31 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
-import {getValidToken} from "@/libs/axios-auth.js";
+import { getValidToken } from '@/libs/axios-auth.js'
 
-// 1) 라우터로부터 props 받기
+// props
 const props = defineProps({
   lawyerNo:   { type: Number, required: true },
   lawyerName: { type: String, required: true }
 })
 
-const route    = useRoute()
-const router   = useRouter()
-const loading    = ref(true)
-const slotsFlat  = ref([])
-const selectedNo = ref(null)
+const route       = useRoute()
+const router      = useRouter()
+const loading     = ref(true)
+const slotsFlat   = ref([])
+const selectedNo  = ref(null)
+const now         = ref(new Date())
+
+// 현재 시각을 1분마다 갱신
+setInterval(() => {
+  now.value = new Date()
+}, 60_000)
+
+// 과거 슬롯 판정
+function isPast(slot) {
+  const slotDateTime = new Date(`${slot.slotDate}T${slot.slotTime}`)
+  return slotDateTime < now.value
+}
 
 // 슬롯 조회
 onMounted(async () => {
@@ -147,16 +159,19 @@ function groupByDate(list) {
 
 const weeklySlots = computed(() => groupByDate(slotsFlat.value).slice(0, 7))
 
+// 날짜 포맷
 function formatDate(str) {
   const d = new Date(str + 'T00:00:00')
   return d.toLocaleDateString('ko', { month: 'long', day: 'numeric', weekday: 'short' })
 }
 
+// 슬롯 선택
 function select(slot) {
-  if (slot.status !== 1) return
+  if (slot.status !== 1 || isPast(slot)) return
   selectedNo.value = slot.no
 }
 
+// 예약 신청
 async function apply() {
   const token = await getValidToken()
   if (!token) {
