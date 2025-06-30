@@ -20,4 +20,5 @@ public interface ReservationsMapper {
     List<ReservationsResponseDTO> selectByLawyerNo(@Param("lawyerNo") Long lawyerNo);
     ReservationsResponseDTO selectReservationByNo(@Param("reservationNo") Long reservationNo);
     ReservationsResponseDTO selectReservationByOrderNo(@Param("orderNo") Long orderNo);
+    List<Long> selectDistinctLawyerNos();
 }
