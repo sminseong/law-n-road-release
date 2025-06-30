@@ -75,6 +75,7 @@
             t.description,
 
             -- 변호사 정보
+            l.no                AS lawyer_no,
             l.name              AS lawyer_name,
             l.profile           AS profile,
             CONCAT_WS(' ', l.road_address, l.detail_address) AS full_address,

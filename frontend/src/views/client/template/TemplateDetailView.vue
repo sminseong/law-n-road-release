@@ -1,29 +1,34 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import {ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import http from '@/libs/HttpRequester'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import { useRouter } from 'vue-router'
+import ProductCard from "@/components/common/ProductCard.vue";
 
 const router = useRouter()
 
 // 상태
 const route = useRoute()
 const template = ref(null)
+const productList = ref(null)
 
-onMounted(async () => {
-  console.log('templateNo:', route.params.no)
+// 템플릿 + 변호사 상품 정보 요청 함수
+const fetchTemplateAndProducts = async () => {
+  const templateNo = route.params.no
   try {
-    const templateNo = route.params.no
-
     const res = await http.get(`/api/public/templates/${templateNo}`)
     template.value = res.data
-    console.log('template:', template.value)
-    console.log('template.value:', template.value)
+
+    const res2 = await http.get(`/api/public/homepage/${template.value.lawyerNo}`)
+    productList.value = res2.data
   } catch (err) {
     console.error('템플릿 조회 실패:', err)
   }
-})
+}
+
+// 최초 mount 시 호출
+onMounted(fetchTemplateAndProducts)
 
 // 장바구니 함수
 const handleAddToCart = async () => {
@@ -53,6 +58,7 @@ const handleAddToCart = async () => {
   }
 }
 
+watch(() => route.params.no, fetchTemplateAndProducts)
 </script>
 <template>
   <ClientFrame>
@@ -89,17 +95,19 @@ const handleAddToCart = async () => {
               <!-- 변호사 이름 + 설명 -->
               <div>
                 <strong class="fw-semibold">
-                  {{ template.lawyerName }} 변호사 | 교통사고 1위, 36년 경력을 바탕으로 신뢰를 드립니다
+                  {{ template.lawyerName }} 변호사 | {{ template.shortIntro }}
                 </strong><br />
                 <small class="text-muted">
-                  {{ template.type === 'EDITOR' ? 'AI 생성형 템플릿' : '문서 기반 템플릿' }} /
+                  {{ template.type === 'EDITOR' ? 'AI 생성형 템플릿' : '문서 기반 템플릿' }} |
                   {{ template.categoryName }}
                 </small>
               </div>
 
-              <!-- 👉 오른쪽 하단에 고정된 링크 -->
+              <!-- 오른쪽 하단에 고정된 링크 -->
               <a
-                  :href="`/lawyers/${template.userNo}`"
+                  :href="`/homepage/${template.lawyerNo}`"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   class="text-muted small text-decoration-underline me-2"
                   style="position: absolute; bottom: 0; right: 0;"
               >
@@ -110,7 +118,7 @@ const handleAddToCart = async () => {
             <hr>
 
             <!-- 🔹 상품명 -->
-            <h1 class="fw-bold mb-2 mt-6">{{ template.name }}</h1>
+            <h2 class="fw-bold mb-2 mt-6">{{ template.name }}</h2>
 
             <!-- 🔹 가격 -->
             <div class="d-flex align-items-baseline mb-0 mt-auto">
@@ -138,14 +146,47 @@ const handleAddToCart = async () => {
       <!-- 상품 설명 -->
       <div class="card shadow-sm mb-4 p-4">
         <h5 class="fw-bold">상품 설명</h5>
-        <p class="mb-0">{{ template.description }}</p>
+        <pre class="mb-0 mt-4"
+             style="white-space: pre-wrap;
+                         word-break: break-word;
+                         font-family: inherit;
+                         min-height: 160px;">{{ template.description }}</pre>
       </div>
 
+
       <!-- 변호사 상세 설명 -->
-      <div class="card shadow-sm p-4">
-        <h5 class="fw-bold">변호사 경력 등 상세 설명</h5>
+      <div class="card shadow-sm mb-4 p-4">
+        <h5 class="fw-bold">{{ productList.name }} 변호사 경력</h5>
         <p class="mb-0"><strong>사무실 주소 :</strong> {{ template.fullAddress }}</p>
         <p class="mb-0"><strong>사무실 번호 :</strong> {{ template.officeNumber }}</p>
+        <pre class="mb-0 mt-4"
+             style="white-space: pre-wrap;
+                         word-break: break-word;
+                         font-family: inherit;
+                         min-height: 160px;">{{ template.longIntro }}</pre>
+      </div>
+
+
+      <div class="card shadow-sm mb-4 p-4">
+        <h5 class="fw-bold">{{ productList.name }} 변호사의 다른 법률 템플릿</h5>
+        <p class="mb-0">{{  }}</p>
+
+        <div v-if="productList.recentTemplates.length > 0" class="row g-4 row-cols-lg-5 row-cols-2 row-cols-md-3">
+          <div class="col-md-3 mb-4" v-for="product in productList.recentTemplates" :key="product.no">
+            <ProductCard
+                :no="product.no"
+                :imageUrl="product.thumbnailPath"
+                :title="product.name"
+                :originalPrice="product.price.toLocaleString() + '원'"
+                :discountPercent="product.discountRate"
+                :discountedPrice="Math.floor(product.price * (1 - product.discountRate / 100)).toLocaleString() + '원'"
+            />
+          </div>
+        </div>
+
+        <div v-else class="text-center text-muted py-5">
+          등록된 상품이 없습니다.
+        </div>
       </div>
     </div>
   </ClientFrame>
