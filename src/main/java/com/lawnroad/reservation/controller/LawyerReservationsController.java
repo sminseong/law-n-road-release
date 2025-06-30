@@ -16,7 +16,7 @@ public class LawyerReservationsController {
     private final ReservationsService service;
     private final JwtTokenUtil jwtTokenUtil;
 
-    public LawyerReservationsController(ReservationsService service,JwtTokenUtil jwtTokenUtil) {
+    public LawyerReservationsController(ReservationsService service, JwtTokenUtil jwtTokenUtil) {
         this.service = service;
         this.jwtTokenUtil = jwtTokenUtil;
     }
@@ -31,8 +31,12 @@ public class LawyerReservationsController {
 
         return service.getReservationsByLawyer(no);
     }
-    
 
+    @CrossOrigin(
+            origins = "http://localhost:5173",
+            allowedHeaders = "*",
+            methods = {RequestMethod.PATCH, RequestMethod.GET, RequestMethod.POST}
+    )
     @PatchMapping("/{reservationNo}/status")
     public ResponseEntity<Void> closeReservation(
             @RequestHeader("Authorization") String authHeader,
