@@ -83,7 +83,7 @@ onMounted(() => {
                     alt="VOD 썸네일"
                 />
               </div>
-              <div class="text-truncate">{{ vod.title }}</div>
+              <div class="text-dark-gray">{{ vod.title }}</div>
             </div>
           </div>
         </div>
