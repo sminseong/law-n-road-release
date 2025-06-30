@@ -75,7 +75,14 @@ onMounted(() => {
         >
           <div class="card h-100" @click="goToVod(vod)" style="cursor: pointer;">
             <div class="card-body text-center py-4">
-              <img :src="vod.thumbnail" class="img-fluid mb-2" />
+              <div class="overflow-hidden mb-2 w-100" style="height: 250px;">
+                <img
+                    :src="vod.thumbnail"
+                    class="w-100 h-100"
+                    style="object-fit: cover;"
+                    alt="VOD 썸네일"
+                />
+              </div>
               <div class="text-truncate">{{ vod.title }}</div>
             </div>
           </div>
