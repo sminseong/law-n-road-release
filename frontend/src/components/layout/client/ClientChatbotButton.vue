@@ -44,7 +44,7 @@ function close() { isOpen.value = false }
 }
 
 .chatbot-popup {
-  position: absolute;
+  position: fixed;
   bottom: 20px;
   right: calc((100vw - 1200px) / 2 - 100px);
   width: 420px; height: 560px;

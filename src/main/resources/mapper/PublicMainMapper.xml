@@ -61,7 +61,7 @@
             ap.detail_text   AS `desc`,
             ap.tip_text      AS badge,
             ap.ad_path       AS image,
-            CONCAT('/lawyer/', l.no, '/homepage') AS link,
+            CONCAT('/homepage/', l.no) AS link,
             l.no             AS lawyerNo,
             l.name           AS lawyerName
         FROM ad_purchase ap

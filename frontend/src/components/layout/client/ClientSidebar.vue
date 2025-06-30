@@ -1,22 +1,31 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import http from '@/libs/HttpRequester'
+import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 
+const route = useRoute()
 const topLawyers = ref([])
 
-const openChatbot = () => {
-  window.dispatchEvent(new Event('open-chatbot'))
+// 현재 페이지가 마이페이지면 랭킹 사이드바는 숨김
+const showRanking = computed(() =>
+    !route.path.startsWith('/client/mypage')
+)
+
+// 새로운 탭에서 페이지 열기
+function openInNewTab(lawyerNo) {
+  window.open(`/homepage/${lawyerNo}`, '_blank')
 }
 
 onMounted(async () => {
   const res = await http.get('/api/public/main/top-lawyers')
-  console.log(res.data)
+  // console.log(res.data)
   topLawyers.value = res.data
 })
 </script>
 
 <template>
-  <aside class="right-nav">
+  <aside v-if="showRanking" class="right-nav">
     <div class="right-nav">
       <div class="ranking-box">
         <div class="ranking-title">조회수 랭킹</div>
@@ -25,7 +34,7 @@ onMounted(async () => {
               v-for="lawyer in topLawyers"
               :key="lawyer.lawyerNo"
               class="lawyer-card"
-              @click="$router.push(`/homepage/${lawyer.lawyerNo}`)"
+              @click="openInNewTab(lawyer.lawyerNo)"
           >
             <img :src="lawyer.profileImage || '/img/default-profile.png'" :alt="lawyer.name" />
             <span>{{ lawyer.name }}</span>
