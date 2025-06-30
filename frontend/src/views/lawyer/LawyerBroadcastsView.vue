@@ -141,7 +141,7 @@ const initPublisherWithDelay = async () => {
             "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`,
           },
-          timeout: 10000,
+          timeout: 300000,
         });
 
         alert("✅ 녹화 영상 업로드 완료!");

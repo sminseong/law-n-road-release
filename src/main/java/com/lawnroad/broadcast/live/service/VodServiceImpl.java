@@ -79,4 +79,18 @@ public class VodServiceImpl implements VodService {
     public List<VodListItemDto> getAllVodList() {
         return vodMapper.findAllVods();
     }
+
+    @Override
+    public List<VodPreviewDto> getVodListByLawyer(Long lawyerNo, VodPreviewRequestDto requestDto) {
+        return vodMapper.findVodListByLawyer(
+                lawyerNo,
+                requestDto.getOffset(),
+                requestDto.getSize()
+        );
+    }
+
+    @Override
+    public int countVodByLawyer(Long lawyerNo) {
+        return vodMapper.countVodByLawyer(lawyerNo);
+    }
 }
