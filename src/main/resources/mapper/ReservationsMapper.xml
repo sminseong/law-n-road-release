@@ -124,5 +124,9 @@
         WHERE order_no = #{orderNo}
     </select>
 
+    <select id="selectDistinctLawyerNos" resultType="long">
+        SELECT DISTINCT user_no
+        FROM weekly_time_slots
+    </select>
 
 </mapper>
