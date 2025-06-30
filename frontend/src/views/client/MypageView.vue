@@ -53,12 +53,12 @@ onMounted(async () => {
   console.log(res.data)
   orders_rows.value = res.data.orders || []
 
-  // QnA 조회 및 정렬 → 상위 3개만 보여줌
+  // QnA 조회 및 정렬 → 상위 5개만 보여줌
   try {
     const res = await fetchMyQnaBoards(userNo)
 
     const sorted = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    myQnaBoards.value = sorted.slice(0, 3)
+    myQnaBoards.value = sorted.slice(0, 5)
   } catch (e) {
     console.error('QnA 조회 실패', e)
   }
@@ -215,6 +215,7 @@ const statusClass = {
 }
 
 function handleRowClick(row) {
+  if (row.status === 'CANCELED') return;
   router.push(`/client/template/orders/${row.orderNo}`)
 }
 
@@ -374,12 +375,12 @@ async function toggleConsultation() {
         <div class="card-body p-0">
           <ul class="list-group list-group-flush">
             <li class="list-group-item d-flex justify-content-between align-items-center">
-              상담 대기
-              <span class="badge bg-warning text-dark">{{ requestedCount }}건</span>
+              &nbsp;&nbsp;상담 대기
+              <span class="badge bg-warning text-dark me-5">{{ requestedCount }}건</span>
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center">
-              상담 완료
-              <span class="badge bg-success text-white">{{ doneCount }}건</span>
+              &nbsp;&nbsp;상담 완료
+              <span class="badge bg-success text-white me-5">{{ doneCount }}건</span>
             </li>
             <li class="list-group-item text-center bg-white">
               <router-link
@@ -558,16 +559,18 @@ async function toggleConsultation() {
 
           </div>
 
-          <hr class="my-4">
+<!--          알림톡 관련 테스트 버튼-->
+<!--          pr시 반드시 주석 처리 후 올릴 것-->
+<!--          <hr class="my-4">-->
 
-          <p><a href="#" @click.prevent="testBroadcastStart">🟡 방송 시작 알림톡 테스트</a></p>
-          <p><a href="#" @click.prevent="testBroadcastCreate">🟡 방송 등록 알림톡 테스트</a></p>
-          <p><a href="#" @click.prevent="testVerificationCode">🔵 인증번호 발송 테스트</a></p>
-          <p><a href="#" @click.prevent="testClientReservationStarted">🟢 상담 임박 (의뢰인)</a></p>
-          <p><a href="#" @click.prevent="testLawyerReservationStarted">🟠 상담 임박 (변호사)</a></p>
-          <p><a href="#" @click.prevent="testClientReservationCreated">🟤 신규 상담 (의뢰인)</a></p>
-          <p><a href="#" @click.prevent="testLawyerReservationCreated">⚪ 신규 상담 (변호사)</a></p>
-          <p><a href="#" @click.prevent="testLawyerReservationCanceled">🔴 상담 취소 (변호사)</a></p>
+<!--          <p><a href="#" @click.prevent="testBroadcastStart">🟡 방송 시작 알림톡 테스트</a></p>-->
+<!--          <p><a href="#" @click.prevent="testBroadcastCreate">🟡 방송 등록 알림톡 테스트</a></p>-->
+<!--          <p><a href="#" @click.prevent="testVerificationCode">🔵 인증번호 발송 테스트</a></p>-->
+<!--          <p><a href="#" @click.prevent="testClientReservationStarted">🟢 상담 임박 (의뢰인)</a></p>-->
+<!--          <p><a href="#" @click.prevent="testLawyerReservationStarted">🟠 상담 임박 (변호사)</a></p>-->
+<!--          <p><a href="#" @click.prevent="testClientReservationCreated">🟤 신규 상담 (의뢰인)</a></p>-->
+<!--          <p><a href="#" @click.prevent="testLawyerReservationCreated">⚪ 신규 상담 (변호사)</a></p>-->
+<!--          <p><a href="#" @click.prevent="testLawyerReservationCanceled">🔴 상담 취소 (변호사)</a></p>-->
         </div>
       </div>
     </div>

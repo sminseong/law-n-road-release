@@ -219,8 +219,6 @@
   <!-- 의뢰인 타입 본문 콘텐츠 -->
   <ClientFrame>
 
-
-
     <!-- 메인 베너 -->
     <MainBannerSlider
         v-if="mainBanners.length > 0"
