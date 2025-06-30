@@ -1,10 +1,18 @@
 <script setup>
 import { defineProps, toRefs, ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import http from '@/libs/HttpRequester'
 import ClientFrame from "@/components/layout/client/ClientFrame.vue";
 import ProductCard from "@/components/common/ProductCard.vue"
 import CardTable   from "@/components/table/CardTable.vue"
 import AdBannerPair from "@/components/common/SubBannerSlider.vue";
+
+const router = useRouter()
+
+// 변호사 프로필 클릭 이벤트
+function selectLawyer(lawyer) {
+  window.open(`/homepage/${lawyer.no}`, '_blank')
+}
 
 // 라우터가 계산해서 뿌려주는 값
 const props = defineProps({
@@ -203,12 +211,6 @@ const templateList = computed(() => results.value.templates)
   display: flex !important;
   justify-content: flex-start !important;
 }
-
-::v-deep(.tiny-slider) {
-  margin-left: 10 !important;
-  padding-left: 0 !important;
-}
-
 
 .card {
   margin-right: 10px;
