@@ -163,7 +163,7 @@ onMounted(() => {
                     :src="vod.thumbnailPath || basicThumbnail"
                     class="card-img-top"
                     alt="방송 썸네일"
-                    style="height: 180px; object-fit: cover"
+                    style="height: 190px; object-fit: cover"
                 />
                 <!-- 뱃지 묶음 -->
                 <div class="position-absolute top-0 start-0 m-2 d-flex gap-2">

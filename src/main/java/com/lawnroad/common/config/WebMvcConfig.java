@@ -24,7 +24,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
   @Override
   public void addCorsMappings(CorsRegistry registry) {
     // spring.profiles.active가 없거나 비어 있으면 prod로 간주
-    boolean isProd = activeProfile == null || activeProfile.isBlank();
+    boolean isProd = "prod".equals(activeProfile);
     
     String allowedOrigin = isProd
         ? "https://lawnroad.kr"

@@ -51,4 +51,31 @@ public class VodPublicController {
         System.out.println(vods);
         return ResponseEntity.ok(vods);
     }
+
+    @GetMapping("/lawyer/{lawyerNo}")
+    public ResponseEntity<VodPreviewResponseDto> getVodPreviewByLawyer(
+            @PathVariable Long lawyerNo,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "4") int size
+    ) {
+        // 1) Request DTO 세팅
+        VodPreviewRequestDto requestDto = new VodPreviewRequestDto();
+        requestDto.setPage(page);
+        requestDto.setSize(size);
+
+        // 2) Service 호출
+        List<VodPreviewDto> vods = vodService.getVodListByLawyer(lawyerNo, requestDto);
+        int totalCount = vodService.countVodByLawyer(lawyerNo);
+        int totalPages = (int)Math.ceil((double) totalCount / requestDto.getSize());
+
+        // 3) Response DTO 세팅
+        VodPreviewResponseDto response = new VodPreviewResponseDto();
+        response.setVods(vods);
+        response.setTotalCount(totalCount);
+        response.setTotalPages(totalPages);
+        response.setPage(requestDto.getPage());
+        response.setSize(requestDto.getSize());
+
+        return ResponseEntity.ok(response);
+    }
 }
