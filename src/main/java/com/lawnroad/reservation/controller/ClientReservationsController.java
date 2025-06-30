@@ -72,4 +72,12 @@ public class ClientReservationsController {
                 service.countByStatus(no);
         return ResponseEntity.ok(counts);
     }
+
+    @GetMapping("/{reservationNo}")
+    public ResponseEntity<ReservationsResponseDTO> detail(
+            @PathVariable Long reservationNo
+    ) {
+        ReservationsResponseDTO dto = service.getReservationDetail(reservationNo);
+        return ResponseEntity.ok(dto);
+    }
 }

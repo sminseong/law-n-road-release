@@ -164,7 +164,13 @@ export default [
     {
         path: '/payment/success',
         name: 'PaymentSuccess',
-        component: () => import('@/views/common/PaymentSuccess.vue')
+        component: () => import('@/views/common/PaymentSuccess.vue'),
+        props: route => ({
+            orderId:       route.query.orderId,
+            amount:        Number(route.query.amount),
+            paymentKey:    route.query.paymentKey,
+            reservationNo: Number(route.query.reservationNo)
+        })
     },
     {
         path: '/payment/fail',
