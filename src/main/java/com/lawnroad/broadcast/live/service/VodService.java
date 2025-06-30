@@ -14,4 +14,7 @@ public interface VodService {
     VodDetailDto getVodDetailByBroadcastNo(Long broadcastNo);
     // 홈 vod
     List<VodListItemDto> getAllVodList();
+    // 변호사 홈페이지 vod
+    List<VodPreviewDto> getVodListByLawyer(Long lawyerNo, VodPreviewRequestDto requestDto);
+    int countVodByLawyer(Long lawyerNo);
 }
