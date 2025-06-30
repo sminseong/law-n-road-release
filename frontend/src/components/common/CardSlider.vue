@@ -75,7 +75,7 @@ onMounted(() => {
         >
           <div class="card h-100" @click="goToVod(vod)" style="cursor: pointer;">
             <div class="card-body text-center py-4">
-              <div class="overflow-hidden mb-2 w-100" style="height: 250px;">
+              <div class="overflow-hidden mb-2 w-100" style="height: 240px;">
                 <img
                     :src="vod.thumbnail"
                     class="w-100 h-100"
