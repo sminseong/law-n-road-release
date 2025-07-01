@@ -100,7 +100,7 @@
         ON r.slot_no = wts.no
         WHERE
             wts.user_no = #{userNo}
-          AND r.status = 'REQUESTED'
+          AND (r.status = 'REQUESTED' OR r.status = 'DONE')
           AND YEARWEEK(wts.slot_date,1) = YEARWEEK(CURDATE(),1)
         GROUP BY wts.slot_date
         ORDER BY wts.slot_date
@@ -192,9 +192,6 @@
                    AND DATE_FORMAT(p.purchased_at, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
              ) AS monthly_sales_summary
     </select>
-
-
-
 
     <!-- 거니짱 - 월별 상담 예약 + 템플릿 판매 수익 집계 -->
     <sql id="monthsTable"><![CDATA[

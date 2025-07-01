@@ -115,10 +115,10 @@ const columns = [
   { key: 'userName', label: '의뢰인' },
   { key: 'slotDate', label: '날짜', format: (val) => formatDate(val) },
   { key: 'slotTime', label: '시간', format: (val) => val.slice(0, 5) },
+  { key: 'userPhone', label: '의뢰인 연락처' },
   { key: 'amount', label: '금액', format: (val) => `${val.toLocaleString()}원` },
-  { key: 'status', label: '상태' }, // format 제거
-  { key: 'content', label: '상담 내용' }, // format 제거
-  { key: 'actions', label: '상담 종료' }  // format 제거
+  { key: 'status', label: '상태' },
+  { key: 'actions', label: '상담 종료' }
 ]
 
 // ---------------------
@@ -126,10 +126,6 @@ const columns = [
 // ---------------------
 
 const weeklySlots = ref([])
-
-const activeClass   = 'px-3 py-2 text-sm font-medium rounded-lg w-full text-green-800 border border-green-800'
-const inactiveClass = 'px-3 py-2 text-sm font-medium rounded-lg w-full text-gray-400 border border-gray-300'
-const reservedClass = 'px-3 py-2 text-sm font-medium rounded-lg w-full opacity-50 cursor-not-allowed border border-red-300'
 
 function groupByDate(list) {
   const map = {}
@@ -273,11 +269,6 @@ watch(selectedTab, (newVal) => {
           >
             {{ statusLabel(row.status) }}
           </span>
-        </template>
-
-        <!-- 상담 내용 항상 '-' -->
-        <template #cell-content>
-          -
         </template>
 
         <!-- 상담 종료 버튼 -->

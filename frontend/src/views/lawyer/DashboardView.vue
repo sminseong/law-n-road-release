@@ -39,7 +39,7 @@ const dashboardStats = ref([
     loading: false
   },
   {
-    title: '예정된 방송',
+    title: '내일 예정된 방송',
     value: '방송 없음',
     icon: '📺',
     color: '#10b981',
@@ -57,7 +57,7 @@ const dashboardStats = ref([
     loading: false
   },
   {
-    title: '템플릿 판매 수',
+    title: '이달의 템플릿 판매 수',
     value: '0건',
     icon: '📄',
     color: '#8b5cf6',
@@ -665,7 +665,10 @@ onUnmounted(() => {
                 <i class="bi bi-person-fill text-primary fs-5 me-2"></i>
                 <div>
                   <div class="small text-secondary">{{ s.time }}</div>
-                  <div>{{ s.event }} ( {{ s.clientPhone }} )</div>
+                  <div>
+                    {{ s.event }}
+                    <span v-if="s.clientPhone"> ({{ s.clientPhone }})</span>
+                  </div>
                 </div>
               </div>
             </div>

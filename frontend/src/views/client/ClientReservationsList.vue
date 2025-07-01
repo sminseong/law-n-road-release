@@ -67,51 +67,6 @@
         </div>
       </div>
     </div>
-
-<!--    &lt;!&ndash; 상세 모달 &ndash;&gt;-->
-<!--    <div v-if="showModal" class="modal-overlay"-->
-<!--    >-->
-<!--      <div-->
-<!--          class="bg-white w-96 max-w-full p-6 relative rounded-lg border border-gray-300 shadow-lg"-->
-<!--      >-->
-<!--        <button-->
-<!--            class="absolute top-2 right-2 text-gray-500 hover:text-gray-700"-->
-<!--            @click="closeModal"-->
-<!--        >-->
-<!--          ✕-->
-<!--        </button>-->
-<!--        <h3 class="text-xl font-semibold mb-4">-->
-<!--          예약 상세 (#{{ detail.no }})-->
-<!--        </h3>-->
-<!--        <ul class="space-y-2 text-gray-700">-->
-<!--          <li><strong>날짜:</strong> {{ formatDate(detail.slotDate) }}</li>-->
-<!--          <li><strong>시간:</strong> {{ detail.slotTime.slice(0,5) }}</li>-->
-<!--          <li><strong>금액:</strong> {{ detail.amount.toLocaleString() }}원</li>-->
-<!--          <li><strong>상태:</strong> {{ statusLabel(detail.status) }}</li>-->
-<!--          <li><strong>상담 내용:</strong> {{ detail.content || '-' }}</li>-->
-<!--        </ul>-->
-<!--        <div class="mt-6 flex justify-end space-x-2">-->
-<!--          &lt;!&ndash; 취소 가능 여부에 따라 버튼 비활성화 &ndash;&gt;-->
-<!--          <button-->
-<!--              v-if="detail.status === 'REQUESTED'"-->
-<!--              :disabled="!canCancel(detail)"-->
-<!--              @click="cancelReservation(detail.no)"-->
-<!--              class="px-4 py-2 rounded text-white disabled:opacity-50 disabled:cursor-not-allowed"-->
-<!--              :class="canCancel(detail)-->
-<!--                ? 'bg-red-600 hover:bg-red-700'-->
-<!--                : 'bg-gray-400'"-->
-<!--          >-->
-<!--            예약 취소-->
-<!--          </button>-->
-<!--          <button-->
-<!--              class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"-->
-<!--              @click="closeModal"-->
-<!--          >-->
-<!--            닫기-->
-<!--          </button>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--    </div>-->
   </ClientFrame>
 </template>
 
@@ -120,6 +75,7 @@ import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import BasicTable from "@/components/table/BasicTable.vue";
+import { getValidToken } from '@/libs/axios-auth'
 
 const loading      = ref(true)
 const reservations = ref([])
@@ -142,7 +98,11 @@ const columns = [
 async function fetchReservations() {
   loading.value = true
   try {
-    const token = localStorage.getItem('token')
+    const token = await getValidToken()
+    if (!token) {
+      alert('로그인이 필요합니다.')
+      return
+    }
     const { data } = await axios.get(
         '/api/client/reservations/list',
         { headers: { Authorization: `Bearer ${token}` } }
@@ -171,7 +131,11 @@ async function cancelReservation(reservationNo) {
   if (!confirm('정말 이 예약을 취소하시겠습니까?')) return
 
   try {
-    const token = localStorage.getItem('token')
+    const token = await getValidToken()
+    if (!token) {
+      alert('로그인이 필요합니다.')
+      return
+    }
     await axios.post(
         '/api/confirm/cancel',
         { reservationNo },
@@ -215,9 +179,9 @@ function statusLabel(code) {
 function canCancel(res) {
   const now = new Date()
   const [yyyy, mm, dd] = res.slotDate.split('-').map(Number)
-  const [hh, min] = res.slotTime.slice(0,5).split(':').map(Number)
-  const slotDateTime    = new Date(yyyy, mm - 1, dd, hh, min)
-  const cancelDeadline  = new Date(slotDateTime.getTime() - 60 * 60 * 1000)
+  const [hh, min]      = res.slotTime.slice(0,5).split(':').map(Number)
+  const slotDateTime   = new Date(yyyy, mm - 1, dd, hh, min)
+  const cancelDeadline = new Date(slotDateTime.getTime() - 60 * 60 * 1000)
   return now < cancelDeadline
 }
 </script>

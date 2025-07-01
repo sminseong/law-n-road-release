@@ -37,4 +37,6 @@ public interface TimeSlotMapper {
             @Param("slotNo") Long slotNo
     );
     void resetSlotStatusByResNo(@Param("reservationNo") Long reservationNo);
+
+    int reserveSlotIfAvailable(@Param("slotNo") Long slotNo);
 }
