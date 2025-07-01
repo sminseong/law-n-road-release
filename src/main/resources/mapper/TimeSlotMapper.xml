@@ -73,4 +73,11 @@
             )
     </update>
 
+    <update id="reserveSlotIfAvailable" parameterType="long">
+        UPDATE weekly_time_slots
+        SET status = 0
+        WHERE no     = #{slotNo}
+          AND status = 1
+    </update>
+
 </mapper>
