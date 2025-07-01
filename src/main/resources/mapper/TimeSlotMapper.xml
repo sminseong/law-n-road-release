@@ -63,4 +63,14 @@
           AND status = 'REQUESTED'
     </select>
 
+    <update id="resetSlotStatusByResNo" parameterType="long">
+        UPDATE weekly_time_slots
+        SET status = 1
+        WHERE no = (
+            SELECT slot_no
+            FROM reservations
+            WHERE no = #{reservationNo}
+            )
+    </update>
+
 </mapper>

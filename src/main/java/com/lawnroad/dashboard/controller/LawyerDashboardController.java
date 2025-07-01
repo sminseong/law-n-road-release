@@ -5,6 +5,7 @@ import com.lawnroad.dashboard.dto.MonthlyRevenueDto;
 import com.lawnroad.dashboard.dto.TodayScheduleDto;
 import com.lawnroad.dashboard.dto.TomorrowBroadcastDto;
 import com.lawnroad.dashboard.dto.TomorrowConsultationRequestDto;
+import com.lawnroad.dashboard.dto.*;
 import com.lawnroad.dashboard.service.LawyerDashboardService;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -26,22 +27,16 @@ public class LawyerDashboardController {
      * 오늘 일정만 조회
      * GET /api/lawyer/dashboard/{lawyerNo}/schedule
      */
-    @GetMapping("/{lawyerNo}/schedule")
+    @GetMapping("/schedule")
     public ResponseEntity<List<TodayScheduleDto>> getTodaySchedule(@RequestHeader("Authorization") String authHeader) {
 
-        String token = authHeader.replace("Bearer ", "");
-        Claims claims = jwtUtil.parseToken(token);
-        Long lawyerNo = claims.get("no", Long.class);
-
+        Long userNo = extractUserNo(authHeader);
         try {
-            List<TodayScheduleDto> schedule = lawyerDashboardService.getTodaySchedule(lawyerNo);
-
-            log.info("오늘 일정 조회 성공 - lawyerNo: {}, 일정 수: {}", lawyerNo, schedule.size());
-
+            List<TodayScheduleDto> schedule = lawyerDashboardService.getTodaySchedule(userNo);
             return ResponseEntity.ok(schedule);
 
         } catch (Exception e) {
-            log.error("오늘 일정 조회 실패 - lawyerNo: {}", lawyerNo, e);
+            log.error("오늘 일정 조회 중 오류 발생 - userNo={}", userNo, e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -52,24 +47,14 @@ public class LawyerDashboardController {
      */
     @GetMapping("/consultation-requests/tomorrow")
     public ResponseEntity<List<TomorrowConsultationRequestDto>> getTomorrowConsultationRequests(@RequestHeader("Authorization") String authHeader) {
-
-        log.info("=== 내일 상담신청 API 호출됨 ==="); // 🔥 추가
-
-        String token = authHeader.replace("Bearer ", "");
-        Claims claims = jwtUtil.parseToken(token);
-        Long lawyerNo = claims.get("no", Long.class);
-
-        log.info("추출된 lawyerNo: {}", lawyerNo); // 🔥 추가
-
+        Long userNo = extractUserNo(authHeader);
         try {
-            List<TomorrowConsultationRequestDto> requests = lawyerDashboardService.getTomorrowConsultationRequests(lawyerNo);
-
-            log.info("내일 상담 신청 목록 조회 성공 - lawyerNo: {}, 신청 수: {}", lawyerNo, requests.size());
-
+            List<TomorrowConsultationRequestDto> requests =
+                    lawyerDashboardService.getTomorrowConsultationRequests(userNo);
             return ResponseEntity.ok(requests);
 
         } catch (Exception e) {
-            log.error("내일 상담 신청 목록 조회 실패 - lawyerNo: {}", lawyerNo, e);
+            log.error("내일 상담 신청 목록 조회 중 오류 발생 - userNo={}", userNo, e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -82,19 +67,96 @@ public class LawyerDashboardController {
     public ResponseEntity<List<TomorrowBroadcastDto>> getTomorrowBroadcasts(
             @RequestHeader("Authorization") String authHeader
     ) {
-        String token = authHeader.replace("Bearer ", "");
-        Claims claims = jwtUtil.parseToken(token);
-        Long lawyerNo = claims.get("no", Long.class);
-
+        Long userNo = extractUserNo(authHeader);
         try {
-            List<TomorrowBroadcastDto> broadcasts = lawyerDashboardService.getTomorrowBroadcasts();
-            log.info("내일 방송 조회 성공 - lawyerNo: {}, 건수: {}", lawyerNo, broadcasts.size());
+            List<TomorrowBroadcastDto> broadcasts =
+                    lawyerDashboardService.getTomorrowBroadcasts(userNo);
             return ResponseEntity.ok(broadcasts);
         } catch (Exception e) {
-            log.error("내일 방송 조회 실패 - lawyerNo: {}", lawyerNo, e);
+            log.error("내일 방송 조회 중 오류 발생 - userNo={}", userNo, e);
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    /**
+     * 주간 상담 건수 조회
+     * GET /api/lawyer/dashboard/weekly-consultations
+     */
+    @GetMapping("/weekly-consultations")
+    public ResponseEntity<List<DailyCountDto>> getWeeklyConsultations(
+            @RequestHeader("Authorization") String authHeader) {
+        Long userNo = extractUserNo(authHeader);
+        try {
+            List<DailyCountDto> consultations =
+                    lawyerDashboardService.getWeeklyConsultations(userNo);
+            return ResponseEntity.ok(consultations);
+        } catch (Exception e) {
+            log.error("주간 상담 건수 조회 중 오류 발생 - userNo={}", userNo, e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * 주간 방송 건수 조회
+     * GET /api/lawyer/dashboard/weekly-broadcasts
+     */
+    @GetMapping("/weekly-broadcasts")
+    public ResponseEntity<List<DailyCountDto>> getWeeklyBroadcasts(
+            @RequestHeader("Authorization") String authHeader) {
+
+        Long userNo = extractUserNo(authHeader);
+        try {
+            List<DailyCountDto> broadcasts =
+                    lawyerDashboardService.getWeeklyBroadcasts(userNo);
+            return ResponseEntity.ok(broadcasts);
+        } catch (Exception e) {
+            log.error("주간 방송 건수 조회 중 오류 발생 - userNo={}", userNo, e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/monthly-revenue")
+    public ResponseEntity<MonthlyRevenueDto> getMonthlyRevenue(
+        @RequestHeader("Authorization") String authHeader) {
+        Long userNo = extractUserNo(authHeader);
+        try {
+            MonthlyRevenueDto revenue = lawyerDashboardService.getMonthlyRevenue(userNo);
+            return ResponseEntity.ok(revenue);
+        } catch (Exception e) {
+            log.error("이달의 수익 조회 중 오류 발생 - userNo={}", userNo, e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * 이달의 템플릿 판매 건수 조회
+     * GET /api/lawyer/dashboard/monthly-template-sales
+     */
+    @GetMapping("/monthly-template-sales")
+    public ResponseEntity<MonthlyTemplateSalesDto> getMonthlyTemplateSales(
+            @RequestHeader("Authorization") String authHeader) {
+
+        Long userNo = extractUserNo(authHeader);
+        //log.info("이달의 템플릿 판매 건수 조회 시작 - userNo={}", userNo);
+
+        try {
+            MonthlyTemplateSalesDto sales = lawyerDashboardService.getMonthlyTemplateSales(userNo);
+            //log.info("이달의 템플릿 판매 건수 조회 완료 - userNo={}, 이달 판매: {}건",
+            //        userNo, sales.getMonthlySalesCount());
+            return ResponseEntity.ok(sales);
+        } catch (Exception e) {
+            log.error("이달의 템플릿 판매 건수 조회 실패 - userNo: {}", userNo, e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    //------------------ 공통 로직 ------------------
+    private Long extractUserNo(String authHeader) {
+        String token = authHeader.replaceFirst("^Bearer ", "");
+        Claims claims = jwtUtil.parseToken(token);
+        return claims.get("no", Long.class);
+    }
+
     
     
     /** 거니짱

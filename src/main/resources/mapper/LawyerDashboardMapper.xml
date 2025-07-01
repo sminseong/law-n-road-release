@@ -6,33 +6,33 @@
 <mapper namespace="com.lawnroad.dashboard.mapper.LawyerDashboardMapper">
 
     <!-- 오늘 일정 조회 (상담 + 방송 통합) -->
-    <select id="getTodaySchedule" resultType="com.lawnroad.dashboard.dto.TodayScheduleDto">
-        (SELECT
-             TIME_FORMAT(wts.slot_time, '%H:%i') as time,
-             CONCAT(c.name, '님 상담') as event,
-             'consultation' as type,
-             c.name as clientName,
-            c.phone as clientPhone
-         FROM reservations r
-             JOIN weekly_time_slots wts ON r.slot_no = wts.no
-             JOIN user u ON r.user_no = u.no
-             JOIN client c ON u.no = c.no
-         WHERE wts.user_no = #{lawyerNo}
-           AND wts.slot_date = CURDATE()
-           AND r.status = 'REQUESTED')
+    <select id="getTodaySchedule" parameterType="long" resultType="com.lawnroad.dashboard.dto.TodayScheduleDto">
+        <!-- 상담 일정 (오늘) -->
+        SELECT
+        TIME_FORMAT(wts.slot_time, '%H:%i') AS time,
+        CONCAT(c.name, '님 상담') AS event,
+        'consultation' AS type,
+        c.name AS clientName,
+        c.phone AS clientPhone
+        FROM reservations r
+        JOIN weekly_time_slots wts ON r.slot_no = wts.no
+        JOIN client c ON r.user_no = c.no
+        WHERE wts.user_no   = #{userNo}
+        AND DATE(wts.slot_date) = CURDATE()
+        AND r.status      = 'REQUESTED'
 
         UNION ALL
 
-        (SELECT
-             TIME_FORMAT(start_time, '%H:%i') as time,
-             name as event,
-             'broadcast' as type,
-             NULL as clientName,
-             NULL as clientPhone
-         FROM broadcast_schedule
-         WHERE user_no = #{lawyerNo}
-           AND DATE(start_time) = CURDATE())
-
+        <!-- 방송 일정 (오늘) -->
+        SELECT
+        TIME_FORMAT(start_time, '%H:%i') AS time,
+        name AS event,
+        'broadcast' AS type,
+        NULL AS clientName,
+        NULL AS clientPhone
+        FROM broadcast_schedule
+        WHERE user_no      = #{userNo}
+        AND DATE(start_time) = CURDATE()
         ORDER BY time
     </select>
 
@@ -45,24 +45,23 @@
     </resultMap>
 
     <!-- 내일 상담 신청 목록 조회 -->
-    <select id="selectTomorrowConsultationRequests"
-            parameterType="long"
-            resultMap="TomorrowConsultationRequestResultMap">
+    <select id="selectTomorrowConsultationRequests" parameterType="long" resultMap="TomorrowConsultationRequestResultMap">
         SELECT
-        r.no                        AS request_id,
-        c.name                      AS client_name,
-        c.phone                     AS client_phone,
-        TIME_FORMAT(r.created_at, '%H:%i')        AS request_time,
-        DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i:%s') AS request_date_time
+            r.no as request_id,
+            c.name as client_name,
+            c.phone as client_phone,
+            TIME_FORMAT(r.created_at, '%H:%i') as request_time,
+            DATE_FORMAT(r.created_at, '%Y-%m-%d %H:%i:%s') as request_date_time
         FROM reservations r
         JOIN weekly_time_slots wts ON r.slot_no = wts.no
         JOIN client c             ON r.user_no = c.no
-        WHERE wts.user_no   = #{lawyerNo}
+        WHERE wts.user_no = #{userNo}
         AND wts.slot_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY)
         AND r.status      = 'REQUESTED'  <!-- 취소(CANCELED)·완료(DONE) 제외 -->
         ORDER BY r.created_at DESC
     </select>
 
+    <!-- 내일 방송 목록 조회 -->
     <resultMap id="TomorrowBroadcastResultMap" type="com.lawnroad.dashboard.dto.TomorrowBroadcastDto">
         <id     property="scheduleNo" column="no"/>
         <result property="name"       column="name"/>
@@ -70,8 +69,7 @@
         <result property="startTime"  column="start_time"/>
     </resultMap>
 
-    <select id="selectTomorrowBroadcasts"
-            parameterType="java.time.LocalDate"
+    <select id="selectTomorrowBroadcasts" parameterType="map"
             resultMap="TomorrowBroadcastResultMap">
         SELECT
             no,
@@ -80,6 +78,119 @@
             start_time
         FROM broadcast_schedule
         WHERE date = #{date}
+          AND user_no = #{userNo}
+    </select>
+
+
+    <!-- DTO 필드에 매핑 -->
+    <resultMap id="DailyCountResultMap" type="com.lawnroad.dashboard.dto.DailyCountDto">
+        <result property="date"  column="date"/>
+        <result property="count" column="count"/>
+    </resultMap>
+
+    <!-- 1) 주간 상담 건수 조회 -->
+    <select id="selectWeeklyConsultations"
+            parameterType="long"
+            resultMap="DailyCountResultMap">
+        SELECT
+            wts.slot_date       AS date,
+      COUNT(r.no)         AS count
+        FROM reservations r
+            JOIN weekly_time_slots wts
+        ON r.slot_no = wts.no
+        WHERE
+            wts.user_no = #{userNo}
+          AND r.status = 'REQUESTED'
+          AND YEARWEEK(wts.slot_date,1) = YEARWEEK(CURDATE(),1)
+        GROUP BY wts.slot_date
+        ORDER BY wts.slot_date
+    </select>
+
+    <!-- 2) 주간 방송 건수 조회 -->
+    <select id="selectWeeklyBroadcasts"
+            parameterType="long"
+            resultMap="DailyCountResultMap">
+        SELECT
+            DATE(b.start_time)  AS date,
+            COUNT(*)            AS count
+        FROM broadcast_schedule b
+        WHERE
+            b.user_no = #{userNo}
+          AND YEARWEEK(DATE(b.start_time),1) = YEARWEEK(CURDATE(),1)
+        GROUP BY DATE(b.start_time)
+        ORDER BY DATE(b.start_time)
+    </select>
+
+    <!-- 이달의 수익 조회 -->
+    <select id="getMonthlyRevenue" parameterType="long" resultType="com.lawnroad.dashboard.dto.MonthlyRevenueDto">
+        SELECT
+            COALESCE(consultation_revenue, 0) - COALESCE(consultation_refunds, 0) AS consultationRevenue,
+            COALESCE(template_revenue, 0) - COALESCE(template_refunds, 0) AS templateRevenue,
+            COALESCE(consultation_refunds, 0) + COALESCE(template_refunds, 0) AS totalRefundAmount,
+            (COALESCE(consultation_revenue, 0) - COALESCE(consultation_refunds, 0)) +
+            (COALESCE(template_revenue, 0) - COALESCE(template_refunds, 0)) AS totalRevenue,
+            DATE_FORMAT(NOW(), '%Y-%m') AS revenueMonth
+        FROM (
+                 SELECT
+                     -- 상담 수익
+                     (SELECT COALESCE(SUM(p.amount), 0)
+                      FROM orders o
+                               JOIN payments p ON o.no = p.order_no
+                      WHERE o.user_no = #{userNo}
+                        AND o.order_type = 'RESERVATION'
+                        AND p.status = 'DONE'
+                        AND DATE_FORMAT(p.purchased_at, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
+                     ) AS consultation_revenue,
+
+                     -- 템플릿 판매 수익
+                     (SELECT COALESCE(SUM(p.amount), 0)
+                      FROM orders o
+                               JOIN payments p ON o.no = p.order_no
+                      WHERE o.user_no = #{userNo}
+                        AND o.order_type = 'TEMPLATE'
+                        AND p.status = 'DONE'
+                        AND DATE_FORMAT(p.purchased_at, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
+                     ) AS template_revenue,
+
+                     -- 상담 관련 환불
+                     (SELECT COALESCE(SUM(r.amount), 0)
+                      FROM refunds r
+                               JOIN payments p ON r.payment_no = p.no
+                               JOIN orders o ON p.order_no = o.no
+                      WHERE o.user_no = #{userNo}
+                        AND o.order_type = 'RESERVATION'
+                        AND r.status = 'DONE'
+                        AND DATE_FORMAT(r.refunded_at, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
+                     ) AS consultation_refunds,
+
+                     -- 템플릿 관련 환불
+                     (SELECT COALESCE(SUM(r.amount), 0)
+                      FROM refunds r
+                               JOIN payments p ON r.payment_no = p.no
+                               JOIN orders o ON p.order_no = o.no
+                      WHERE o.user_no = #{userNo}
+                        AND o.order_type = 'TEMPLATE'
+                        AND r.status = 'DONE'
+                        AND DATE_FORMAT(r.refunded_at, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
+                     ) AS template_refunds
+             ) AS revenue_summary
+    </select>
+
+    <!-- 이달의 템플릿 판매 건수 조회 -->
+    <select id="getMonthlyTemplateSales" parameterType="long" resultType="com.lawnroad.dashboard.dto.MonthlyTemplateSalesDto">
+        SELECT
+            COALESCE(monthly_sales_count, 0) AS monthlySalesCount
+        FROM (
+                 SELECT
+                     COUNT(*) AS monthly_sales_count
+                 FROM tmpl_orders_history toh
+                          JOIN orders o ON toh.order_no = o.no
+                          JOIN payments p ON o.no = p.order_no
+                          JOIN template t ON toh.tmpl_no = t.no
+                 WHERE t.user_no = #{userNo}
+                   AND p.status = 'DONE'
+                   AND DATE_FORMAT(p.purchased_at, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
+             ) AS monthly_sales_summary
     </select>
 
 
@@ -148,6 +259,5 @@
         GROUP BY m.month
         ORDER BY m.month
     </select>
-
 
 </mapper>
