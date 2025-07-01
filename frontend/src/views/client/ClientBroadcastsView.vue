@@ -392,8 +392,8 @@ export default defineComponent({
       if (noticeInterval) clearInterval(noticeInterval); // 중복 방지
       noticeInterval = setInterval(async () => {
         if (!stompClient.value?.connected) return;
-        const token = await getValidToken();
-        if (!token) return;
+        //const token = await getValidToken();
+        //if (!token) return;
 
       //   stompClient.value.publish({
       //     destination: "/app/chat.sendMessage",
