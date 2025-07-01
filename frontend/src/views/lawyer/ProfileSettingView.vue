@@ -160,7 +160,7 @@ const withdrawLawyerAccount = async () => {
 
             <div class="form-group">
               <label for="officeNumber" class="form-label">
-                <span class="label-text">사무실 번호</span>
+                <span class="label-text">전화번호</span>
                 <span class="required">*</span>
               </label>
               <div class="input-wrapper">
@@ -169,10 +169,11 @@ const withdrawLawyerAccount = async () => {
                     type="text"
                     class="form-input"
                     v-model="officeNumber"
-                    placeholder="예: 101호, 2층 등"
+                    placeholder="예: 02-1234-5678"
                 />
               </div>
             </div>
+
 
             <div class="form-group">
               <label for="phone" class="form-label">

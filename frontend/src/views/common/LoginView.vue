@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watchEffect } from 'vue'
+import { ref, watchEffect, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import AccountFrame from '@/components/layout/account/AccountFrame.vue'
@@ -15,6 +15,7 @@ const route = useRoute()
 const lawyerStore = useLawyerStore()
 
 const tab = ref('client')
+
 watchEffect(() => {
   const queryType = route.query.type
   if (queryType === 'lawyer' || queryType === 'client') {
@@ -25,9 +26,24 @@ watchEffect(() => {
 const clientId = ref('')
 const password = ref('')
 
+
 const naverLogin = () => {
-  const redirectUri = encodeURIComponent(window.location.origin + '/login')
-  window.location.href = `${__API_BASE__}/oauth2/authorization/naver?redirect_uri=${redirectUri}`
+  // console.log("네이버 소셜 로그인 진입 중 ..")
+  // alert("naverLogin 호출됨")
+  const redirectUri = encodeURIComponent('http://localhost:5173/login')
+  // alert(redirectUri)
+
+  window.location.href = 'http://localhost:8080/oauth2/authorization/naver'
+  // const API_BASE = import.meta.env.VITE_API_BASE || 'https://lawnroad.kr'
+  // window.location.href = 'https://lawnroad.kr/oauth2/authorization/naver'
+
+
+
+  // window.location.origin은 현재 웹사이트의 프로토콜 + 도메인 + 포트를 의미
+  // 로컬 상황 : http://localhost:5173 + '/login'
+  // 배포 상황 : https://lawnroad.kr  + '/login'
+  // const redirectUri = encodeURIComponent(window.location.origin + '/login')
+  // window.location.href = `${__API_BASE__}/oauth2/authorization/naver?redirect_uri=${redirectUri}`
 }
 
 const submitLogin = async () => {
@@ -46,7 +62,7 @@ const submitLogin = async () => {
 
     console.log('✅ 로그인 성공 응답:', res.data)
 
-    const { accessToken, refreshToken, name, nickname, no, phone } = res.data
+    const { accessToken, refreshToken, name, nickname, no ,phone} = res.data
 
     localStorage.setItem('token', accessToken)
     localStorage.setItem('refreshToken', refreshToken)
@@ -56,18 +72,42 @@ const submitLogin = async () => {
     localStorage.setItem('no', no)
     localStorage.setItem('phone', phone)
 
-    axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`
+    console.log('🚨🚨🚨 localStorage 저장 완료! 🚨🚨🚨')
+    console.log('💾 localStorage 저장된 데이터:', {
+      token: localStorage.getItem('token'),
+      refreshToken: localStorage.getItem('refreshToken'),
+      accountType: localStorage.getItem('accountType'),
+      name: localStorage.getItem('name'),
+      nickname: localStorage.getItem('nickname'),
+      phone: localStorage.getItem('phone')
+    })
+
+    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`
 
     if (tab.value === 'lawyer') {
-      await lawyerStore.fetchLawyerInfo(no)
+      try {
+        console.log('🔍 lawyerNo:', no)
+        setTimeout(async () => {
+          await lawyerStore.fetchLawyerInfo(no)
+        }, 100)
+        console.log('✅ fetchLawyerInfo 성공')
+      } catch (e) {
+        console.error('❌ fetchLawyerInfo 실패:', e)
+        alert('변호사 정보 불러오기 실패')
+        return
+      }
     }
 
     const redirect = route.query.redirect || (tab.value === 'lawyer' ? '/lawyer' : '/')
     router.push(redirect)
+
   } catch (err) {
     console.error('❌ 로그인 실패:', err)
-    const msg = err.response?.data || '로그인 정보가 일치하지 않습니다.'
-    alert(`로그인 실패: ${msg}`)
+    if (err.response) {
+      alert(`로그인 실패: ${err.response.data}`)
+    } else {
+      alert('로그인 정보가 일치하지 않습니다.')
+    }
   }
 }
 
@@ -133,36 +173,24 @@ watchEffect(async () => {
 
       <form @submit.prevent="submitLogin">
         <div class="mb-3">
-          <input
-              v-model="clientId"
-              type="text"
-              class="form-control"
-              placeholder="아이디"
-              required
-          />
+          <input v-model="clientId" type="text" class="form-control" placeholder="아이디" required />
         </div>
+
         <div class="mb-3">
-          <input
-              v-model="password"
-              type="password"
-              class="form-control"
-              placeholder="비밀번호"
-              required
-          />
+          <input v-model="password" type="password" class="form-control" placeholder="비밀번호" required />
         </div>
+
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <router-link to="/forgot-password" class="small">
-            아이디/비밀번호 찾기
-          </router-link>
+
+          <router-link to="/forgot-password" class="small">아이디/비밀번호 찾기</router-link>
         </div>
+
         <button type="submit" class="btn btn-primary w-100">로그인</button>
       </form>
 
       <div class="text-center mt-3">
         <span class="small text-muted">
-          {{ tab === 'client'
-            ? '아직 계정이 없으신가요?'
-            : '변호사 계정이 없으신가요?' }}
+          {{ tab === 'client' ? '아직 계정이 없으신가요?' : '변호사 계정이 없으신가요?' }}
         </span>
         <router-link
             :to="tab === 'client' ? '/signup/client' : '/signup/lawyer'"
@@ -172,13 +200,9 @@ watchEffect(async () => {
         </router-link>
       </div>
 
-      <!-- 네이버 소셜 로그인 버튼: 의뢰인 탭일 때만 -->
+      <!-- ✅ 소셜 로그인 버튼: 의뢰인 탭일 때만 보이게 -->
       <div v-if="tab === 'client'" class="text-center mt-4">
-        <button
-            class="btn btn-outline-success no-border w-100 d-flex align-items-center justify-content-center"
-            @click="naverLogin"
-        >
-          <span class="naver-logo">N</span>
+        <button class="btn btn-outline-success w-100" @click="naverLogin">
           네이버로 로그인
         </button>
       </div>
@@ -189,25 +213,5 @@ watchEffect(async () => {
 <style scoped>
 .btn-group .btn {
   flex: 1 1 0;
-}
-
-/* N 로고 박스 스타일 */
-.naver-logo {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  background-color: #03c75a;
-  color: white;
-  font-weight: bold;
-  font-size: 14px;
-  line-height: 20px;
-  text-align: center;
-  margin-right: 8px;
-  border-radius: 2px;
-}
-
-/* 네이버 버튼 테두리 제거 */
-.no-border {
-  border: none !important;
 }
 </style>
