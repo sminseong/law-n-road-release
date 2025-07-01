@@ -54,8 +54,6 @@ onMounted(() => {
     nickname.value = nick
   }
 
-  document.addEventListener('mousemove', updateGradient)
-
   // 백드롭 클릭 시 offcanvas 숨기기
   const backdropHandler = (e) => {
     if (e.target.classList.contains('offcanvas-backdrop')) {
@@ -115,6 +113,22 @@ const logout = async () => {
   }
 }
 
+// 검색창
+const searchKeyword = ref('')
+
+function onSearch() {
+  const q = searchKeyword.value.trim()
+  if (!q) return // 키워드가 비어있으면 return
+
+  if (route.path === '/search') {
+    // 같은 라우트면 강제 리로드
+    router.replace({ path: '/search', query: { keyword: q } }).then(() => {
+      location.reload()
+    })
+  } else {
+    router.push({ path: '/search', query: { keyword: q } })
+  }
+}
 
 </script>
 
@@ -255,18 +269,19 @@ const logout = async () => {
 
             <!-- 검색창 -->
             <div class="col-xxl-6 col-lg-5 d-none d-lg-block">
-              <form action="#">
+              <form @submit.prevent="onSearch">
                 <div class="input-group">
                   <input
+                      v-model="searchKeyword"
                       class="form-control rounded-start"
                       type="search"
-                      name="search"
+                      @keyup.enter="onSearch"
                       placeholder="궁금하신 법률 문제를 검색해보세요"
                   />
                   <button
                       class="btn border border-start-0 rounded-end text-dark"
                       style="background-color: #a8abc1;"
-                      type="button"
+                      type="submit"
                   >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -294,7 +309,7 @@ const logout = async () => {
             <!-- 장바구니, 유저정보 등 아이콘 -->
             <div class="col-md-2 col-xxl-1 text-end d-none d-lg-block">
               <div v-if="isLoggedIn" class="d-flex align-items-center justify-content-end gap-2">
-                <span class="text-muted me-1" style="min-width: 150px;">
+                <span class="text-muted me-1" style="min-width: 200px;">
                   <strong class="text-white">{{ nickname }}</strong> 님 환영합니다.
                 </span>
                 <div class="list-inline-item">
@@ -402,18 +417,19 @@ const logout = async () => {
 
             <!-- 햄버거창 검색창 -->
             <div class="d-block d-lg-none my-4">
-              <form action="#">
+              <form @submit.prevent="onSearch">
                 <div class="input-group">
                   <input
+                      v-model="searchKeyword"
                       class="form-control rounded-start"
                       type="search"
-                      name="search"
+                      @keyup.enter="onSearch"
                       placeholder="궁금하신 법률 문제를 검색해보세요"
                   />
                   <button
                       class="btn border border-start-0 rounded-end text-dark"
                       style="background-color: #a8abc1;"
-                      type="button"
+                      type="submit"
                   >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -439,22 +455,46 @@ const logout = async () => {
             <div class="d-none d-lg-block mb-2">
               <ul class="navbar-nav align-items-center">
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path === '/' }" href="/">홈</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path === '/' }"
+                      to="/"
+                  >홈</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/client/broadcasts') }" href="/client/broadcasts">라이브 방송</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/client/broadcasts') }"
+                      to="/client/broadcasts"
+                  >라이브 방송</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/replay') }" href="/replay">방송 다시보기</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/replay') }"
+                      to="/replay"
+                  >방송 다시보기</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/templates') }" href="/templates">법률서류 템플릿</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/templates') }"
+                      to="/templates"
+                  >법률서류 템플릿</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/qna') }" href="/qna">법률Q&A</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/qna') }"
+                      to="/qna"
+                  >법률Q&A</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/ci') }" href="/ci">브랜드 가치</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/ci') }"
+                      to="/ci"
+                  >브랜드 가치</router-link>
                 </li>
               </ul>
             </div>
@@ -463,22 +503,46 @@ const logout = async () => {
             <div class="d-block d-lg-none h-100" data-simplebar="">
               <ul class="navbar-nav">
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path === '/' }" href="/">홈</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path === '/' }"
+                      to="/"
+                  >홈</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/client/broadcasts') }" href="/client/broadcasts">라이브 방송</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/client/broadcasts') }"
+                      to="/client/broadcasts"
+                  >라이브 방송</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/replay') }" href="/replay">방송 다시보기</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/replay') }"
+                      to="/replay"
+                  >방송 다시보기</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/templates') }" href="/templates">법률서류 템플릿</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/templates') }"
+                      to="/templates"
+                  >법률서류 템플릿</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/qna') }" href="/qna">법률Q&A</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/qna') }"
+                      to="/qna"
+                  >법률Q&A</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" :class="{ active: route.path.startsWith('/ci') }" href="/ci">브랜드 가치</a>
+                  <router-link
+                      class="nav-link"
+                      :class="{ active: route.path.startsWith('/ci') }"
+                      to="/ci"
+                  >브랜드 가치</router-link>
                 </li>
               </ul>
             </div>
@@ -638,6 +702,13 @@ header {
 .input-group .form-control:focus {
   outline: none !important;
   box-shadow: none !important;
+}
+
+.offcanvas input.form-control {
+  color: #24364a !important;            /* 입력 텍스트용 */
+}
+.offcanvas input.form-control::placeholder {
+  color: #6c757d !important;            /* 플레이스홀더용 */
 }
 
 </style>

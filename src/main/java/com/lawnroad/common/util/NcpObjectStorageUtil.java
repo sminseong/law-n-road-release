@@ -70,11 +70,32 @@ public class NcpObjectStorageUtil {
     }
   }
   
+  /**
+   * 네이버 이미지 스토리지에 리사이징 해서 저장하기
+   * @param file MultipartFile
+   * @param dir "uploads" 디렉토리
+   * @param oldFileUrl 이전 파일 URL (없으면 null)
+   * @param resize resize (true, false)
+   * @param width width
+   * @param height height
+   * @param optimize optimize (true, false)
+   * @param targetFormat 변환 포맷 (없으면 null)
+   * @param quality 품질 (0~1)
+   * @return ncp 경로
+   */
   public String saveOptimizedImage(MultipartFile file, String dir, @Nullable String oldFileUrl,
                                    boolean resize, int width, int height,
-                                   boolean optimize, String targetFormat, float quality) {
+                                   boolean optimize, @Nullable String targetFormat, float quality) {
     try {
-      String originalExt = getExtension(file.getOriginalFilename());
+      String originalFilename = file.getOriginalFilename();
+      String originalExt = getExtension(originalFilename);
+      
+      // targetFormat이 null이면 원본 확장자로 설정
+      if (targetFormat == null || targetFormat.isBlank()) {
+        targetFormat = originalExt.startsWith(".") ? originalExt.substring(1).toLowerCase() : originalExt.toLowerCase();
+      }
+      
+      // 최종 확장자 (파일명용)
       String ext = optimize ? "." + targetFormat.toLowerCase() : originalExt;
       
       String baseName;

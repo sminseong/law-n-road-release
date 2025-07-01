@@ -20,6 +20,7 @@ public class ClientTemplateDetailResponseDto {
   
   // --- 변호사 정보 ---
   
+  private String lawyerNo;          // 변호사 번호
   private String lawyerName;          // 변호사 이름
   private String profile;             // 프로필 이미지 경로
   private String fullAddress;         // 도로명 주소

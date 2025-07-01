@@ -121,6 +121,10 @@ const handleDownload = async (file) => {
     console.error(err)
   }
 }
+
+function insertExample() {
+  window.location.href = `http://localhost:5173/client/reservations/${detail.value.lawyerNo}/${detail.value.lawyerName}`
+}
 </script>
 
 <template>

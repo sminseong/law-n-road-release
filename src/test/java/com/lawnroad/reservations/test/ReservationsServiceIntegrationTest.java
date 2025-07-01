@@ -67,7 +67,6 @@ public class ReservationsServiceIntegrationTest {
         ReservationsCreateDTO dto = new ReservationsCreateDTO();
         dto.setUserNo(TEST_USER);
         dto.setSlotNo(slotNo);
-        dto.setContent("서비스 레이어 단위 테스트 예약");
         reservationsService.createReservation(dto);
 
         // --- 4) orders 테이블 검증 ---

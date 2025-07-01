@@ -106,4 +106,8 @@ public class ReservationsService {
     public ReservationsResponseDTO getReservationByNo(Long reservationNo) {
         return reservationsMapper.selectReservationByNo(reservationNo);
     }
+
+    public ReservationsResponseDTO getReservationDetail(Long reservationNo) {
+        return reservationsMapper.selectReservationByNo(reservationNo);
+    }
 }

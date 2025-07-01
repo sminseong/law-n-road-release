@@ -96,9 +96,20 @@ async function approveAd(adNo) {
   await fetchItems(currentPage.value, currentFilters.value);
 }
 
-async function rejectAd(adNo) {
+async function rejectAd(orderNo, adNo) {
+  const token = localStorage.getItem('token')
+
+  // console.log(orderNo, adNo, token)
+
+  await http.post(
+      '/api/confirm/cancel',
+      { orderNo },
+      { headers: { Authorization: `Bearer ${token}` } }
+  )
+
   await http.post(`/api/admin/ad-purchases/${adNo}/reject`);
-  alert('반려 완료');
+
+  alert('반려 및 환불 완료');
   closeModal();
   await fetchItems(currentPage.value, currentFilters.value);
 }
@@ -151,6 +162,9 @@ async function rejectAd(adNo) {
         <ul class="ad-info-list">
           <li><strong>광고유형:</strong> {{ selectedRow?.adType }}</li>
           <li><strong>광고주:</strong> {{ selectedRow?.advertiserName }}</li>
+          <li><strong>배지 문구:</strong> {{ selectedRow?.tipText}}</li>
+          <li><strong>메인 문구:</strong> {{ selectedRow?.mainText }}</li>
+          <li><strong>상세 문구:</strong> {{ selectedRow?.detailText }}</li>
           <li><strong>시작일:</strong> {{ selectedRow?.startDate }}</li>
           <li><strong>종료일:</strong> {{ selectedRow?.endDate }}</li>
           <li><strong>활성상태:</strong> {{ selectedRow?.adStatus ? '활성' : '비활성' }}</li>
@@ -171,7 +185,7 @@ async function rejectAd(adNo) {
             <button
                 v-if="selectedRow?.approvalStatus !== 'REJECTED'"
                 class="btn btn-reject"
-                @click="rejectAd(selectedRow.no)"
+                @click="rejectAd(selectedRow.ordersNo, selectedRow.no)"
             >
               반려
             </button>

@@ -96,15 +96,16 @@ public class SecurityConfig {
 public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
             .csrf(csrf -> csrf.disable())
+            .cors(cors -> {})
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(
                             "/api/auth/**", "/api/public/**", "/api/find-id", "/api/reset-password",
                             "/mail/**", "/api/user/**", "/api/auth/nickname", "/api/notification/**",
                             "/uploads/**", "/api/webhook/**", "/api/signuplawyer",
-                            "/login/oauth2/**", "/oauth2/**"
+                            "/login/oauth2/**", "/oauth2/**", "/api/confirm/cancel"
                     ).permitAll()
                 
-                    .requestMatchers("/api/ai/**", "/api/lawyer/*/slots", "/api/confirm/payment", "/api/confirm/cancel","/api/refresh")
+                    .requestMatchers("/api/ai/**", "/api/lawyer/*/slots", "/api/confirm/payment","/api/refresh")
                 
                     .hasAnyRole("CLIENT", "LAWYER")
                 

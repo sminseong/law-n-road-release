@@ -52,15 +52,15 @@ async function handleSubmit() {
     alert('광고 시작일을 선택해 주세요.')
     return
   }
-  if (!mainText.value || mainText.value.length > 20) {
+  if (!mainText.value || mainText.value.length > 30) {
     alert('광고 문구 1은 필수입니다. 20자 이하로 입력해 주세요.')
     return
   }
-  if (!detailText.value || detailText.value.length > 20) {
+  if (!detailText.value || detailText.value.length > 50) {
     alert('광고 문구 2는 필수입니다. 20자 이하로 입력해 주세요.')
     return
   }
-  if (!tipText.value || tipText.value.length > 10) {
+  if (!tipText.value || tipText.value.length > 20) {
     alert('광고 문구 3은 필수입니다. 10자 이하로 입력해 주세요.')
     return
   }
