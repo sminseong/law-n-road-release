@@ -102,5 +102,8 @@ public class RefundService {
         upd.setOrderNo(orderNo);
         upd.setStatus("CANCELED");
         ordersService.changeStatus(upd);
+
+        // 3) payments status 를 CANCELED 로 변경
+        paymentMapper.updatePaymentStatus(orderNo,"CANCELED");
     }
 }

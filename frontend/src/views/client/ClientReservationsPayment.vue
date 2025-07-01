@@ -94,9 +94,10 @@ async function createOrderAndPay() {
       amount,
       orderId:   orderCode,
       orderName: `${lawyerName} 상담 예약`,
-      successUrl: `${location.origin}/payment/success?orderCode=${encodeURIComponent(orderCode)}`,
-      failUrl:    `${location.origin}/payment/fail?orderCode=${encodeURIComponent(orderCode)}`
+      successUrl: `${location.origin}/payment/success?reservationNo=${encodeURIComponent(reservationNo)}&orderCode=${encodeURIComponent(orderCode)}`,
+      failUrl:    `${location.origin}/payment/fail?reservationNo=${encodeURIComponent(reservationNo)}&orderCode=${encodeURIComponent(orderCode)}`
     })
+
   } catch (err) {
     console.error('결제 준비 실패:', err)
     alert('결제 준비에 실패했습니다.')

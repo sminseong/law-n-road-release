@@ -81,4 +81,21 @@ public class TimeSlotService {
                 })
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public void generateDailySlots(Long userNo, LocalDate date) {
+        Long baseAmount = timeSlotMapper.getPrice(userNo);
+        for (int hour = 8; hour <= 22; hour++) {
+            TimeSlotVO vo = new TimeSlotVO(
+                    null,
+                    userNo,
+                    date,
+                    LocalTime.of(hour, 0),
+                    0,
+                    baseAmount
+            );
+            timeSlotMapper.insertTimeSlot(vo);
+            System.out.println("스케줄링 주간 슬롯 생성 완료");
+        }
+    }
 }
