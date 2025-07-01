@@ -76,7 +76,7 @@
             stop_date = NULL
         WHERE is_stopped = 1
           AND stop_date IS NOT NULL
-          AND DATEDIFF(NOW(), stop_date) >= 2
+          AND DATEDIFF(NOW(), stop_date) >= 3
     </update>
 
     <update id = "applyPenaltyClient_M" parameterType="long">
