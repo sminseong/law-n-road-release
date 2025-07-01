@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/webhook/toss")
 public class WebhookController {
+    private static final org.slf4j.Logger log =
+            org.slf4j.LoggerFactory.getLogger(WebhookController.class);
 
     private final WebhookService webhookService;
     private final ObjectMapper objectMapper;
@@ -27,6 +29,7 @@ public class WebhookController {
     public ResponseEntity<String> receiveWebhook(
             @RequestBody String payload
     ) {
+        log.info("▶ Webhook received: {}", payload);
 
         JsonNode json;
         try {
