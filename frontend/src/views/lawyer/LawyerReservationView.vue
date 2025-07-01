@@ -122,7 +122,7 @@ async function closeConsultation(reservationNo) {
               <th class="px-4 py-2 text-left font-medium text-[10px] whitespace-nowrap">시간</th>
               <th class="px-4 py-2 text-left font-medium text-[10px] whitespace-nowrap">금액</th>
               <th class="px-4 py-2 text-left font-medium text-[10px] whitespace-nowrap">상태</th>
-              <th class="px-4 py-2 text-left font-medium w-[12ch] text-[10px] whitespace-nowrap">상담 내용</th>
+              <th class="px-4 py-2 text-left font-medium w-[12ch] text-[10px] whitespace-nowrap">전화 번호</th>
               <th class="px-4 py-2 text-left font-medium text-[10px] whitespace-nowrap">상담 종료</th>
             </tr>
             </thead>
@@ -142,7 +142,7 @@ async function closeConsultation(reservationNo) {
                     {{ statusLabel(res.status) }}
                   </span>
               </td>
-              <td class="px-4 py-1 text-[10px] whitespace-nowrap">{{ truncate(res.content, 10) }}</td>
+              <td class="px-4 py-1 text-[10px] whitespace-nowrap">{{ res.userPhone || '-' }}</td>
               <td class="px-4 py-1 text-[10px] whitespace-nowrap">
                 <button
                     v-if="res.status === 'REQUESTED'"

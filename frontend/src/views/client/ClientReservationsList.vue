@@ -130,6 +130,7 @@
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
+import { getValidToken } from '@/libs/axios-auth'
 
 const loading      = ref(true)
 const reservations = ref([])
@@ -142,7 +143,11 @@ const detail    = ref({})
 async function fetchReservations() {
   loading.value = true
   try {
-    const token = localStorage.getItem('token')
+    const token = await getValidToken()
+    if (!token) {
+      alert('로그인이 필요합니다.')
+      return
+    }
     const { data } = await axios.get(
         '/api/client/reservations/list',
         { headers: { Authorization: `Bearer ${token}` } }
@@ -171,7 +176,11 @@ async function cancelReservation(reservationNo) {
   if (!confirm('정말 이 예약을 취소하시겠습니까?')) return
 
   try {
-    const token = localStorage.getItem('token')
+    const token = await getValidToken()
+    if (!token) {
+      alert('로그인이 필요합니다.')
+      return
+    }
     await axios.post(
         '/api/confirm/cancel',
         { reservationNo },
@@ -215,9 +224,9 @@ function statusLabel(code) {
 function canCancel(res) {
   const now = new Date()
   const [yyyy, mm, dd] = res.slotDate.split('-').map(Number)
-  const [hh, min] = res.slotTime.slice(0,5).split(':').map(Number)
-  const slotDateTime    = new Date(yyyy, mm - 1, dd, hh, min)
-  const cancelDeadline  = new Date(slotDateTime.getTime() - 60 * 60 * 1000)
+  const [hh, min]      = res.slotTime.slice(0,5).split(':').map(Number)
+  const slotDateTime   = new Date(yyyy, mm - 1, dd, hh, min)
+  const cancelDeadline = new Date(slotDateTime.getTime() - 60 * 60 * 1000)
   return now < cancelDeadline
 }
 </script>
