@@ -610,7 +610,7 @@ onMounted(() => {
   loadTodaySchedule()
   loadTomorrowConsultationRequests()
   loadTomorrowBroadcasts()
-  loadMonthlyRevenue() // 이달의 수익
+  // loadMonthlyRevenue() // 이달의 수익 (월별 수익 트렌드 차트에서 값을 구해오는 중)
   loadMonthlyTemplateSales()  // 이달의 템플릿
   loadMonthlySalesRevenue()
 
