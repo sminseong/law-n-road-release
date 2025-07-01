@@ -100,7 +100,7 @@ async function selectAnswer(commentNo) {
     await loadComments()
   } catch (e) {
     console.error('채택 실패:', e)
-    alert('채택에 실패했습니다.')
+    alert('이미 답변을 채택하셨습니다')
   }
 }
 

@@ -80,6 +80,7 @@
             o.order_code    AS orderCode,
             r.user_no       AS userNo,
             u.name          AS userName,
+            u.phone         AS userPhone,
             r.slot_no       AS slotNo,
             w.slot_date     AS slotDate,
             w.slot_time     AS slotTime,
@@ -99,13 +100,15 @@
             o.order_code AS orderCode,
             r.user_no,
             c.name AS userName,
+            c.phone AS userPhone,
             r.slot_no,
             ts.slot_date,
             ts.slot_time,
             r.status,
             ts.amount,
             l.no AS lawyer_no,
-            l.name AS lawyer_name
+            l.name AS lawyer_name,
+            l.phone AS lawyerPhone
         FROM reservations r
                  JOIN weekly_time_slots ts ON r.slot_no = ts.no
                  JOIN orders o ON r.order_no = o.no
@@ -122,5 +125,9 @@
         WHERE order_no = #{orderNo}
     </select>
 
+    <select id="selectDistinctLawyerNos" resultType="long">
+        SELECT DISTINCT user_no
+        FROM weekly_time_slots
+    </select>
 
 </mapper>

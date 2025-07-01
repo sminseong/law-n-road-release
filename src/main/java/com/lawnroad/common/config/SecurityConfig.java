@@ -98,6 +98,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     System.out.println("✅✅✅ 소셜 로그인 핸들러 진입 확인 ✅✅✅");
     http
             .csrf(csrf -> csrf.disable())
+            .cors(cors -> {})
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(
                             "/api/auth/**", "/api/public/**", "/api/find-id", "/api/reset-password",

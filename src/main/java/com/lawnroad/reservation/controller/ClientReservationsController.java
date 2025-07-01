@@ -72,4 +72,26 @@ public class ClientReservationsController {
                 service.countByStatus(no);
         return ResponseEntity.ok(counts);
     }
+
+    @GetMapping("/{reservationNo}")
+    public ResponseEntity<ReservationsResponseDTO> detail(
+            @PathVariable Long reservationNo,
+            @RequestHeader("Authorization") String authHeader
+
+    ) {
+        String token = authHeader.replace("Bearer ", "");
+        Claims claims = jwtTokenUtil.parseToken(token);
+        long no = claims.get("no", Long.class);
+
+        // 2) 실제 예약 정보 가져오기
+        ReservationsResponseDTO dto = service.getReservationDetail(reservationNo);
+
+        // 3) 소유권 검증: userNo가 일치하지 않으면 403
+        if (!dto.getUserNo().equals(no)) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .build();
+        }
+        return ResponseEntity.ok(dto);
+    }
 }
