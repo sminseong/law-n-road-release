@@ -1,6 +1,10 @@
 package com.lawnroad.dashboard.controller;
 
 import com.lawnroad.common.util.JwtTokenUtil;
+import com.lawnroad.dashboard.dto.MonthlyRevenueDto;
+import com.lawnroad.dashboard.dto.TodayScheduleDto;
+import com.lawnroad.dashboard.dto.TomorrowBroadcastDto;
+import com.lawnroad.dashboard.dto.TomorrowConsultationRequestDto;
 import com.lawnroad.dashboard.dto.*;
 import com.lawnroad.dashboard.service.LawyerDashboardService;
 import io.jsonwebtoken.Claims;
@@ -30,6 +34,7 @@ public class LawyerDashboardController {
         try {
             List<TodayScheduleDto> schedule = lawyerDashboardService.getTodaySchedule(userNo);
             return ResponseEntity.ok(schedule);
+
         } catch (Exception e) {
             log.error("오늘 일정 조회 중 오류 발생 - userNo={}", userNo, e);
             return ResponseEntity.internalServerError().build();
@@ -47,6 +52,7 @@ public class LawyerDashboardController {
             List<TomorrowConsultationRequestDto> requests =
                     lawyerDashboardService.getTomorrowConsultationRequests(userNo);
             return ResponseEntity.ok(requests);
+
         } catch (Exception e) {
             log.error("내일 상담 신청 목록 조회 중 오류 발생 - userNo={}", userNo, e);
             return ResponseEntity.internalServerError().build();
@@ -151,4 +157,23 @@ public class LawyerDashboardController {
         return claims.get("no", Long.class);
     }
 
+    
+    
+    /** 거니짱
+     * 월별 상담 예약 + 템플릿 판매 수익 조회
+     * GET /api/lawyer/dashboard/revenue/sales/monthly
+     */
+    @GetMapping("/revenue/sales/monthly")
+    public ResponseEntity<List<MonthlyRevenueDto>> getMonthlySalesRevenue(
+        @RequestHeader("Authorization") String authHeader
+    ) {
+        String token    = authHeader.replace("Bearer ", "");
+        Claims claims   = jwtUtil.parseToken(token);
+        Long lawyerNo   = claims.get("no", Long.class);
+        
+        List<MonthlyRevenueDto> data =
+            lawyerDashboardService.getMonthlySalesRevenue(lawyerNo);
+        
+        return ResponseEntity.ok(data);
+    }
 }

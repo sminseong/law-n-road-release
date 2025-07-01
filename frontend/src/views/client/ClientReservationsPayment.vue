@@ -23,8 +23,12 @@
           <span class="text-lg text-blue-600">{{ amount.toLocaleString() }}원</span>
         </p>
 
+        <p>
+          결제 완료 시 예약이 확정되며, 환불은 예약 시간 1시간 전까지 가능합니다.
+        </p>
+
         <button
-            class="btn btn-primary w-full"
+            class="btn btn-primary d-block w-100"
             @click="createOrderAndPay"
             :disabled="isProcessing"
         >

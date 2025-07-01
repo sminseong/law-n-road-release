@@ -1,7 +1,9 @@
 package com.lawnroad.dashboard.service;
 
 import com.lawnroad.dashboard.dto.*;
+import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface LawyerDashboardService {
@@ -28,10 +30,18 @@ public interface LawyerDashboardService {
     List<DailyCountDto> getWeeklyBroadcasts(Long userNo);
 
     MonthlyRevenueDto getMonthlyRevenue(Long userNo);
+    
     /**
      * 이달의 템플릿 판매 건수 조회
      * @param userNo 변호사 번호
      * @return 이달의 템플릿 판매 건수
      */
     MonthlyTemplateSalesDto getMonthlyTemplateSales(Long userNo);
+  
+  /** 거니짱
+   * 월별 상담 예약 + 템플릿 판매 수익 조회
+   * @param lawyerNo 변호사 번호
+   * @return 월별 매출 리스트
+   */
+  List<MonthlyRevenueDto> getMonthlySalesRevenue(Long lawyerNo);
 }

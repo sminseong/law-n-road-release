@@ -37,3 +37,8 @@ export async function fetchMonthlyRevenue() {
 export async function fetchMonthlyTemplateSales() {
     return await httpRequester.get('/api/lawyer/dashboard/monthly-template-sales');
 }
+
+/** [Lawyer] 거니짱 - 월별 상담예약 + 템플릿 판매 매출 조회 */
+export async function fetchMonthlySalesRevenue() {
+    return await httpRequester.get(`/api/lawyer/dashboard/revenue/sales/monthly`);
+}

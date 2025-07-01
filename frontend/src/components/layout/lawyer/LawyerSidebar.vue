@@ -53,7 +53,7 @@ onMounted(async () => {
 
 const menuItems = [
   { label: '홈 대시보드', icon: 'bi-house-door', path: '/lawyer' },
-  { label: '1:1 상담예약', icon: 'bi-chat-dots', path: `/lawyer/${lawyerNo}/reservation` },
+  { label: '예약관리', icon: 'bi-chat-dots', path: `/lawyer/${lawyerNo}/reservation` },
   { label: '방송 스케줄', icon: 'bi-mic', path: '/lawyer/broadcasts/schedule' },
   { label: '문서 템플릿', icon: 'bi-folder2-open', path: '/lawyer/templates' },
   { label: 'Q&A 관리', icon: 'bi-chat-left-dots', path: '/lawyer/qna' },
@@ -92,7 +92,8 @@ const logout = () => {
   console.log('nickname:', localStorage.getItem('nickname'))
 
   // ✅ 5. 로그인 페이지로 이동 + 새로고침
-  setTimeout(() => location.reload(), 100) // 새로고침으로 컴포넌트 초기화
+  router.push('/')
+  // setTimeout(() => location.reload(), 100) // 새로고침으로 컴포넌트 초기화
 
   console.log('[로그아웃 완료] localStorage 상태 확인:')
   console.log('token:', localStorage.getItem('token'))

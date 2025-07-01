@@ -23,11 +23,20 @@ public interface LawyerDashboardMapper {
     List<TomorrowConsultationRequestDto> selectTomorrowConsultationRequests(@Param("userNo") Long userNo);
 
     List<TomorrowBroadcastDto> selectTomorrowBroadcasts(@Param("date") LocalDate date, @Param("userNo") Long userNo);
-
+  
     List<DailyCountDto> selectWeeklyConsultations(@Param("userNo") Long userNo);
     List<DailyCountDto> selectWeeklyBroadcasts(@Param("userNo") Long userNo);
-
+    
     MonthlyRevenueDto getMonthlyRevenue(Long userNo);
-
+    
     MonthlyTemplateSalesDto getMonthlyTemplateSales(@Param("userNo") Long userNo);
+  
+  
+  /**
+   * 거니짱
+   * 월별 상담 예약 + 템플릿 판매 수익 조회
+   * @param lawyerNo 변호사 번호
+   * @return List of MonthlyRevenueDto
+   */
+  List<MonthlyRevenueDto> selectMonthlySalesRevenue(@Param("lawyerNo") Long lawyerNo);
 }

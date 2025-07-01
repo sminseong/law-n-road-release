@@ -80,6 +80,31 @@
   <!-- 2) 템플릿 상위 20개 (카테고리·키워드 검색 후 fallback, 중복 제외) -->
   <select id="searchTemplates" resultType="com.lawnroad.mainsearch.dto.SearchTemplateDto">
     SELECT * FROM (
+    <!-- 2-0) 변호사 이름 매칭 그룹 (배서연 변호사가 등록한 템플릿) -->
+    SELECT
+    t.no,
+    t.user_no       AS userNo,
+    t.category_no   AS categoryNo,
+    t.type,
+    t.name,
+    t.description,
+    t.price,
+    t.thumbnail_path AS thumbnailPath,
+    t.discount_rate  AS discountRate,
+    0               AS score,
+    0               AS grp
+    FROM template t
+    JOIN lawyer l ON t.user_no = l.no
+    <where>
+      <if test="keywords != null and keywords.size() > 0">
+        <foreach collection="keywords" item="kw" separator=" OR ">
+          l.name LIKE CONCAT('%', #{kw}, '%')
+        </foreach>
+      </if>
+    </where>
+
+    UNION ALL
+
     <!-- 2-1) 카테고리 + 키워드 그룹 -->
     SELECT
     t.no,
@@ -207,6 +232,28 @@
   <!-- 3) QnA 상위 10개 (카테고리·키워드 검색 후 fallback, 중복 제외) -->
   <select id="searchBoards" resultType="com.lawnroad.mainsearch.dto.SearchBoardDto">
     SELECT * FROM (
+    <!-- 3-0) 답변단 변호사 이름 매칭 그룹 (배서연 변호사가 답변한 게시글) -->
+    SELECT
+    b.no,
+    b.category_no   AS categoryNo,
+    b.user_no       AS userNo,
+    b.title,
+    b.content,
+    0               AS score,
+    0               AS grp
+    FROM board b
+    JOIN comment c  ON b.no = c.board_no
+    JOIN lawyer l   ON c.user_no = l.no
+    <where>
+      <if test="keywords != null and keywords.size() > 0">
+        <foreach collection="keywords" item="kw" separator=" OR ">
+          l.name LIKE CONCAT('%', #{kw}, '%')
+        </foreach>
+      </if>
+    </where>
+
+    UNION ALL
+
     <!-- 3-1) 카테고리 + 키워드 그룹 -->
     SELECT
     b.no,
