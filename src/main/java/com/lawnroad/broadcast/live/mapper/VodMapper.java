@@ -31,6 +31,7 @@ public interface VodMapper {
     // 마이페이지에 띄울 vod
     List<VodPreviewDto> findVodListByLawyer(@Param("lawyerNo") Long lawyerNo,
                                             @Param("offset") int offset,
-                                            @Param("limit") int limit);
+                                            @Param("limit") int limit,
+                                            @Param("sort") String sort);
     int countVodByLawyer(@Param("lawyerNo") Long lawyerNo);
 }

@@ -3,6 +3,7 @@ package com.lawnroad.broadcast.live.controller;
 import com.lawnroad.broadcast.live.dto.*;
 import com.lawnroad.broadcast.live.service.VodService;
 import lombok.RequiredArgsConstructor;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,12 +57,14 @@ public class VodPublicController {
     public ResponseEntity<VodPreviewResponseDto> getVodPreviewByLawyer(
             @PathVariable Long lawyerNo,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "4") int size
+            @RequestParam(defaultValue = "4") int size,
+            @RequestParam(defaultValue = "recent") String sort
     ) {
         // 1) Request DTO 세팅
         VodPreviewRequestDto requestDto = new VodPreviewRequestDto();
         requestDto.setPage(page);
         requestDto.setSize(size);
+        requestDto.setSort(sort);
 
         // 2) Service 호출
         List<VodPreviewDto> vods = vodService.getVodListByLawyer(lawyerNo, requestDto);

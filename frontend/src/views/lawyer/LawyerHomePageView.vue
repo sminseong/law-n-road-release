@@ -29,6 +29,7 @@ const vods = ref([]);
 const currentPage = ref(1);
 const totalPages = ref(0);
 const pageSize = 4;
+const sort = ref('recent')
 
 const productList = computed(() => {
   return (data.value.recentTemplates || []).map(tmpl => {
@@ -63,7 +64,7 @@ async function fetchVodPreview(page = 1) {
   try {
     const res = await http.get(
         `/api/public/vod/lawyer/${route.params.lawyerNo}`,
-        { page, size: pageSize }
+        { page, size: pageSize, sort: sort.value }
     )
     vods.value = res.data.vods
     totalPages.value = res.data.totalPages
@@ -100,6 +101,15 @@ const pageGroup = computed(() => {
 function changePage(page) {
   if (page >= 1 && page <= totalPages.value && page !== currentPage.value) {
     currentPage.value = page
+  }
+}
+
+// 정렬 변경 핸들러
+function setSort(order) {
+  if (sort.value !== order) {
+    sort.value = order
+    currentPage.value = 1
+    fetchVodPreview(1)
   }
 }
 
@@ -181,12 +191,24 @@ onMounted(async () => {
 
       <div class="row">
         <div class="col-12">
-          <div class="card shadow-sm mb-4 p-4 d-flex">
+          <div class="card shadow-sm mb-0 p-4 d-flex">
             <h5 class="fw-bold">{{ data.name }} 변호사의 방송 다시보기</h5>
             <p class="mb-0">{{  }}</p>
-
+            <!-- 정렬 버튼 (극소형) -->
+            <div class="d-flex gap-2 my-3 mt-0 mb-0 ps-1">
+              <button
+                  class="btn btn-sm px-2 py-1 text-sm-center"
+                  :class="sort === 'recent' ? 'btn-primary' : 'btn-outline-primary'"
+                  @click="setSort('recent')"
+              >최신순</button>
+              <button
+                  class="btn btn-sm px-2 py-1"
+                  :class="sort === 'popular' ? 'btn-primary' : 'btn-outline-primary'"
+                  @click="setSort('popular')"
+              >인기순</button>
+            </div>
             <!-- VOD 목록 -->
-            <div v-if="vods.length > 0" class="row row-cols-md-4 row-cols-2 g-4 my-3">
+            <div v-if="vods.length > 0" class="row row-cols-md-4 row-cols-2 g-4 my-3 mt-0">
               <template v-for="vod in vods" :key="vod.vodNo">
                 <div class="col">
                   <div
