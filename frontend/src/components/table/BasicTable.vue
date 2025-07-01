@@ -65,7 +65,7 @@ const toggleSort = (key) => {
 
 <template>
   <div class="table-wrapper">
-    <table class="table table-bordered table-hover">
+    <table class="table table-hover align-middle mb-0">
       <thead>
         <tr>
           <th
@@ -85,8 +85,20 @@ const toggleSort = (key) => {
         <tr v-if="pagedData.length === 0">
           <td :colspan="columns.length" class="text-center">데이터가 없습니다.</td>
         </tr>
-        <tr v-for="item in pagedData" :key="item.no">
-          <td v-for="col in columns" :key="col.key">{{ item[col.key] }}</td>
+        <tr v-for="row in pagedData" :key="row.no">
+          <td
+              v-for="col in columns"
+              :key="col.key"
+          >
+            <!-- 슬롯이 있으면 슬롯으로 출력 -->
+            <slot
+                :name="`cell-${col.key}`"
+                :row="row"
+                :value="row[col.key]"
+            >
+              {{ row[col.key] }}
+            </slot>
+          </td>
         </tr>
       </tbody>
     </table>

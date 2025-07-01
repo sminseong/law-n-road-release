@@ -33,7 +33,7 @@
 
         <div class="p-grid-col mt-8 justify-center">
           <a href="/">
-            <button class="button p-grid-col5">메인화면으로 돌아가기</button>
+            <button class="btn btn-primary p-grid-col5">메인화면으로 돌아가기</button>
           </a>
         </div>
       </div>

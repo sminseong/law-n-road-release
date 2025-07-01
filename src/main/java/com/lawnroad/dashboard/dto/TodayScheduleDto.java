@@ -14,4 +14,5 @@ public class TodayScheduleDto {
     private String event;       // 이벤트명
     private String type;        // consultation, broadcast
     private String clientName;  // 클라이언트명 (상담의 경우만)
+    private String clientPhone; // 클라이언트 전화번호
 }

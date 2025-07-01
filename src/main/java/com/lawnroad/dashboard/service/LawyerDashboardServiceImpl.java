@@ -50,6 +50,13 @@ public class LawyerDashboardServiceImpl implements LawyerDashboardService {
     public MonthlyRevenueDto getMonthlyRevenue(Long userNo) {
         return lawyerDashboardMapper.getMonthlyRevenue(userNo);
     }
+    
+    
+    // 거니짱 - 대시보드 최하단 월별 수익
+    @Override
+    public List<MonthlyRevenueDto> getMonthlySalesRevenue(Long lawyerNo) {
+        return lawyerDashboardMapper.selectMonthlySalesRevenue(lawyerNo);
+    }
 
     @Override
     public MonthlyTemplateSalesDto getMonthlyTemplateSales(Long userNo) {

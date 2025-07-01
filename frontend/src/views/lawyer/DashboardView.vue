@@ -3,27 +3,29 @@
 import { ref,computed, onMounted, onUnmounted } from 'vue'
 import { useLawyerStore } from '@/stores/lawyer'
 import LawyerFrame from "@/components/layout/lawyer/LawyerFrame.vue";
-import { fetchTodaySchedule, fetchTomorrowConsultationRequests, fetchTomorrowBroadcasts, fetchWeeklyConsultations , fetchWeeklyBroadcasts , fetchMonthlyRevenue , fetchMonthlyTemplateSales   } from '@/service/dashboardService.js'
-import { getUserNo } from '@/service/authService.js'
+import { fetchTodaySchedule, fetchTomorrowConsultationRequests, fetchMonthlySalesRevenue, fetchTomorrowBroadcasts, fetchWeeklyConsultations , fetchWeeklyBroadcasts , fetchMonthlyRevenue , fetchMonthlyTemplateSales   } from '@/service/dashboardService.js'
 import { Chart, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip,
   Legend, Filler, BarController, LineController} from 'chart.js'
 // Chart.js 플러그인 등록
 Chart.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend,
     Filler, BarController, LineController)
+import {getUserNo} from "@/service/authService.js";
 
 //2.Pinia 스토어 & 사용자 정보
 const store = useLawyerStore()
 const userNo = ref( getUserNo() )
 const lawyerName = computed(() => store.lawyerInfo?.name || '')
 
-//3. 반응형 상태 정의
+// 반응형 데이터
 const currentTime = ref('')
 // 시간 업데이트 타이머
 let timeInterval = null
 
-//오늘 일정
-const todaySchedule = ref([])
-const scheduleLoading = ref(false)
+const loading = ref(false)
+const lawyerInfo = ref({
+  name: lawyerName,
+  id: userNo
+})
 
 //주요 지표 카드
 const dashboardStats = ref([
@@ -37,7 +39,7 @@ const dashboardStats = ref([
     loading: false
   },
   {
-    title: '예정된 방송',
+    title: '내일 예정된 방송',
     value: '방송 없음',
     icon: '📺',
     color: '#10b981',
@@ -55,7 +57,7 @@ const dashboardStats = ref([
     loading: false
   },
   {
-    title: '템플릿 판매 수',
+    title: '이달의 템플릿 판매 수',
     value: '0건',
     icon: '📄',
     color: '#8b5cf6',
@@ -65,9 +67,13 @@ const dashboardStats = ref([
   }
 ])
 
-//내일 상담 예약
+//오늘 일정
+const todaySchedule = ref([])
+const scheduleLoading = ref(false)
+
 const tomorrowConsultationRequests = ref([])
 const consultationLoading = ref(false)
+
 //내일 예정된 방송 데이터
 const tomorrowBroadcasts = ref([])
 const broadcastLoading = ref(false)
@@ -88,6 +94,7 @@ const updateTime = () => {
     second: '2-digit'
   })
 }
+
 // 날짜 문자열 → "HH:MM" 포맷(시간 포맷팅 함수)
 const formatTime = (dateTimeString) => {
   if (!dateTimeString) return ''
@@ -548,23 +555,64 @@ const loadMonthlyTemplateSales = async () => {
   }
 }
 
-// 생명주기 훅
+const loadMonthlySalesRevenue = async () => {
+  dashboardStats.value[2].loading = true  // “이달의 수익” 카드 인덱스가 2번이라 가정
+  try {
+    console.log('월별 판매 수익 로드 시작')
+
+    const response = await fetchMonthlySalesRevenue()
+    console.log('월별 판매 수익 API 응답:', response)
+
+    if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
+      // 1) 차트 데이터 준비
+      const months   = response.data.map(d => d.month)
+      const revenues = response.data.map(d => Math.round(d.totalAmount / 10000))
+
+      // 2) 차트 그리기
+      createRevenueChart({ months, revenues })
+
+      // 3) “이달의 수익” 카드 업데이트
+      const currentMonth = new Date().toISOString().slice(0,7) // 'YYYY-MM'
+      const thisMonthData = response.data.find(d => d.month === currentMonth)
+      dashboardStats.value[2].value = thisMonthData
+          ? `${Math.round(thisMonthData.totalAmount/10000)}만원`
+          : '0만원'
+
+      console.log('월별 판매 수익 데이터 매핑 완료')
+    } else {
+      console.log('월별 판매 수익 데이터 없음')
+      // 차트 클리어 혹은 빈 데이터 처리
+      createRevenueChart({ months: [], revenues: [] })
+      dashboardStats.value[2].value = '0만원'
+    }
+  } catch (error) {
+    console.error('월별 판매 수익 로딩 실패:', error)
+    // 실패 시에도 빈 차트
+    createRevenueChart({ months: [], revenues: [] })
+    dashboardStats.value[2].value = '데이터 없음'
+  } finally {
+    dashboardStats.value[2].loading = false
+  }
+}
+
 onMounted(() => {
   //시계 시작
   updateTime()
   timeInterval = setInterval(updateTime, 1000)
 
   // 1) 빈 차트 먼저 그리기
-  createWeeklyChart()
-  createRevenueChart()
+  setTimeout(() => {
+    createWeeklyChart()
+  }, 100)
 
   // 2) 실제 데이터로 업데이트
   loadWeeklyChartData()
   loadTodaySchedule()
   loadTomorrowConsultationRequests()
   loadTomorrowBroadcasts()
-  loadMonthlyRevenue() // 이달의 수익
+  // loadMonthlyRevenue() // 이달의 수익 (월별 수익 트렌드 차트에서 값을 구해오는 중)
   loadMonthlyTemplateSales()  // 이달의 템플릿
+  loadMonthlySalesRevenue()
 
 })
 
@@ -585,136 +633,104 @@ onUnmounted(() => {
 
 <template>
   <LawyerFrame>
-    
+
       <div class="bg-[#f7f8fa] rounded-2xl px-4 py-1">
 
-        <!-- 헤더 (시간) -->
-        <div class="bg-white shadow-md border-b border-gray-200 mb-0">
-          <div class="w-full px-4 py-0 sm:px-6">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center">
-                <div>
-                  <h1 class="text-lg sm:text-xl font-bold text-gray-800">로앤로드</h1>
-                </div>
-              </div>
-              <div class="flex items-center">
-                <div class="text-right">
-                  <p class="text-xs text-gray-600 mb-0">안녕하세요, {{ lawyerName  }} 변호사님</p>
-                  <p class="text-sm sm:text-lg font-bold text-blue-600 font-mono mb-0">{{ currentTime }}</p>
-                </div>
-              </div>
-            </div>
+      <!-- 헤더 -->
+      <div class="card mb-4">
+        <div class="card-body d-flex justify-content-between align-items-center">
+          <h5 class="card-title mb-0">안녕하세요, {{ lawyerName }} 변호사님</h5>
+          <div class="text-end">
+            <small class="text-muted">현재 시간은</small>
+            <div class="h5 mb-0">{{ currentTime }}</div>
           </div>
         </div>
-      <div class="dashboard-bg">
-        <div class="max-w-7xl mx-auto px-3 py-1 sm:px-6">
+      </div>
 
-          <!-- 오늘 일정 -->
-          <div class="mb-1">
-            <div class="bg-white rounded shadow-xl p-3 sm:p-4">
-              <div class="flex items-center mb-2">
-                <span class="text-lg sm:text-xl mr-2">📅</span>
-                <h3 class="text-lg sm:text-xl font-bold text-gray-800">오늘 일정</h3>
-              </div>
-
-              <div v-if="scheduleLoading" class="flex justify-center py-6">
-                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-              </div>
-
-              <div v-else-if="todaySchedule.length === 0" class="text-center py-6">
-                <span class="text-4xl mb-3 block">📭</span>
-                <p class="text-gray-500 text-base">오늘 일정이 없습니다</p>
-              </div>
-
-              <!-- 수정: 3열 그리드 -->
-              <div v-else style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;">
-                <div v-for="(schedule, index) in todaySchedule" :key="index"
-                     class="flex items-center p-2.5 rounded-lg border-2 transition-all duration-200 hover:shadow-lg cursor-pointer"
-                     :class="getScheduleColor(schedule.type)">
-                  <div class="flex-shrink-0 mr-2">
-                    <span class="text-base">{{ getScheduleIcon(schedule.type) }}</span>
-                  </div>
-                  <div class="flex-1">
-                    <p class="text-xs font-bold text-gray-800 mb-0.5">{{ schedule.time }}</p>
-                    <p class="text-xs text-gray-600 leading-tight">{{ schedule.event }}</p>
+      <!-- 오늘 일정 -->
+      <div class="card mb-4">
+        <div class="card-header d-flex align-items-center">
+          <i class="bi bi-calendar3 me-2"></i>
+          <strong>오늘 일정</strong>
+        </div>
+        <div class="card-body p-3">
+          <div class="row row-cols-1 gy-1">
+            <div
+                v-for="(s, i) in todaySchedule"
+                :key="i"
+                class="col"
+            >
+              <!-- border-0 으로 모든 테두리 제거 후 border-bottom 만 적용 -->
+              <div class="d-flex align-items-center py-1 px-2 border-0 border-bottom">
+                <i class="bi bi-person-fill text-primary fs-5 me-2"></i>
+                <div>
+                  <div class="small text-secondary">{{ s.time }}</div>
+                  <div>
+                    {{ s.event }}
+                    <span v-if="s.clientPhone"> ({{ s.clientPhone }})</span>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 주요 지표 카드 - 1행 4열 레이아웃 -->
-          <div class="mb-2">
-            <div class="dashboard-stats-row">
-              <!-- 내일 상담신청 -->
-              <div class="dashboard-stats-card border-blue no-shadow">
-                <div class="dashboard-stats-card-inner">
-                  <p class="dashboard-stats-title">내일 상담신청</p>
-                  <div class="dashboard-stats-value-row">
-                    <span class="dashboard-stats-icon">👥</span>
-                    <span class="dashboard-stats-value text-blue">{{ dashboardStats[0].value }}</span>
-                  </div>
-                </div>
-              </div>
-              <!-- 예정된 방송 -->
-              <div class="dashboard-stats-card border-green no-shadow">
-                <div class="dashboard-stats-card-inner">
-                  <p class="dashboard-stats-title">내일 예정된 방송</p>
-                  <div class="dashboard-stats-value-row">
-                    <span class="dashboard-stats-icon">📺</span>
-                    <span class="dashboard-stats-value text-green">{{ dashboardStats[1].value }}</span>
-                  </div>
-                </div>
-              </div>
-              <!-- 이달의 수익 -->
-              <div class="dashboard-stats-card border-yellow no-shadow">
-                <div class="dashboard-stats-card-inner">
-                  <p class="dashboard-stats-title">이달의 수익</p>
-                  <div class="dashboard-stats-value-row">
-                    <span class="dashboard-stats-icon">💰</span>
-                    <span class="dashboard-stats-value text-yellow">{{ dashboardStats[2].value }}</span>
-                  </div>
-                </div>
-              </div>
-              <!-- 템플릿 판매 수 -->
-              <div class="dashboard-stats-card border-purple no-shadow">
-                <div class="dashboard-stats-card-inner">
-                  <p class="dashboard-stats-title">이달의 템플릿 판매 수</p>
-                  <div class="dashboard-stats-value-row">
-                    <span class="dashboard-stats-icon">📄</span>
-                    <span class="dashboard-stats-value text-purple">{{ dashboardStats[3].value }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 차트 영역 -->
-          <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
-            <!-- 주간 상담 & 방송 현황 -->
-            <div class="bg-white rounded-xl shadow-xl p-4">
-              <div class="flex items-center mb-3">
-                <span class="text-2xl mr-3">📊</span>
-                <h3 class="text-2xl font-bold text-gray-800">주간 상담 & 방송 현황</h3>
-              </div>
-              <div class="h-80">
-                <canvas ref="weeklyChart"></canvas>
-              </div>
-            </div>
-
-            <!-- 월별 수익 트렌드 -->
-            <div class="bg-white rounded-xl shadow-xl p-5">
-              <div class="flex items-center mb-4">
-                <span class="text-2xl mr-3">💰</span>
-                <h3 class="text-2xl font-bold text-gray-800">월별 수익 트렌드</h3>
-              </div>
-              <div class="h-80">
-                <canvas ref="revenueChart"></canvas>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- 주요 지표 카드 -->
+      <div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
+        <div
+            v-for="stat in dashboardStats"
+            :key="stat.title"
+            class="col d-flex"
+        >
+          <!-- border-start 제거, 대신 border 로 사방 테두리 -->
+          <div
+              class="card flex-fill border"
+              :style="{ borderColor: stat.color }"
+          >
+            <div class="card-body">
+              <h6 class="card-subtitle mb-2 text-muted">{{ stat.title }}</h6>
+              <div class="d-flex align-items-center">
+                <span class="fs-4 me-2">{{ stat.icon }}</span>
+                <h5
+                    class="mb-0"
+                    :class="stat.value === '데이터 없음' ? 'text-secondary' : ''"
+                    :style="stat.value !== '데이터 없음' ? { color: stat.color } : {}"
+                >
+                  {{ stat.value }}
+                </h5>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 차트 영역 -->
+      <div class="row gy-4">
+        <div class="col-lg-6">
+          <div class="card h-100">
+            <div class="card-header d-flex align-items-center">
+              <i class="bi bi-bar-chart me-2"></i>
+              <strong>주간 상담 & 방송 현황</strong>
+            </div>
+            <div class="card-body">
+              <canvas ref="weeklyChart" class="w-100" style="height:300px;"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card h-100">
+            <div class="card-header d-flex align-items-center">
+              <i class="bi bi-graph-up me-2"></i>
+              <strong>월별 수익 트렌드</strong>
+            </div>
+            <div class="card-body">
+              <canvas ref="revenueChart" class="w-100" style="height:300px;"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </LawyerFrame>
 </template>

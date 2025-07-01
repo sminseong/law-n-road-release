@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MonthlyRevenueDto {
+  private String month;
+  private Long totalAmount;
     private Long totalRevenue;           // 총 수익 (환불 차감 후)
     private Long consultationRevenue;    // 상담 수익 (환불 차감 후)
     private Long templateRevenue;        // 템플릿 수익 (환불 차감 후)
