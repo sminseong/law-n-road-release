@@ -70,7 +70,7 @@ async function requestEmailCode() {
       return;
     }
 
-    const verifyRes = await axios.post('/api/mail/send', null, {
+    const verifyRes = await axios.post('/mail/send', null, {
       params: { email: email.value }
     });
 
