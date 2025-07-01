@@ -450,7 +450,7 @@ export default defineComponent({
       dropdownIdx.value = idx;
       selectedUser.value = msg.nickname;
       selectedMessage.value = msg.message;
-      selectedUserNo.value = msg.no;
+      selectedUserNo.value = msg.userNo;
       setTimeout(() => {
         window.addEventListener("mousedown", onWindowClick);
       }, 0);
@@ -811,19 +811,18 @@ export default defineComponent({
               {{ msg.message }}
             </div>
 
-            <!-- 4. 변호사 전용 메시지 (예시) -->
+            <!-- 4. 변호사 전용 메시지  -->
             <div v-else-if="msg.type === 'Lawyer'"
-                 style="font-size: 0.90rem; display: flex; align-items: center;">
+                 style="font-size: 0.95rem; display: flex; align-items: center;">
               <!-- 닉네임: 검정색 고정 + 클릭 가능 -->
               <span
-                  @click.stop="Number(msg.no) !== Number(myNo) && openDropdown(index, msg)"
+                  @click.stop="Number(msg.userNo) !== Number(myNo) && openDropdown(index, msg)"
                   :style="{
           color: '#222',
           userSelect: 'text',
-          cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
-          fontWeight: 'bold'
+          cursor: Number(msg.userNo) === Number(myNo) ? 'default' : 'pointer',
         }">👑 {{ broadcastInfo.lawyerName }} 변호사
-        <span v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
+        <span v-if="dropdownIdx === index && Number(msg.userNo) !== Number(myNo)"
               class="nickname-dropdown"
               style="position:absolute;top:120%;left:0;z-index:10000;">
           <ul class="dropdown-custom-menu">
@@ -846,26 +845,25 @@ export default defineComponent({
             </div>
 
             <!-- 6. 기본 채팅 메시지 (일반 유저 채팅) -->
-            <div v-else style="font-size: 0.97rem; display: flex; align-items: center;">
+            <div v-else style="font-size: 0.95rem; display: flex; align-items: center;">
               <!-- 닉네임 드롭다운 & 랜덤 색상 -->
               <span
-                  @click.stop="Number(msg.no) !== Number(myNo) && openDropdown(index, msg)"
+                  @click.stop="Number(msg.userNo) !== Number(myNo) && openDropdown(index, msg)"
                   :style="{
               color: getNicknameColor(msg.nickname),
-              fontWeight: Number(msg.no) === Number(myNo) ? 700 : 600,
-              cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
+              cursor: Number(msg.userNo) === Number(myNo) ? 'default' : 'pointer',
               userSelect: 'text',
               position: 'relative',
               padding: '2px 7px',
               borderRadius: '7px',
               transition: 'background 0.14s'
         }"
-                  :class="{'nickname-hoverable': Number(msg.no) !== Number(myNo)}">
+                  :class="{'nickname-hoverable': Number(msg.userNo) !== Number(myNo)}">
         {{ msg.nickname }}
 
                 <!-- 드롭다운 메뉴 -->
         <span
-            v-if="dropdownIdx === index && Number(msg.no) !== Number(myNo)"
+            v-if="dropdownIdx === index && Number(msg.userNo) !== Number(myNo)"
             class="nickname-dropdown"
             style="position:absolute;top:120%;left:0;z-index:10000;">
           <ul class="dropdown-custom-menu">
@@ -1008,7 +1006,7 @@ export default defineComponent({
 
 /* 닉네임 호버 효과 (본인 제외) */
 .nickname-hoverable:hover {
-  background: #f3f7fe;
+  background: #f3f7fe !important;
 }
 
 /* 드롭다운 전체 영역 */

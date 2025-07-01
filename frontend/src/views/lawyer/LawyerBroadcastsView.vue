@@ -825,7 +825,6 @@ const handlePreQClickOutside = (e) => {
                   @click.stop="Number(msg.no) !== Number(myNo) && openDropdown(index, msg)"
                   :style="{
                         color: getNicknameColor(msg.nickname),
-                        fontWeight: Number(msg.no) === Number(myNo) ? 700 : 600,
                         cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
                         userSelect: 'text',
                         position: 'relative',
