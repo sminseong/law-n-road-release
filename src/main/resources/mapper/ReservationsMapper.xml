@@ -80,6 +80,7 @@
             o.order_code    AS orderCode,
             r.user_no       AS userNo,
             u.name          AS userName,
+            u.phone         AS userPhone,
             r.slot_no       AS slotNo,
             w.slot_date     AS slotDate,
             w.slot_time     AS slotTime,

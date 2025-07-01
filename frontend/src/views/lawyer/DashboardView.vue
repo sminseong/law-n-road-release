@@ -1,50 +1,35 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+//1. Vue & 외부 라이브러리 임포트
+import { ref,computed, onMounted, onUnmounted } from 'vue'
+import { useLawyerStore } from '@/stores/lawyer'
 import LawyerFrame from "@/components/layout/lawyer/LawyerFrame.vue";
-import { fetchTodaySchedule, fetchTomorrowConsultationRequests } from '@/service/dashboardService.js'
+import { fetchTodaySchedule, fetchTomorrowConsultationRequests, fetchTomorrowBroadcasts, fetchWeeklyConsultations , fetchWeeklyBroadcasts , fetchMonthlyRevenue , fetchMonthlyTemplateSales   } from '@/service/dashboardService.js'
+import { getUserNo } from '@/service/authService.js'
+import { Chart, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip,
+  Legend, Filler, BarController, LineController} from 'chart.js'
+// Chart.js 플러그인 등록
+Chart.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend,
+    Filler, BarController, LineController)
 
-import {
-  Chart,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  BarController,
-  LineController
-} from 'chart.js'
+//2.Pinia 스토어 & 사용자 정보
+const store = useLawyerStore()
+const userNo = ref( getUserNo() )
+const lawyerName = computed(() => store.lawyerInfo?.name || '')
 
-// Chart.js 컴포넌트 등록
-Chart.register(
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    LineElement,
-    PointElement,
-    Title,
-    Tooltip,
-    Legend,
-    Filler,
-    BarController,
-    LineController
-)
-
-// 반응형 데이터
+//3. 반응형 상태 정의
 const currentTime = ref('')
-const loading = ref(false)
-const lawyerInfo = ref({
-  name: '강민영',
-  id: 32
-})
+// 시간 업데이트 타이머
+let timeInterval = null
 
+//오늘 일정
+const todaySchedule = ref([])
+const scheduleLoading = ref(false)
+
+//주요 지표 카드
 const dashboardStats = ref([
   {
     title: '내일 상담신청',
-    value: '데이터 없음',
+    value: '0건',
     icon: '👥',
     color: '#3b82f6',
     trend: false,
@@ -53,7 +38,7 @@ const dashboardStats = ref([
   },
   {
     title: '예정된 방송',
-    value: '데이터 없음',
+    value: '방송 없음',
     icon: '📺',
     color: '#10b981',
     trend: false,
@@ -62,7 +47,7 @@ const dashboardStats = ref([
   },
   {
     title: '이달의 수익',
-    value: '데이터 없음',
+    value: '0원',
     icon: '💰',
     color: '#f59e0b',
     trend: false,
@@ -71,7 +56,7 @@ const dashboardStats = ref([
   },
   {
     title: '템플릿 판매 수',
-    value: '데이터 없음',
+    value: '0건',
     icon: '📄',
     color: '#8b5cf6',
     trend: false,
@@ -80,11 +65,12 @@ const dashboardStats = ref([
   }
 ])
 
-const todaySchedule = ref([])
-const scheduleLoading = ref(false)
-
+//내일 상담 예약
 const tomorrowConsultationRequests = ref([])
 const consultationLoading = ref(false)
+//내일 예정된 방송 데이터
+const tomorrowBroadcasts = ref([])
+const broadcastLoading = ref(false)
 
 // 차트 참조
 const weeklyChart = ref(null)
@@ -92,16 +78,23 @@ const revenueChart = ref(null)
 let weeklyChartInstance = null
 let revenueChartInstance = null
 
-// 시간 업데이트 타이머
-let timeInterval = null
-
-// 메서드
+//4.유틸 함수
+// 화면 시계 갱신
 const updateTime = () => {
   const now = new Date()
   currentTime.value = now.toLocaleTimeString('ko-KR', {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit'
+  })
+}
+// 날짜 문자열 → "HH:MM" 포맷(시간 포맷팅 함수)
+const formatTime = (dateTimeString) => {
+  if (!dateTimeString) return ''
+  const date = new Date(dateTimeString)
+  return date.toLocaleTimeString('ko-KR', {
+    hour: '2-digit',
+    minute: '2-digit'
   })
 }
 
@@ -123,6 +116,8 @@ const getScheduleColor = (type) => {
   }
 }
 
+
+// 차트 초기화/업데이트 함수
 const createWeeklyChart = (data = null) => {
   if (!weeklyChart.value) return
 
@@ -131,6 +126,13 @@ const createWeeklyChart = (data = null) => {
   const chartData = data || {
     consultations: [0, 0, 0, 0, 0, 0, 0],
     broadcasts: [0, 0, 0, 0, 0, 0, 0]
+  }
+
+  console.log('차트 생성 데이터:', chartData)
+
+  // 기존 차트가 있으면 제거
+  if (weeklyChartInstance) {
+    weeklyChartInstance.destroy()
   }
 
   weeklyChartInstance = new Chart(ctx, {
@@ -287,25 +289,30 @@ const createRevenueChart = (data = null) => {
 const loadTodaySchedule = async () => {
   scheduleLoading.value = true
   try {
-    console.log('오늘 일정 로드 시작 - lawyerNo:', lawyerInfo.value.id)
+    console.log('오늘 일정 로드 시작')
 
-    const response = await fetchTodaySchedule (lawyerInfo.value.id)
-    console.log('API 응답:', response)
+    const response = await fetchTodaySchedule()
+    console.log('오늘 일정 API 응답:', response)
 
-    if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
-      todaySchedule.value = response.data.map(item => ({
-        time: item.time,
-        event: item.event,
-        type: item.type,
-        clientName: item.clientName || null
-      }))
-      console.log('일정 데이터 매핑 완료:', todaySchedule.value)
+    // 응답 구조에 맞게 수정
+    if (response && response.data && Array.isArray(response.data)) {
+      todaySchedule.value = response.data
+    } else if (response && Array.isArray(response)) {
+      // 직접 배열로 반환되는 경우
+      todaySchedule.value = response
     } else {
-      console.log('일정 데이터 없음')
+      console.warn('예상과 다른 응답 구조:', response)
       todaySchedule.value = []
     }
+
+    console.log('최종 일정 데이터:', todaySchedule.value)
+    // 추가: 각 요소도 개별적으로 출력
+    todaySchedule.value.forEach((item, idx) => {
+      console.log(`todaySchedule[${idx}]:`, item)
+    })
+
   } catch (error) {
-    console.error('오늘 일정 로딩 실패:', error)
+    console.error('오늘 일정 로딩 에러:', error)
     todaySchedule.value = []
   } finally {
     scheduleLoading.value = false
@@ -315,10 +322,10 @@ const loadTodaySchedule = async () => {
 const loadTomorrowConsultationRequests = async () => {
   consultationLoading.value = true
   try {
-    console.log('내일 상담신청 로드 시작')
+    // console.log('내일 상담신청 로드 시작')
 
     const response = await fetchTomorrowConsultationRequests()
-    console.log('내일 상담신청 API 응답:', response)
+    // console.log('내일 상담신청 API 응답:', response)
 
     if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
       tomorrowConsultationRequests.value = response.data
@@ -326,15 +333,15 @@ const loadTomorrowConsultationRequests = async () => {
       dashboardStats.value[0].value = response.data.length + '건'
       dashboardStats.value[0].loading = false
 
-      console.log('내일 상담신청 데이터 매핑 완료:', tomorrowConsultationRequests.value)
+      // console.log('내일 상담신청 데이터 매핑 완료:', tomorrowConsultationRequests.value)
     } else {
-      console.log('내일 상담신청 데이터 없음')
+      // console.log('내일 상담신청 데이터 없음')
       tomorrowConsultationRequests.value = []
       dashboardStats.value[0].value = '0건'
       dashboardStats.value[0].loading = false
     }
   } catch (error) {
-    console.error('내일 상담신청 로딩 실패:', error)
+    // console.error('내일 상담신청 로딩 실패:', error)
     tomorrowConsultationRequests.value = []
     dashboardStats.value[0].value = '데이터 없음'
     dashboardStats.value[0].loading = false
@@ -342,19 +349,225 @@ const loadTomorrowConsultationRequests = async () => {
     consultationLoading.value = false
   }
 }
+//내일 방송 로드 함수
+const loadTomorrowBroadcasts = async () => {
+  broadcastLoading.value = true
+  try {
+    // console.log('내일 방송 로드 시작')
 
+    const response = await fetchTomorrowBroadcasts()
+    // console.log('내일 방송 API 응답:', response)
+
+    if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
+      tomorrowBroadcasts.value = response.data
+
+      // 방송의 시간과 제목을 카드에 표시
+      const firstBroadcast = response.data[0]
+      const broadcastTime = formatTime(firstBroadcast.startTime)
+      const broadcastTitle = firstBroadcast.name
+
+      dashboardStats.value[1].value = `${broadcastTime} ${broadcastTitle}`
+      dashboardStats.value[1].loading = false
+
+      // console.log('내일 방송 데이터 매핑 완료:', tomorrowBroadcasts.value)
+    } else {
+      // console.log('내일 방송 데이터 없음')
+      tomorrowBroadcasts.value = []
+      dashboardStats.value[1].value = '방송 없음'
+      dashboardStats.value[1].loading = false
+    }
+  } catch (error) {
+    // console.error('내일 방송 로딩 실패:', error)
+    tomorrowBroadcasts.value = []
+    dashboardStats.value[1].value = '방송 없음'
+    dashboardStats.value[1].loading = false
+  } finally {
+    broadcastLoading.value = false
+  }
+}
+
+
+const updateWeeklyChart = ({ consultations, broadcasts }) => {
+  if (weeklyChartInstance) {
+    weeklyChartInstance.data.datasets[0].data = consultations
+    weeklyChartInstance.data.datasets[1].data = broadcasts
+    weeklyChartInstance.update('active')
+  } else {
+    createWeeklyChart({ consultations, broadcasts })
+  }
+}
+
+//주간 차트
+const loadWeeklyChartData = async () => {
+  try {
+    console.log('주간 차트 데이터 로드 시작')
+
+    // ① 주간 상담/방송 각각 API 호출
+    const [consultResponse, broadcastResponse] = await Promise.all([
+      fetchWeeklyConsultations(),
+      fetchWeeklyBroadcasts()
+    ])
+
+    console.log('상담 API 응답:', consultResponse)
+    console.log('방송 API 응답:', broadcastResponse)
+
+    // ② 배열 초기화 (월~일: 0~6 인덱스)
+    const consultations = [0, 0, 0, 0, 0, 0, 0]
+    const broadcasts = [0, 0, 0, 0, 0, 0, 0]
+
+    // ③ 상담 데이터 매핑
+    if (Array.isArray(consultResponse)) {
+      consultResponse.forEach(item => {
+        console.log('상담 데이터:', item)
+
+        // LocalDate를 JavaScript Date로 변환
+        const date = new Date(item.date)
+        const dayOfWeek = date.getDay() // 0=일요일, 1=월요일, ..., 6=토요일
+
+        // 배열 인덱스 변환: 월요일(0) ~ 일요일(6)
+        const arrayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+
+        if (arrayIndex >= 0 && arrayIndex < 7) {
+          consultations[arrayIndex] = item.count
+        }
+      })
+    }
+
+    // ④ 방송 데이터 매핑
+    if (Array.isArray(broadcastResponse)) {
+      broadcastResponse.forEach(item => {
+        console.log('방송 데이터:', item)
+
+        const date = new Date(item.date)
+        const dayOfWeek = date.getDay() // 0=일요일, 1=월요일, ..., 6=토요일
+
+        // 배열 인덱스 변환: 월요일(0) ~ 일요일(6)
+        const arrayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+
+        if (arrayIndex >= 0 && arrayIndex < 7) {
+          broadcasts[arrayIndex] = item.count
+        }
+      })
+    }
+
+    console.log('최종 상담 배열:', consultations)
+    console.log('최종 방송 배열:', broadcasts)
+
+    // ⑤ 차트에 데이터 반영
+    updateWeeklyChart({ consultations, broadcasts })
+
+  } catch (error) {
+    console.error('주간 차트 로드 실패:', error)
+    console.error('에러 상세:', error.message)
+
+    // 에러 시 더미 데이터
+    updateWeeklyChart({
+      consultations: [1, 2, 3, 4, 5, 2, 1],
+      broadcasts: [2, 1, 4, 3, 2, 3, 2]
+    })
+  }
+}
+
+// 이달의 수익 로드 함수
+const loadMonthlyRevenue = async () => {
+  try {
+    console.log('이달의 수익 로드 시작')
+
+    const response = await fetchMonthlyRevenue()
+    console.log('이달의 수익 API 응답:', response)
+
+    if (response && response.data) {
+      const revenue = response.data
+
+      // 총 수익을 원 단위로 포맷팅
+      const totalRevenueInWon = revenue.totalRevenue || 0
+      const formattedRevenue = totalRevenueInWon.toLocaleString('ko-KR') + '원'
+
+      dashboardStats.value[2].value = formattedRevenue
+      dashboardStats.value[2].loading = false
+
+      console.log('이달의 수익 데이터 매핑 완료:', formattedRevenue)
+    } else {
+      console.log('이달의 수익 데이터 없음')
+      dashboardStats.value[2].value = '0원'
+      dashboardStats.value[2].loading = false
+    }
+  } catch (error) {
+    console.error('이달의 수익 로딩 실패:', error)
+
+    // 더 자세한 에러 정보 출력
+    if (error.response) {
+      // 서버가 응답을 했지만 에러 상태 코드
+      console.error('응답 에러:', {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data,
+        headers: error.response.headers
+      })
+    } else if (error.request) {
+      // 요청이 만들어졌지만 응답을 받지 못함
+      console.error('요청 에러:', error.request)
+    } else {
+      // 요청 설정에서 에러 발생
+      console.error('설정 에러:', error.message)
+    }
+
+    dashboardStats.value[2].value = '0원'
+    dashboardStats.value[2].loading = false
+  }
+}
+
+// 이달의 템플릿 판매 건수 로드 함수
+const loadMonthlyTemplateSales = async () => {
+  try {
+    console.log('이달의 템플릿 판매 건수 로드 시작')
+    console.log('요청 URL:', '/api/lawyer/dashboard/monthly-template-sales')
+
+    const response = await fetchMonthlyTemplateSales()
+    console.log('이달의 템플릿 판매 건수 API 응답:', response)
+
+    if (response && response.data) {
+      const sales = response.data
+      const monthlySalesCount = sales.monthlySalesCount || 0
+      dashboardStats.value[3].value = `${monthlySalesCount}건`
+      dashboardStats.value[3].loading = false
+      console.log('이달의 템플릿 판매 건수 데이터 매핑 완료:', `${monthlySalesCount}건`)
+    } else {
+      console.log('이달의 템플릿 판매 건수 데이터 없음')
+      dashboardStats.value[3].value = '0건'
+      dashboardStats.value[3].loading = false
+    }
+  } catch (error) {
+    console.error('이달의 템플릿 판매 건수 로딩 실패:', error)
+    console.error('에러 상세:', error.message)
+    console.error('에러 코드:', error.code)
+    console.error('요청 정보:', error.config)
+
+    dashboardStats.value[3].value = '0건'
+    dashboardStats.value[3].loading = false
+  }
+}
+
+// 생명주기 훅
 onMounted(() => {
+  //시계 시작
   updateTime()
   timeInterval = setInterval(updateTime, 1000)
 
-  setTimeout(() => {
-    createWeeklyChart()
-    createRevenueChart()
-  }, 100)
+  // 1) 빈 차트 먼저 그리기
+  createWeeklyChart()
+  createRevenueChart()
 
+  // 2) 실제 데이터로 업데이트
+  loadWeeklyChartData()
   loadTodaySchedule()
   loadTomorrowConsultationRequests()
+  loadTomorrowBroadcasts()
+  loadMonthlyRevenue() // 이달의 수익
+  loadMonthlyTemplateSales()  // 이달의 템플릿
+
 })
+
 
 onUnmounted(() => {
   if (timeInterval) {
@@ -372,103 +585,132 @@ onUnmounted(() => {
 
 <template>
   <LawyerFrame>
-    <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    
+      <div class="bg-[#f7f8fa] rounded-2xl px-4 py-1">
 
-      <!-- 헤더 -->
-      <div class="bg-white shadow-md border-b border-gray-200 mb-4">
-        <div class="max-w-7xl mx-auto px-6 py-1">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <div>
-                <h1 class="text-xl font-bold text-gray-800">로앤로드</h1>
-              </div>
-            </div>
-            <div class="flex items-center">
-              <div class="text-right">
-                <p class="text-xs text-gray-600 mb-1">안녕하세요, {{ lawyerInfo.name }} 변호사님</p>
-                <p class="text-lg font-bold text-blue-600 font-mono">{{ currentTime }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="max-w-7xl mx-auto px-6 py-4">
-
-        <!-- 오늘 일정 -->
-        <div class="mb-6">
-          <div class="bg-white rounded-2xl shadow-xl p-6">
-            <div class="flex items-center mb-4">
-              <span class="text-xl mr-2">📅</span>
-              <h3 class="text-xl font-bold text-gray-800">오늘 일정</h3>
-            </div>
-
-            <div v-if="scheduleLoading" class="flex justify-center py-6">
-              <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-            </div>
-
-            <div v-else-if="todaySchedule.length === 0" class="text-center py-6">
-              <span class="text-4xl mb-3 block">📭</span>
-              <p class="text-gray-500 text-base">오늘 일정이 없습니다</p>
-            </div>
-
-            <!-- 수정: 2열 그리드 -->
-            <div v-else style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-              <div v-for="(schedule, index) in todaySchedule" :key="index"
-                   class="flex items-center p-2.5 rounded-lg border-2 transition-all duration-200 hover:shadow-lg cursor-pointer"
-                   :class="getScheduleColor(schedule.type)">
-                <div class="flex-shrink-0 mr-2">
-                  <span class="text-base">{{ getScheduleIcon(schedule.type) }}</span>
+        <!-- 헤더 (시간) -->
+        <div class="bg-white shadow-md border-b border-gray-200 mb-0">
+          <div class="w-full px-4 py-0 sm:px-6">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <div>
+                  <h1 class="text-lg sm:text-xl font-bold text-gray-800">로앤로드</h1>
                 </div>
-                <div class="flex-1">
-                  <p class="text-xs font-bold text-gray-800 mb-0.5">{{ schedule.time }}</p>
-                  <p class="text-xs text-gray-600 leading-tight">{{ schedule.event }}</p>
+              </div>
+              <div class="flex items-center">
+                <div class="text-right">
+                  <p class="text-xs text-gray-600 mb-0">안녕하세요, {{ lawyerName  }} 변호사님</p>
+                  <p class="text-sm sm:text-lg font-bold text-blue-600 font-mono mb-0">{{ currentTime }}</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      <div class="dashboard-bg">
+        <div class="max-w-7xl mx-auto px-3 py-1 sm:px-6">
 
-        <!-- 주요 지표 카드 -->
-        <div class="overflow-x-auto">
-          <div class="flex gap-6 mb-10 min-w-[1024px] px-1">
-            <div v-for="stat in dashboardStats"
-                 :key="stat.title"
-                 class="w-[240px] flex-shrink-0 bg-white rounded-xl shadow p-4 border-l-4 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                 :style="{ borderLeftColor: stat.color }">
-              <div class="flex flex-col">
-                <p class="text-gray-600 text-sm font-medium">{{ stat.title }}</p>
-                <div class="mt-1 flex items-center gap-2 text-nowrap leading-tight"
-                     :style="{ backgroundColor: stat.color + '15' }">
-                  <span class="text-xl">{{ stat.icon }}</span>
-                  <span class="text-xl font-bold"
-                        :style="{ color: stat.value === '데이터 없음' ? '#9ca3af' : stat.color }">{{ stat.value }}</span>
+          <!-- 오늘 일정 -->
+          <div class="mb-1">
+            <div class="bg-white rounded shadow-xl p-3 sm:p-4">
+              <div class="flex items-center mb-2">
+                <span class="text-lg sm:text-xl mr-2">📅</span>
+                <h3 class="text-lg sm:text-xl font-bold text-gray-800">오늘 일정</h3>
+              </div>
+
+              <div v-if="scheduleLoading" class="flex justify-center py-6">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              </div>
+
+              <div v-else-if="todaySchedule.length === 0" class="text-center py-6">
+                <span class="text-4xl mb-3 block">📭</span>
+                <p class="text-gray-500 text-base">오늘 일정이 없습니다</p>
+              </div>
+
+              <!-- 수정: 3열 그리드 -->
+              <div v-else style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;">
+                <div v-for="(schedule, index) in todaySchedule" :key="index"
+                     class="flex items-center p-2.5 rounded-lg border-2 transition-all duration-200 hover:shadow-lg cursor-pointer"
+                     :class="getScheduleColor(schedule.type)">
+                  <div class="flex-shrink-0 mr-2">
+                    <span class="text-base">{{ getScheduleIcon(schedule.type) }}</span>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-xs font-bold text-gray-800 mb-0.5">{{ schedule.time }}</p>
+                    <p class="text-xs text-gray-600 leading-tight">{{ schedule.event }}</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- 차트 영역 -->
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          <!-- 주간 상담 & 방송 현황 -->
-          <div class="bg-white rounded-2xl shadow-xl p-8">
-            <div class="flex items-center mb-8">
-              <span class="text-2xl mr-3">📊</span>
-              <h3 class="text-2xl font-bold text-gray-800">주간 상담 & 방송 현황</h3>
-            </div>
-            <div class="h-80">
-              <canvas ref="weeklyChart"></canvas>
+          <!-- 주요 지표 카드 - 1행 4열 레이아웃 -->
+          <div class="mb-2">
+            <div class="dashboard-stats-row">
+              <!-- 내일 상담신청 -->
+              <div class="dashboard-stats-card border-blue no-shadow">
+                <div class="dashboard-stats-card-inner">
+                  <p class="dashboard-stats-title">내일 상담신청</p>
+                  <div class="dashboard-stats-value-row">
+                    <span class="dashboard-stats-icon">👥</span>
+                    <span class="dashboard-stats-value text-blue">{{ dashboardStats[0].value }}</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 예정된 방송 -->
+              <div class="dashboard-stats-card border-green no-shadow">
+                <div class="dashboard-stats-card-inner">
+                  <p class="dashboard-stats-title">내일 예정된 방송</p>
+                  <div class="dashboard-stats-value-row">
+                    <span class="dashboard-stats-icon">📺</span>
+                    <span class="dashboard-stats-value text-green">{{ dashboardStats[1].value }}</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 이달의 수익 -->
+              <div class="dashboard-stats-card border-yellow no-shadow">
+                <div class="dashboard-stats-card-inner">
+                  <p class="dashboard-stats-title">이달의 수익</p>
+                  <div class="dashboard-stats-value-row">
+                    <span class="dashboard-stats-icon">💰</span>
+                    <span class="dashboard-stats-value text-yellow">{{ dashboardStats[2].value }}</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 템플릿 판매 수 -->
+              <div class="dashboard-stats-card border-purple no-shadow">
+                <div class="dashboard-stats-card-inner">
+                  <p class="dashboard-stats-title">이달의 템플릿 판매 수</p>
+                  <div class="dashboard-stats-value-row">
+                    <span class="dashboard-stats-icon">📄</span>
+                    <span class="dashboard-stats-value text-purple">{{ dashboardStats[3].value }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- 월별 수익 트렌드 -->
-          <div class="bg-white rounded-2xl shadow-xl p-8">
-            <div class="flex items-center mb-8">
-              <span class="text-2xl mr-3">💰</span>
-              <h3 class="text-2xl font-bold text-gray-800">월별 수익 트렌드</h3>
+          <!-- 차트 영역 -->
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
+            <!-- 주간 상담 & 방송 현황 -->
+            <div class="bg-white rounded-xl shadow-xl p-4">
+              <div class="flex items-center mb-3">
+                <span class="text-2xl mr-3">📊</span>
+                <h3 class="text-2xl font-bold text-gray-800">주간 상담 & 방송 현황</h3>
+              </div>
+              <div class="h-80">
+                <canvas ref="weeklyChart"></canvas>
+              </div>
             </div>
-            <div class="h-80">
-              <canvas ref="revenueChart"></canvas>
+
+            <!-- 월별 수익 트렌드 -->
+            <div class="bg-white rounded-xl shadow-xl p-5">
+              <div class="flex items-center mb-4">
+                <span class="text-2xl mr-3">💰</span>
+                <h3 class="text-2xl font-bold text-gray-800">월별 수익 트렌드</h3>
+              </div>
+              <div class="h-80">
+                <canvas ref="revenueChart"></canvas>
+              </div>
             </div>
           </div>
         </div>
@@ -477,25 +719,14 @@ onUnmounted(() => {
   </LawyerFrame>
 </template>
 
-<style scoped>
-.bg-gradient-to-br {
-  background: linear-gradient(to bottom right, #f8fafc, #dbeafe, #e0e7ff);
-}
 
-.hover\:shadow-2xl:hover {
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+<style scoped>
+.bg-gradient-custom {
+  background: #f9f9f9;
 }
 
 .transition-all {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.transform {
-  transform: translateZ(0);
-}
-
-.hover\:-translate-y-1:hover {
-  transform: translateY(-0.25rem);
 }
 
 .font-mono {
@@ -533,21 +764,86 @@ onUnmounted(() => {
 }
 
 /* 반응형 개선 */
-@media (max-width: 640px) {
-  .text-3xl {
-    font-size: 1.5rem;
+@media (max-width: 480px) {
+  /* 아주 작은 화면에서 추가 조정 */
+  .text-lg {
+    font-size: 1rem;
   }
 
-  .text-2xl {
-    font-size: 1.25rem;
+  .text-xl {
+    font-size: 1.125rem;
   }
+}
 
-  .p-8 {
-    padding: 1.5rem;
-  }
+.dashboard-stats-row {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+.dashboard-stats-card {
+  flex: 1;
+  background: white;
+  border-radius: 0.75rem;
+  /* box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); */
+  padding: 1rem;
+  border-left-width: 4px;
+  border-left-style: solid;
+  min-width: 0;
+}
+.dashboard-stats-card-inner {
+  display: flex;
+  flex-direction: column;
+}
+.dashboard-stats-title {
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.dashboard-stats-value-row {
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+.dashboard-stats-icon {
+  font-size: 1.25rem;
+}
+.dashboard-stats-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.text-blue { color: #3b82f6; }
+.text-green { color: #10b981; }
+.text-yellow { color: #f59e0b; }
+.text-purple { color: #8b5cf6; }
+.border-blue { border-left-color: #3b82f6; }
+.border-green { border-left-color: #10b981; }
+.border-yellow { border-left-color: #f59e0b; }
+.border-purple { border-left-color: #8b5cf6; }
+.no-shadow {
+  box-shadow: none !important;
+}
 
-  .p-6 {
-    padding: 1rem;
+@media (max-width: 768px) {
+  .dashboard-stats-row {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
   }
+  .dashboard-stats-card {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .max-w-7xl {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+}
+
+.dashboard-bg {
+  background: #f7f8fa;
+  border-radius: 1.25rem;
+  padding: 1rem 1.5rem 1rem 1.5rem; /* 위 1rem, 좌우 1.5rem, 아래 1rem */
+  /* min-height: 100vh;  // 제거 */
 }
 </style>
