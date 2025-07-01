@@ -10,6 +10,7 @@ import com.lawnroad.payment.service.PaymentService;
 import com.lawnroad.payment.service.RefundService;
 import com.lawnroad.reservation.mapper.ReservationsMapper;
 import com.lawnroad.payment.mapper.PaymentMapper;
+import com.lawnroad.reservation.mapper.TimeSlotMapper;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
@@ -33,19 +34,21 @@ public class PaymentController {
 
     private static final String SECRET_KEY        = "test_sk_4yKeq5bgrpoROnDY0L4XVGX0lzW6";
     private static final String TOSS_CONFIRM_URL  = "https://api.tosspayments.com/v1/payments/confirm";
+    private final TimeSlotMapper timeSlotMapper;
 
     public PaymentController(
             OrdersService ordersService,
             PaymentService paymentService,
             RefundService refundService,
             ReservationsMapper reservationsMapper,
-            PaymentMapper paymentMapper
-    ) {
+            PaymentMapper paymentMapper,
+            TimeSlotMapper timeSlotMapper) {
         this.ordersService       = ordersService;
         this.paymentService      = paymentService;
         this.refundService       = refundService;
         this.reservationsMapper  = reservationsMapper;
         this.paymentMapper       = paymentMapper;
+        this.timeSlotMapper = timeSlotMapper;
     }
 
     @PostMapping("/payment")
@@ -129,6 +132,10 @@ public class PaymentController {
                 req.setCancelReason("사용자 예약 취소 요청");
                 // (1-4) 환불 처리
                 refundService.processRefund(req);
+                // (1-5) 예약 status 변경
+                reservationsMapper.updateReservationStatus(reservationNo,"CANCELED");
+                // (1-6) 해당 타임슬롯 status 변경
+                timeSlotMapper.resetSlotStatusByResNo(reservationNo);
                 return ResponseEntity.ok(Map.of("message", "예약 환불 처리 완료"));
             }
 
