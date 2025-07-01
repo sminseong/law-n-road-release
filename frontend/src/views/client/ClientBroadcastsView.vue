@@ -8,6 +8,7 @@ import axios from "axios";
 import {useRoute, useRouter} from "vue-router";
 import {getValidToken, makeApiRequest} from "@/libs/axios-auth.js";
 import { computed } from 'vue';
+import { onBeforeRouteLeave } from 'vue-router'
 
 
 export default defineComponent({
@@ -223,6 +224,13 @@ export default defineComponent({
       router.push(`/lawyer/${userNo}/homepage`)
     }
 
+    onBeforeRouteLeave((to, from, next) => {
+      if (session.value) {
+        session.value.disconnect()
+        console.log('🔌 시청자 페이지 라우트 이탈: disconnect 호출')
+      }
+      next()
+    })
 
     /** 언마운트 / 마운트 정리 */
     onBeforeUnmount(() => {
