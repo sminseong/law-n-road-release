@@ -207,7 +207,7 @@ onMounted(async () => {
         <div class="bg-light text-dark p-5 rounded-bottom position-relative">
           <!-- 방송 제목 -->
           <div class="mb-3">
-            <h2 class="fs-3 fw-bold mb-2">{{ vodInfo.title }}</h2>
+            <h2 class="fs-3 fw-bold mb-1">{{ vodInfo.title }}</h2>
 
             <!-- 키워드 & 영상 길이/조회수/업로드일자 -->
             <div class="d-flex justify-content-between align-items-center">
@@ -240,7 +240,7 @@ onMounted(async () => {
           </div>
 
           <!-- 변호사 정보 -->
-          <div class="d-flex align-items-center mt-4">
+          <div class="d-flex align-items-center mt-3">
             <!-- 프로필 이미지 -->
             <div
                 @click="goToLawyerHomepage"
@@ -276,7 +276,7 @@ onMounted(async () => {
       <!-- 채팅 영역 전체 -->
       <div
           class="position-absolute border rounded shadow p-4 d-flex flex-column"
-          style="width: 400px; height: 700px; top: 2rem; right: 2rem;"
+          style="width: 400px; height: 718px; top: 2rem; right: 2rem;"
       >
         <!-- 메시지 출력 영역 (스크롤 + 자동 아래로 이동) -->
         <div

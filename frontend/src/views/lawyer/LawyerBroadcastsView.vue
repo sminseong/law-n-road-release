@@ -22,6 +22,7 @@ const broadcastInfo = ref({});
 const broadcastNo = ref(null);
 const elapsedTime = ref("00:00:00");
 const viewerCount = ref(1);
+const lastSentCount = ref(null)
 let timerInterval = null;
 
 // 방송 녹화 (VOD)
@@ -66,6 +67,25 @@ const updateViewerCount = () => {
   const count = session.value.remoteConnections?.size || 0;
   console.log("👥 현재 시청자 수 (방송자 제외):", count);
   viewerCount.value = count;
+
+  // 이전에 보냈던 값과 같으면 전송하지 않음
+  if (lastSentCount.value === count) return
+
+  lastSentCount.value = count  // 업데이트해서 다음 호출 때 비교
+
+  // ─── 백엔드에 실시간 전송 ───
+  try {
+    makeApiRequest({
+      method: 'post',
+      url: '/api/lawyer/broadcast/viewer-count/update',
+      data: {
+        broadcastNo: broadcastNo.value,
+        viewerCount: count
+      }
+    });
+  } catch (err) {
+    console.error('❌ 시청자 수 전송 실패:', err);
+  }
 };
 
 const initPublisherWithDelay = async () => {
@@ -250,7 +270,7 @@ const reconnectBroadcast = async (existingSessionId) => {
 }
 
 const setupBroadcastEndAlert = () => {
-  const { endTime } = broadcastInfo.value;
+  const {endTime} = broadcastInfo.value;
 
   console.log("⏰ 종료 시각 endTime:", endTime); // "2025-06-26T11:46:00"
 
@@ -270,7 +290,7 @@ const setupBroadcastEndAlert = () => {
   const diffMs = endDateTime.getTime() - now.getTime();
 
   if (diffMs <= 0) {
-    console.warn("⏰ 방송 종료 시간이 이미 지났습니다.", { now, endDateTime });
+    console.warn("⏰ 방송 종료 시간이 이미 지났습니다.", {now, endDateTime});
     setTimeout(() => {
       handleAutoEndBroadcast();
     }, 30 * 60 * 1000); // 30분 후
@@ -366,7 +386,7 @@ onMounted(async () => {
   }
   await loadBroadcastInfo();
   await connectSession();
- connect();
+  connect();
 });
 
 onBeforeUnmount(() => {
@@ -428,62 +448,62 @@ async function fetchMyNo() {
 }
 
 // STOMP 연결 및 입장 메시지 전송
-    const connect = () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert("로그인이 필요합니다!");
-        return;
-      }
-      setInterval(() => {
-        if (stompClient.value?.connected) {
-          stompClient.value.publish({
-            destination: "/app/chat.sendMessage",
-            body: JSON.stringify({
-              broadcastNo: broadcastNo.value,
-              message: "📢 !자동응답이라고 입력하면\n사용 가능한 자동응답 키워드 목록을 안내해드려요!\n\n예) !예약, !상담 등",
-              type: "NOTICE",
-            }),
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-        }
-      }, 30000); // 30초마다 반복
+const connect = () => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert("로그인이 필요합니다!");
+    return;
+  }
+  setInterval(() => {
+    if (stompClient.value?.connected) {
+      stompClient.value.publish({
+        destination: "/app/chat.sendMessage",
+        body: JSON.stringify({
+          broadcastNo: broadcastNo.value,
+          message: "📢 !자동응답이라고 입력하면\n사용 가능한 자동응답 키워드 목록을 안내해드려요!\n\n예) !예약, !상담 등",
+          type: "NOTICE",
+        }),
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    }
+  }, 30000); // 30초마다 반복
 
-      fetchMyNo().then((ok) => {
-        if (!ok) return;
-        stompClient.value = new Client({
-          webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
-          reconnectDelay: 5000,
-          connectHeaders: {
-            Authorization: `Bearer ${token}`,
-          },
-          onConnect: () => {
-            stompClient.value.subscribe(
-                `/topic/${broadcastNo.value}`,
-                (msg) => {
-                  const data = JSON.parse(msg.body);
-                  if (data.type === "WARNING") {
-                    // 나의 userNo와 일치할 때만 알림
-                    if (data.userNo === myNo.value) {
-                      alert(data.message || "🚨욕설 또는 부적절한 내용이 포함되어 있습니다!");
-                    }
-                    return;
-                  }
-
-                  if (data.no !== undefined && data.no !== null) {
-                    const idx = messages.value.findIndex((m) => m.no === data.no);
-                    if (idx !== -1) {
-                      // 기존 메시지 내용을 갱신 (메시지, blind 등 모든 필드 교체)
-                      messages.value[idx] = { ...messages.value[idx], ...data };
-                      return;
-                    }
-                  }
-                  // 그 외(일반 채팅)는 채팅창에 추가
-                  messages.value.push(data);
-                  scrollToBottom();
+  fetchMyNo().then((ok) => {
+    if (!ok) return;
+    stompClient.value = new Client({
+      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+      reconnectDelay: 5000,
+      connectHeaders: {
+        Authorization: `Bearer ${token}`,
+      },
+      onConnect: () => {
+        stompClient.value.subscribe(
+            `/topic/${broadcastNo.value}`,
+            (msg) => {
+              const data = JSON.parse(msg.body);
+              if (data.type === "WARNING") {
+                // 나의 userNo와 일치할 때만 알림
+                if (data.userNo === myNo.value) {
+                  alert(data.message || "🚨욕설 또는 부적절한 내용이 포함되어 있습니다!");
                 }
-            );
+                return;
+              }
+
+              if (data.no !== undefined && data.no !== null) {
+                const idx = messages.value.findIndex((m) => m.no === data.no);
+                if (idx !== -1) {
+                  // 기존 메시지 내용을 갱신 (메시지, blind 등 모든 필드 교체)
+                  messages.value[idx] = {...messages.value[idx], ...data};
+                  return;
+                }
+              }
+              // 그 외(일반 채팅)는 채팅창에 추가
+              messages.value.push(data);
+              scrollToBottom();
+            }
+        );
 
 
         //입장 시 type: "ENTER"만 전달
@@ -825,7 +845,6 @@ const handlePreQClickOutside = (e) => {
                   @click.stop="Number(msg.no) !== Number(myNo) && openDropdown(index, msg)"
                   :style="{
                         color: getNicknameColor(msg.nickname),
-                        fontWeight: Number(msg.no) === Number(myNo) ? 700 : 600,
                         cursor: Number(msg.no) === Number(myNo) ? 'default' : 'pointer',
                         userSelect: 'text',
                         position: 'relative',

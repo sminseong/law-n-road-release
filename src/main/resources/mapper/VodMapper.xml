@@ -168,7 +168,14 @@
         JOIN broadcast_schedule bs ON b.schedule_no = bs.no
         JOIN category c ON bs.category_no = c.no
         WHERE b.user_no = #{lawyerNo}
-        ORDER BY v.created_at DESC
+        <choose>
+            <when test="sort == 'popular'">
+                ORDER BY v.view_count DESC
+            </when>
+            <otherwise>
+                ORDER BY v.created_at DESC
+            </otherwise>
+        </choose>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
