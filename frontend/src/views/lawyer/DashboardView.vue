@@ -1,25 +1,35 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+//1. Vue & 외부 라이브러리 임포트
+import { ref,computed, onMounted, onUnmounted } from 'vue'
+import { useLawyerStore } from '@/stores/lawyer'
 import LawyerFrame from "@/components/layout/lawyer/LawyerFrame.vue";
 import { fetchTodaySchedule, fetchTomorrowConsultationRequests, fetchTomorrowBroadcasts, fetchWeeklyConsultations , fetchWeeklyBroadcasts , fetchMonthlyRevenue , fetchMonthlyTemplateSales   } from '@/service/dashboardService.js'
 import { getUserNo } from '@/service/authService.js'
-
 import { Chart, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip,
   Legend, Filler, BarController, LineController} from 'chart.js'
-
-// Chart.js 컴포넌트 등록
+// Chart.js 플러그인 등록
 Chart.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend,
     Filler, BarController, LineController)
 
+//2.Pinia 스토어 & 사용자 정보
+const store = useLawyerStore()
 const userNo = ref( getUserNo() )
-// 반응형 데이터
-const currentTime = ref('')
-const loading = ref(false)
+const lawyerName = computed(() => store.lawyerInfo?.name || '')
 
+//3. 반응형 상태 정의
+const currentTime = ref('')
+// 시간 업데이트 타이머
+let timeInterval = null
+
+//오늘 일정
+const todaySchedule = ref([])
+const scheduleLoading = ref(false)
+
+//주요 지표 카드
 const dashboardStats = ref([
   {
     title: '내일 상담신청',
-    value: '데이터 없음',
+    value: '0건',
     icon: '👥',
     color: '#3b82f6',
     trend: false,
@@ -28,7 +38,7 @@ const dashboardStats = ref([
   },
   {
     title: '예정된 방송',
-    value: '데이터 없음',
+    value: '방송 없음',
     icon: '📺',
     color: '#10b981',
     trend: false,
@@ -37,7 +47,7 @@ const dashboardStats = ref([
   },
   {
     title: '이달의 수익',
-    value: '데이터 없음',
+    value: '0원',
     icon: '💰',
     color: '#f59e0b',
     trend: false,
@@ -46,7 +56,7 @@ const dashboardStats = ref([
   },
   {
     title: '템플릿 판매 수',
-    value: '데이터 없음',
+    value: '0건',
     icon: '📄',
     color: '#8b5cf6',
     trend: false,
@@ -55,13 +65,10 @@ const dashboardStats = ref([
   }
 ])
 
-//오늘 일정
-const todaySchedule = ref([])
-const scheduleLoading = ref(false)
 //내일 상담 예약
 const tomorrowConsultationRequests = ref([])
 const consultationLoading = ref(false)
-// 예정된 방송 데이터
+//내일 예정된 방송 데이터
 const tomorrowBroadcasts = ref([])
 const broadcastLoading = ref(false)
 
@@ -71,16 +78,23 @@ const revenueChart = ref(null)
 let weeklyChartInstance = null
 let revenueChartInstance = null
 
-// 시간 업데이트 타이머
-let timeInterval = null
-
-// 메서드
+//4.유틸 함수
+// 화면 시계 갱신
 const updateTime = () => {
   const now = new Date()
   currentTime.value = now.toLocaleTimeString('ko-KR', {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit'
+  })
+}
+// 날짜 문자열 → "HH:MM" 포맷(시간 포맷팅 함수)
+const formatTime = (dateTimeString) => {
+  if (!dateTimeString) return ''
+  const date = new Date(dateTimeString)
+  return date.toLocaleTimeString('ko-KR', {
+    hour: '2-digit',
+    minute: '2-digit'
   })
 }
 
@@ -101,17 +115,9 @@ const getScheduleColor = (type) => {
     default: return 'bg-gray-100 border-gray-300'
   }
 }
-// 시간 포맷팅 함수
-const formatTime = (dateTimeString) => {
-  if (!dateTimeString) return ''
-  const date = new Date(dateTimeString)
-  return date.toLocaleTimeString('ko-KR', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
 
-// createWeeklyChart 함수 수정 (기존 차트 제거 로직 추가)
+
+// 차트 초기화/업데이트 함수
 const createWeeklyChart = (data = null) => {
   if (!weeklyChart.value) return
 
@@ -300,6 +306,10 @@ const loadTodaySchedule = async () => {
     }
 
     console.log('최종 일정 데이터:', todaySchedule.value)
+    // 추가: 각 요소도 개별적으로 출력
+    todaySchedule.value.forEach((item, idx) => {
+      console.log(`todaySchedule[${idx}]:`, item)
+    })
 
   } catch (error) {
     console.error('오늘 일정 로딩 에러:', error)
@@ -458,7 +468,7 @@ const loadWeeklyChartData = async () => {
   }
 }
 
-// 이달의 수익 로드 함수 추가
+// 이달의 수익 로드 함수
 const loadMonthlyRevenue = async () => {
   try {
     console.log('이달의 수익 로드 시작')
@@ -538,8 +548,9 @@ const loadMonthlyTemplateSales = async () => {
   }
 }
 
-
+// 생명주기 훅
 onMounted(() => {
+  //시계 시작
   updateTime()
   timeInterval = setInterval(updateTime, 1000)
 
@@ -574,133 +585,132 @@ onUnmounted(() => {
 
 <template>
   <LawyerFrame>
-    <div class="min-h-screen bg-gradient-custom rounded-3xl overflow-hidden">
+    
+      <div class="bg-[#f7f8fa] rounded-2xl px-4 py-1">
 
-      <!-- 헤더 (시간) -->
-      <div class="bg-white shadow-md border-b border-gray-200 mb-0">
-        <div class="w-full px-6 py-1">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <div>
-                <h1 class="text-xl font-bold text-gray-800">로앤로드</h1>
-              </div>
-            </div>
-            <div class="flex items-center">
-              <div class="text-right">
-                <p class="text-xs text-gray-600 mb-0">안녕하세요, {{ userNo }}번 변호사님</p>
-                <p class="text-lg font-bold text-blue-600 font-mono mb-0">{{ currentTime }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="max-w-7xl mx-auto px-6 py-1">
-
-        <!-- 오늘 일정 -->
-        <div class="mb-2">
-          <div class="bg-white rounded	 shadow-xl p-4">
-            <div class="flex items-center mb-2">
-              <span class="text-xl mr-2">📅</span>
-              <h3 class="text-xl font-bold text-gray-800">오늘 일정</h3>
-            </div>
-
-            <div v-if="scheduleLoading" class="flex justify-center py-3">
-              <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-            </div>
-
-            <div v-else-if="todaySchedule.length === 0" class="text-center py-3">  <!-- py-6 → py-4 로 줄임 -->
-              <span class="text-4xl mb-2 block">📭</span>  <!-- mb-3 → mb-2 로 줄임 -->
-              <p class="text-gray-500 text-base">오늘 일정이 없습니다</p>
-            </div>
-
-            <!-- 수정: 2열 그리드 -->
-            <div v-else style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-              <div v-for="(schedule, index) in todaySchedule" :key="index"
-                   class="flex items-center p-2.5 rounded-lg border-2 transition-all duration-200 hover:shadow-lg cursor-pointer"
-                   :class="getScheduleColor(schedule.type)">
-                <div class="flex-shrink-0 mr-2">
-                  <span class="text-base">{{ getScheduleIcon(schedule.type) }}</span>
+        <!-- 헤더 (시간) -->
+        <div class="bg-white shadow-md border-b border-gray-200 mb-0">
+          <div class="w-full px-4 py-0 sm:px-6">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <div>
+                  <h1 class="text-lg sm:text-xl font-bold text-gray-800">로앤로드</h1>
                 </div>
-                <div class="flex-1">
-                  <p class="text-xs font-bold text-gray-800 mb-0">{{ schedule.time }}</p>
-                  <p class="text-xs text-gray-600 leading-tight">{{ schedule.event }}</p>
+              </div>
+              <div class="flex items-center">
+                <div class="text-right">
+                  <p class="text-xs text-gray-600 mb-0">안녕하세요, {{ lawyerName  }} 변호사님</p>
+                  <p class="text-sm sm:text-lg font-bold text-blue-600 font-mono mb-0">{{ currentTime }}</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      <div class="dashboard-bg">
+        <div class="max-w-7xl mx-auto px-3 py-1 sm:px-6">
 
-        <!-- 주요 지표 카드 - 1행 4열 레이아웃 -->
-        <div class="mb-2">
-          <div style="display: flex; flex-direction: row; gap: 1rem;">
-            <!-- 내일 상담신청 -->
-            <div style="flex: 1; background: white; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); padding: 1rem; border-left: 4px solid #3b82f6;">
-              <div style="display: flex; flex-direction: column;">
-                <p style="color: #6b7280; font-size: 0.875rem; font-weight: 500;">내일 상담신청</p>
-                <div style="margin-top: 0.25rem; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
-                  <span style="font-size: 1.25rem;">👥</span>
-                  <span style="font-size: 1.25rem; font-weight: 700; color: #3b82f6;">{{ dashboardStats[0].value }}</span>
-                </div>
+          <!-- 오늘 일정 -->
+          <div class="mb-1">
+            <div class="bg-white rounded shadow-xl p-3 sm:p-4">
+              <div class="flex items-center mb-2">
+                <span class="text-lg sm:text-xl mr-2">📅</span>
+                <h3 class="text-lg sm:text-xl font-bold text-gray-800">오늘 일정</h3>
               </div>
-            </div>
 
-            <!-- 예정된 방송 -->
-            <div style="flex: 1; background: white; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); padding: 1rem; border-left: 4px solid #10b981;">
-              <div style="display: flex; flex-direction: column;">
-                <p style="color: #6b7280; font-size: 0.875rem; font-weight: 500;">내일 예정된 방송</p>
-                <div style="margin-top: 0.25rem; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
-                  <span style="font-size: 1.25rem;">📺</span>
-                  <span style="font-size: 1.25rem; font-weight: 700; color: #10b981;">{{ dashboardStats[1].value }}</span>
-                </div>
+              <div v-if="scheduleLoading" class="flex justify-center py-6">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
               </div>
-            </div>
 
-            <!-- 이달의 수익 -->
-            <div style="flex: 1; background: white; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); padding: 1rem; border-left: 4px solid #f59e0b;">
-              <div style="display: flex; flex-direction: column;">
-                <p style="color: #6b7280; font-size: 0.875rem; font-weight: 500;">이달의 수익</p>
-                <div style="margin-top: 0.25rem; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
-                  <span style="font-size: 1.25rem;">💰</span>
-                  <span style="font-size: 1.25rem; font-weight: 700; color: #f59e0b;">{{ dashboardStats[2].value }}</span>
-                </div>
+              <div v-else-if="todaySchedule.length === 0" class="text-center py-6">
+                <span class="text-4xl mb-3 block">📭</span>
+                <p class="text-gray-500 text-base">오늘 일정이 없습니다</p>
               </div>
-            </div>
 
-            <!-- 템플릿 판매 수 -->
-            <div style="flex: 1; background: white; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); padding: 1rem; border-left: 4px solid #8b5cf6;">
-              <div style="display: flex; flex-direction: column;">
-                <p style="color: #6b7280; font-size: 0.875rem; font-weight: 500;">이달의 템플릿 판매 수</p>
-                <div style="margin-top: 0.25rem; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap;">
-                  <span style="font-size: 1.25rem;">📄</span>
-                  <span style="font-size: 1.25rem; font-weight: 700; color: #8b5cf6;">{{ dashboardStats[3].value }}</span>
+              <!-- 수정: 3열 그리드 -->
+              <div v-else style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem;">
+                <div v-for="(schedule, index) in todaySchedule" :key="index"
+                     class="flex items-center p-2.5 rounded-lg border-2 transition-all duration-200 hover:shadow-lg cursor-pointer"
+                     :class="getScheduleColor(schedule.type)">
+                  <div class="flex-shrink-0 mr-2">
+                    <span class="text-base">{{ getScheduleIcon(schedule.type) }}</span>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-xs font-bold text-gray-800 mb-0.5">{{ schedule.time }}</p>
+                    <p class="text-xs text-gray-600 leading-tight">{{ schedule.event }}</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- 차트 영역 -->
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
-          <!-- 주간 상담 & 방송 현황 -->
-          <div class="bg-white rounded-xl shadow-xl p-4">
-            <div class="flex items-center mb-3">
-              <span class="text-2xl mr-3">📊</span>
-              <h3 class="text-2xl font-bold text-gray-800">주간 상담 & 방송 현황</h3>
-            </div>
-            <div class="h-80">
-              <canvas ref="weeklyChart"></canvas>
+          <!-- 주요 지표 카드 - 1행 4열 레이아웃 -->
+          <div class="mb-2">
+            <div class="dashboard-stats-row">
+              <!-- 내일 상담신청 -->
+              <div class="dashboard-stats-card border-blue no-shadow">
+                <div class="dashboard-stats-card-inner">
+                  <p class="dashboard-stats-title">내일 상담신청</p>
+                  <div class="dashboard-stats-value-row">
+                    <span class="dashboard-stats-icon">👥</span>
+                    <span class="dashboard-stats-value text-blue">{{ dashboardStats[0].value }}</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 예정된 방송 -->
+              <div class="dashboard-stats-card border-green no-shadow">
+                <div class="dashboard-stats-card-inner">
+                  <p class="dashboard-stats-title">내일 예정된 방송</p>
+                  <div class="dashboard-stats-value-row">
+                    <span class="dashboard-stats-icon">📺</span>
+                    <span class="dashboard-stats-value text-green">{{ dashboardStats[1].value }}</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 이달의 수익 -->
+              <div class="dashboard-stats-card border-yellow no-shadow">
+                <div class="dashboard-stats-card-inner">
+                  <p class="dashboard-stats-title">이달의 수익</p>
+                  <div class="dashboard-stats-value-row">
+                    <span class="dashboard-stats-icon">💰</span>
+                    <span class="dashboard-stats-value text-yellow">{{ dashboardStats[2].value }}</span>
+                  </div>
+                </div>
+              </div>
+              <!-- 템플릿 판매 수 -->
+              <div class="dashboard-stats-card border-purple no-shadow">
+                <div class="dashboard-stats-card-inner">
+                  <p class="dashboard-stats-title">이달의 템플릿 판매 수</p>
+                  <div class="dashboard-stats-value-row">
+                    <span class="dashboard-stats-icon">📄</span>
+                    <span class="dashboard-stats-value text-purple">{{ dashboardStats[3].value }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- 월별 수익 트렌드 -->
-          <div class="bg-white rounded-xl shadow-xl p-5">
-            <div class="flex items-center mb-4">
-              <span class="text-2xl mr-3">💰</span>
-              <h3 class="text-2xl font-bold text-gray-800">월별 수익 트렌드</h3>
+          <!-- 차트 영역 -->
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
+            <!-- 주간 상담 & 방송 현황 -->
+            <div class="bg-white rounded-xl shadow-xl p-4">
+              <div class="flex items-center mb-3">
+                <span class="text-2xl mr-3">📊</span>
+                <h3 class="text-2xl font-bold text-gray-800">주간 상담 & 방송 현황</h3>
+              </div>
+              <div class="h-80">
+                <canvas ref="weeklyChart"></canvas>
+              </div>
             </div>
-            <div class="h-80">
-              <canvas ref="revenueChart"></canvas>
+
+            <!-- 월별 수익 트렌드 -->
+            <div class="bg-white rounded-xl shadow-xl p-5">
+              <div class="flex items-center mb-4">
+                <span class="text-2xl mr-3">💰</span>
+                <h3 class="text-2xl font-bold text-gray-800">월별 수익 트렌드</h3>
+              </div>
+              <div class="h-80">
+                <canvas ref="revenueChart"></canvas>
+              </div>
             </div>
           </div>
         </div>
@@ -754,21 +764,86 @@ onUnmounted(() => {
 }
 
 /* 반응형 개선 */
-@media (max-width: 640px) {
-  .text-3xl {
-    font-size: 1.5rem;
+@media (max-width: 480px) {
+  /* 아주 작은 화면에서 추가 조정 */
+  .text-lg {
+    font-size: 1rem;
   }
 
-  .text-2xl {
-    font-size: 1.25rem;
+  .text-xl {
+    font-size: 1.125rem;
   }
+}
 
-  .p-8 {
-    padding: 1.5rem;
-  }
+.dashboard-stats-row {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+.dashboard-stats-card {
+  flex: 1;
+  background: white;
+  border-radius: 0.75rem;
+  /* box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); */
+  padding: 1rem;
+  border-left-width: 4px;
+  border-left-style: solid;
+  min-width: 0;
+}
+.dashboard-stats-card-inner {
+  display: flex;
+  flex-direction: column;
+}
+.dashboard-stats-title {
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.dashboard-stats-value-row {
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+.dashboard-stats-icon {
+  font-size: 1.25rem;
+}
+.dashboard-stats-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.text-blue { color: #3b82f6; }
+.text-green { color: #10b981; }
+.text-yellow { color: #f59e0b; }
+.text-purple { color: #8b5cf6; }
+.border-blue { border-left-color: #3b82f6; }
+.border-green { border-left-color: #10b981; }
+.border-yellow { border-left-color: #f59e0b; }
+.border-purple { border-left-color: #8b5cf6; }
+.no-shadow {
+  box-shadow: none !important;
+}
 
-  .p-6 {
-    padding: 1rem;
+@media (max-width: 768px) {
+  .dashboard-stats-row {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
   }
+  .dashboard-stats-card {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+  .max-w-7xl {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+}
+
+.dashboard-bg {
+  background: #f7f8fa;
+  border-radius: 1.25rem;
+  padding: 1rem 1.5rem 1rem 1.5rem; /* 위 1rem, 좌우 1.5rem, 아래 1rem */
+  /* min-height: 100vh;  // 제거 */
 }
 </style>
