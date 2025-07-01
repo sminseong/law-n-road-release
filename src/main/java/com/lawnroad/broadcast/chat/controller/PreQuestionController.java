@@ -37,7 +37,7 @@ public class PreQuestionController {
 
 
     @GetMapping("/api/client/broadcasts/schedule/{scheduleNo}/preQuestion")
-    public PreQuestionDTO PreQuestion(@PathVariable int scheduleNo) {
+    public PreQuestionDTO preQuestion(@PathVariable int scheduleNo) {
        return preQuestionService.findByPreQuestion(scheduleNo);
     }
 

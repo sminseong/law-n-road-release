@@ -23,6 +23,7 @@ public class ChatReportController {
     public void lawyerReportChat(@RequestBody ChatReportDTO req) {
         chatReportService.saveChatReport(req);
     }
+
     @GetMapping("/api/client/is-stopped/{userNo}")
     public Map<String, Integer> getIsStopped(@PathVariable Long userNo) {
         int isStopped = chatReportService.getIsStopped(userNo);
