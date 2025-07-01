@@ -35,7 +35,7 @@
 
         <div class="p-grid-col" style="margin-top: 30px; justify-content: center;">
           <router-link to="/">
-            <button class="button p-grid-col5">메인화면으로 돌아가기</button>
+            <button class="btn btn-primary p-grid-col5">메인화면으로 돌아가기</button>
           </router-link>
         </div>
       </div>

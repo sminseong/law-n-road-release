@@ -106,10 +106,12 @@ const logout = async () => {
     nickname.value = '회원'
 
     // 6. (선택) 페이지 리로드 혹은 라우팅
-    setTimeout(() => {
-      // 라우터를 쓰신다면 router.push('/login') 로 대체 가능
-      location.reload()
-    }, 100)
+
+    await router.push('/')
+    // setTimeout(() => {
+    //   // 라우터를 쓰신다면 router.push('/login') 로 대체 가능
+    //   location.reload()
+    // }, 100)
   }
 }
 

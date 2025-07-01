@@ -58,6 +58,31 @@ const handleAddToCart = async () => {
   }
 }
 
+// 구매하기 함수 (alert 창 없이 바로 장바구니로)
+const handleAddToCart2 = async () => {
+  const accountType = localStorage.getItem('accountType')
+
+  if (!accountType) {
+    alert('로그인이 필요합니다.')
+    return router.push(`/login?redirect=${encodeURIComponent(route.fullPath)}`)
+  }
+
+  try {
+    await http.post('/api/client/cart', {
+      tmplNo: template.value.no
+    })
+
+    await router.push('/client/cart')
+  } catch (err) {
+    if (err.response?.status === 409) {
+      await router.push('/client/cart')
+    } else {
+      console.error('장바구니 추가 실패:', err)
+      alert('구매 중 오류가 발생했습니다.')
+    }
+  }
+}
+
 watch(() => route.params.no, fetchTemplateAndProducts)
 </script>
 <template>
@@ -135,7 +160,7 @@ watch(() => route.params.no, fetchTemplateAndProducts)
 
             <!-- 🔹 CTA -->
             <div class="mt-5 d-flex gap-2">
-              <button class="btn btn-primary flex-fill">구매하기</button>
+              <button class="btn btn-primary flex-fill" @click="handleAddToCart2">구매하기</button>
               <button class="btn btn-outline-secondary flex-fill" @click="handleAddToCart">장바구니</button>
             </div>
 
