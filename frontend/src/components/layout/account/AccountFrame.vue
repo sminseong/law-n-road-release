@@ -1,6 +1,7 @@
 <script setup>
 import { defineProps } from 'vue'
 import logo from '@/assets/images/logo/logo.png'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   // 헤더 중앙에 표시할 텍스트 (예: "로그인" 또는 "회원가입")
@@ -9,6 +10,13 @@ const props = defineProps({
     default: '로그인'
   }
 })
+const router = useRouter()
+function goToAdminLogin(){
+  router.push(`/login/admin`)
+}
+
+
+
 </script>
 
 <template>
@@ -69,7 +77,7 @@ const props = defineProps({
           © 2025 Law & Road · <a href="/terms">이용약관</a> · <a href="/privacy">개인정보처리방침</a>
         </div>
         <div>
-          <a href="/login/admin">로앤로드 관계자이신가요?</a>
+          <a href="#" @click="goToAdminLogin">로앤로드 관계자이신가요?</a>
         </div>
       </div>
     </footer>

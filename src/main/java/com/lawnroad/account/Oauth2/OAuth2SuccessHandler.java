@@ -26,6 +26,8 @@ public class  OAuth2SuccessHandler implements AuthenticationSuccessHandler {
     // 개발인지 배포인지 검사
     @Value("${spring.profiles.active:}")
     private String activeProfile;
+    @Value("${app.frontend.social-login-url}")
+    private String socialLoginUrl;
 
     private final JwtTokenUtil jwtTokenUtil;
     private final ClientMapper clientMapper;
@@ -93,7 +95,7 @@ public void onAuthenticationSuccess(HttpServletRequest request,
 //    String baseUrl = "dev".equals(activeProfile)
 //        ? "http://localhost:5173/naver-login"
 //        : "https://lawnroad.kr/naver-login";
-    String baseUrl = "http://localhost:5173/naver-login";
+    String baseUrl = "https://lawnroad.kr//naver-login";
 //    String baseUrl = "prod".equals(activeProfile)
 //            ? "https://lawnroad.kr/#/naver-login"
 //            : "http://localhost:5173/#/naver-login";
