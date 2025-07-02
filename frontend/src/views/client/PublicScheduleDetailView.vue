@@ -140,7 +140,7 @@ const goBackToCalendar = () => {
                 <span
                     v-if="liveScheduleMap[schedule.no]"
                     class="live-badge">
-                  <span class="blink">🔴</span> LIVE 중
+                  <span class="blink">🔴</span> LIVE 
                 </span>
                 <div class="fw-semibold text-truncate">📺 {{ schedule.name }}</div>
                 <div class="small text-black-50">{{ schedule.lawyerName }} 변호사</div>
