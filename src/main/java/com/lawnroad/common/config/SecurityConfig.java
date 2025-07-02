@@ -104,7 +104,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                             "/api/auth/**", "/api/public/**", "/api/find-id", "/api/reset-password",
                             "/mail/**", "/api/user/**", "/api/auth/nickname", "/api/notification/**",
                             "/uploads/**", "/api/webhook/**", "/api/signuplawyer",
-                            "/login/oauth2/**", "/oauth2/**", "/api/confirm/cancel",  "/ws/**"
+                            "/login/oauth2/**", "/oauth2/**", "/api/confirm/cancel",  "/ws/**", "/app/**", "/topic/**"
                     ).permitAll()
 
                     .requestMatchers("/api/ai/**", "/api/lawyer/*/slots", "/api/confirm/payment","/api/refresh")
