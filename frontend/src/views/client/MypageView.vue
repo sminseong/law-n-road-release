@@ -435,14 +435,13 @@ async function toggleConsultation() {
             </tbody>
           </table>
 
-            <div class="text-center">
-              <router-link
-                  :to="{ name: 'ClientOrdersList' }"
-                  class="btn small text-decoration-none"
-              >
-                구매 내역 더보기
-              </router-link>
-            </div>
+          <div class="text-center">
+            <router-link
+                :to="{ name: 'TmplHistoryListView' }"
+                class="btn small text-decoration-none"
+            >
+              구매 내역 더보기
+            </router-link>
           </div>
         </div>
       </div>
