@@ -33,7 +33,7 @@ public class LawyerReservationsController {
     }
 
     @CrossOrigin(
-            origins = "http://localhost:5173",
+            origins = "http://101.79.9.137",
             allowedHeaders = "*",
             methods = {RequestMethod.PATCH, RequestMethod.GET, RequestMethod.POST}
     )
