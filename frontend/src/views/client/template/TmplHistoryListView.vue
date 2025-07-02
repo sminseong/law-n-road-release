@@ -24,13 +24,26 @@ const isDownloaded = ref(false)
 
 // 템플릿 목록 불러오기
 async function fetchOrders(filtersObj, pageNo) {
+  console.log(localStorage.getItem('no'))
+
+  if (!localStorage.getItem('no')) {
+    alert('clientNo가 없습니다. 로그인 상태를 확인해주세요.')
+    return
+  }
+
   const params = {
+    no: localStorage.getItem('no'),
     page: pageNo,
     limit: 10,
     ...normalizeFilters(filtersObj)
   }
 
-  const res = await HttpRequester.get('/api/client/templates/orders', params)
+  console.log('fetchOrders', params)
+  const res = await makeApiRequest({
+    method: 'get',
+    url: '/api/client/templates/orders',
+    params
+  })
   console.log(res)
 
   // 상태 한글 변환 맵
