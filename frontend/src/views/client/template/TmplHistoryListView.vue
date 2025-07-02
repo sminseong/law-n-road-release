@@ -2,7 +2,7 @@
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import CustomTable from '@/components/table/CustomTable.vue'
 import { ref, onMounted } from 'vue'
-import http from '@/libs/HttpRequester'
+import HttpRequester from '@/libs/HttpRequester'
 import { useRouter } from 'vue-router'
 
 // 라우터
@@ -30,7 +30,7 @@ async function fetchOrders(filtersObj, pageNo) {
     ...normalizeFilters(filtersObj)
   }
 
-  const res = await http.get('/api/client/templates/orders', params)
+  const res = await HttpRequester.get('/api/client/templates/orders', params)
   console.log(res)
 
   // 상태 한글 변환 맵
