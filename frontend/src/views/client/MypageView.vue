@@ -435,7 +435,14 @@ async function toggleConsultation() {
             </tbody>
           </table>
 
-          <div class="text-center"><a href="/client/template/orders" class="btn small text-decoration-none">구매 내역 더보기</a>
+            <div class="text-center">
+              <router-link
+                  :to="{ name: 'ClientOrdersList' }"
+                  class="btn small text-decoration-none"
+              >
+                구매 내역 더보기
+              </router-link>
+            </div>
           </div>
         </div>
       </div>
