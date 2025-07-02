@@ -14,7 +14,6 @@ public class ClovaForbiddenService {
     @Value("${clova.api-key}")
     private String apiKey;
 
-    //151번째 줄만 수정할것
     @Value("${clova.api-url}")
     private String apiUrl;
     private final String systemPrompt = """
@@ -148,7 +147,7 @@ public class ClovaForbiddenService {
                         .toLowerCase();
             } else {
                 System.err.println("CLOVA 알 수 없는 응답: " + resp.toString());
-                return false;
+                return true;
             }
 
             System.out.println("AI 응답: [" + answer + "]");
