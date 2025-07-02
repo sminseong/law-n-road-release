@@ -37,29 +37,45 @@ public class ClientTemplateController {
       @RequestParam Long no
   ) {
     
-    System.out.println(no + ' ' + keyword +' '+ status+' '+page+' '+limit);
+    System.out.println("=== 주문 조회 시작 ===");
+    System.out.println("no: " + no + ", keyword: " + keyword + ", status: " + status + ", page: " + page + ", limit: " + limit);
     
-    // 1) 페이징된 주문 목록(검색어+상태 필터 적용)
-    List<ClientOrderListDto> list = clientTemplateService.findOrders(no, keyword, status, page, limit);
-    int totalCount = clientTemplateService.countOrders(no, keyword, status);
-    
-    // System.out.println(list);
-    
-    // 2) 전체 건수(검색어+상태 필터 적용)
-    int totalPages = (int) Math.ceil((double) totalCount / limit);
-    
-    // 응답 객체 구성
-    ClientOrderListResponseDto response = new ClientOrderListResponseDto();
-    response.setOrders(list);
-    response.setTotalPages(totalPages);
-    
-    // 다운로드 상태 조회 (order 로만 - 하나라도 다운로드 햇으면 전체 다운로드 인걸로 취급)
-    for (ClientOrderListDto order : response.getOrders()) {
-      boolean isDownloaded = clientTemplateService.checkIsDownloaded(order.getOrderNo());
-      order.setIsDownloaded(isDownloaded ? 1 : 0);
+    try {
+      // 1) 페이징된 주문 목록(검색어+상태 필터 적용)
+      System.out.println("1. findOrders 호출 시작");
+      List<ClientOrderListDto> list = clientTemplateService.findOrders(no, keyword, status, page, limit);
+      System.out.println("1. findOrders 완료, 결과 개수: " + (list != null ? list.size() : "null"));
+      
+      System.out.println("2. countOrders 호출 시작");
+      int totalCount = clientTemplateService.countOrders(no, keyword, status);
+      System.out.println("2. countOrders 완료, 총 개수: " + totalCount);
+      
+      // 2) 전체 건수(검색어+상태 필터 적용)
+      int totalPages = (int) Math.ceil((double) totalCount / limit);
+      System.out.println("3. totalPages 계산 완료: " + totalPages);
+      
+      // 응답 객체 구성
+      ClientOrderListResponseDto response = new ClientOrderListResponseDto();
+      response.setOrders(list);
+      response.setTotalPages(totalPages);
+      
+      System.out.println("4. 다운로드 상태 체크 시작");
+      // 다운로드 상태 조회 (order 로만 - 하나라도 다운로드 햇으면 전체 다운로드 인걸로 취급)
+      for (ClientOrderListDto order : response.getOrders()) {
+        System.out.println("다운로드 체크 - orderNo: " + order.getOrderNo());
+        boolean isDownloaded = clientTemplateService.checkIsDownloaded(order.getOrderNo());
+        order.setIsDownloaded(isDownloaded ? 1 : 0);
+      }
+      System.out.println("4. 다운로드 상태 체크 완료");
+      
+      System.out.println("=== 주문 조회 성공 ===");
+      return ResponseEntity.ok(response);
+      
+    } catch (Exception e) {
+      System.err.println("=== 주문 조회 에러 ===");
+      e.printStackTrace(); // 👈 이게 중요! 정확한 에러 스택트레이스
+      return ResponseEntity.status(500).body(null);
     }
-    
-    return ResponseEntity.ok(response);
   }
   
   /**

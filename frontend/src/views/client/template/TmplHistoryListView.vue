@@ -4,6 +4,7 @@ import CustomTable from '@/components/table/CustomTable.vue'
 import { ref, onMounted } from 'vue'
 import HttpRequester from '@/libs/HttpRequester'
 import { useRouter } from 'vue-router'
+import { makeApiRequest } from '@/libs/axios-auth.js'
 
 // 라우터
 const router = useRouter()
