@@ -45,7 +45,7 @@ const naverLogin = () => {
   // // const redirectUri = encodeURIComponent(window.location.origin + '/login')
   // // window.location.href = `${__API_BASE__}/oauth2/authorization/naver?redirect_uri=${redirectUri}`
 
-  window.location.href = `https://lawnroad.kr/oauth2/authorization/naver`
+  window.location.href = `https://lawnroad.kr/oauth2/authrization/naver`
 
 
 
