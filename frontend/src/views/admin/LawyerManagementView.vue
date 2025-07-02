@@ -2,10 +2,7 @@
 import AdminFrame from "@/components/layout/admin/AdminFrame.vue";
 import CustomTable from "@/components/table/CustomTable.vue";
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import axios from 'axios'
-
-const router = useRouter()
 
 const rows = ref([])
 const isLoading = ref(false)
@@ -16,14 +13,14 @@ const limit = 20
 const searchKeyword = ref('')
 const currentFilters = ref({})
 const filters = ref([
-  { label: '계정 상태', key: 'status', options: ['전체', '가입승인', '가입거절', '탈퇴 중', '탈퇴회원'] }
+  { label: '계정 상태', key: 'accountStatus', options: ['전체', 'APPROVED_JOIN', 'REJECTED_JOIN', 'PENDING_LEAVE', 'APPROVED_LEAVE'] }
 ])
 
-const statusMap = {
-  APPROVED_JOIN: '가입승인',
-  REJECTED_JOIN: '가입거절',
-  PENDING_LEAVE: '탈퇴 중',
-  APPROVED_LEAVE: '탈퇴회원'
+const accountStatusMap = {
+  APPROVED_JOIN: 'APPROVED_JOIN',
+  REJECTED_JOIN: 'REJECTED_JOIN',
+  PENDING_LEAVE: 'PENDING_LEAVE',
+  APPROVED_LEAVE: 'APPROVED_LEAVE'
 }
 
 function handleScroll() {
@@ -44,7 +41,13 @@ async function fetchItems() {
 
   try {
     const res = await axios.get('/api/admin/lawyer', { params })
-    const list = res.data.list || []
+    const list = (res.data.list || []).map(item => ({
+      ...item,
+      accountStatus: item.status  // 여기서 반드시 status 를 accountStatus 로 복사
+    }))
+
+    console.log('res:', res.data)
+    console.log('list:', list)
 
     if (list.length < limit) hasMore.value = false
     rows.value.push(...list)
@@ -57,13 +60,13 @@ async function fetchItems() {
 }
 
 function handleFilterChange(newFilters) {
-  const reverseStatusMap = Object.fromEntries(Object.entries(statusMap).map(([k, v]) => [v, k]))
-  const mapped = { ...newFilters }
+  const reverseStatusMap = Object.fromEntries(Object.entries(accountStatusMap).map(([k, v]) => [v, k]))
+  const mapped = {}
+  if (newFilters.accountStatus && newFilters.accountStatus !== '전체') {
+    mapped.accountStatus = reverseStatusMap[newFilters.accountStatus]
+  }
 
-  if (mapped.status === '전체') delete mapped.status
-  else mapped.status = reverseStatusMap[mapped.status]
-
-  searchKeyword.value = newFilters.keyword || ''
+  searchKeyword.value = ''
   rows.value = []
   offset.value = 0
   hasMore.value = true
@@ -76,6 +79,7 @@ const showModal = ref(false)
 const selectedLawyer = ref(null)
 
 function handleRowClick(row) {
+  if (row.accountStatus !== 'REJECTED_JOIN') return
   selectedLawyer.value = row
   showModal.value = true
 }
@@ -83,23 +87,6 @@ function handleRowClick(row) {
 function closeModal() {
   showModal.value = false
   selectedLawyer.value = null
-}
-
-function handleEdit(row) {
-  router.push(`/admin/lawyer/edit/${row.no}`)
-}
-
-function handleDelete(row) {
-  if (!confirm(`'${row?.name}' 변호사를 삭제하시겠습니까?`)) return
-  axios.delete(`/api/admin/member/lawyer/${row.no}`)
-      .then(() => {
-        rows.value = rows.value.filter(r => r.no !== row.no)
-        alert('삭제되었습니다.')
-      })
-      .catch(e => {
-        console.error('삭제 실패:', e)
-        alert(e?.response?.data?.message || '삭제 중 오류가 발생했습니다.')
-      })
 }
 
 const profileUrl = computed(() =>
@@ -128,7 +115,33 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
 })
+
+async function approveLawyer() {
+  if (!selectedLawyer.value) return
+
+  try {
+    const res = await axios.post('/api/admin/lawyer/approve', {
+      no: selectedLawyer.value.no
+    })
+
+    alert('승인 처리 완료')
+    selectedLawyer.value.accountStatus = 'APPROVED_JOIN'
+
+    // rows 갱신
+    const idx = rows.value.findIndex(l => l.no === selectedLawyer.value.no)
+    if (idx !== -1) rows.value[idx].accountStatus = 'APPROVED_JOIN'
+
+    closeModal()
+  } catch (e) {
+    console.error('승인 실패:', e)
+    alert('승인 처리 중 오류 발생')
+  }
+}
+
+
+
 </script>
+
 
 <template>
   <AdminFrame>
@@ -142,19 +155,16 @@ onUnmounted(() => {
             { label: '전화번호',   key: 'phone' },
             { label: '이메일',     key: 'email' },
             { label: '가입일',     key: 'createdAt' },
-            { label: '계정 상태',  key: 'status' }
+            { label: '계정 상태',  key: 'accountStatus' }
           ]"
-          :action-buttons="{ edit: true, delete: true }"
           :filters="filters"
           :show-search-input="true"
-          @edit-action="handleEdit"
-          @delete-action="handleDelete"
           @update:filters="handleFilterChange"
           @row-click="handleRowClick"
       >
-        <template #cell-status="{ row }">
-          <span :style="{ color: row.status === 'APPROVED_JOIN' ? '#003366' : 'inherit' }">
-            {{ statusMap[row.status] || row.status }}
+        <template #cell-accountStatus="{ row }">
+          <span :style="{ color: row.accountStatus === 'APPROVED_JOIN' ? '#003366' : 'inherit' }">
+            {{ accountStatusMap[row.accountStatus] || row.accountStatus }}
           </span>
         </template>
       </CustomTable>
@@ -163,19 +173,13 @@ onUnmounted(() => {
       <div v-if="!hasMore" class="text-center my-4 text-muted">모든 변호사를 불러왔습니다.</div>
     </div>
 
+    <!-- ✅ 사진 모달 -->
     <div v-if="showModal" class="modal-overlay">
       <div class="modal-container">
         <button class="modal-close-btn" @click="closeModal">✕</button>
-
-        <h3 class="modal-title">변호사 상세 정보 (#{{ selectedLawyer?.no }})</h3>
-
-        <ul class="info-list">
-          <li><strong>이름:</strong> {{ selectedLawyer?.name }}</li>
-          <li><strong>이메일:</strong> {{ selectedLawyer?.email }}</li>
-          <li><strong>전화번호:</strong> {{ selectedLawyer?.phone }}</li>
-          <li><strong>계정 상태:</strong> {{ statusMap[selectedLawyer?.status] || selectedLawyer?.status }}</li>
-        </ul>
-
+        <h3 class="modal-title">변호사 사진 (#{{ selectedLawyer?.no }})</h3>
+        <div class="mt-4 text-right">
+        </div>
         <div class="image-section">
           <div>
             <p>프로필 사진</p>
@@ -189,7 +193,12 @@ onUnmounted(() => {
             <p>신분증 뒷면</p>
             <img :src="cardBackUrl" alt="신분증 뒤" @error="e => e.target.style.display='none'" />
           </div>
+
+
         </div>
+        <button v-if="selectedLawyer?.accountStatus !== 'APPROVED_JOIN'" class="approve-btn btn btn-primary mt-4" @click="approveLawyer">
+          승인하기
+        </button>
       </div>
     </div>
   </AdminFrame>
@@ -227,14 +236,6 @@ onUnmounted(() => {
   font-size: 1.2rem;
   font-weight: bold;
   margin-bottom: 16px;
-}
-.info-list {
-  list-style: none;
-  padding: 0;
-  margin-bottom: 16px;
-}
-.info-list li {
-  margin-bottom: 8px;
 }
 .image-section {
   display: grid;
