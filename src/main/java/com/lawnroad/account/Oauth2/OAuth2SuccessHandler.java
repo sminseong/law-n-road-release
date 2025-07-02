@@ -95,7 +95,7 @@ public void onAuthenticationSuccess(HttpServletRequest request,
 //    String baseUrl = "dev".equals(activeProfile)
 //        ? "http://localhost:5173/naver-login"
 //        : "https://lawnroad.kr/naver-login";
-    String baseUrl = "https://lawnroad.kr//naver-login";
+    String baseUrl = "https://lawnroad.kr/naver-login";
 //    String baseUrl = "prod".equals(activeProfile)
 //            ? "https://lawnroad.kr/#/naver-login"
 //            : "http://localhost:5173/#/naver-login";
