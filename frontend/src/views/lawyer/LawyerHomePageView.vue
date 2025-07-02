@@ -191,7 +191,7 @@ onMounted(async () => {
 
       <div class="row">
         <div class="col-12">
-          <div class="card shadow-sm mb-0 p-4 d-flex">
+          <div class="card shadow-sm mb-0 p-4 d-flex mb-4">
             <h5 class="fw-bold">{{ data.name }} 변호사의 방송 다시보기</h5>
             <p class="mb-0">{{  }}</p>
             <!-- 정렬 버튼 (극소형) -->
