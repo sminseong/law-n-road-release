@@ -6,7 +6,7 @@ import { makeApiRequest } from '@/libs/axios-auth.js'
 const router = useRouter()
 
 const originalNickname = localStorage.getItem('nickname') || ''
-const originalEmail = localStorage.getItem('email') || ''
+let originalEmail = localStorage.getItem('email') || ''
 const originalPhone = localStorage.getItem('phone') || ''
 
 const nickname = ref(originalNickname)
@@ -43,6 +43,7 @@ onMounted(async () => {
   try {
     const res = await makeApiRequest({ method: 'get', url: '/api/client/profile' })
     if (res?.data) {
+      originalEmail = res.data.email
       nickname.value = res.data.nickname
       phone.value = res.data.phone
       const [id, domain] = res.data.email.split('@')
