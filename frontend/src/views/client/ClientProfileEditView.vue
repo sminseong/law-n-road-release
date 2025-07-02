@@ -1,702 +1,386 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import LawyerFrame from '@/components/layout/lawyer/LawyerFrame.vue'
 import { makeApiRequest } from '@/libs/axios-auth.js'
-
 const router = useRouter()
-
-const token = localStorage.getItem('token')
-const userNo = localStorage.getItem('no')
-
-const officeNumber = ref('')
-const phone = ref('')
-const detailAddress = ref('')
-const zipcode = ref('')
-const roadAddress = ref('')
-const landAddress = ref('')
-
-// ✅ 기존 정보 보관
-const originalData = ref({})
-
-// 로딩 상태
-const isLoading = ref(false)
-const isWithdrawing = ref(false)
-
+const originalNickname = localStorage.getItem('nickname') || ''
+let originalEmail = localStorage.getItem('email') || ''
+const originalPhone = localStorage.getItem('phone') || ''
+const nickname = ref(originalNickname)
+const phone = ref(originalPhone)
+const isNicknameAvailable = ref(true)
+const isEmailVerified = ref(true)
+const emailId = ref(originalEmail.split('@')[0] || '')
+const domainList = ['gmail.com', 'naver.com', 'daum.net', 'custom']
+const savedDomain = originalEmail.split('@')[1] || 'gmail.com'
+const emailDomainSelect = ref(domainList.includes(savedDomain) ? savedDomain : 'custom')
+const emailDomainCustom = ref(emailDomainSelect.value === 'custom' ? savedDomain : '')
+const email = computed(() => {
+  return (
+      emailId.value + '@' +
+      (emailDomainSelect.value === 'custom' ? emailDomainCustom.value : emailDomainSelect.value)
+  )
+})
+const authCode = ref('')
+// ✅ 이메일 변경 시 인증 상태 초기화
+watch(email, (newVal) => {
+  if (newVal !== originalEmail) {
+    isEmailVerified.value = false
+  } else {
+    isEmailVerified.value = true
+  }
+})
 onMounted(async () => {
-  const script = document.createElement('script')
-  script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js'
-  script.async = true
-  document.head.appendChild(script)
-
-  // ✅ 기존 정보 미리 불러오기
+  try {
+    const res = await makeApiRequest({ method: 'get', url: '/api/client/profile' })
+    if (res?.data) {
+      originalEmail = res.data.email
+      nickname.value = res.data.nickname
+      phone.value = res.data.phone
+      const [id, domain] = res.data.email.split('@')
+      emailId.value = id
+      if (domainList.includes(domain)) {
+        emailDomainSelect.value = domain
+        emailDomainCustom.value = ''
+      } else {
+        emailDomainSelect.value = 'custom'
+        emailDomainCustom.value = domain
+      }
+    }
+  } catch (err) {
+    console.error('프로필 조회 실패:', err)
+  }
+})
+async function checkNicknameDuplicate() {
+  if (!nickname.value.trim()) {
+    alert('닉네임을 입력해주세요.')
+    return
+  }
   try {
     const res = await makeApiRequest({
       method: 'get',
-      url: '/api/lawyer/info'
+      url: `/api/auth/check-nickname`,
+      params: { nickname: nickname.value }
     })
-    if (res?.data) {
-      originalData.value = res.data
+    if (res.data.available || nickname.value === originalNickname) {
+      alert('✅ 사용 가능한 닉네임입니다.')
+      isNicknameAvailable.value = true
+    } else {
+      alert('❌ 이미 사용 중인 닉네임입니다.')
+      isNicknameAvailable.value = false
     }
   } catch (err) {
-    console.error('기존 정보 조회 실패:', err)
+    console.error(err)
+    alert('닉네임 중복 확인 중 오류 발생')
   }
-})
-
-function openPostcodePopup() {
-  if (!window.daum || !window.daum.Postcode) {
-    alert('주소 검색 API 로드 실패')
-    return
-  }
-
-  new window.daum.Postcode({
-    oncomplete(data) {
-      zipcode.value = data.zonecode
-      roadAddress.value = data.roadAddress
-      landAddress.value = data.jibunAddress
-    }
-  }).open()
 }
-
-const updateLawyerInfo = async () => {
-  if (!token || !userNo) {
-    alert('로그인이 필요합니다.')
-    router.push('/login')
+async function requestEmailCode() {
+  if (!email.value.trim()) {
+    alert('이메일을 입력해주세요.')
     return
   }
-
-  isLoading.value = true
-
   try {
-    const payload = {
-      officeNumber: officeNumber.value.trim() || originalData.value.officeNumber || '',
-      phone: phone.value.trim() || originalData.value.phone || '',
-      detailAddress: detailAddress.value.trim() || originalData.value.detailAddress || '',
-      zipcode: zipcode.value.trim() || originalData.value.zipcode || '',
-      roadAddress: roadAddress.value.trim() || originalData.value.roadAddress || '',
-      landAddress: landAddress.value.trim() || originalData.value.landAddress || ''
+    const res = await makeApiRequest({
+      method: 'get',
+      url: '/api/auth/check-email',
+      params: { email: email.value }
+    })
+    if (!res.data.available && email.value !== originalEmail) {
+      alert('❌ 이미 가입된 이메일입니다.')
+      return
     }
-
-    const response = await makeApiRequest({
+    await makeApiRequest({
+      method: 'post',
+      url: '/mail/send',
+      params: { email: email.value }
+    })
+    isEmailVerified.value = false
+    alert('✅ 인증번호가 전송되었습니다.')
+  } catch (err) {
+    console.error('이메일 인증 요청 실패:', err)
+    alert('이메일 인증 요청 중 오류 발생')
+  }
+}
+async function verifyEmailCode() {
+  if (!email.value.trim() || !authCode.value.trim()) {
+    alert('이메일과 인증번호를 입력해주세요.')
+    return
+  }
+  try {
+    const res = await makeApiRequest({
+      method: 'post',
+      url: '/mail/verify',
+      params: {
+        email: email.value,
+        code: authCode.value
+      }
+    })
+    if (res.data === '인증 성공') {
+      isEmailVerified.value = true
+      alert('✅ 이메일 인증이 완료되었습니다.')
+    } else {
+      alert('❌ 인증번호가 일치하지 않습니다.')
+    }
+  } catch (err) {
+    console.error('이메일 인증 실패:', err)
+    alert('이메일 인증 중 오류 발생')
+  }
+}
+const updateProfile = async () => {
+  if (!nickname.value.trim() || !email.value.trim() || !phone.value.trim()) {
+    alert('모든 정보를 입력해주세요.')
+    return
+  }
+  if (!isNicknameAvailable.value && nickname.value !== originalNickname) {
+    alert('❌ 닉네임 중복 확인을 먼저 해주세요.')
+    return
+  }
+  if (!isEmailVerified.value && email.value !== originalEmail) {
+    alert('❌ 이메일 인증을 완료해주세요.')
+    return
+  }
+  try {
+    const res = await makeApiRequest({
       method: 'put',
-      url: '/api/lawyer/info',
-      data: payload
+      url: '/api/client/profile',
+      data: {
+        nickname: nickname.value,
+        email: email.value,
+        phone: phone.value
+      }
     })
-
-    if (response && response.status === 200) {
-      alert('✅ 정보가 성공적으로 수정되었습니다.')
-      router.push('/lawyer')
-    } else {
-      alert('❌ 수정 요청에 실패했습니다. 다시 시도해주세요.')
-    }
-  } catch (error) {
-    console.error('❌ 정보 수정 실패:', error)
-    alert('❌ 정보 수정 중 오류가 발생했습니다.')
-  } finally {
-    isLoading.value = false
+    localStorage.setItem('nickname', nickname.value)
+    localStorage.setItem('email', email.value)
+    localStorage.setItem('phone', phone.value)
+    alert('✅ 프로필이 성공적으로 수정되었습니다.')
+    router.push('/client/mypage')
+  } catch (err) {
+    console.error('❌ 프로필 수정 실패:', err)
+    alert('서버 오류 또는 권한 문제가 발생했습니다.')
   }
 }
-
-const withdrawLawyerAccount = async () => {
-  if (!token || !userNo) {
-    alert('로그인이 필요합니다.')
-    router.push('/login')
-    return
-  }
-
-  const confirmResult = confirm('정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')
-  if (!confirmResult) return
-
-  isWithdrawing.value = true
-
+const withdrawAccount = async () => {
+  if (!confirm('정말로 회원 탈퇴하시겠습니까?')) return
   try {
-    const response = await makeApiRequest({
-      method: 'delete',
-      url: `/api/lawyer/withdraw/${userNo}`
-    })
-
-    if (response && response.status === 200) {
-      alert('계정이 탈퇴 처리되었습니다.')
-      localStorage.clear()
-      router.push('/')
-    } else {
-      alert('탈퇴 처리에 실패했습니다. 다시 시도해주세요.')
-    }
-  } catch (error) {
-    console.error('❌ 탈퇴 오류:', error)
-    alert('❌ 계정 탈퇴 중 문제가 발생했습니다.')
-  } finally {
-    isWithdrawing.value = false
+    await makeApiRequest({ method: 'delete', url: '/api/client/withdraw' })
+    localStorage.clear()
+    alert('회원 탈퇴가 완료되었습니다.')
+    router.push('/')
+  } catch (err) {
+    console.error('회원 탈퇴 실패:', err)
+    alert('탈퇴 중 오류가 발생했습니다.')
   }
 }
 </script>
-
-
 <template>
-  <LawyerFrame>
-    <div class="lawyer-container">
-      <!-- 헤더 섹션 -->
-      <div class="header-section">
-        <div class="header-content">
-          <div class="header-icon">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M20.5899 22C20.5899 18.13 16.7399 15 11.9999 15C7.25991 15 3.40991 18.13 3.40991 22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div>
-            <h1 class="page-title">계정 설정</h1>
-            <p class="page-subtitle">사무실 정보와 연락처를 관리하세요</p>
-          </div>
+  <div class="mypage-wrapper">
+    <h2 class="page-title">프로필 관리</h2>
+    <p class="welcome-msg">안녕하세요, {{ nickname }}님! 회원정보를 수정하실 수 있습니다.</p>
+    <div class="info-card">
+      <h5 class="section-title">기본 정보 수정</h5>
+      <!-- 닉네임 입력 -->
+      <div class="form-group">
+        <label for="nickname">닉네임</label>
+        <div class="input-with-button">
+          <input id="nickname" v-model="nickname" class="form-control" placeholder="새 닉네임 입력" />
+          <button class="btn btn-outline-secondary" @click="checkNicknameDuplicate">중복 확인</button>
         </div>
       </div>
-
-      <!-- 메인 폼 카드 -->
-      <div class="form-card">
-        <div class="card-header">
-          <h2 class="card-title">기본 정보</h2>
-          <p class="card-description">변호사 사무실 관련 정보를 입력해주세요</p>
+      <!-- 이메일 입력 -->
+      <div class="form-group">
+        <label>이메일</label>
+        <div class="email-input-group">
+          <input v-model="emailId" class="form-control email-id" placeholder="아이디" />
+          <span class="at-symbol">@</span>
+          <select v-model="emailDomainSelect" class="form-control domain-select">
+            <option value="gmail.com">gmail.com</option>
+            <option value="naver.com">naver.com</option>
+            <option value="daum.net">daum.net</option>
+            <option value="custom">직접입력</option>
+          </select>
+          <input
+              v-if="emailDomainSelect === 'custom'"
+              v-model="emailDomainCustom"
+              class="form-control custom-domain"
+              placeholder="도메인"
+          />
+          <button class="btn btn-outline-secondary" @click="requestEmailCode">인증요청</button>
         </div>
-
-        <div class="form-content">
-          <!-- 사무실 정보 섹션 -->
-          <div class="form-section">
-            <h3 class="section-title">사무실 정보</h3>
-
-            <div class="form-group">
-              <label for="officeNumber" class="form-label">
-                <span class="label-text">사무실 전화번호</span>
-
-              </label>
-              <div class="input-wrapper">
-                <input
-                    id="officeNumber"
-                    type="text"
-                    class="form-input"
-                    v-model="officeNumber"
-                    placeholder="예: 02-1234-5678"
-                />
-              </div>
-            </div>
-
-
-            <div class="form-group">
-              <label for="phone" class="form-label">
-                <span class="label-text">전화번호</span>
-
-              </label>
-              <div class="input-wrapper">
-                <input
-                    id="phone"
-                    type="tel"
-                    class="form-input"
-                    v-model="phone"
-                    placeholder="예: 010-1234-5678"
-                />
-              </div>
-            </div>
-          </div>
-
-
-
-          <!-- 주소 정보 섹션 -->
-          <div class="form-section">
-            <h3 class="section-title">주소 정보</h3>
-
-            <div class="form-group">
-              <label for="zipcode" class="form-label">
-                <span class="label-text">우편번호</span>
-
-              </label>
-              <div class="address-search-group">
-                <input
-                    id="zipcode"
-                    type="text"
-                    class="form-input"
-                    v-model="zipcode"
-                    readonly
-                    placeholder="주소 검색을 눌러주세요"
-                />
-                <button
-                    type="button"
-                    class="search-btn"
-                    @click="openPostcodePopup"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M21 21L16.5 16.5M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  주소 검색
-                </button>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="roadAddress" class="form-label">
-                <span class="label-text">도로명 주소</span>
-              </label>
-              <div class="input-wrapper">
-                <input
-                    id="roadAddress"
-                    type="text"
-                    class="form-input"
-                    v-model="roadAddress"
-                    readonly
-                    placeholder="주소 검색 후 자동 입력됩니다"
-                />
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="landAddress" class="form-label">
-                <span class="label-text">지번 주소</span>
-              </label>
-              <div class="input-wrapper">
-                <input
-                    id="landAddress"
-                    type="text"
-                    class="form-input"
-                    v-model="landAddress"
-                    readonly
-                    placeholder="주소 검색 후 자동 입력됩니다"
-                />
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="detailAddress" class="form-label">
-                <span class="label-text">상세 주소</span>
-
-              </label>
-              <div class="input-wrapper">
-                <input
-                    id="detailAddress"
-                    type="text"
-                    class="form-input"
-                    v-model="detailAddress"
-                    placeholder="예: 101동 502호, 3층 등"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 액션 버튼들 -->
-        <div class="action-section">
-          <button
-              class="btn btn-primary"
-              @click="updateLawyerInfo"
-              :disabled="isLoading"
-          >
-            <div v-if="isLoading" class="loading-spinner"></div>
-            <span v-if="!isLoading">정보 수정</span>
-            <span v-else>저장 중...</span>
-          </button>
+        <p class="current-email">현재 이메일: {{ email }}</p>
+        <!-- 이메일 인증번호 확인 -->
+        <div class="verification-group">
+          <input
+              class="form-control auth-code"
+              v-model="authCode"
+              placeholder="인증번호 입력"
+          />
+          <button class="btn btn-outline-secondary" @click="verifyEmailCode">인증확인</button>
         </div>
       </div>
-
-      <!-- 위험 구역 -->
-      <div class="danger-zone">
-        <div class="danger-header">
-          <div class="danger-icon">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div>
-            <h3 class="danger-title">계정 탈퇴</h3>
-            <p class="danger-description">계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.</p>
-          </div>
-        </div>
-
-        <button
-            class="btn btn-danger"
-            @click="withdrawLawyerAccount"
-            :disabled="isWithdrawing"
-        >
-          <div v-if="isWithdrawing" class="loading-spinner"></div>
-          <span v-if="!isWithdrawing">계정 탈퇴</span>
-          <span v-else>처리 중...</span>
+      <!-- 전화번호 입력 -->
+      <div class="form-group">
+        <label for="phone">전화번호</label>
+        <input id="phone" v-model="phone" class="form-control" placeholder="전화번호 입력" />
+      </div>
+      <!-- 버튼 그룹 -->
+      <div class="btn-group">
+        <button class="btn btn-primary" @click="updateProfile">수정 완료</button>
+        <button class="btn btn-primary" @click="withdrawAccount">회원 탈퇴</button>
+        <button class="btn btn-primary" @click="router.push('/')">
+          홈으로
         </button>
       </div>
     </div>
-  </LawyerFrame>
+  </div>
 </template>
-
 <style scoped>
-.lawyer-container {
-  max-width: 800px;
+.mypage-wrapper {
+  max-width: 720px;
   margin: 0 auto;
-  padding: 24px 16px;
-  min-height: 100vh;
+  padding: 40px 16px;
 }
-
-/* 헤더 섹션 */
-.header-section {
-  margin-bottom: 32px;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.header-icon {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  flex-shrink: 0;
-}
-
-.header-icon svg {
-  width: 24px;
-  height: 24px;
-}
-
 .page-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #1a202c;
-  margin: 0 0 4px 0;
-  letter-spacing: -0.025em;
+  font-size: 24px;
+  font-weight: bold;
+  color: #2E4065;
+  margin-bottom: 8px;
 }
-
-.page-subtitle {
+.welcome-msg {
   font-size: 16px;
-  color: #718096;
-  margin: 0;
-}
-
-/* 폼 카드 */
-.form-card {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e2e8f0;
-  margin-bottom: 24px;
-  overflow: hidden;
-}
-
-.card-header {
-  padding: 24px 24px 0 24px;
-  border-bottom: 1px solid #e2e8f0;
-  margin-bottom: 24px;
-}
-
-.card-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #2d3748;
-  margin: 0 0 8px 0;
-}
-
-.card-description {
-  font-size: 14px;
-  color: #718096;
-  margin: 0 0 24px 0;
-}
-
-.form-content {
-  padding: 0 24px;
-}
-
-/* 폼 섹션 */
-.form-section {
   margin-bottom: 32px;
 }
-
-.form-section:last-child {
-  margin-bottom: 0;
+.info-card {
+  background: #f9f9f9;
+  border: 1px solid #dcdcdc;
+  border-radius: 12px;
+  padding: 24px;
 }
-
 .section-title {
   font-size: 18px;
   font-weight: 600;
-  color: #2d3748;
-  margin: 0 0 20px 0;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #e2e8f0;
-}
-
-/* 폼 그룹 */
-.form-group {
   margin-bottom: 20px;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 8px;
 }
-
-.form-label {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 8px;
+.form-group {
+  margin-bottom: 24px;
+}
+label {
+  display: block;
   font-weight: 500;
-  color: #374151;
+  margin-bottom: 8px;
+  color: #333;
+}
+.form-control {
+  padding: 10px 12px;
   font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  transition: border-color 0.2s;
 }
-
-.label-text {
-  display: flex;
-  align-items: center;
-}
-
-.required {
-  color: #ef4444;
-  font-size: 16px;
-}
-
-/* 입력 필드 */
-.input-wrapper {
-  position: relative;
-}
-
-.form-input {
-  width: 100%;
-  padding: 12px 16px;
-  font-size: 16px;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
-  background-color: #ffffff;
-  transition: all 0.2s ease-in-out;
-  box-sizing: border-box;
-}
-
-.form-input:focus {
+.form-control:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #2E4065;
 }
-
-.form-input:read-only {
-  background-color: #f7fafc;
-  color: #718096;
-}
-
-.form-input::placeholder {
-  color: #a0aec0;
-}
-
-/* 주소 검색 그룹 */
-.address-search-group {
+/* 닉네임 입력 그룹 */
+.input-with-button {
   display: flex;
-  gap: 12px;
+  gap: 8px;
 }
-
-.address-search-group .form-input {
+.input-with-button .form-control {
   flex: 1;
 }
-
-.search-btn {
+/* 이메일 입력 그룹 */
+.email-input-group {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 500;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  white-space: nowrap;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
 }
-
-.search-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+.email-id {
+  flex: 2;
+  min-width: 120px;
 }
-
-.search-btn:active {
-  transform: translateY(0);
+.at-symbol {
+  font-weight: bold;
+  color: #444;
+  padding: 0 4px;
 }
-
-.search-btn svg {
-  width: 16px;
-  height: 16px;
+.domain-select {
+  flex: 2;
+  min-width: 140px;
 }
-
-/* 액션 섹션 */
-.action-section {
-  padding: 24px;
-  background-color: #f8fafc;
-  border-top: 1px solid #e2e8f0;
+.custom-domain {
+  flex: 2;
+  min-width: 120px;
 }
-
+.current-email {
+  font-size: 12px;
+  color: #888;
+  margin: 4px 0 12px 0;
+}
+/* 인증 그룹 */
+.verification-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.auth-code {
+  flex: 1;
+  min-width: 140px;
+}
 /* 버튼 스타일 */
 .btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 14px 24px;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  text-decoration: none;
-  min-height: 48px;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none !important;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  width: 100%;
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-}
-
-.btn-danger {
-  background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
-  color: white;
-}
-
-.btn-danger:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(245, 101, 101, 0.4);
-}
-
-/* 위험 구역 */
-.danger-zone {
-  background: white;
-  border: 2px solid #fed7d7;
-  border-radius: 12px;
-  padding: 24px;
-  margin-top: 24px;
-}
-
-.danger-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.danger-icon {
-  width: 40px;
-  height: 40px;
-  background-color: #fed7d7;
-  color: #e53e3e;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.danger-icon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.danger-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #2d3748;
-  margin: 0 0 4px 0;
-}
-
-.danger-description {
+  padding: 10px 16px;
   font-size: 14px;
-  color: #718096;
-  margin: 0;
-  line-height: 1.5;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
 }
-
-/* 로딩 스피너 */
-.loading-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid transparent;
-  border-top: 2px solid currentColor;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.btn-outline-secondary {
+  background-color: white;
+  color: #6c757d;
+  border: 1px solid #6c757d;
 }
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.btn-outline-secondary:hover {
+  background-color: #6c757d;
+  color: white;
 }
-
-/* 반응형 디자인 */
-@media (max-width: 640px) {
-  .lawyer-container {
-    padding: 16px 12px;
+.btn-primary {
+  background-color: #2E4065;
+  color: white;
+}
+.btn-primary:hover {
+  background-color: #1f2d4c;
+}
+.btn-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+}
+.btn-group .btn {
+  flex: 1;
+}
+/* 반응형 */
+@media (max-width: 480px) {
+  .email-input-group {
+    flex-direction: column;
+    align-items: stretch;
   }
-
-  .header-content {
-    gap: 12px;
+  .email-id, .domain-select, .custom-domain {
+    flex: none;
   }
-
-  .header-icon {
-    width: 40px;
-    height: 40px;
+  .verification-group {
+    flex-direction: column;
+    align-items: stretch;
   }
-
-  .page-title {
-    font-size: 24px;
-  }
-
-  .form-card {
-    border-radius: 12px;
-  }
-
-  .card-header, .form-content, .action-section {
-    padding: 20px 16px;
-  }
-
-  .address-search-group {
+  .btn-group {
     flex-direction: column;
   }
-
-  .search-btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .danger-zone {
-    padding: 20px 16px;
-  }
-
-  .danger-header {
-    gap: 12px;
-  }
-}
-
-/* 다크 모드 지원 준비 */
-@media (prefers-color-scheme: dark) {
-  .lawyer-container {
-    color: #f7fafc;
-  }
-}
-
-/* 접근성 개선 */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* 포커스 링 개선 */
-.btn:focus-visible,
-.form-input:focus-visible {
-  outline: 2px solid #667eea;
-  outline-offset: 2px;
 }
 </style>
