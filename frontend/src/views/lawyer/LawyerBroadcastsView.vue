@@ -473,7 +473,7 @@ const connect = () => {
   fetchMyNo().then((ok) => {
     if (!ok) return;
     stompClient.value = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+      webSocketFactory: () => new SockJS("/ws"),
       reconnectDelay: 5000,
       connectHeaders: {
         Authorization: `Bearer ${token}`,

@@ -15,19 +15,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
 
-        // 순수 WebSocket 엔드포인트 (JMeter용)
-        registry.addEndpoint("/ws-pure")
-                .setAllowedOriginPatterns("*");
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         // 클라이언트 구독용 prefix
-        registry.enableSimpleBroker("/topic");       // 이걸로 대체!
-
-//        registry.enableStompBrokerRelay("/topic");
-//                .setRelayHost("10.0.2.7")
-//                .setRelayPort(6379);
+        registry.enableSimpleBroker("/topic");
 
         // 클라이언트가 메시지 보낼 때 prefix
         registry.setApplicationDestinationPrefixes("/app");
