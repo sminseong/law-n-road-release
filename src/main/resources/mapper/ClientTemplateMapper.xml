@@ -306,7 +306,6 @@
           AND o.order_type = 'TEMPLATE'
         GROUP BY o.no, o.order_code, o.created_at, o.amount, o.status
         ORDER BY o.created_at DESC
-        LIMIT 5
     </select>
 
 </mapper>
