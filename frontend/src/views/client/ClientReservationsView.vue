@@ -14,7 +14,7 @@
         <div
             v-for="day in weeklySlots"
             :key="day.date"
-            class="mb-6 bg-white rounded-lg shadow p-4"
+            class="schedule-card"
         >
           <h3 class="text-lg font-medium mb-2">
             {{ formatDate(day.date) }}
@@ -22,9 +22,9 @@
 
           <!-- 오전 -->
           <div class="mb-4">
-            <p class="text-sm font-medium text-gray-700 mb-1 time-label">
+            <div class="text-sm font-medium text-gray-700 mb-1 time-label">
               오전 (08:00 ~ 11:00)
-            </p>
+            </div>
             <div class="slots-grid slots-grid-afternoon">
               <button
                   v-for="slot in day.slots.filter(s => +s.slotTime.slice(0,2) < 12)"
@@ -47,9 +47,9 @@
 
           <!-- 오후 -->
           <div>
-            <p class="text-sm font-medium text-gray-700 mb-1">
+            <div class="text-sm font-medium text-gray-700 mb-1">
               오후 (12:00 ~ 22:00)
-            </p>
+            </div>
             <div class="slots-grid slots-grid-afternoon">
               <button
                   v-for="slot in day.slots.filter(s => +s.slotTime.slice(0,2) >= 12)"
