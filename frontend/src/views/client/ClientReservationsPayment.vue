@@ -7,20 +7,16 @@
 
       <div class="bg-white shadow rounded-lg p-6">
         <p class="mb-2">
-          <strong>예약번호:</strong> {{ reservationNo }}
+          <strong>예약번호:</strong> {{ reservationNo || '결제가 진행되면 생성 됩니다.' }}
         </p>
         <p class="mb-2">
-          <strong>주문코드:</strong> {{ orderCode }}
+          <strong>주문코드:</strong> {{ orderCode || '결제가 진행되면 생성 됩니다.' }}
         </p>
         <p class="mb-2">
           <strong>예약 시간:</strong> {{ formattedTime }}
         </p>
         <p class="mb-2">
           <strong>담당 변호사:</strong> {{ lawyerName }}
-        </p>
-        <p class="mb-4">
-          <strong>결제 금액:</strong>
-          <span class="text-lg text-blue-600">{{ amount.toLocaleString() }}원</span>
         </p>
 
         <p>
@@ -41,24 +37,28 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import ClientFrame from '@/components/layout/client/ClientFrame.vue'
 import {getValidToken} from "@/libs/axios-auth.js";
+import axios from "axios";
 
-const route = useRoute()
 
-// ───────── 쿼리 파라미터 읽기 ─────────
-const reservationNo = Number(route.query.reservationNo || 0)
-const orderCode     = route.query.orderCode       || ''
-const slotDate      = route.query.slotDate        || ''
-const slotTime      = route.query.slotTime        || ''
-const lawyerName    = route.query.lawyerName      || ''
-const amount        = Number(route.query.amount   || 0)
-// ───────────────────────────────────────
+const props = defineProps({
+  lawyerNo:   { type: Number, required: true },
+  lawyerName: { type: String, required: true },
+  slotNo:     { type: Number, required: true },
+  slotDate:   { type: String, required: true },
+  slotTime:   { type: String, required: true }
+})
 
-const isProcessing = ref(false)
+const router        = useRouter()
+const isProcessing  = ref(false)
+const reservationNo = ref(null)
+const orderCode     = ref(null)
+const amount        = ref(0)
 
 const formattedTime = computed(() => {
+  const { slotDate, slotTime } = props
   if (!slotDate || !slotTime) return '시간 정보 없음'
   const dt = new Date(`${slotDate}T${slotTime}`)
   return isNaN(dt)
@@ -73,42 +73,71 @@ const formattedTime = computed(() => {
 })
 
 // SDK 로드 확인
-onMounted(() => {
-  if (!window.TossPayments) {
-    console.error('TossPayments SDK가 로드되지 않았습니다!')
-    alert('결제 기능을 사용할 수 없습니다.')
-  }
-})
-
 async function createOrderAndPay() {
-  const token = await getValidToken()
-  if (!token) {
-    alert('로그인이 필요합니다.')
-    return
-  }
   if (isProcessing.value) return
   isProcessing.value = true
 
-  try {
-    // public-client-key 로 SDK 인스턴스 생성
-    const tossPayments = window.TossPayments('test_ck_d46qopOB89dkZvqg40zOrZmM75y0')
+  const token = await getValidToken()
+  if (!token) {
+    alert('로그인이 필요합니다.')
+    isProcessing.value = false
+    return
+  }
 
-    // 카드 결제 요청
+  try {
+    // 1) 예약 + 주문 생성: props.slotNo 사용
+    const resp = await axios.post(
+        '/api/client/reservations',
+        { slotNo: props.slotNo, content: '' },
+        { headers: { Authorization: `Bearer ${token}` } }
+    )
+    const dto = resp.data
+    reservationNo.value = dto.no
+    orderCode.value     = dto.orderCode
+    amount.value        = dto.amount
+
+    // 2) TossPayments 결제 팝업
+    const tossPayments = window.TossPayments('test_ck_d46qopOB89dkZvqg40zOrZmM75y0')
     await tossPayments.requestPayment('카드', {
-      amount,
-      orderId:   orderCode,
-      orderName: `${lawyerName} 상담 예약`,
-      successUrl: `${location.origin}/payment/success?reservationNo=${encodeURIComponent(reservationNo)}&orderCode=${encodeURIComponent(orderCode)}`,
-      failUrl:    `${location.origin}/payment/fail?reservationNo=${encodeURIComponent(reservationNo)}&orderCode=${encodeURIComponent(orderCode)}`
+      amount:    amount.value,
+      orderId:   orderCode.value,
+      orderName: `${props.lawyerName} 상담 예약`,
+      successUrl: `${location.origin}/payment/success?reservationNo=${reservationNo.value}&orderCode=${orderCode.value}`,
+      failUrl:    `${location.origin}/payment/fail?reservationNo=${reservationNo.value}&orderCode=${orderCode.value}`
     })
 
   } catch (err) {
-    console.error('결제 준비 실패:', err)
-    alert('결제 준비에 실패했습니다.')
+    // 팝업 닫힘 등 사용자 취소
+    const isUserCancel = err.name === 'AbortError'
+        || err.code === 'USER_CANCEL'
+        || err.message?.includes('closed')
+
+    if (isUserCancel && reservationNo.value) {
+      try {
+        await axios.post(
+            '/api/confirm/cancel-reservation',
+            { reservationNo: reservationNo.value },
+            { headers: { Authorization: `Bearer ${token}` } }
+        )
+        alert('결제를 취소하여 예약이 취소되었습니다.')
+        // 루트('/')로 리다이렉트
+        router.replace({ path: '/' })
+      } catch (cancelErr) {
+        console.error('사전 취소 실패', cancelErr)
+        alert('예약 취소 중 오류가 발생했습니다.')
+      }
+    } else {
+      alert('결제 진행 중 오류가 발생했습니다.')
+    }
   } finally {
     isProcessing.value = false
   }
 }
+onMounted(() => {
+  if (!window.TossPayments) {
+    alert('결제 기능을 사용할 수 없습니다.')
+  }
+})
 </script>
 
 <style scoped>
