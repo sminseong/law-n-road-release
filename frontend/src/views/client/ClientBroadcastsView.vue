@@ -132,7 +132,7 @@ export default defineComponent({
               const video = document.createElement("video")
               video.autoplay = true
               video.playsInline = true
-              video.muted = true
+              video.muted = false
               video.style.width = "100%"
               video.style.height = "100%"
               video.style.objectFit = "cover"
