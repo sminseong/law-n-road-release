@@ -163,7 +163,7 @@ function getSlotClass(slot) {
   const baseClass = 'slot-button'
   if (slot.status !== 1 || isPast(slot)) {
     return `${baseClass} disabled-slot`
-  } else if (selectedNo.value === slot.no) {
+  } else if (selectedSlot.value === slot.no) {
     return `${baseClass} selected-slot`
   } else {
     return `${baseClass} available-slot`
@@ -173,7 +173,7 @@ function getSlotClass(slot) {
 // 슬롯 선택(변경 없음)
 function select(slot) {
   if (slot.status !== 1 || isPast(slot)) return
-  selectedSlot.value = slot
+  selectedSlot.value = slot.no
 }
 
 // apply: 예약+주문 API 호출 부분 제거, 결제 페이지 이동만 수행
