@@ -6,6 +6,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -21,41 +22,30 @@ jobs:
           yarn install --frozen-lockfile
           yarn build
 
-      - name: Set up SSH agent
-        uses: webfactory/ssh-agent@v0.9.1
-        with:
-          ssh-private-key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
-
-      - name: Write SSH config
-        run: |
-          mkdir -p ~/.ssh
-          cat << 'EOF' > ~/.ssh/config
-          Host frontend
-          HostName ${{ secrets.FRONT_SSH_HOST }}
-          User     ${{ secrets.FRONT_SSH_USER }}
-          ForwardAgent yes
-          
-          Host backend
-          HostName ${{ secrets.BACKEND_SSH_HOST }}
-          User     ${{ secrets.BACKEND_SSH_USER }}
-          ProxyJump frontend
-          ForwardAgent yes
-          EOF
-          chmod 600 ~/.ssh/config
-
+      # ────────────────────────────────────────────────
+      # Backend 배포 (프론트 서버를 ProxyJump로 사용)
+      # ────────────────────────────────────────────────
       - name: Deploy & Restart Backend
         uses: appleboy/scp-action@v1
         with:
-          host: backend
-          username: ${{ secrets.BACKEND_SSH_USER }}
-          source: "build/libs/*.jar"
-          target: "/opt/law-n-road-release/"
+          host:            ${{ secrets.BACKEND_SSH_HOST }}
+          username:        ${{ secrets.BACKEND_SSH_USER }}
+          key:             ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          proxy_host:      ${{ secrets.FRONT_SSH_HOST }}
+          proxy_username:  ${{ secrets.FRONT_SSH_USER }}
+          proxy_key:       ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          source:          "build/libs/*.jar"
+          target:          "/opt/law-n-road-release/"
 
       - name: Migrate DB & Restart Backend
         uses: appleboy/ssh-action@v1
         with:
-          host: backend
-          username: ${{ secrets.BACKEND_SSH_USER }}
+          host:            ${{ secrets.BACKEND_SSH_HOST }}
+          username:        ${{ secrets.BACKEND_SSH_USER }}
+          key:             ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          proxy_host:      ${{ secrets.FRONT_SSH_HOST }}
+          proxy_username:  ${{ secrets.FRONT_SSH_USER }}
+          proxy_key:       ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
           script: |
             mysql -h "${{ secrets.DB_HOST }}" -P "${{ secrets.DB_PORT }}" \
               -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
@@ -63,10 +53,13 @@ jobs:
             sudo systemctl daemon-reload
             sudo systemctl restart law-n-road-backend.service
 
+      # ────────────────────────────────────────────────
+      # Frontend 배포 (직접 접근)
+      # ────────────────────────────────────────────────
       - name: Deploy Frontend Artifact
         uses: appleboy/scp-action@v1
         with:
-          host: ${{ secrets.FRONT_SSH_HOST }}
+          host:     ${{ secrets.FRONT_SSH_HOST }}
           username: ${{ secrets.FRONT_SSH_USER }}
           key:      ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
           source:   "frontend/dist/"
