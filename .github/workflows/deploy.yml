@@ -1,0 +1,81 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) 코드 체크아웃
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2) 백엔드 JAR 빌드
+      - name: Build Backend JAR
+        run: ./gradlew clean bootJar -x test
+
+      # 3) 프론트엔드 빌드
+      - name: Build Frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      # 4) 백엔드 JAR 서버로 전송
+      - name: Deploy Backend Artifact
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.BACKEND_SSH_HOST }}
+          username: ${{ secrets.BACKEND_SSH_USER }}
+          key: ${{ secrets.BACKEND_SSH_PRIVATE_KEY }}
+          port: 22
+          source: "build/libs/*.jar"
+          target: "/opt/law-n-road-release/"
+
+      # 5) DB 마이그레이션 & 서비스 재시작
+      - name: Migrate DB & Restart Backend
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.BACKEND_SSH_HOST }}
+          username: ${{ secrets.BACKEND_SSH_USER }}
+          key: ${{ secrets.BACKEND_SSH_PRIVATE_KEY }}
+          script: |
+            mysql -h "${{ secrets.DB_HOST }}" -P "${{ secrets.DB_PORT }}" \
+                  -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
+                  "${{ secrets.DB_NAME }}" < /opt/law-n-road-release/db/migrations/init.sql
+            sudo systemctl daemon-reload
+            sudo systemctl restart law-n-road-backend.service
+
+      # 6) 프론트엔드 빌드 결과 전송
+      - name: Deploy Frontend Artifact
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.FRONT_SSH_HOST }}
+          username: ${{ secrets.FRONT_SSH_USER }}
+          key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          port: 22
+          source: "frontend/dist/"
+          target: "/opt/law-n-road-release/frontend/"
+
+      # 7) Nginx 리로드
+      - name: Reload Nginx
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.FRONT_SSH_HOST }}
+          username: ${{ secrets.FRONT_SSH_USER }}
+          key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          script: sudo systemctl reload nginx
+
+      # 8) Slack 알림 (도로의-판정단 채널)
+      - name: Notify Slack (도로의-판정단)
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,action,message
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_ROAD }}
