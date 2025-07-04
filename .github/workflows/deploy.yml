@@ -22,14 +22,10 @@ jobs:
 
       - name: Build Frontend
         working-directory: frontend
-        env:
-          NPM_CONFIG_OMIT: optional
         run: |
-           rm -rf package-lock.json node_modules
-          
-           npm install --no-optional
-          
-           npm run build
+          rm -rf package-lock.json node_modules
+          npm install --no-optional
+          npm run build
 
       - name: Deploy Backend Artifact
         uses: appleboy/scp-action@v0.1.7
