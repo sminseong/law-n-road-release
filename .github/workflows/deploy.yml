@@ -26,8 +26,6 @@ jobs:
           npm ci
           npm run build
 
-
-      # 4) 백엔드 JAR 서버로 전송
       - name: Deploy Backend Artifact
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -38,7 +36,6 @@ jobs:
           source: "build/libs/*.jar"
           target: "/opt/law-n-road-release/"
 
-      # 5) DB 마이그레이션 & 서비스 재시작
       - name: Migrate DB & Restart Backend
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -52,7 +49,6 @@ jobs:
             sudo systemctl daemon-reload
             sudo systemctl restart law-n-road-backend.service
 
-      # 6) 프론트엔드 빌드 결과 전송
       - name: Deploy Frontend Artifact
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -63,7 +59,6 @@ jobs:
           source: "frontend/dist/"
           target: "/opt/law-n-road-release/frontend/"
 
-      # 7) Nginx 리로드
       - name: Reload Nginx
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -72,7 +67,6 @@ jobs:
           key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
           script: sudo systemctl reload nginx
 
-      # 8) Slack 알림 (도로의-판정단 채널)
       - name: Notify Slack (도로의-판정단)
         if: always()
         uses: 8398a7/action-slack@v3
