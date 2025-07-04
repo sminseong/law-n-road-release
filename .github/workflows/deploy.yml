@@ -13,19 +13,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # --- here: grant execute permission ---
+      # --- grant execute permission for Gradlew ---
       - name: Make Gradlew Executable
         run: chmod +x ./gradlew
 
       - name: Build Backend JAR
         run: ./gradlew clean bootJar -x test
 
-      - name: Build Frontend
+      - name: Build Frontend (with Yarn)
         working-directory: frontend
         run: |
-          rm -rf package-lock.json node_modules
-          npm install --no-optional
-          npm run build
+          # 1) Yarn 전역 설치
+          npm install -g yarn
+
+          # 2) npm 관련 파일 제거
+          rm -rf node_modules package-lock.json || true
+
+          # 3) optional deps 무시하고 설치
+          yarn install --ignore-optional --frozen-lockfile
+
+          # 4) 빌드
+          yarn build
 
       - name: Deploy Backend Artifact
         uses: appleboy/scp-action@v0.1.7
