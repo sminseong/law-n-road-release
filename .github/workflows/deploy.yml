@@ -30,6 +30,9 @@ jobs:
               -i ~/.ssh/id_rsa \
               ${{ secrets.FRONT_SSH_USER }}@lawnroad.kr << 'EOF'
           
+            cd /opt/law-n-road-release
+            git pull origin main
+          
             cd /opt/law-n-road-release/frontend
             npm ci
             npm run build
@@ -58,6 +61,8 @@ jobs:
 
             # 4.2) 백엔드 빌드·배포
             cd /opt/law-n-road-release
+            git pull origin main
+          
             ./gradlew clean bootJar -x test
             sudo systemctl daemon-reload
             sudo systemctl start law-n-road-backend.service
