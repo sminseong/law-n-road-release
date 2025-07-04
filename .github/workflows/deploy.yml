@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1) 체크아웃 & 빌드
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -25,52 +26,41 @@ jobs:
           yarn install --frozen-lockfile
           yarn build
 
-      # ────────────────────────────────────────────────
-      # SSH Agent + ProxyJump 설정
-      # ────────────────────────────────────────────────
+      # 2) SSH 에이전트에 프론트 키 로드
       - name: Setup SSH agent
         uses: webfactory/ssh-agent@v0.9.1
         with:
-          # 프론트엔드 배포용 개인키를 agent 에 로드
           ssh-private-key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
 
-      - name: Write SSH config for ProxyJump
-        run: |
-          mkdir -p ~/.ssh
-          cat << 'EOF' > ~/.ssh/config
-          Host frontend
-            HostName ${{ secrets.FRONT_SSH_HOST }}
-            User     ${{ secrets.FRONT_SSH_USER }}
-            IdentityFile ~/.ssh/id_rsa
-            ForwardAgent yes
-
-          Host backend
-            HostName ${{ secrets.BACKEND_SSH_HOST }}
-            User     ${{ secrets.BACKEND_SSH_USER }}
-            ProxyJump frontend
-            ForwardAgent yes
-          EOF
-          chmod 600 ~/.ssh/config
-
-      # ────────────────────────────────────────────────
-      # Backend 배포 (frondent → backend via ProxyJump)
-      # ────────────────────────────────────────────────
-      - name: Deploy & Restart Backend
+      # 3) SCP/SSH 액션으로 ProxyJump 설정
+      - name: Deploy & Restart Backend via Frontend Proxy
         uses: appleboy/scp-action@v1
         with:
-          host: backend                    # SSH config 에 정의된 alias
-          username: ${{ secrets.BACKEND_SSH_USER }}
-          key: ${{ secrets.BACKEND_SSH_PRIVATE_KEY }}
-          port: 22
-          source: "build/libs/*.jar"
-          target: "/opt/law-n-road-release/"
+          host:       ${{ secrets.BACKEND_SSH_HOST }}
+          username:   ${{ secrets.BACKEND_SSH_USER }}
+          key:        ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          port:       22
+          source:     build/libs/*.jar
+          target:     /opt/law-n-road-release/
 
-      - name: Migrate DB & Restart Backend
+          proxy_host: ${{ secrets.FRONT_SSH_HOST }}
+          proxy_user: ${{ secrets.FRONT_SSH_USER }}
+          proxy_key:  ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          proxy_port: 22
+
+      - name: Migrate DB & Restart Backend via Frontend Proxy
         uses: appleboy/ssh-action@v1
         with:
-          host: backend
-          username: ${{ secrets.BACKEND_SSH_USER }}
-          port: 22
+          host:       ${{ secrets.BACKEND_SSH_HOST }}
+          username:   ${{ secrets.BACKEND_SSH_USER }}
+          key:        ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          port:       22
+
+          proxy_host: ${{ secrets.FRONT_SSH_HOST }}
+          proxy_user: ${{ secrets.FRONT_SSH_USER }}
+          proxy_key:  ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          proxy_port: 22
+
           script: |
             mysql -h "${{ secrets.DB_HOST }}" -P "${{ secrets.DB_PORT }}" \
                   -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
@@ -78,28 +68,27 @@ jobs:
             sudo systemctl daemon-reload
             sudo systemctl restart law-n-road-backend.service
 
-      # ────────────────────────────────────────────────
-      # Frontend 배포 (직접 접근 가능)
-      # ────────────────────────────────────────────────
+      # 4) Frontend 배포 (직접 접근)
       - name: Deploy Frontend Artifact
         uses: appleboy/scp-action@v1
         with:
-          host: ${{ secrets.FRONT_SSH_HOST }}
+          host:     ${{ secrets.FRONT_SSH_HOST }}
           username: ${{ secrets.FRONT_SSH_USER }}
-          key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
-          port: 22
-          source: "frontend/dist/"
-          target: "/opt/law-n-road-release/frontend/"
+          key:      ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          port:     22
+          source:   frontend/dist/
+          target:   /opt/law-n-road-release/frontend/
 
       - name: Reload Nginx
         uses: appleboy/ssh-action@v1
         with:
-          host: ${{ secrets.FRONT_SSH_HOST }}
+          host:     ${{ secrets.FRONT_SSH_HOST }}
           username: ${{ secrets.FRONT_SSH_USER }}
-          key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
-          port: 22
-          script: sudo systemctl reload nginx
+          key:      ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          port:     22
+          script:   sudo systemctl reload nginx
 
+      # 5) Slack 알림
       - name: Notify Slack (도로의-판정단)
         if: always()
         uses: 8398a7/action-slack@v3
