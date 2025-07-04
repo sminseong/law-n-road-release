@@ -22,92 +22,84 @@ jobs:
           yarn install --frozen-lockfile
           yarn build
 
-      # 1) Backend JAR + migrations 복사
+      # 1) JAR + migrations 복사
       - name: Copy Backend artifact & migrations
         uses: appleboy/scp-action@v1
         with:
-          host:       ${{ secrets.BACKEND_SSH_HOST }}
-          username:   ${{ secrets.BACKEND_SSH_USER }}
-          password:   ${{ secrets.BACKEND_SSH_PASSWORD }}
-          proxy_host:     ${{ secrets.FRONT_SSH_HOST }}
+          host: ${{ secrets.BACKEND_SSH_HOST }}
+          username: ${{ secrets.BACKEND_SSH_USER }}
+          password: ${{ secrets.BACKEND_SSH_PASSWORD }}
+          proxy_host: ${{ secrets.FRONT_SSH_HOST }}
           proxy_username: ${{ secrets.FRONT_SSH_USER }}
           proxy_password: ${{ secrets.FRONT_SSH_PASSWORD }}
-          source:     "build/libs/*.jar,db/migrations/"
-          target:     "/opt/law-n-road-release/"
+          source: "build/libs/*.jar,db/migrations/"
+          target: "/opt/law-n-road-release/"
           strip_components: 1
 
-      # 2a) backend.env 복사
+      # 2) backend.env 복사
       - name: Copy backend.env
         uses: appleboy/scp-action@v1
         with:
-          host:       ${{ secrets.BACKEND_SSH_HOST }}
-          username:   ${{ secrets.BACKEND_SSH_USER }}
-          password:   ${{ secrets.BACKEND_SSH_PASSWORD }}
-          proxy_host:     ${{ secrets.FRONT_SSH_HOST }}
+          host: ${{ secrets.BACKEND_SSH_HOST }}
+          username: ${{ secrets.BACKEND_SSH_USER }}
+          password: ${{ secrets.BACKEND_SSH_PASSWORD }}
+          proxy_host: ${{ secrets.FRONT_SSH_HOST }}
           proxy_username: ${{ secrets.FRONT_SSH_USER }}
           proxy_password: ${{ secrets.FRONT_SSH_PASSWORD }}
-          source:     ".github/deploy/backend.env"
-          target:     "/etc/lawroad/backend.env"
+          source: ".github/deploy/backend.env"
+          target: "/etc/lawroad/backend.env"
+          strip_components: 3
 
-      # 2b) systemd unit 복사
-      - name: Copy systemd unit file
+      # 3) systemd unit 복사
+      - name: Copy systemd unit
         uses: appleboy/scp-action@v1
         with:
-          host:       ${{ secrets.BACKEND_SSH_HOST }}
-          username:   ${{ secrets.BACKEND_SSH_USER }}
-          password:   ${{ secrets.BACKEND_SSH_PASSWORD }}
-          proxy_host:     ${{ secrets.FRONT_SSH_HOST }}
+          host: ${{ secrets.BACKEND_SSH_HOST }}
+          username: ${{ secrets.BACKEND_SSH_USER }}
+          password: ${{ secrets.BACKEND_SSH_PASSWORD }}
+          proxy_host: ${{ secrets.FRONT_SSH_HOST }}
           proxy_username: ${{ secrets.FRONT_SSH_USER }}
           proxy_password: ${{ secrets.FRONT_SSH_PASSWORD }}
-          source:     ".github/deploy/lawroad-backend.service"
-          target:     "/etc/systemd/system/lawroad-backend.service"
+          source: ".github/deploy/lawroad-backend.service"
+          target: "/etc/systemd/system/lawroad-backend.service"
+          strip_components: 3
 
-      # 3) DB 마이그레이션 & Backend 재시작
+      # 4) 마이그레이션 & 재시작
       - name: Migrate DB & Restart Backend
         uses: appleboy/ssh-action@v1
         with:
-          host:       ${{ secrets.BACKEND_SSH_HOST }}
-          username:   ${{ secrets.BACKEND_SSH_USER }}
-          password:   ${{ secrets.BACKEND_SSH_PASSWORD }}
-          proxy_host:     ${{ secrets.FRONT_SSH_HOST }}
+          host: ${{ secrets.BACKEND_SSH_HOST }}
+          username: ${{ secrets.BACKEND_SSH_USER }}
+          password: ${{ secrets.BACKEND_SSH_PASSWORD }}
+          proxy_host: ${{ secrets.FRONT_SSH_HOST }}
           proxy_username: ${{ secrets.FRONT_SSH_USER }}
           proxy_password: ${{ secrets.FRONT_SSH_PASSWORD }}
           script: |
-            # 권한 및 위치 확인
             sudo chmod 600 /etc/lawroad/backend.env
-
-            # DB 마이그레이션
-            mysql -h "${{ secrets.DB_HOST }}" \
-                  -P "${{ secrets.DB_PORT }}" \
-                  -u "${{ secrets.DB_USER }}" \
-                  -p"${{ secrets.DB_PASSWORD }}" \
-                  "${{ secrets.DB_NAME }}" \
-              < /opt/law-n-road-release/db/migrations/init.sql
-
-            # systemd 반영
+            mysql -h "${{ secrets.DB_HOST }}" -P "${{ secrets.DB_PORT }}" \
+              -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
+              "${{ secrets.DB_NAME }}" < /opt/law-n-road-release/db/migrations/init.sql
             sudo systemctl daemon-reload
             sudo systemctl restart lawroad-backend.service
 
-      # 4) Frontend 배포
+      # 5) Frontend 배포
       - name: Deploy Frontend Artifact
         uses: appleboy/scp-action@v1
         with:
-          host:       ${{ secrets.FRONT_SSH_HOST }}
-          username:   ${{ secrets.FRONT_SSH_USER }}
-          password:   ${{ secrets.FRONT_SSH_PASSWORD }}
-          source:     "frontend/dist/"
-          target:     "/opt/law-n-road-release/frontend/"
+          host: ${{ secrets.FRONT_SSH_HOST }}
+          username: ${{ secrets.FRONT_SSH_USER }}
+          password: ${{ secrets.FRONT_SSH_PASSWORD }}
+          source: "frontend/dist/"
+          target: "/opt/law-n-road-release/frontend/"
 
-      # 5) Nginx reload
       - name: Reload Nginx
         uses: appleboy/ssh-action@v1
         with:
-          host:   ${{ secrets.FRONT_SSH_HOST }}
-          username:   ${{ secrets.FRONT_SSH_USER }}
-          password:   ${{ secrets.FRONT_SSH_PASSWORD }}
+          host: ${{ secrets.FRONT_SSH_HOST }}
+          username: ${{ secrets.FRONT_SSH_USER }}
+          password: ${{ secrets.FRONT_SSH_PASSWORD }}
           script: sudo systemctl reload nginx
 
-      # 6) Slack 알림
       - name: Notify Slack (도로의-판정단)
         if: always()
         uses: 8398a7/action-slack@v3
