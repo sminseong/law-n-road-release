@@ -3,14 +3,13 @@ Description=LawNRoad Backend Service
 After=network.target
 
 [Service]
-Type=simple
-User=root
-WorkingDirectory=/opt/law-n-road-release
+User=lawroad
 EnvironmentFile=/etc/lawroad/backend.env
-ExecStart=/usr/bin/java -jar /opt/law-n-road-release/build/libs/law-n-road-0.0.1-SNAPSHOT.jar
-
+ExecStart=/usr/bin/java -jar /opt/law-n-road-release/law-n-road-0.0.1-SNAPSHOT.jar
+WorkingDirectory=/opt/law-n-road-release
+SuccessExitStatus=143
 Restart=on-failure
-RestartSec=5s
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target

@@ -64,7 +64,7 @@ jobs:
           target:          "/etc/systemd/system/"
           strip_components: 2
 
-      # 4) 마이그레이션 & 재시작
+      # 4) DB 마이그레이션 & 서비스 재시작
       - name: Migrate DB & Restart Backend
         uses: appleboy/ssh-action@v1
         with:
@@ -75,13 +75,10 @@ jobs:
           proxy_username:  ${{ secrets.FRONT_SSH_USER }}
           proxy_password:  ${{ secrets.FRONT_SSH_PASSWORD }}
           script: |
-            # 권한 설정
             sudo chmod 600 /etc/lawroad/backend.env
-            # DB migration
             mysql -h "${{ secrets.DB_HOST }}" -P "${{ secrets.DB_PORT }}" \
               -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
               "${{ secrets.DB_NAME }}" < /opt/law-n-road-release/db/migrations/init.sql
-            # systemd 재시작
             sudo systemctl daemon-reload
             sudo systemctl restart lawroad-backend.service
 
