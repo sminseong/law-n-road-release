@@ -23,7 +23,7 @@ jobs:
       - name: Build Frontend
         working-directory: frontend
         env:
-          NPM_CONFIG_OPTIONAL: false
+          NPM_CONFIG_OMIT: optional
         run: |
           npm ci
           npm run build
