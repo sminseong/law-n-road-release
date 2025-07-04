@@ -16,10 +16,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class OpenViduServiceImpl implements OpenViduService {
 
-    @Value("${openvidu.url}")
+    @Value("${OPENVIDU_URL}")
     private String openviduUrl;
 
-    @Value("${openvidu.secret}")
+    @Value("${OPENVIDU_SECRET}")
     private String openviduSecret;
 
     private OpenVidu openVidu;
