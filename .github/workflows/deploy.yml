@@ -33,67 +33,66 @@ jobs:
       - name: Prepare Bastion SSH key
         run: |
           mkdir -p ~/.ssh
-          # SSH 키가 줄바꿈까지 온전히 들어가도록 EOF 사용
           cat << 'EOF' > ~/.ssh/bastion.pem
-  ${{ secrets.BASTION_SSH_PRIVATE_KEY }}
-  EOF
-  chmod 600 ~/.ssh/bastion.pem
+          ${{ secrets.BASTION_SSH_PRIVATE_KEY }}
+          EOF
+          chmod 600 ~/.ssh/bastion.pem
 
-- name: Deploy & Restart Backend via Bastion
-  uses: appleboy/scp-action@v0.1.7
-  with:
-    host: ${{ secrets.BACKEND_PRIVATE_HOST }}
-    username: ${{ secrets.BACKEND_SSH_USER }}
-    key_path: ~/.ssh/bastion.pem     # bastion 키 사용
-    port: 22
-    source: "build/libs/*.jar"
-    target: "/opt/law-n-road-release/"
-    # -- Bastion 설정 --
-    bastion_host: ${{ secrets.BASTION_HOST }}
-    bastion_user: ${{ secrets.BASTION_SSH_USER }}
-    bastion_key_path: ~/.ssh/bastion.pem
-    bastion_port: 22
+      - name: Deploy & Restart Backend via Bastion
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.BACKEND_PRIVATE_HOST }}
+          username: ${{ secrets.BACKEND_SSH_USER }}
+          key_path: ~/.ssh/bastion.pem     # bastion 키 사용
+          port: 22
+          source: "build/libs/*.jar"
+          target: "/opt/law-n-road-release/"
+          # -- Bastion 설정 --
+          bastion_host: ${{ secrets.BASTION_HOST }}
+          bastion_user: ${{ secrets.BASTION_SSH_USER }}
+          bastion_key_path: ~/.ssh/bastion.pem
+          bastion_port: 22
 
-- name: Migrate DB & Restart Backend via Bastion
-  uses: appleboy/ssh-action@v0.1.7
-  with:
-    host: ${{ secrets.BACKEND_PRIVATE_HOST }}
-    username: ${{ secrets.BACKEND_SSH_USER }}
-    key_path: ~/.ssh/bastion.pem
-    script: |
-      mysql -h "${{ secrets.DB_HOST }}" -P "${{ secrets.DB_PORT }}" \
-            -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
-            "${{ secrets.DB_NAME }}" < /opt/law-n-road-release/db/migrations/init.sql
-      sudo systemctl daemon-reload
-      sudo systemctl restart law-n-road-backend.service
-    bastion_host: ${{ secrets.BASTION_HOST }}
-    bastion_user: ${{ secrets.BASTION_SSH_USER }}
-    bastion_key_path: ~/.ssh/bastion.pem
-    bastion_port: 22
+      - name: Migrate DB & Restart Backend via Bastion
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.BACKEND_PRIVATE_HOST }}
+          username: ${{ secrets.BACKEND_SSH_USER }}
+          key_path: ~/.ssh/bastion.pem
+          script: |
+            mysql -h "${{ secrets.DB_HOST }}" -P "${{ secrets.DB_PORT }}" \
+                  -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
+                  "${{ secrets.DB_NAME }}" < /opt/law-n-road-release/db/migrations/init.sql
+            sudo systemctl daemon-reload
+            sudo systemctl restart law-n-road-backend.service
+          bastion_host: ${{ secrets.BASTION_HOST }}
+          bastion_user: ${{ secrets.BASTION_SSH_USER }}
+          bastion_key_path: ~/.ssh/bastion.pem
+          bastion_port: 22
 
-- name: Deploy Frontend Artifact
-  uses: appleboy/scp-action@v0.1.7
-  with:
-    host: ${{ secrets.FRONT_SSH_HOST }}
-    username: ${{ secrets.FRONT_SSH_USER }}
-    key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
-    port: 22
-    source: "frontend/dist/"
-    target: "/opt/law-n-road-release/frontend/"
+      - name: Deploy Frontend Artifact
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.FRONT_SSH_HOST }}
+          username: ${{ secrets.FRONT_SSH_USER }}
+          key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          port: 22
+          source: "frontend/dist/"
+          target: "/opt/law-n-road-release/frontend/"
 
-- name: Reload Nginx
-  uses: appleboy/ssh-action@v0.1.7
-  with:
-    host: ${{ secrets.FRONT_SSH_HOST }}
-    username: ${{ secrets.FRONT_SSH_USER }}
-    key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
-    script: sudo systemctl reload nginx
+      - name: Reload Nginx
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.FRONT_SSH_HOST }}
+          username: ${{ secrets.FRONT_SSH_USER }}
+          key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          script: sudo systemctl reload nginx
 
-- name: Notify Slack (도로의-판정단)
-  if: always()
-  uses: 8398a7/action-slack@v3
-  with:
-    status: ${{ job.status }}
-    fields: repo,commit,author,action,message
-  env:
-    SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_ROAD }}
+      - name: Notify Slack (도로의-판정단)
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,action,message
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_ROAD }}
