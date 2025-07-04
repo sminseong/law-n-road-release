@@ -28,12 +28,13 @@ jobs:
       # ────────────────────────────────────────────────
       # SSH Agent + ProxyJump 설정
       # ────────────────────────────────────────────────
-      - name: Setup SSH and config
-        uses: webfactory/ssh-agent@v0.8.1
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.1
         with:
+          # 프론트엔드 배포용 개인키를 agent 에 로드
           ssh-private-key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
 
-      - name: Write SSH config for jump-host
+      - name: Write SSH config for ProxyJump
         run: |
           mkdir -p ~/.ssh
           cat << 'EOF' > ~/.ssh/config
@@ -41,11 +42,13 @@ jobs:
             HostName ${{ secrets.FRONT_SSH_HOST }}
             User     ${{ secrets.FRONT_SSH_USER }}
             IdentityFile ~/.ssh/id_rsa
-          
+            ForwardAgent yes
+
           Host backend
             HostName ${{ secrets.BACKEND_SSH_HOST }}
             User     ${{ secrets.BACKEND_SSH_USER }}
             ProxyJump frontend
+            ForwardAgent yes
           EOF
           chmod 600 ~/.ssh/config
 
@@ -55,8 +58,9 @@ jobs:
       - name: Deploy & Restart Backend
         uses: appleboy/scp-action@v1
         with:
-          host: backend
-          username: ${{ secrets.BACKEND_SSH_USER }}  # (config에 이미 지정되어 있지만, 명시해두면 안전)
+          host: backend                    # SSH config 에 정의된 alias
+          username: ${{ secrets.BACKEND_SSH_USER }}
+          port: 22
           source: "build/libs/*.jar"
           target: "/opt/law-n-road-release/"
 
@@ -65,6 +69,7 @@ jobs:
         with:
           host: backend
           username: ${{ secrets.BACKEND_SSH_USER }}
+          port: 22
           script: |
             mysql -h "${{ secrets.DB_HOST }}" -P "${{ secrets.DB_PORT }}" \
                   -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
@@ -81,6 +86,7 @@ jobs:
           host: ${{ secrets.FRONT_SSH_HOST }}
           username: ${{ secrets.FRONT_SSH_USER }}
           key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          port: 22
           source: "frontend/dist/"
           target: "/opt/law-n-road-release/frontend/"
 
@@ -90,6 +96,7 @@ jobs:
           host: ${{ secrets.FRONT_SSH_HOST }}
           username: ${{ secrets.FRONT_SSH_USER }}
           key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          port: 22
           script: sudo systemctl reload nginx
 
       - name: Notify Slack (도로의-판정단)
