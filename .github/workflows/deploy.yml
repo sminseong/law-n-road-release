@@ -30,7 +30,7 @@ jobs:
           rm -rf node_modules package-lock.json || true
 
           # 3) optional deps 무시하고 설치
-          yarn install --ignore-optional --frozen-lockfile
+          yarn install --frozen-lockfile
 
           # 4) 빌드
           yarn build
