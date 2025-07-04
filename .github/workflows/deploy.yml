@@ -30,7 +30,7 @@ jobs:
         with:
           host:            ${{ secrets.BACKEND_SSH_HOST }}
           username:        ${{ secrets.BACKEND_SSH_USER }}
-          key:             ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          key:             ${{ secrets.BACKEND_SSH_PRIVATE_KEY }}
           proxy_host:      ${{ secrets.FRONT_SSH_HOST }}
           proxy_username:  ${{ secrets.FRONT_SSH_USER }}
           proxy_key:       ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
