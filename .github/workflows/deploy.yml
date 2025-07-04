@@ -40,7 +40,7 @@ jobs:
             ForwardAgent yes
 
           Host backend
-            HostName ${{ secrets.BACKEND_PRIVATE_HOST }}
+            HostName ${{ secrets.BACKEND_SSH_HOST }}
             User     ${{ secrets.BACKEND_SSH_USER }}
             ProxyJump frontend
             ForwardAgent yes
