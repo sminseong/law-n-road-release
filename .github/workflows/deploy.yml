@@ -23,9 +23,9 @@ jobs:
           yarn build
 
       # ────────────────────────────────────────────────
-      # Backend 배포 (Password 방식, 프록시 사용)
+      # 1) Backend JAR & migrations 폴더 복사 (Password 방식)
       # ────────────────────────────────────────────────
-      - name: Deploy & Restart Backend
+      - name: Copy Backend artifact & migrations
         uses: appleboy/scp-action@v1
         with:
           host:            ${{ secrets.BACKEND_SSH_HOST }}
@@ -36,18 +36,12 @@ jobs:
           proxy_username:  ${{ secrets.FRONT_SSH_USER }}
           proxy_password:  ${{ secrets.FRONT_SSH_PASSWORD }}
 
-          source:          "build/libs/*.jar"
+          source:          "build/libs/*.jar","db/migrations/"
           target:          "/opt/law-n-road-release/"
-          port:            22
-          protocol:        tcp
-          timeout:         30s
-          command_timeout: 10m
-          tar_exec:        tar
-          proxy_port:      22
-          proxy_timeout:   30s
+          strip_components: 1
 
       # ────────────────────────────────────────────────
-      # DB 마이그레이션 & 백엔드 재시작 (Password 방식)
+      # 2) DB 마이그레이션 & Backend 서비스 재시작
       # ────────────────────────────────────────────────
       - name: Migrate DB & Restart Backend
         uses: appleboy/ssh-action@v1
@@ -64,32 +58,29 @@ jobs:
             mysql -h "${{ secrets.DB_HOST }}" -P "${{ secrets.DB_PORT }}" \
               -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
               "${{ secrets.DB_NAME }}" < /opt/law-n-road-release/db/migrations/init.sql
+
             sudo systemctl daemon-reload
-            sudo systemctl restart law-n-road-backend.service
+            sudo systemctl restart lawroad-backend.service
 
       # ────────────────────────────────────────────────
-      # Frontend 배포 (Password 방식)
+      # 3) Frontend 배포 (Password 방식)
       # ────────────────────────────────────────────────
       - name: Deploy Frontend Artifact
         uses: appleboy/scp-action@v1
         with:
-          host:             ${{ secrets.FRONT_SSH_HOST }}
-          username:         ${{ secrets.FRONT_SSH_USER }}
-          password:         ${{ secrets.FRONT_SSH_PASSWORD }}
-          source:           "frontend/dist/"
-          target:           "/opt/law-n-road-release/frontend/"
-          port:             22
-          protocol:         tcp
-          timeout:          30s
-          command_timeout:  10m
+          host:            ${{ secrets.FRONT_SSH_HOST }}
+          username:        ${{ secrets.FRONT_SSH_USER }}
+          password:        ${{ secrets.FRONT_SSH_PASSWORD }}
+          source:          "frontend/dist/"
+          target:          "/opt/law-n-road-release/frontend/"
 
       - name: Reload Nginx
         uses: appleboy/ssh-action@v1
         with:
-          host:     ${{ secrets.FRONT_SSH_HOST }}
-          username: ${{ secrets.FRONT_SSH_USER }}
-          password: ${{ secrets.FRONT_SSH_PASSWORD }}
-          script:   sudo systemctl reload nginx
+          host:            ${{ secrets.FRONT_SSH_HOST }}
+          username:        ${{ secrets.FRONT_SSH_USER }}
+          password:        ${{ secrets.FRONT_SSH_PASSWORD }}
+          script:          sudo systemctl reload nginx
 
       - name: Notify Slack (도로의-판정단)
         if: always()
