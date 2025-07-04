@@ -10,20 +10,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) 코드 체크아웃
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2) 백엔드 JAR 빌드
+      # --- here: grant execute permission ---
+      - name: Make Gradlew Executable
+        run: chmod +x ./gradlew
+
       - name: Build Backend JAR
         run: ./gradlew clean bootJar -x test
 
-      # 3) 프론트엔드 빌드
       - name: Build Frontend
         working-directory: frontend
         run: |
           npm ci
           npm run build
+
 
       # 4) 백엔드 JAR 서버로 전송
       - name: Deploy Backend Artifact
