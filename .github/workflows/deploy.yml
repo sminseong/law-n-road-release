@@ -2,8 +2,7 @@ name: CI/CD
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   build-and-deploy:
@@ -13,7 +12,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # --- grant execute permission for Gradlew ---
       - name: Make Gradlew Executable
         run: chmod +x ./gradlew
 
@@ -24,78 +22,84 @@ jobs:
         working-directory: frontend
         run: |
           npm install -g yarn
-          rm -rf node_modules package-lock.json || true
+          rm -rf node_modules package-lock.json yarn.lock || true
           yarn install --frozen-lockfile --ignore-optional
           yarn add --dev @rollup/rollup-linux-x64-gnu
           yarn build
 
-      # ----------------------------
-      # 1) Bastion(Jump) 배포 & 재시작
-      # ----------------------------
-      - name: Deploy & Restart Backend via Bastion
-        env:
-          BASTION_KEY:        ${{ secrets.BASTION_SSH_PRIVATE_KEY }}
-          FRONT_SSH_USER:     ${{ secrets.FRONT_SSH_USER }}
-          FRONT_SSH_HOST:     ${{ secrets.FRONT_SSH_HOST }}
-          BACKEND_SSH_USER:   ${{ secrets.BACKEND_SSH_USER }}
-          BACKEND_PRIVATE_IP: ${{ secrets.BACKEND_PRIVATE_IP }}
-          DB_PRIVATE_IP:      ${{ secrets.DB_PRIVATE_IP }}
-          DB_PORT:            ${{ secrets.DB_PORT }}
-          DB_USER:            ${{ secrets.DB_USER }}
-          DB_PASSWORD:        ${{ secrets.DB_PASSWORD }}
-          DB_NAME:            ${{ secrets.DB_NAME }}
+      # ────────────────────────────────────────────────────────────────
+      #  여기부터 Bastion 경유 배포 스텝
+      # ────────────────────────────────────────────────────────────────
+
+      - name: Prepare Bastion SSH key
         run: |
-          # 1) bastion 키 파일 생성
-          echo "$BASTION_KEY" > bastion.pem
-          chmod 600 bastion.pem
+          mkdir -p ~/.ssh
+          # SSH 키가 줄바꿈까지 그대로 들어가도록 EOF 사용
+          cat << 'EOF' > ~/.ssh/bastion.pem
+  ${{ secrets.BASTION_SSH_PRIVATE_KEY }}
+  EOF
+  chmod 600 ~/.ssh/bastion.pem
 
-          # 2) 로컬 → Bastion(프론트엔드) 업로드
-          scp -i bastion.pem \
-              -o StrictHostKeyChecking=no \
-              build/libs/*.jar \
-              $FRONT_SSH_USER@$FRONT_SSH_HOST:/tmp/app.jar
+- name: Deploy & Restart Backend via Bastion
+  uses: appleboy/scp-action@v0.1.7
+  with:
+    # 최종 목적지(프라이빗 백엔드)의 사설 IP
+    host: ${{ secrets.BACKEND_PRIVATE_HOST }}
+    username: ${{ secrets.BACKEND_SSH_USER }}
+    key_path: ~/.ssh/backend.pem          # backend 서버 전용 키 (또는 bastion 통해서도 사용 가능)
+    port: 22
+    source: "build/libs/*.jar"
+    target: "/opt/law-n-road-release/"
+    # ── Bastion 설정 ──
+    bastion_host: ${{ secrets.BASTION_HOST }}        # 퍼블릭 Bastion IP
+    bastion_user: ${{ secrets.BASTION_SSH_USER }}    # Bastion 접속 유저
+    bastion_key_path: ~/.ssh/bastion.pem             # 앞서 만든 Bastion 전용 키
+    bastion_port: 22
 
-          # 3) Bastion → Backend(사설 IP)로 점프해서 배포·재시작·마이그레이션
-          ssh -i bastion.pem \
-              -o StrictHostKeyChecking=no \
-              -J $FRONT_SSH_USER@$FRONT_SSH_HOST \
-              $BACKEND_SSH_USER@$BACKEND_PRIVATE_IP << 'EOF'
-            sudo mv /tmp/app.jar /opt/law-n-road-release/app.jar
-            sudo systemctl daemon-reload
-            sudo systemctl restart law-n-road-backend.service
+- name: Migrate DB & Restart Backend via Bastion
+  uses: appleboy/ssh-action@v0.1.7
+  with:
+    host: ${{ secrets.BACKEND_PRIVATE_HOST }}
+    username: ${{ secrets.BACKEND_SSH_USER }}
+    key_path: ~/.ssh/backend.pem
+    bastion_host: ${{ secrets.BASTION_HOST }}
+    bastion_user: ${{ secrets.BASTION_SSH_USER }}
+    bastion_key_path: ~/.ssh/bastion.pem
+    bastion_port: 22
+    script: |
+      mysql -h "${{ secrets.DB_HOST }}" -P "${{ secrets.DB_PORT }}" \
+            -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
+            "${{ secrets.DB_NAME }}" < /opt/law-n-road-release/db/migrations/init.sql
+      sudo systemctl daemon-reload
+      sudo systemctl restart law-n-road-backend.service
 
-            # DB 마이그레이션 (백엔드에서 DB 사설 IP로 접속)
-            mysql -h "$DB_PRIVATE_IP" -P "$DB_PORT" \
-                  -u "$DB_USER" -p"$DB_PASSWORD" \
-                  "$DB_NAME" < /opt/law-n-road-release/db/migrations/init.sql
-          EOF
+# ────────────────────────────────────────────────────────────────
+#  (이하 기존대로 프론트엔드 배포 & Nginx 재시작)
+# ────────────────────────────────────────────────────────────────
 
-      # ----------------------------
-      # 2) 프론트엔드 정적 파일 배포
-      # ----------------------------
-      - name: Deploy Frontend Artifact
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.FRONT_SSH_HOST }}
-          username: ${{ secrets.FRONT_SSH_USER }}
-          key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
-          port: 22
-          source: "frontend/dist/"
-          target: "/opt/law-n-road-release/frontend/"
+- name: Deploy Frontend Artifact
+  uses: appleboy/scp-action@v0.1.7
+  with:
+    host: ${{ secrets.FRONT_SSH_HOST }}
+    username: ${{ secrets.FRONT_SSH_USER }}
+    key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+    port: 22
+    source: "frontend/dist/"
+    target: "/opt/law-n-road-release/frontend/"
 
-      - name: Reload Nginx on Frontend
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.FRONT_SSH_HOST }}
-          username: ${{ secrets.FRONT_SSH_USER }}
-          key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
-          script: sudo systemctl reload nginx
+- name: Reload Nginx on Frontend
+  uses: appleboy/ssh-action@v0.1.7
+  with:
+    host: ${{ secrets.FRONT_SSH_HOST }}
+    username: ${{ secrets.FRONT_SSH_USER }}
+    key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+    script: sudo systemctl reload nginx
 
-      - name: Notify Slack (도로의-판정단)
-        if: always()
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          fields: repo,commit,author,action,message
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_ROAD }}
+- name: Notify Slack (도로의-판정단)
+  if: always()
+  uses: 8398a7/action-slack@v3
+  with:
+    status: ${{ job.status }}
+    fields: repo,commit,author,action,message
+  env:
+    SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL_ROAD }}
