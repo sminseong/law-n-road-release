@@ -1,0 +1,65 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1) 코드 체크아웃
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2) SSH 키 세팅 (프론트/백엔드 공용으로 사용)
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.FRONT_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          # known_hosts 에 도메인 추가
+          ssh-keyscan -H lawnroad.kr >> ~/.ssh/known_hosts
+        shell: bash
+
+      # 3) 프론트엔드 배포
+      - name: Deploy Frontend
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+              -i ~/.ssh/id_rsa \
+              ${{ secrets.FRONT_SSH_USER }}@lawnroad.kr << 'EOF'
+          
+            cd /opt/law-n-road-release/frontend
+            npm ci
+            npm run build
+            sudo systemctl reload nginx
+          EOF
+        shell: bash
+
+      # 4) 백엔드 배포 (프론트 서버를 Bastion 으로 점프)
+      - name: Deploy Backend & Migrate DB
+        env:
+          DB_HOST:     ${{ secrets.DB_HOST }}
+          DB_PORT:     ${{ secrets.DB_PORT }}
+          DB_NAME:     ${{ secrets.DB_NAME }}
+          DB_USER:     ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+              -i ~/.ssh/id_rsa \
+              -J ${{ secrets.FRONT_SSH_USER }}@lawnroad.kr \
+              ${{ secrets.BACKEND_SSH_USER }}@${{ secrets.BACKEND_SSH_HOST }} << 'EOF'
+          
+            # 4.1) (선택) DB 마이그레이션
+            mysql -h "$DB_HOST" -P "$DB_PORT" \
+                  -u "$DB_USER" -p"$DB_PASSWORD" \
+                  "$DB_NAME" < /opt/law-n-road-release/db/migrations/init.sql
+
+            # 4.2) 백엔드 빌드·배포
+            cd /opt/law-n-road-release
+            ./gradlew clean bootJar -x test
+            sudo systemctl daemon-reload
+            sudo systemctl start law-n-road-backend.service
+          EOF
+        shell: bash
