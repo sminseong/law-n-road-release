@@ -26,6 +26,7 @@ jobs:
           npm install -g yarn
           rm -rf node_modules package-lock.json || true
           yarn install --frozen-lockfile --ignore-optional
+          yarn add --dev @rollup/rollup-linux-x64-gnu
           yarn build
 
       # ----------------------------
