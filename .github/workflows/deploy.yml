@@ -22,10 +22,9 @@ jobs:
 
       - name: Build Frontend
         working-directory: frontend
-        env:
-          NPM_CONFIG_OMIT: optional
         run: |
-          npm ci
+          rm -rf package-lock.json node_modules
+          npm install --no-optional
           npm run build
 
       - name: Deploy Backend Artifact
