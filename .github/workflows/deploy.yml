@@ -6,12 +6,11 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
+      # 1) 코드 체크아웃 & 빌드
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Make Gradlew Executable
-        run: chmod +x ./gradlew
 
       - name: Build Backend JAR
         run: ./gradlew clean bootJar -x test
@@ -24,39 +23,44 @@ jobs:
           yarn install --frozen-lockfile
           yarn build
 
-      # ────────────────────────────────────────────────
-      # Backend 배포 (프록시: 프론트 서버를 경유)
-      # ────────────────────────────────────────────────
+      # 2) SSH Agent 세팅 (프론트 서버 키를 Agent 에 로드)
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+
+      # 3) SSH Config 작성 (러너의 ~/.ssh/config 에 ProxyJump 설정)
+      - name: Write SSH config
+        run: |
+          mkdir -p ~/.ssh
+          cat << 'EOF' > ~/.ssh/config
+          Host frontend
+            HostName ${{ secrets.FRONT_SSH_HOST }}
+            User     ${{ secrets.FRONT_SSH_USER }}
+            ForwardAgent yes
+
+          Host backend
+            HostName ${{ secrets.BACKEND_SSH_HOST }}
+            User     ${{ secrets.BACKEND_SSH_USER }}
+            ProxyJump frontend
+            ForwardAgent yes
+          EOF
+          chmod 600 ~/.ssh/config
+
+      # 4) Backend 배포 (‘backend’ alias 로 ProxyJump 자동 적용)
       - name: Deploy & Restart Backend
         uses: appleboy/scp-action@v1
         with:
-          # 실제 백엔드 private 호스트/IP
-          host: ${{ secrets.BACKEND_SSH_HOST }}
-          port: 22
+          host: backend
           username: ${{ secrets.BACKEND_SSH_USER }}
-          # 로컬(Runner)에 로드된 프론트 키를 에이전트 포워딩 대신 직접 사용하려면 key_path:
-          key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
           source: "build/libs/*.jar"
           target: "/opt/law-n-road-release/"
-
-          # ProxyJump 설정
-          proxy_host: ${{ secrets.FRONT_SSH_HOST }}
-          proxy_port: 22
-          proxy_username: ${{ secrets.FRONT_SSH_USER }}
-          proxy_key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
 
       - name: Migrate DB & Restart Backend
         uses: appleboy/ssh-action@v1
         with:
-          host: ${{ secrets.BACKEND_SSH_HOST }}
-          port: 22
+          host: backend
           username: ${{ secrets.BACKEND_SSH_USER }}
-          # 프론트 키(push-through) 또는 백엔드 전용 키를 여기에 지정
-          key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
-          proxy_host: ${{ secrets.FRONT_SSH_HOST }}
-          proxy_port: 22
-          proxy_username: ${{ secrets.FRONT_SSH_USER }}
-          proxy_key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
           script: |
             mysql -h "${{ secrets.DB_HOST }}" -P "${{ secrets.DB_PORT }}" \
                   -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
@@ -64,28 +68,25 @@ jobs:
             sudo systemctl daemon-reload
             sudo systemctl restart law-n-road-backend.service
 
-      # ────────────────────────────────────────────────
-      # Frontend 배포 (직접 접근 가능)
-      # ────────────────────────────────────────────────
+      # 5) Frontend 배포 (직접 접근)
       - name: Deploy Frontend Artifact
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.FRONT_SSH_HOST }}
-          port: 22
           username: ${{ secrets.FRONT_SSH_USER }}
-          key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
-          source: "frontend/dist/"
-          target: "/opt/law-n-road-release/frontend/"
+          key:      ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          source:   "frontend/dist/"
+          target:   "/opt/law-n-road-release/frontend/"
 
       - name: Reload Nginx
         uses: appleboy/ssh-action@v1
         with:
-          host: ${{ secrets.FRONT_SSH_HOST }}
-          port: 22
+          host:     ${{ secrets.FRONT_SSH_HOST }}
           username: ${{ secrets.FRONT_SSH_USER }}
-          key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
-          script: sudo systemctl reload nginx
+          key:      ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          script:   sudo systemctl reload nginx
 
+      # 6) 결과를 Slack 으로 알리기
       - name: Notify Slack (도로의-판정단)
         if: always()
         uses: 8398a7/action-slack@v3
