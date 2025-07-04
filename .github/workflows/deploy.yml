@@ -6,9 +6,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
-      # 1) 코드 체크아웃 & 빌드
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -23,52 +21,65 @@ jobs:
           yarn install --frozen-lockfile
           yarn build
 
-      # 2) SSH Agent 세팅 (프론트 서버 키 로드)
       - name: Set up SSH agent
         uses: webfactory/ssh-agent@v0.9.1
         with:
           ssh-private-key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
 
-      # 3) SSH Config 작성 (ProxyJump 설정)
       - name: Write SSH config
         run: |
           mkdir -p ~/.ssh
           cat << 'EOF' > ~/.ssh/config
           Host frontend
-            HostName ${{ secrets.FRONT_SSH_HOST }}
-            User     ${{ secrets.FRONT_SSH_USER }}
-            ForwardAgent yes
-
+          HostName ${{ secrets.FRONT_SSH_HOST }}
+          User     ${{ secrets.FRONT_SSH_USER }}
+          ForwardAgent yes
+          
           Host backend
-            HostName ${{ secrets.BACKEND_SSH_HOST }}
-            User     ${{ secrets.BACKEND_SSH_USER }}
-            ProxyJump frontend
-            ForwardAgent yes
+          HostName ${{ secrets.BACKEND_SSH_HOST }}
+          User     ${{ secrets.BACKEND_SSH_USER }}
+          ProxyJump frontend
+          ForwardAgent yes
           EOF
           chmod 600 ~/.ssh/config
 
-      # 4) Backend 배포 (ProxyJump를 써서 frontend → backend)
-      - name: Deploy Backend JAR
-        run: scp build/libs/*.jar backend:/opt/law-n-road-release/
+      - name: Deploy & Restart Backend
+        uses: appleboy/scp-action@v1
+        with:
+          host: backend
+          username: ${{ secrets.BACKEND_SSH_USER }}
+          source: "build/libs/*.jar"
+          target: "/opt/law-n-road-release/"
 
       - name: Migrate DB & Restart Backend
-        run: |
-          ssh backend << 'EOF'
+        uses: appleboy/ssh-action@v1
+        with:
+          host: backend
+          username: ${{ secrets.BACKEND_SSH_USER }}
+          script: |
             mysql -h "${{ secrets.DB_HOST }}" -P "${{ secrets.DB_PORT }}" \
-                  -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
-                  "${{ secrets.DB_NAME }}" < /opt/law-n-road-release/db/migrations/init.sql
+              -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
+              "${{ secrets.DB_NAME }}" < /opt/law-n-road-release/db/migrations/init.sql
             sudo systemctl daemon-reload
             sudo systemctl restart law-n-road-backend.service
-          EOF
 
-      # 5) Frontend 배포 (직접 접근)
       - name: Deploy Frontend Artifact
-        run: scp -r frontend/dist/ ${{ secrets.FRONT_SSH_USER }}@${{ secrets.FRONT_SSH_HOST }}:/opt/law-n-road-release/frontend/
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.FRONT_SSH_HOST }}
+          username: ${{ secrets.FRONT_SSH_USER }}
+          key:      ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          source:   "frontend/dist/"
+          target:   "/opt/law-n-road-release/frontend/"
 
       - name: Reload Nginx
-        run: ssh ${{ secrets.FRONT_SSH_USER }}@${{ secrets.FRONT_SSH_HOST }} 'sudo systemctl reload nginx'
+        uses: appleboy/ssh-action@v1
+        with:
+          host:     ${{ secrets.FRONT_SSH_HOST }}
+          username: ${{ secrets.FRONT_SSH_USER }}
+          key:      ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          script:   sudo systemctl reload nginx
 
-      # 6) Slack 알림
       - name: Notify Slack (도로의-판정단)
         if: always()
         uses: 8398a7/action-slack@v3
