@@ -28,7 +28,7 @@ jobs:
           yarn build
 
       # ----------------------------------------------
-      # 여기부터 Bastion 경유 배포 스텝
+      # Bastion 경유 배포 스텝
       # ----------------------------------------------
       - name: Prepare Bastion SSH key
         run: |
@@ -39,53 +39,63 @@ jobs:
           chmod 600 ~/.ssh/bastion.pem
 
       - name: Deploy & Restart Backend via Bastion
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.BACKEND_PRIVATE_HOST }}
-          username: ${{ secrets.BACKEND_SSH_USER }}
-          key_path: ~/.ssh/bastion.pem     # bastion 키 사용
-          port: 22
-          source: "build/libs/*.jar"
-          target: "/opt/law-n-road-release/"
-          # -- Bastion 설정 --
-          bastion_host: ${{ secrets.BASTION_HOST }}
-          bastion_user: ${{ secrets.BASTION_SSH_USER }}
-          bastion_key_path: ~/.ssh/bastion.pem
-          bastion_port: 22
-
-      - name: Migrate DB & Restart Backend via Bastion
-        uses: appleboy/ssh-action@v0.1.7
+        uses: appleboy/scp-action@v0.1.8
         with:
           host: ${{ secrets.BACKEND_PRIVATE_HOST }}
           username: ${{ secrets.BACKEND_SSH_USER }}
           key_path: ~/.ssh/bastion.pem
+          port: 22
+          source: "build/libs/*.jar"
+          target: "/opt/law-n-road-release/"
+          # Bastion 설정
+          bastion_host:    ${{ secrets.BASTION_HOST }}
+          bastion_user:    ${{ secrets.BASTION_SSH_USER }}
+          bastion_key_path: ~/.ssh/bastion.pem
+          bastion_port:    22
+
+      - name: Migrate DB & Restart Backend via Bastion
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.BACKEND_PRIVATE_HOST }}
+          username: ${{ secrets.BACKEND_SSH_USER }}
+          key_path: ~/.ssh/bastion.pem
+          # Bastion 설정
+          bastion_host:    ${{ secrets.BASTION_HOST }}
+          bastion_user:    ${{ secrets.BASTION_SSH_USER }}
+          bastion_key_path: ~/.ssh/bastion.pem
+          bastion_port:    22
           script: |
             mysql -h "${{ secrets.DB_HOST }}" -P "${{ secrets.DB_PORT }}" \
                   -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
                   "${{ secrets.DB_NAME }}" < /opt/law-n-road-release/db/migrations/init.sql
             sudo systemctl daemon-reload
             sudo systemctl restart law-n-road-backend.service
-          bastion_host: ${{ secrets.BASTION_HOST }}
-          bastion_user: ${{ secrets.BASTION_SSH_USER }}
-          bastion_key_path: ~/.ssh/bastion.pem
-          bastion_port: 22
 
       - name: Deploy Frontend Artifact
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v0.1.8
         with:
           host: ${{ secrets.FRONT_SSH_HOST }}
           username: ${{ secrets.FRONT_SSH_USER }}
-          key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          key_path: ~/.ssh/bastion.pem    # (또는 프론트엔드 직접 키)
           port: 22
           source: "frontend/dist/"
           target: "/opt/law-n-road-release/frontend/"
+          # 만약 프론트서버도 Bastion 경유가 필요하면 아래 4줄 추가
+          # bastion_host:    ${{ secrets.BASTION_HOST }}
+          # bastion_user:    ${{ secrets.BASTION_SSH_USER }}
+          # bastion_key_path: ~/.ssh/bastion.pem
+          # bastion_port:    22
 
       - name: Reload Nginx
-        uses: appleboy/ssh-action@v0.1.7
+        uses: appleboy/ssh-action@v0.1.8
         with:
           host: ${{ secrets.FRONT_SSH_HOST }}
           username: ${{ secrets.FRONT_SSH_USER }}
-          key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          key_path: ~/.ssh/bastion.pem    # or 프론트 키
+          # bastion_host:    ${{ secrets.BASTION_HOST }}
+          # bastion_user:    ${{ secrets.BASTION_SSH_USER }}
+          # bastion_key_path: ~/.ssh/bastion.pem
+          # bastion_port:    22
           script: sudo systemctl reload nginx
 
       - name: Notify Slack (도로의-판정단)
