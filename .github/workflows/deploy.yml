@@ -30,22 +30,44 @@ jobs:
         with:
           host:            ${{ secrets.BACKEND_SSH_HOST }}
           username:        ${{ secrets.BACKEND_SSH_USER }}
+
+          # 백엔드 서버 접속용 개인키
           key:             ${{ secrets.BACKEND_SSH_PRIVATE_KEY }}
+
           proxy_host:      ${{ secrets.FRONT_SSH_HOST }}
           proxy_username:  ${{ secrets.FRONT_SSH_USER }}
+
+          # 프록시(프론트) 서버 접속용 개인키
           proxy_key:       ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+
           source:          "build/libs/*.jar"
           target:          "/opt/law-n-road-release/"
+          port:            22
+          protocol:        tcp
+          timeout:         30s
+          command_timeout: 10m
+          tar_exec:        tar
+          proxy_port:      22
+          proxy_timeout:   30s
+          curl_insecure:   false
+          capture_stdout:  false
 
+      # ────────────────────────────────────────────────
+      # DB 마이그레이션 & 백엔드 재시작
+      # ────────────────────────────────────────────────
       - name: Migrate DB & Restart Backend
         uses: appleboy/ssh-action@v1
         with:
           host:            ${{ secrets.BACKEND_SSH_HOST }}
           username:        ${{ secrets.BACKEND_SSH_USER }}
-          key:             ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+
+          # 동일하게 백엔드 키
+          key:             ${{ secrets.BACKEND_SSH_PRIVATE_KEY }}
+
           proxy_host:      ${{ secrets.FRONT_SSH_HOST }}
           proxy_username:  ${{ secrets.FRONT_SSH_USER }}
           proxy_key:       ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+
           script: |
             mysql -h "${{ secrets.DB_HOST }}" -P "${{ secrets.DB_PORT }}" \
               -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
