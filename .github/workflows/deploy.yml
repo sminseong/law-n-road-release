@@ -53,6 +53,9 @@ jobs:
         with:
           host: backend
           username: ${{ secrets.BACKEND_SSH_USER }}
+          # 반드시 키를 전달해 줍니다.
+          key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+
           source: "build/libs/*.jar"
           target: "/opt/law-n-road-release/"
 
@@ -61,6 +64,8 @@ jobs:
         with:
           host: backend
           username: ${{ secrets.BACKEND_SSH_USER }}
+          # 역시 여기도 동일 키를 넘겨 주세요
+          key: ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
           script: |
             mysql -h "${{ secrets.DB_HOST }}" -P "${{ secrets.DB_PORT }}" \
                   -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
@@ -68,7 +73,7 @@ jobs:
             sudo systemctl daemon-reload
             sudo systemctl restart law-n-road-backend.service
 
-      # 5) Frontend 배포 (직접 접근)
+      # 5) Frontend 배포 (직접 접근 가능)
       - name: Deploy Frontend Artifact
         uses: appleboy/scp-action@v1
         with:
