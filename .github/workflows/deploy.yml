@@ -37,10 +37,7 @@ jobs:
           proxy_password:  ${{ secrets.FRONT_SSH_PASSWORD }}
 
           # **여기서만** YAML 구문 주의!
-#          source:          "build/libs/*.jar,db/migrations/"
-          source:
-            - build/libs/*.jar
-            - db/migrations/**
+          source:          "build/libs/*.jar,db/migrations/"
           target:          "/opt/law-n-road-release/"
           strip_components: 1
 
