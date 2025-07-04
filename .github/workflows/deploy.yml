@@ -23,7 +23,20 @@ jobs:
           yarn build
 
       # ────────────────────────────────────────────────
-      # Backend 배포 (프론트 서버를 ProxyJump로 사용) — debug 모드 포함
+      # 1) 프록시 서버에서 백엔드 호스트 해석 확인
+      # ────────────────────────────────────────────────
+      - name: Verify backend DNS on proxy
+        uses: appleboy/ssh-action@v1
+        with:
+          host:           ${{ secrets.FRONT_SSH_HOST }}
+          username:       ${{ secrets.FRONT_SSH_USER }}
+          key:            ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          script: |
+            echo "Resolving ${{ secrets.BACKEND_SSH_HOST }} from proxy..."
+            nslookup ${{ secrets.BACKEND_SSH_HOST }} || dig +short ${{ secrets.BACKEND_SSH_HOST }}
+
+      # ────────────────────────────────────────────────
+      # 2) Backend 배포 (debug 모드)
       # ────────────────────────────────────────────────
       - name: Deploy & Restart Backend (debug)
         uses: appleboy/scp-action@v1
@@ -48,20 +61,7 @@ jobs:
           capture_stdout:  false
 
       # ────────────────────────────────────────────────
-      # 프록시 서버에서 백엔드 호스트 해석 확인
-      # ────────────────────────────────────────────────
-      - name: Verify backend DNS on proxy
-        uses: appleboy/ssh-action@v1
-        with:
-          host:            ${{ secrets.FRONT_SSH_HOST }}
-          username:        ${{ secrets.FRONT_SSH_USER }}
-          key:             ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
-          script: |
-            echo "Resolving ${{ secrets.BACKEND_SSH_HOST }} from proxy..."
-            nslookup ${{ secrets.BACKEND_SSH_HOST }} || dig +short ${{ secrets.BACKEND_SSH_HOST }}
-
-      # ────────────────────────────────────────────────
-      # DB 마이그레이션 & 백엔드 재시작
+      # 3) DB 마이그레이션 & 백엔드 재시작
       # ────────────────────────────────────────────────
       - name: Migrate DB & Restart Backend
         uses: appleboy/ssh-action@v1
