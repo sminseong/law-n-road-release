@@ -22,9 +22,9 @@ jobs:
           yarn install --frozen-lockfile
           yarn build
 
-      # ────────────────────────────────────────────────
+      # ─────────────────────────────────────────────────────────────────────
       # 1) Backend JAR + migrations 폴더 복사 (Password 방식)
-      # ────────────────────────────────────────────────
+      # ─────────────────────────────────────────────────────────────────────
       - name: Copy Backend artifact & migrations
         uses: appleboy/scp-action@v1
         with:
@@ -36,14 +36,32 @@ jobs:
           proxy_username:  ${{ secrets.FRONT_SSH_USER }}
           proxy_password:  ${{ secrets.FRONT_SSH_PASSWORD }}
 
-          # **여기서만** YAML 구문 주의!
           source:          "build/libs/*.jar,db/migrations/"
           target:          "/opt/law-n-road-release/"
           strip_components: 1
 
-      # ────────────────────────────────────────────────
-      # 2) DB 마이그레이션 & Backend 서비스 재시작
-      # ────────────────────────────────────────────────
+      # ─────────────────────────────────────────────────────────────────────
+      # 2) Config 파일 복사 (env + systemd unit)
+      # ─────────────────────────────────────────────────────────────────────
+      - name: Copy env & systemd service files
+        uses: appleboy/scp-action@v1
+        with:
+          host:            ${{ secrets.BACKEND_SSH_HOST }}
+          username:        ${{ secrets.BACKEND_SSH_USER }}
+          password:        ${{ secrets.BACKEND_SSH_PASSWORD }}
+
+          proxy_host:      ${{ secrets.FRONT_SSH_HOST }}
+          proxy_username:  ${{ secrets.FRONT_SSH_USER }}
+          proxy_password:  ${{ secrets.FRONT_SSH_PASSWORD }}
+
+          # 로컬 레포에 미리 커밋해둔 위치
+          source:          ".github/deploy/backend.env,.github/deploy/lawroad-backend.service"
+          target:          "/etc/lawroad/"
+
+      # ─────────────────────────────────────────────────────────────────────
+      # 3) DB 마이그레이션 & Backend 서비스 재시작
+      #    (이미 복사된 systemd unit + env 적용 후 daemon-reload)
+      # ─────────────────────────────────────────────────────────────────────
       - name: Migrate DB & Restart Backend
         uses: appleboy/ssh-action@v1
         with:
@@ -56,16 +74,24 @@ jobs:
           proxy_password:  ${{ secrets.FRONT_SSH_PASSWORD }}
 
           script: |
+            # ensure dir and move service file into place
+            sudo mkdir -p /etc/lawroad
+            sudo mv /etc/lawroad/lawroad-backend.service /etc/systemd/system/lawroad-backend.service
+            sudo mv /etc/lawroad/backend.env /etc/lawroad/backend.env
+            sudo chmod 600 /etc/lawroad/backend.env
+
+            # migration
             mysql -h "${{ secrets.DB_HOST }}" -P "${{ secrets.DB_PORT }}" \
               -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
               "${{ secrets.DB_NAME }}" < /opt/law-n-road-release/db/migrations/init.sql
 
+            # reload & restart
             sudo systemctl daemon-reload
             sudo systemctl restart lawroad-backend.service
 
-      # ────────────────────────────────────────────────
-      # 3) Frontend 배포 (Password 방식)
-      # ────────────────────────────────────────────────
+      # ─────────────────────────────────────────────────────────────────────
+      # 4) Frontend 배포 (Password 방식)
+      # ─────────────────────────────────────────────────────────────────────
       - name: Deploy Frontend Artifact
         uses: appleboy/scp-action@v1
         with:
