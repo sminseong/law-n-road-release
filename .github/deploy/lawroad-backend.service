@@ -1,0 +1,42 @@
+[Unit]
+Description=LawNRoad Backend Service
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/opt/law-n-road-release
+
+# 환경 변수 파일 불러오기
+EnvironmentFile=/etc/lawroad/backend.env
+
+ExecStart=/usr/bin/java -jar /opt/law-n-road-release/build/libs/law-n-road-0.0.1-SNAPSHOT.jar \
+  --spring.datasource.url=${SPRING_DATASOURCE_URL} \
+  --spring.datasource.username=${SPRING_DATASOURCE_USERNAME} \
+  --spring.datasource.password=${SPRING_DATASOURCE_PASSWORD} \
+  --spring.profiles.active=${SPRING_PROFILES_ACTIVE} \
+  --spring.data.mongodb.host=${SPRING_DATA_MONGODB_HOST} \
+  --spring.data.mongodb.port=${SPRING_DATA_MONGODB_PORT} \
+  --spring.data.mongodb.database=${SPRING_DATA_MONGODB_DATABASE} \
+  --spring.data.mongodb.username=${SPRING_DATA_MONGODB_USERNAME} \
+  --spring.data.mongodb.password=${SPRING_DATA_MONGODB_PASSWORD} \
+  --spring.data.mongodb.authentication-database=${SPRING_DATA_MONGODB_AUTHENTICATION_DATABASE} \
+  --spring.data.redis.host=${SPRING_DATA_REDIS_HOST} \
+  --spring.data.redis.port=${SPRING_DATA_REDIS_PORT} \
+  --spring.security.oauth2.client.registration.naver.client-name=${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_NAVER_CLIENT_NAME} \
+  --spring.security.oauth2.client.registration.naver.client-id=${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_NAVER_CLIENT_ID} \
+  --spring.security.oauth2.client.registration.naver.client-secret=${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_NAVER_CLIENT_SECRET} \
+  --spring.security.oauth2.client.registration.naver.redirect-uri=${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_NAVER_REDIRECT_URI} \
+  --spring.security.oauth2.client.registration.naver.authorization-grant-type=${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_NAVER_AUTHORIZATION_GRANT_TYPE} \
+  --spring.security.oauth2.client.registration.naver.scope=${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_NAVER_SCOPE} \
+  --spring.security.oauth2.client.provider.naver.authorization-uri=${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_NAVER_AUTHORIZATION_URI} \
+  --spring.security.oauth2.client.provider.naver.token-uri=${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_NAVER_TOKEN_URI} \
+  --spring.security.oauth2.client.provider.naver.user-info-uri=${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_NAVER_USER_INFO_URI} \
+  --spring.security.oauth2.client.provider.naver.user-name-attribute=${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_NAVER_USER_NAME_ATTRIBUTE} \
+  --app.frontend.social-login-url=${APP_FRONTEND_SOCIAL_LOGIN_URL} \
+  --tosspayments.secret-key=${TOSSPAYMENTS_SECRET_KEY}
+
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

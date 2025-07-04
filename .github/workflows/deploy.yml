@@ -41,7 +41,7 @@ jobs:
           strip_components: 1
 
       # ─────────────────────────────────────────────────────────────────────
-      # 2) Config 파일 복사 (env + systemd unit)
+      # 2) Config 파일 복사 (env + systemd unit) → /etc/로 바로 복사
       # ─────────────────────────────────────────────────────────────────────
       - name: Copy env & systemd service files
         uses: appleboy/scp-action@v1
@@ -54,13 +54,12 @@ jobs:
           proxy_username:  ${{ secrets.FRONT_SSH_USER }}
           proxy_password:  ${{ secrets.FRONT_SSH_PASSWORD }}
 
-          # 로컬 레포에 미리 커밋해둔 위치
           source:          ".github/deploy/backend.env,.github/deploy/lawroad-backend.service"
-          target:          "/etc/lawroad/"
+          target:          "/etc/"
+          strip_components: 2
 
       # ─────────────────────────────────────────────────────────────────────
       # 3) DB 마이그레이션 & Backend 서비스 재시작
-      #    (이미 복사된 systemd unit + env 적용 후 daemon-reload)
       # ─────────────────────────────────────────────────────────────────────
       - name: Migrate DB & Restart Backend
         uses: appleboy/ssh-action@v1
@@ -74,18 +73,20 @@ jobs:
           proxy_password:  ${{ secrets.FRONT_SSH_PASSWORD }}
 
           script: |
-            # ensure dir and move service file into place
+            # 1) env 파일 디렉토리 생성 & 권한 설정
             sudo mkdir -p /etc/lawroad
-            sudo mv /etc/lawroad/lawroad-backend.service /etc/systemd/system/lawroad-backend.service
-            sudo mv /etc/lawroad/backend.env /etc/lawroad/backend.env
+            sudo mv /etc/backend.env /etc/lawroad/backend.env
             sudo chmod 600 /etc/lawroad/backend.env
 
-            # migration
+            # 2) systemd unit 파일 위치로 이동
+            sudo mv /etc/lawroad-backend.service /etc/systemd/system/lawroad-backend.service
+
+            # 3) DB 마이그레이션
             mysql -h "${{ secrets.DB_HOST }}" -P "${{ secrets.DB_PORT }}" \
               -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
               "${{ secrets.DB_NAME }}" < /opt/law-n-road-release/db/migrations/init.sql
 
-            # reload & restart
+            # 4) systemd 재실행 & 재시작
             sudo systemctl daemon-reload
             sudo systemctl restart lawroad-backend.service
 
