@@ -60,6 +60,7 @@ jobs:
         with:
           host: backend                    # SSH config 에 정의된 alias
           username: ${{ secrets.BACKEND_SSH_USER }}
+          key: ${{ secrets.BACKEND_SSH_PRIVATE_KEY }}
           port: 22
           source: "build/libs/*.jar"
           target: "/opt/law-n-road-release/"
