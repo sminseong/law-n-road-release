@@ -23,14 +23,15 @@ jobs:
           yarn build
 
       # ────────────────────────────────────────────────
-      # 1) 프록시(프론트) 서버에서 백엔드 호스트 해석 확인
+      # 1) 프록시(프론트) 서버에서 백엔드 호스트 해석 확인 (디버그 모드)
       # ────────────────────────────────────────────────
       - name: Verify backend DNS on proxy
         uses: appleboy/ssh-action@v1
         with:
           host:     ${{ secrets.FRONT_SSH_HOST }}
-          username: ${{ secrets.FRONT_SSH_USER }}
-          key:      ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          username: ${{ secrets.FRONT_SSH_USER }}            # ← 꼭 실제 SSH 유저(ex: ubuntu, root) 확인
+          key:      ${{ secrets.FRONT_SSH_PRIVATE_KEY }}     # ← PEM 전체 블록(줄바꿈 포함)
+          debug:    true                                      # ← 추가
           script: |
             echo "Resolving ${{ secrets.BACKEND_SSH_HOST }} from proxy..."
             nslookup ${{ secrets.BACKEND_SSH_HOST }} || dig +short ${{ secrets.BACKEND_SSH_HOST }}
@@ -66,12 +67,13 @@ jobs:
       - name: Migrate DB & Restart Backend
         uses: appleboy/ssh-action@v1
         with:
-          host:            ${{ secrets.BACKEND_SSH_HOST }}
-          username:        ${{ secrets.BACKEND_SSH_USER }}
-          key:             ${{ secrets.BACKEND_SSH_PRIVATE_KEY }}
+          host:     ${{ secrets.BACKEND_SSH_HOST }}
+          username: ${{ secrets.BACKEND_SSH_USER }}
+          key:      ${{ secrets.BACKEND_SSH_PRIVATE_KEY }}
           proxy_host:      ${{ secrets.FRONT_SSH_HOST }}
           proxy_username:  ${{ secrets.FRONT_SSH_USER }}
           proxy_key:       ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          debug:           true
           script: |
             mysql -h "${{ secrets.DB_HOST }}" -P "${{ secrets.DB_PORT }}" \
               -u "${{ secrets.DB_USER }}" -p"${{ secrets.DB_PASSWORD }}" \
@@ -90,6 +92,7 @@ jobs:
           key:      ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
           source:   "frontend/dist/"
           target:   "/opt/law-n-road-release/frontend/"
+          debug:    true
 
       - name: Reload Nginx
         uses: appleboy/ssh-action@v1
@@ -97,6 +100,7 @@ jobs:
           host:     ${{ secrets.FRONT_SSH_HOST }}
           username: ${{ secrets.FRONT_SSH_USER }}
           key:      ${{ secrets.FRONT_SSH_PRIVATE_KEY }}
+          debug:    true
           script:   sudo systemctl reload nginx
 
       - name: Notify Slack (도로의-판정단)
