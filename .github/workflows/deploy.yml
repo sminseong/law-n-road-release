@@ -23,7 +23,7 @@ jobs:
           yarn build
 
       # ────────────────────────────────────────────────
-      # 1) Backend JAR & migrations 폴더 복사 (Password 방식)
+      # 1) Backend JAR + migrations 폴더 복사 (Password 방식)
       # ────────────────────────────────────────────────
       - name: Copy Backend artifact & migrations
         uses: appleboy/scp-action@v1
@@ -36,7 +36,8 @@ jobs:
           proxy_username:  ${{ secrets.FRONT_SSH_USER }}
           proxy_password:  ${{ secrets.FRONT_SSH_PASSWORD }}
 
-          source:          "build/libs/*.jar","db/migrations/"
+          # **여기서만** YAML 구문 주의!
+          source:          "build/libs/*.jar,db/migrations/"
           target:          "/opt/law-n-road-release/"
           strip_components: 1
 
