@@ -253,7 +253,7 @@ chmod +x ./gradlew
 ./gradlew build -x test
 ```
 
-### gradle 설치
+### 🐘 gradle 설치
 ```bash
 apt install unzip wget -y
 
