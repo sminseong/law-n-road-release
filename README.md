@@ -154,6 +154,31 @@ server {
         proxy_set_header Host $host;
     }
 
+    location /oauth2/ {
+        proxy_pass http://10.0.2.6:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Cookie $http_cookie;
+    }
+
+    location /login/ {
+        proxy_pass http://10.0.2.6:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Cookie $http_cookie;
+    }
+
+    location /mail/ {
+	    proxy_pass http://10.0.2.6:8080;
+	    proxy_set_header Host $host;
+	    proxy_set_header X-Real-IP $remote_addr;
+	    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		}
+
     location / {
         try_files $uri $uri/ /index.html;
     }
@@ -228,6 +253,21 @@ chmod +x ./gradlew
 ./gradlew build -x test
 ```
 
+### gradle 설치
+```bash
+apt install unzip wget -y
+
+cd /opt
+wget https://services.gradle.org/distributions/gradle-8.7-bin.zip
+unzip gradle-8.7-bin.zip
+ln -s /opt/gradle-8.7 /opt/gradle
+
+echo 'export PATH=$PATH:/opt/gradle/bin' >> ~/.bashrc
+source ~/.bashrc
+
+gradle -v
+```
+
 ### ⚙️ Backend 서비스 설정 (systemd)
 
 ```bash
@@ -240,13 +280,40 @@ Description=LawNRoad Backend Service
 After=network.target
 
 [Service]
+# 실행할 사용자: root 홈을 그대로 쓰신다면 User=root
+# 일반 ubuntu 계정을 만드셨다면 User=ubuntu 로 바꿔주세요
 User=root
+
+# 워킹 디렉토리: 로그가 생성될 때 기준이 됩니다
 WorkingDirectory=/opt/law-n-road-release
+
+# 실제 실행 명령어: 
+# build/libs 안에 생성된 JAR 파일 이름을 정확히 적어야 합니다.
 ExecStart=/usr/bin/java -jar /opt/law-n-road-release/build/libs/law-n-road-0.0.1-SNAPSHOT.jar \
   --spring.datasource.url=jdbc:mysql://10.0.2.7:3306/law_n_road \
   --spring.datasource.username=lawnroad \
   --spring.datasource.password=Pass1234!@ \
-  --spring.profiles.active=prod
+  --spring.profiles.active=prod \
+  --spring.data.mongodb.host=10.0.2.7 \
+  --spring.data.mongodb.port=27017 \
+  --spring.data.mongodb.database=chatdb \
+  --spring.data.mongodb.username=chat \
+  --spring.data.mongodb.password=chat1234@ \
+  --spring.data.mongodb.authentication-database=admin \
+  --spring.data.redis.host=10.0.2.7 \
+  --spring.data.redis.port=6379 \
+  --spring.security.oauth2.client.registration.naver.client-name=naver \
+  --spring.security.oauth2.client.registration.naver.client-id=Wy4hhh1etGeWpNOAGUTe \
+  --spring.security.oauth2.client.registration.naver.client-secret=et1ATdUI0M \
+  --spring.security.oauth2.client.registration.naver.redirect-uri=https://lawnroad.kr/login/oauth2/code/naver \
+  --spring.security.oauth2.client.registration.naver.authorization-grant-type=authorization_code \
+  --spring.security.oauth2.client.registration.naver.scope=name,email \
+  --spring.security.oauth2.client.provider.naver.authorization-uri=https://nid.naver.com/oauth2.0/authorize \
+  --spring.security.oauth2.client.provider.naver.token-uri=https://nid.naver.com/oauth2.0/token \
+  --spring.security.oauth2.client.provider.naver.user-info-uri=https://openapi.naver.com/v1/nid/me \
+  --spring.security.oauth2.client.provider.naver.user-name-attribute=response \
+  --app.frontend.social-login-url=https://lawnroad.kr/login/oauth2/code/naver
+
 Restart=always
 RestartSec=10
 
